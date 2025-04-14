@@ -8,9 +8,13 @@
 #include <filesystem>
 #include <fstream>//ファイルに書いたり読んだりするライブラリ
 #include <chrono>//時間を扱うライブラリ
+#include <dbghelp.h>//CrashHandler06
+#include <strsafe.h>//Dumpを出力06
 
 #pragma comment(lib, "d3d12.lib")
 #pragma comment(lib,"dxgi.lib")
+#pragma comment(lib,"Dbghelp.lib")//ClashHandler06
+
 
 //ウィンドウプロシージャ
 LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg,
@@ -66,8 +70,39 @@ void Log(std::ostream& os, const std::string& message) {
 	OutputDebugStringA(message.c_str());
 }
 
+//CrashHandler06
+static LONG WINAPI ExportDump(EXCEPTION_POINTERS* exception) {
+	//ファイルはクラッシュしたexeまたは、ドイツの同一のexeとソースファイルと同じ場所
+	//Dumpを出力する↓↓↓
+
+	SYSTEMTIME time;
+	GetLocalTime(&time);
+	wchar_t filePath[MAX_PATH] = { 0 };
+	CreateDirectory(L"./Dumps", nullptr);
+	StringCchPrintfW(filePath, MAX_PATH, L"./Dumps/%04d-%02d%02d-%02d%02d.dmp", time.wYear, time.wMonth, time.wDay, time.wHour, time.wMinute);
+	HANDLE dumpFileHandle = CreateFile(filePath, GENERIC_READ | GENERIC_WRITE, FILE_SHARE_WRITE | FILE_SHARE_READ, 0, CREATE_ALWAYS, 0, 0);
+	//processId(このexeとId)とクラッシュ(例外)の発生したthreatIdを取得
+	DWORD processId = GetCurrentProcessId();
+	DWORD threadId = GetCurrentThreadId();
+	//設定情報を入力
+	MINIDUMP_EXCEPTION_INFORMATION minidumpInformation = { 0 };
+	minidumpInformation.ThreadId = threadId;
+	minidumpInformation.ExceptionPointers = exception;
+	minidumpInformation.ClientPointers = TRUE;
+	//Dumpを出力。MiniDumpNormalは最低限の情報を出力するフラグ
+	MiniDumpWriteDump(GetCurrentProcess(), processId, dumpFileHandle, MiniDumpNormal, &minidumpInformation, nullptr, nullptr);
+	//Dumpの出力↑↑↑
+	
+	//他に関連づけられているSHE例外ハンドラがあれば実行。通常はプロセスを終了する
+	return EXCEPTION_EXECUTE_HANDLER;
+}
+
 // windowsアプリでのエントリーポイント（main関数）
 int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
+
+	//誰も補足しなかった場合に（Unhandled）、補足する関数を登録
+	//main関数はじまってすぐに登録するといい
+	SetUnhandledExceptionFilter(ExportDump);//06
 
 	//ログのディレクトリを用意
 	std::filesystem::create_directory("logs");
@@ -88,7 +123,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	//ファイル名をつかって書き込み準備
 	std::ofstream logStream(logFilePath);
 
-	//↑↑↑↑↑↑↑↑
+	//この準備は実際にログが呼び出されるときの基盤となるらしい↑↑↑
 
 	WNDCLASS wc{};
 
@@ -146,6 +181,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	
 	assert(SUCCEEDED(hr));//↑↑↑
 
+	//使用するアダプタの決定==============================-↓↓↓
 	//使用するアダプタ用の変数。最初にnullptrを入れておく
 	IDXGIAdapter4* useAdapter = nullptr;
 	//よい順にアダプタを頼む
@@ -166,8 +202,31 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	}
 	//適切なアダプタが見つからなかったので起動できない
 	assert(useAdapter != nullptr);
+	//使用するアダプタの決定================================-↑↑↑
 
+	//D3D12Deviceの生成=====================================-↓↓↓
+	ID3D12Device* device = nullptr;
+	//機能レベルとログ出力用の文字列
+	D3D_FEATURE_LEVEL featureLevels[] = {
+		D3D_FEATURE_LEVEL_12_2,D3D_FEATURE_LEVEL_12_1,D3D_FEATURE_LEVEL_12_0
+	};
+	const char* featureLevelStrings[] = { "12.2","12.1","12.0"};
+	//高い順に生成できるか試していく
+	for (size_t i = 0;i < _countof(featureLevels);++i) {
+		//採用したアダプターでデバイスを生成
+		hr = D3D12CreateDevice(useAdapter, featureLevels[i], IID_PPV_ARGS(&device));
+		//指定した機能レベルでデバイスが生成出来たかを確認
+		if (SUCCEEDED(hr)) {
+			//生成出来たのでログ出力を行ってループを抜ける
+			Log(logStream, (std::format("FeatureLevel : {}\n", featureLevelStrings[i])));
+			break;
+		}
+	}
+	//デバイスの生成が上手くいかったので起動できない
+	assert(device != nullptr);
+	Log(logStream,"Complete create D3D12Device!!!\n");//初期化完了のログを出す
 
+	//D3D12Deviceの生成=====================================-↑↑↑
 
 	//出力ウィンドウへの文字出力
 	OutputDebugStringA("Hello,DirectX!\n");
