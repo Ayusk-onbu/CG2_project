@@ -108,7 +108,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	std::filesystem::create_directory("logs");
 
 	//この準備は実際にログが呼び出されるときの基盤となるらしい↓↓↓
-	
 	//現在時刻を取得（UTC時刻）
 	std::chrono::system_clock::time_point now = std::chrono::system_clock::now();
 	//ログファイルの名前にコンマ何秒はいらないので削って秒にする
@@ -122,36 +121,26 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	std::string logFilePath = std::string("logs/") + dateString + ".logs";
 	//ファイル名をつかって書き込み準備
 	std::ofstream logStream(logFilePath);
-
 	//この準備は実際にログが呼び出されるときの基盤となるらしい↑↑↑
 
 	WNDCLASS wc{};
-
 	// ウィンドウプロシージャ
 	wc.lpfnWndProc = WindowProc;
-
 	// ウィンドウクラス名（何でもいい）
 	wc.lpszClassName = L"CG2WindowClass";
-
 	// インスタンスハンドル
 	wc.hInstance = GetModuleHandle(nullptr);
-
 	// カーソル
 	wc.hCursor = LoadCursor(nullptr, IDC_ARROW);
-
 	// ウィンドウクラスを登録する
 	RegisterClass(&wc);
-
 	//クライアント領域（ゲーム画面）のサイズ
 	const int32_t kClientWidth = 1280;
 	const int32_t kClientHeight = 720;
-
 	//ウィンドウサイズを表す構造体にクライアント領域を入れる
 	RECT wrc = { 0, 0, kClientWidth, kClientHeight };
-
 	//クライアント領域をもとに実際のサイズにwrcを変更してもらう
 	AdjustWindowRect(&wrc, WS_OVERLAPPEDWINDOW, false);
-
 	//ウィンドウの生成
 	HWND hwnd = CreateWindow(
 		wc.lpszClassName,      	//利用するクラス名
@@ -166,10 +155,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		wc.hInstance,			//インスタンスハンドル
 		nullptr					//オプション
 	);
-
 	//ウィンドウを表示する
 	ShowWindow(hwnd, SW_SHOW);
-
 	//デバッグレイヤー
 #ifdef _DEBUG
 	ID3D12Debug1* debugController = nullptr;
@@ -183,14 +170,12 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	//デバッグレイヤー
 
 	//DXGIファクトリーの作成↓↓↓
-
 	IDXGIFactory7* dxgiFactory = nullptr;
 	//HRESULTはWindows系のエラーコードであり、
 	//関数が成功したかどうかをSUCCEEDEDマクロで判定できる
 	HRESULT hr = CreateDXGIFactory(IID_PPV_ARGS(&dxgiFactory));
 	//初期化の根本的な部分でエラーが出た場合はプログラムが間違っているか、
 	// どうにもできない場合が多いのでassertにしておく
-	
 	assert(SUCCEEDED(hr));//↑↑↑
 
 	//使用するアダプタの決定==============================-↓↓↓
@@ -272,6 +257,18 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 #endif
 	//エラー警告、直ちに停止================================-↑↑↑
 
+	//FenceとEventの生成====================================-↓↓↓
+	//初期値を０でFenceを作る
+	ID3D12Fence* fence = nullptr;
+	uint64_t fenceValue = 0;
+	hr = device->CreateFence(fenceValue, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&fence));
+	assert(SUCCEEDED(hr));
+
+	//FenceのSignalを持つためのイベントを作成する
+	HANDLE fenceEvent = CreateEvent(NULL, FALSE, FALSE, NULL);
+	assert(fenceEvent != nullptr);
+	//FenceとEventの生成====================================-↑↑↑
+
 	//CommandQueueの生成===================================-↓↓↓
 	//コマンドの生成
 	ID3D12CommandQueue* commandQueue = nullptr;
@@ -351,11 +348,38 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	//コマンドを積み込んで確定させる========================-↓↓↓	
 	//これから書き込むバックバッファのインデックスを取得
 	UINT backBufferIndex = swapChain->GetCurrentBackBufferIndex();
+
+	//トランジションバリア-----------------
+	//TransitionBarrierの設定
+	D3D12_RESOURCE_BARRIER barrier = {};
+	//今回のバリアはTransition
+	barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
+	//Noneにしておく
+	barrier.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
+	//バリアを張る対象のリソース。現在のバックバッファに対して行う
+	barrier.Transition.pResource = swapChainResources[backBufferIndex];
+	//遷移前の（現在）のResourceState
+	barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_PRESENT;
+	//遷移後のResourceState
+	barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_RENDER_TARGET;
+	//TransitionBarrierを張る
+	commandList->ResourceBarrier(1, &barrier);
+
+
 	//描画先のRTVを設定する
 	commandList->OMSetRenderTargets(1, &rtvHandles[backBufferIndex], false, nullptr);
 	//指定した色で画面全体をクリアする
 	float clearColor[] = { 0.1f,0.25f,0.5f,1.0f };//RGBAの設定
 	commandList->ClearRenderTargetView(rtvHandles[backBufferIndex], clearColor, 0, nullptr);
+	
+	//画面表示できるようにするために
+	//RenderTargetからPresent
+	barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_RENDER_TARGET;
+	barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_PRESENT;
+	//TransitionBarrierを張る
+	commandList->ResourceBarrier(1, &barrier);
+	//画面表示できるようにするために
+	
 	//コマンドリストの内容を確定させる。全てのコマンドを積んでからCloseすること
 	hr = commandList->Close();
 	assert(SUCCEEDED(hr));
@@ -367,6 +391,20 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	commandQueue->ExecuteCommandLists(1, commandLists);
 	//GPUとOSに画面の交換を行うように通知する
 	swapChain->Present(1, 0);
+
+
+	//GPUにシグナルを送る
+	fenceValue++;
+	//GPUがここまでたどり着いた時に、Fenceの値っを指定した値に代入する様にSignalを送る
+	commandQueue->Signal(fence, fenceValue);
+	//Fenceの値が指定したSignal値にたどり着いているか確認する
+	//GetCompletedValueの初期値はFence作成時に渡した初期値
+	if (fence->GetCompletedValue() < fenceValue) {
+		//指定したSingnalにたどりついていないので、たどりつくまで待つようにイベントを設定する
+		//イベントを待つ
+		WaitForSingleObject(fenceEvent, INFINITE);
+	}
+
 	//次のフレーム用のコマンドリストを準備
 	hr = commandAllocator->Reset();
 	assert(SUCCEEDED(hr));
@@ -378,7 +416,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	OutputDebugStringA("Hello,DirectX!\n");
 
 	MSG msg{};
-
 	//ウィンドウのｘボタンが押されるまでループ
 	while (msg.message != WM_QUIT) {
 		//Widnowにメッセージが来てたら最優先で処理させる
