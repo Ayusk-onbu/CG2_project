@@ -874,12 +874,13 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		{
 			TranslateMessage(&msg);
 			DispatchMessage(&msg);
-		}else {
+		}
+		else {
 			ImGui_ImplDX12_NewFrame();
 			ImGui_ImplWin32_NewFrame();
 			ImGui::NewFrame();
 
-////////////////////////////////////////////////////////////
+			////////////////////////////////////////////////////////////
 #pragma region コマンドを積み込んで確定させる
 	//これから書き込むバックバッファのインデックスを取得
 			UINT backBufferIndex = swapChain->GetCurrentBackBufferIndex();
@@ -905,9 +906,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			commandList->ClearRenderTargetView(rtvHandles[backBufferIndex], clearColor, 0, nullptr);
 
 #pragma endregion
-////////////////////////////////////////////////////////////
+			////////////////////////////////////////////////////////////
 
-			//ゲームの処理
+						//ゲームの処理
 			transform.rotate.y += 0.03f;
 			Matrix4x4 worldMatrix = MakeAffineMatrix(transform.scale, transform.rotate, transform.translate);
 			Matrix4x4 cameraMatrix = MakeAffineMatrix(camera.scale, camera.rotate, camera.translate);
@@ -916,7 +917,20 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			Matrix4x4 worldViewProjectionMatrix = Multiply(worldMatrix, Multiply(viewMatrix, projectionMatrix));
 			/**wvpData = worldViewProjectionMatrix;*/
 			*wvpData = worldMatrix;
-			ImGui::ShowDemoWindow();
+			////////////////////////////////////////////////////////////
+#pragma region ImGui1系
+			ImGui::Begin("02");
+			//ImGui::ShowDemoWindow();
+			ImGui::SliderFloat("TranslateX", &transform.translate.x, -0.5f, 0.5f);
+			ImGui::SliderFloat("TranslateY", &transform.translate.y, -0.5f, 0.5f);
+			//ImGui::SliderFloat("TranslateZ", &transform.translate.z, -0.5f, 1.0f);
+			ImGui::SliderFloat("R", &materialData->x, 0.0f, 1.0f);
+			ImGui::SliderFloat("G", &materialData->y, 0.0f, 1.0f);
+			ImGui::SliderFloat("B", &materialData->z, 0.0f, 1.0f);
+			//ImGui::SliderFloat("A", &materialData->w, 0.0f, 1.0f);
+			ImGui::End();
+#pragma endregion
+			////////////////////////////////////////////////////////////
 
 			//描画
 			ImGui::Render();
