@@ -35,6 +35,9 @@ struct Transform {
 	Vector3 rotate;
 	Vector3 translate;
 };
+struct Ortho {
+	float left, right, top, bottom;
+};
 float cot(float theta) {
 	float ret = 1.0f / std::tanf(theta);
 	return ret;
@@ -129,6 +132,29 @@ Matrix4x4 MakeTranslateMatrix(const Vector3& translate) {
 		0,0,1,0,
 		translate.x,translate.y,translate.z,1
 	};
+	return ret;
+}
+Matrix4x4 MakeOrthoGraphicMatrix(float left,float top,float right,float bottom,float nearClip,float farClip) {
+	Matrix4x4 ret;
+	ret.m[0][0] = 2.0f / (right - left);
+	ret.m[0][1] = 0;
+	ret.m[0][2] = 0;
+	ret.m[0][3] = 0;
+
+	ret.m[1][0] = 0;
+	ret.m[1][1] = 2.0f / (top - bottom);
+	ret.m[1][2] = 0;
+	ret.m[1][3] = 0;
+
+	ret.m[2][0] = 0;
+	ret.m[2][1] = 0;
+	ret.m[2][2] = 1.0f / (farClip - nearClip);
+	ret.m[2][3] = 0;
+
+	ret.m[3][0] = -(right + left) / (right - left);
+	ret.m[3][1] = -(top + bottom) / (top - bottom);
+	ret.m[3][2] = -nearClip / (farClip - nearClip);
+	ret.m[3][3] = 1.0f;
 	return ret;
 }
 Matrix4x4 MakeAffineMatrix(const Vector3& scale, const Vector3& rotate, const Vector3& translate) {
@@ -752,6 +778,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 ////////////////////////////////////////////////////////////
 #pragma region VertexResource
 	ID3D12Resource* vertexResource = CreateBufferResource(device, sizeof(VertexData) * 6);//
+#pragma region Sprite
+	ID3D12Resource* vertexResourceSprite = CreateBufferResource(device, sizeof(VertexData) * 6);
+#pragma endregion
 #pragma endregion
 ////////////////////////////////////////////////////////////
 
@@ -764,6 +793,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 ////////////////////////////////////////////////////////////
 #pragma region TransformationMatrix
 	ID3D12Resource* wvpResource = CreateBufferResource(device, sizeof(Matrix4x4));
+	ID3D12Resource* transformationMatrixResourceSprite = CreateBufferResource(device, sizeof(Matrix4x4));
 #pragma endregion
 ////////////////////////////////////////////////////////////
 
@@ -1001,12 +1031,21 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	//今回は赤
 	*materialData = Vector4(1.0f, 0.0f, 0.0f, 1.0f);
 
+#pragma region TransformationMatrix系
 	//データを書き込む
 	Matrix4x4* wvpData = nullptr;
 	//書き込むためのアドレスを取得
 	wvpResource->Map(0, nullptr, reinterpret_cast<void**>(&wvpData));
 	//単位行列を書き込んでいく
 	*wvpData = MakeIdentity4x4();
+
+	//データを書き込み
+	Matrix4x4* transformationMatrixDataSprite = nullptr;
+	//書きこむためのアドレスを習得
+	transformationMatrixResourceSprite->Map(0, nullptr, reinterpret_cast<void**>(&transformationMatrixDataSprite));
+	//単位行列を書き込む
+	*transformationMatrixDataSprite = MakeIdentity4x4();
+#pragma endregion
 
 ////////////////////////////////////////////////////////////
 #pragma region VertexBufferView
@@ -1017,9 +1056,18 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	vertexBufferView.SizeInBytes = sizeof(VertexData) * 6;//
 	//１個当たりのサイズ
 	vertexBufferView.StrideInBytes = sizeof(VertexData);//
+#pragma region Sprite
+	D3D12_VERTEX_BUFFER_VIEW vertexBufferViewSprite = {};
+	//リソースの先頭のアドレスから使う
+	vertexBufferViewSprite.BufferLocation = vertexResourceSprite->GetGPUVirtualAddress();
+	//使用するリソースのサイズはちゅてん三つ分
+	vertexBufferViewSprite.SizeInBytes = sizeof(VertexData) * 6;//
+	//１個当たりのサイズ
+	vertexBufferViewSprite.StrideInBytes = sizeof(VertexData);//
+#pragma endregion
 #pragma endregion
 ////////////////////////////////////////////////////////////
-
+#pragma region VertexData
 	//頂点リソースにでーたを書き込む1
 	VertexData* vertexData = nullptr;
 	//書き込む溜めのアドレスを取得
@@ -1043,6 +1091,29 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	//右下2
 	vertexData[2 + 3].position = { 0.5f,-0.5f,-0.5f,1.0f };
 	vertexData[2 + 3].texcoord = { 1.0f,1.0f };
+
+#pragma region Sprite
+	VertexData* vertexDataSprite = nullptr;
+	vertexResourceSprite->Map(0, nullptr, reinterpret_cast<void**>(&vertexDataSprite));
+	//1枚目の三角形
+	vertexDataSprite[0].position = { 0.0f,360.0f,0.0f,1.0f };
+	vertexDataSprite[0].texcoord = { 0.0f,1.0f };
+	vertexDataSprite[1].position = { 0.0f,0.0f,0.0f,1.0f };
+	vertexDataSprite[1].texcoord = { 0.0f,1.0f };
+	vertexDataSprite[2].position = { 640.0f,360.0f,0.0f,1.0f };
+	vertexDataSprite[2].texcoord = { 1.0f,1.0f };
+
+	//2枚目の三角形
+	vertexDataSprite[0 + 3].position = { 0.0f,0.0f,0.0f,1.0f };
+	vertexDataSprite[0 + 3].texcoord = { 0.0f,0.0f };
+	vertexDataSprite[1 + 3].position = { 640.0f,0.0f,0.0f,1.0f };
+	vertexDataSprite[1 + 3].texcoord = { 1.0f,0.0f };
+	vertexDataSprite[2 + 3].position = { 640.0f,360.0f,0.0f,1.0f };
+	vertexDataSprite[2 + 3].texcoord = { 1.0f,1.0f };
+#pragma endregion
+
+#pragma endregion
+
 #pragma endregion
 ////////////////////////////////////////////////////////////
 
@@ -1083,6 +1154,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	
 	MSG msg{};
 	Transform transform = { {1.0f,1.0f,1.0f},{0.0f,0.0f,0.0f},{0.0f,0.0f,0.0f} };
+	Transform transformSprite{ {1.0f,1.0f,1.0f},{0.0f,0.0f,0.0f},{0.0f,0.0f,0.0f} };
 	Transform camera = { 1.0f, 1.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, -5.0f };
 	//ウィンドウのｘボタンが押されるまでループ
 	while (msg.message != WM_QUIT) {
@@ -1129,7 +1201,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 #pragma endregion
 ////////////////////////////////////////////////////////////
 
-						//ゲームの処理
+			//ゲームの処理
 			transform.rotate.y += 0.003f;
 			Matrix4x4 worldMatrix = MakeAffineMatrix(transform.scale, transform.rotate, transform.translate);
 			Matrix4x4 cameraMatrix = MakeAffineMatrix(camera.scale, camera.rotate, camera.translate);
@@ -1138,6 +1210,13 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			Matrix4x4 worldViewProjectionMatrix = Multiply(worldMatrix, Multiply(viewMatrix, projectionMatrix));
 			/**wvpData = worldViewProjectionMatrix;*/
 			*wvpData = worldMatrix;
+
+			Matrix4x4 worldMatrixSprite = MakeAffineMatrix(transformSprite.scale, transformSprite.rotate, transformSprite.translate);
+			Matrix4x4 viewMatrixSprite = MakeIdentity4x4();
+			Matrix4x4 projectionMatrixSprite = MakeOrthoGraphicMatrix(0.0f, 0.0f, static_cast<float>(kClientWidth), static_cast<float>(kClienHeight), 0.0f, 100.0f);
+			Matrix4x4 worldViewProjectionMatrixSprite = Multiply(worldMatrixSprite, Multiply(viewMatrixSprite, projectionMatrixSprite));
+			*transformationMatrixDataSprite = worldViewProjectionMatrixSprite;;
+
 			////////////////////////////////////////////////////////////
 #pragma region ImGui1系
 			ImGui::Begin("02");
@@ -1177,6 +1256,13 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			//描画
 			commandList->DrawInstanced(6, 1, 0, 0);
 			/////////////////////////////////////////////////////////////////////////
+
+			// Spriteの描画。変更が必要なものだけ変更する
+			commandList->IASetVertexBuffers(0, 1, &vertexBufferViewSprite);
+			// TransformationMatrixの場所を設定
+			commandList->SetGraphicsRootConstantBufferView(1, transformationMatrixResourceSprite->GetGPUVirtualAddress());
+			// 描画
+			commandList->DrawInstanced(6, 1, 0, 0);
 
 			ImGui_ImplDX12_RenderDrawData(ImGui::GetDrawData(), commandList);
 
@@ -1245,9 +1331,12 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 	materialResource->Release();
 	wvpResource->Release();
+	transformationMatrixResourceSprite->Release();
 
 	//Pipeline
 	vertexResource->Release();
+	vertexResourceSprite->Release();
+
 	graphicsPipelineState->Release();
 	signatureBlob->Release();
 	if (errorBlob) {
