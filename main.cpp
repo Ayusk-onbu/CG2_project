@@ -151,9 +151,9 @@ Matrix4x4 MakeOrthoGraphicMatrix(float left,float top,float right,float bottom,f
 	ret.m[2][2] = 1.0f / (farClip - nearClip);
 	ret.m[2][3] = 0;
 
-	ret.m[3][0] = -(right + left) / (right - left);
-	ret.m[3][1] = -(top + bottom) / (top - bottom);
-	ret.m[3][2] = -nearClip / (farClip - nearClip);
+	ret.m[3][0] = (right + left) / (left - right);
+	ret.m[3][1] = (top + bottom) / (bottom - top);
+	ret.m[3][2] = nearClip / (nearClip - farClip);
 	ret.m[3][3] = 1.0f;
 	return ret;
 }
@@ -913,7 +913,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	inputElementDescs[0].AlignedByteOffset = D3D12_APPEND_ALIGNED_ELEMENT;
 	inputElementDescs[1].SemanticName = "TEXCOORD";
 	inputElementDescs[1].SemanticIndex = 0;
-	inputElementDescs[1].Format = DXGI_FORMAT_R32G32B32A32_FLOAT;
+	inputElementDescs[1].Format = DXGI_FORMAT_R32G32_FLOAT;
 	inputElementDescs[1].AlignedByteOffset = D3D12_APPEND_ALIGNED_ELEMENT;
 	D3D12_INPUT_LAYOUT_DESC inputLayoutDesc = {};
 	inputLayoutDesc.pInputElementDescs = inputElementDescs;
@@ -1092,6 +1092,10 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	vertexData[2 + 3].position = { 0.5f,-0.5f,-0.5f,1.0f };
 	vertexData[2 + 3].texcoord = { 1.0f,1.0f };
 
+	//分割数
+	//const float kSubdivision = 16.0f;
+	//経度分割１つ分の角度
+
 #pragma region Sprite
 	VertexData* vertexDataSprite = nullptr;
 	vertexResourceSprite->Map(0, nullptr, reinterpret_cast<void**>(&vertexDataSprite));
@@ -1099,17 +1103,17 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	vertexDataSprite[0].position = { 0.0f,360.0f,0.0f,1.0f };
 	vertexDataSprite[0].texcoord = { 0.0f,1.0f };
 	vertexDataSprite[1].position = { 0.0f,0.0f,0.0f,1.0f };
-	vertexDataSprite[1].texcoord = { 0.0f,1.0f };
+	vertexDataSprite[1].texcoord = { 0.0f,0.0f };
 	vertexDataSprite[2].position = { 640.0f,360.0f,0.0f,1.0f };
 	vertexDataSprite[2].texcoord = { 1.0f,1.0f };
 
 	//2枚目の三角形
-	vertexDataSprite[0 + 3].position = { 0.0f,0.0f,0.0f,1.0f };
-	vertexDataSprite[0 + 3].texcoord = { 0.0f,0.0f };
-	vertexDataSprite[1 + 3].position = { 640.0f,0.0f,0.0f,1.0f };
-	vertexDataSprite[1 + 3].texcoord = { 1.0f,0.0f };
-	vertexDataSprite[2 + 3].position = { 640.0f,360.0f,0.0f,1.0f };
-	vertexDataSprite[2 + 3].texcoord = { 1.0f,1.0f };
+	vertexDataSprite[3].position = { 0.0f, 0.0f, 0.0f, 1.0f };
+	vertexDataSprite[3].texcoord = { 0.0f, 0.0f };
+	vertexDataSprite[4].position = { 640.0f, 0.0f, 0.0f, 1.0f };
+	vertexDataSprite[4].texcoord = { 1.0f, 0.0f };
+	vertexDataSprite[5].position = { 640.0f, 360.0f, 0.0f, 1.0f };
+	vertexDataSprite[5].texcoord = { 1.0f, 1.0f };
 #pragma endregion
 
 #pragma endregion
@@ -1208,14 +1212,14 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			Matrix4x4 viewMatrix = Inverse(cameraMatrix);
 			Matrix4x4 projectionMatrix = MakePerspectiveFovMatrix(0.45f, float(1280) / float(720), 0.1f, 100.0f);
 			Matrix4x4 worldViewProjectionMatrix = Multiply(worldMatrix, Multiply(viewMatrix, projectionMatrix));
-			/**wvpData = worldViewProjectionMatrix;*/
-			*wvpData = worldMatrix;
+			*wvpData = worldViewProjectionMatrix;
+			//*wvpData = worldMatrix;
 
 			Matrix4x4 worldMatrixSprite = MakeAffineMatrix(transformSprite.scale, transformSprite.rotate, transformSprite.translate);
 			Matrix4x4 viewMatrixSprite = MakeIdentity4x4();
 			Matrix4x4 projectionMatrixSprite = MakeOrthoGraphicMatrix(0.0f, 0.0f, static_cast<float>(kClientWidth), static_cast<float>(kClienHeight), 0.0f, 100.0f);
 			Matrix4x4 worldViewProjectionMatrixSprite = Multiply(worldMatrixSprite, Multiply(viewMatrixSprite, projectionMatrixSprite));
-			*transformationMatrixDataSprite = worldViewProjectionMatrixSprite;;
+			*transformationMatrixDataSprite = worldViewProjectionMatrixSprite;
 
 			////////////////////////////////////////////////////////////
 #pragma region ImGui1系
@@ -1228,6 +1232,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			ImGui::SliderFloat("G", &materialData->y, 0.0f, 1.0f);
 			ImGui::SliderFloat("B", &materialData->z, 0.0f, 1.0f);
 			//ImGui::SliderFloat("A", &materialData->w, 0.0f, 1.0f);
+			ImGui::SliderFloat("TransFromSpriteX", &transformSprite.translate.y, -0.5f, 640.0f);
 			ImGui::End();
 #pragma endregion
 			////////////////////////////////////////////////////////////
