@@ -27,6 +27,8 @@ extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hwnd, UINT msg
 #pragma comment(lib,"dxguid.lib")//0103 ReportLiveobject
 #pragma comment(lib,"dxcompiler.lib")//DXCの初期化
 
+#define pi float(3.14159265358979323846f)
+
 struct Vector3 {
 	float x, y, z;
 };
@@ -522,6 +524,10 @@ ID3D12Resource* CreateDepthStencilTextureResource(ID3D12Device* device, int32_t 
 int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	int32_t kClienWidth = 1280;
 	int32_t kClienHeight = 720;
+	//分割数
+	static const float kSubdivision = 16.0f;
+	//頂点数 (分割数(縦÷緯度)x分割数(横÷経度)x６)
+	uint32_t vertexCount = static_cast<uint32_t>(kSubdivision * kSubdivision) * 6;
 
 	//COMの初期化
 	CoInitializeEx(0, COINIT_MULTITHREADED);
@@ -777,9 +783,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 ////////////////////////////////////////////////////////////
 #pragma region VertexResource
-	ID3D12Resource* vertexResource = CreateBufferResource(device, sizeof(VertexData) * 6);//
+	ID3D12Resource* vertexResource = CreateBufferResource(device, sizeof(VertexData) * vertexCount);//
 #pragma region Sprite
-	ID3D12Resource* vertexResourceSprite = CreateBufferResource(device, sizeof(VertexData) * 6);
+	ID3D12Resource* vertexResourceSprite = CreateBufferResource(device, sizeof(VertexData) * vertexCount);
 #pragma endregion
 #pragma endregion
 ////////////////////////////////////////////////////////////
@@ -1053,7 +1059,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	//リソースの先頭のアドレスから使う
 	vertexBufferView.BufferLocation = vertexResource->GetGPUVirtualAddress();
 	//使用するリソースのサイズはちゅてん三つ分
-	vertexBufferView.SizeInBytes = sizeof(VertexData) * 6;//
+	vertexBufferView.SizeInBytes = sizeof(VertexData) * vertexCount;//
 	//１個当たりのサイズ
 	vertexBufferView.StrideInBytes = sizeof(VertexData);//
 #pragma region Sprite
@@ -1061,7 +1067,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	//リソースの先頭のアドレスから使う
 	vertexBufferViewSprite.BufferLocation = vertexResourceSprite->GetGPUVirtualAddress();
 	//使用するリソースのサイズはちゅてん三つ分
-	vertexBufferViewSprite.SizeInBytes = sizeof(VertexData) * 6;//
+	vertexBufferViewSprite.SizeInBytes = sizeof(VertexData) * vertexCount;//
 	//１個当たりのサイズ
 	vertexBufferViewSprite.StrideInBytes = sizeof(VertexData);//
 #pragma endregion
@@ -1072,29 +1078,89 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	VertexData* vertexData = nullptr;
 	//書き込む溜めのアドレスを取得
 	vertexResource->Map(0, nullptr, reinterpret_cast<void**>(&vertexData));
-	//左下
-	vertexData[0].position = { -0.5f,-0.5f,0.0f,1.0f };
-	vertexData[0].texcoord = { 0.0f,1.0f };
-	//上
-	vertexData[1].position = { 0.0f,0.5f,0.0f,1.0f };
-	vertexData[1].texcoord = { 0.5f,0.0f };
-	//右下
-	vertexData[2].position = { 0.5f,-0.5f,0.0f,1.0f };
-	vertexData[2].texcoord = { 1.0f,1.0f };
+#pragma region 三角形の描画
+	////左下
+	//vertexData[0].position = { -0.5f,-0.5f,0.0f,1.0f };
+	//vertexData[0].texcoord = { 0.0f,1.0f };
+	////上
+	//vertexData[1].position = { 0.0f,0.5f,0.0f,1.0f };
+	//vertexData[1].texcoord = { 0.5f,0.0f };
+	////右下
+	//vertexData[2].position = { 0.5f,-0.5f,0.0f,1.0f };
+	//vertexData[2].texcoord = { 1.0f,1.0f };
 
-	//左下2
-	vertexData[0 + 3].position = { -0.5f,-0.5f,0.5f,1.0f };
-	vertexData[0 + 3].texcoord = { 0.0f,1.0f };
-	//上2
-	vertexData[1 + 3].position = { 0.0f,0.0f,0.0f,1.0f };
-	vertexData[1 + 3].texcoord = { 0.5f,0.0f };
-	//右下2
-	vertexData[2 + 3].position = { 0.5f,-0.5f,-0.5f,1.0f };
-	vertexData[2 + 3].texcoord = { 1.0f,1.0f };
+	////左下2
+	//vertexData[0 + 3].position = { -0.5f,-0.5f,0.5f,1.0f };
+	//vertexData[0 + 3].texcoord = { 0.0f,1.0f };
+	////上2
+	//vertexData[1 + 3].position = { 0.0f,0.0f,0.0f,1.0f };
+	//vertexData[1 + 3].texcoord = { 0.5f,0.0f };
+	////右下2
+	//vertexData[2 + 3].position = { 0.5f,-0.5f,-0.5f,1.0f };
+	//vertexData[2 + 3].texcoord = { 1.0f,1.0f };
+#pragma endregion
 
-	//分割数
-	//const float kSubdivision = 16.0f;
-	//経度分割１つ分の角度
+#pragma region 球の描画
+
+	uint32_t latIndex = 0;
+	uint32_t lonIndex = 0;
+	//経度分割１つ分の角度φd
+	const float kLonEvery = pi * 2.0f / static_cast<float>(kSubdivision);
+	//緯度分割1つ分の角度θd
+	const float kLatEvery = pi / static_cast<float>(kSubdivision);
+	//緯度の方向に分割
+	for (latIndex = 0;latIndex < kSubdivision; ++latIndex) {
+		float lat = -pi / 2.0f + kLatEvery * latIndex;//θ
+		//緯度の方向に分割しながら線を描く
+		for (lonIndex = 0;lonIndex < kSubdivision;++lonIndex) {
+			uint32_t start = static_cast<uint32_t>(latIndex * kSubdivision + lonIndex) * 6;
+			float lon = lonIndex * kLonEvery;//φ
+			//頂点にデータを入力する。基準点a
+			vertexData[start + 0].position.x = std::cos(lat) * std::cos(lon);
+			vertexData[start + 0].position.y = std::sin(lat);
+			vertexData[start + 0].position.z = std::cos(lat) * std::sin(lon);
+			vertexData[start + 0].position.w = 1.0f;
+			vertexData[start + 0].texcoord.x = lonIndex / kSubdivision;
+			vertexData[start + 0].texcoord.y = 1.0f - float(latIndex) / float(kSubdivision);
+			//基準点b
+			vertexData[start + 1].position.x = std::cos(lat + kLatEvery) * std::cos(lon);
+			vertexData[start + 1].position.y = std::sin(lat + kLatEvery);
+			vertexData[start + 1].position.z = std::cos(lat + kLatEvery) * std::sin(lon);
+			vertexData[start + 1].position.w = 1.0f;
+			vertexData[start + 1].texcoord.x = lonIndex / kSubdivision;
+			vertexData[start + 1].texcoord.y = 1.0f - float(latIndex + 1) / float(kSubdivision);
+			//基準点c
+			vertexData[start + 2].position.x = std::cos(lat) * std::cos(lon + kLonEvery);
+			vertexData[start + 2].position.y = std::sin(lat);
+			vertexData[start + 2].position.z = std::cos(lat) * std::sin(lon + kLonEvery);
+			vertexData[start + 2].position.w = 1.0f;
+			vertexData[start + 2].texcoord.x = (lonIndex + 1) / kSubdivision;
+			vertexData[start + 2].texcoord.y = 1.0f - float(latIndex) / float(kSubdivision);
+			//基準点d
+			vertexData[start + 3].position.x = std::cos(lat + kLatEvery) * std::cos(lon + kLonEvery);
+			vertexData[start + 3].position.y = std::sin(lat + kLatEvery);
+			vertexData[start + 3].position.z = std::cos(lat + kLatEvery) * std::sin(lon + kLonEvery);
+			vertexData[start + 3].position.w = 1.0f;
+			vertexData[start + 3].texcoord.x = (lonIndex + 1) / kSubdivision;
+			vertexData[start + 3].texcoord.y = 1.0f - float(latIndex + 1) / float(kSubdivision);
+			//基準点e
+			vertexData[start + 4].position.x = std::cos(lat) * std::cos(lon + kLonEvery);
+			vertexData[start + 4].position.y = std::sin(lat);
+			vertexData[start + 4].position.z = std::cos(lat) * std::sin(lon + kLonEvery);
+			vertexData[start + 4].position.w = 1.0f;
+			vertexData[start + 4].texcoord.x = (lonIndex + 1) / kSubdivision;
+			vertexData[start + 4].texcoord.y = 1.0f - float(latIndex) / float(kSubdivision);
+			//基準点f
+			vertexData[start + 5].position.x = std::cos(lat + kLatEvery) * std::cos(lon);
+			vertexData[start + 5].position.y = std::sin(lat + kLatEvery);
+			vertexData[start + 5].position.z = std::cos(lat + kLatEvery) * std::sin(lon);
+			vertexData[start + 5].position.w = 1.0f;
+			vertexData[start + 5].texcoord.x = lonIndex / kSubdivision;
+			vertexData[start + 5].texcoord.y = 1.0f - float(latIndex + 1) / float(kSubdivision);
+		}
+	}
+
+#pragma endregion
 
 #pragma region Sprite
 	VertexData* vertexDataSprite = nullptr;
@@ -1259,7 +1325,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			//SRVのDescritorTableの先頭を設定。2はrootParameter[2]である
 			commandList->SetGraphicsRootDescriptorTable(2, textureSrvHandleGPU);
 			//描画
-			commandList->DrawInstanced(6, 1, 0, 0);
+			commandList->DrawInstanced(vertexCount, 1, 0, 0);
 			/////////////////////////////////////////////////////////////////////////
 
 			// Spriteの描画。変更が必要なものだけ変更する
