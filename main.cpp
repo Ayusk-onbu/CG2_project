@@ -559,7 +559,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	static const float kSubdivision = 16.0f;
 	//頂点数 (分割数(縦÷緯度)x分割数(横÷経度)x６)
 	uint32_t vertexCount = static_cast<uint32_t>(kSubdivision * kSubdivision) * 6;
-	const int spriteCount = 2;
+	const int spriteCount = 37;
 
 	//COMの初期化
 	CoInitializeEx(0, COINIT_MULTITHREADED);
@@ -824,7 +824,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	//ID3D12Resource* vertexResource = CreateBufferResource(device, sizeof(VertexData) * vertexCount);//
 	ID3D12Resource* vertexResource[spriteCount];
 	for (int i = 0;i < spriteCount;++i) {
-		vertexResource[i] = CreateBufferResource(device, sizeof(VertexData) * 6);
+		vertexResource[i] = CreateBufferResource(device, sizeof(VertexData) * (3 * 4));//////////////////////////////////////////////////
 	}
 #pragma region Sprite
 	ID3D12Resource* vertexResourceSprite = CreateBufferResource(device, sizeof(VertexData) * vertexCount);
@@ -1146,7 +1146,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		//リソースの先頭のアドレスから使う
 		vertexBufferView[i].BufferLocation = vertexResource[i]->GetGPUVirtualAddress();
 		//使用するリソースのサイズは頂点三つ分
-		vertexBufferView[i].SizeInBytes = sizeof(VertexData) * 3/*vertexCount*/;//
+		vertexBufferView[i].SizeInBytes = sizeof(VertexData) * (3 * 4)/*vertexCount*/;////////////////////////////////
 		//１個当たりのサイズ
 		vertexBufferView[i].StrideInBytes = sizeof(VertexData);//
 	}
@@ -1163,41 +1163,187 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 ////////////////////////////////////////////////////////////
 #pragma region VertexData
 	//頂点リソースにでーたを書き込む1
-	VertexData* vertexData[spriteCount];
-	for (int i = 0;i < spriteCount;++i) {
-		vertexData[i] = nullptr;
+	
+	VertexData* vertexData = nullptr;
+	for (int i = 0;i < spriteCount - 1;++i) {
+		if (i != 0) {
+			vertexData = nullptr;
+		}
 		//書き込む溜めのアドレスを取得
-		vertexResource[i]->Map(0, nullptr, reinterpret_cast<void**>(&vertexData[i]));
+		vertexResource[i]->Map(0, nullptr, reinterpret_cast<void**>(&vertexData));
+		//左下
+		vertexData[0].position = { -0.5f,-0.5f,0.0f,1.0f };
+		vertexData[0].texcoord = { 0.0f,1.0f };
+		//上
+		vertexData[1].position = { 0.0f,3.0f / 4.0f,sqrtf(3.0f) / 4.0f,1.0f };
+		vertexData[1].texcoord = { 0.5f,0.0f };
+		//右下
+		vertexData[2].position = { 0.5f,-0.5f,0.0f,1.0f };
+		vertexData[2].texcoord = { 1.0f,1.0f };
+		//左下
+		vertexData[2 + (3 * 1)].position = { -0.5f,-0.5f,0.0f,1.0f };
+		vertexData[2 + (3 * 1)].texcoord = { 0.0f,1.0f };
+		//上2(奥)
+		vertexData[1 + (3 * 1)].position = { 0.0f,-0.5f,sqrtf(3.0f) / 2.0f,1.0f };
+		vertexData[1 + (3 * 1)].texcoord = { 0.5f,0.0f };
+		//右下
+		vertexData[0 + (3 * 1)].position = { 0.5f,-0.5f,0.0f,1.0f };
+		vertexData[0 + (3 * 1)].texcoord = { 1.0f,1.0f };
+
+		//左下3(右)
+		vertexData[0 + (3 * 2)].position = { 0.5f,-0.5f,0.0f,1.0f };
+		vertexData[0 + (3 * 2)].texcoord = { 1.0f,1.0f };
+		//上3(右)
+		vertexData[1 + (3 * 2)].position = { 0.0f,3.0f / 4.0f,sqrtf(3.0f) / 4.0f,1.0f };
+		vertexData[1 + (3 * 2)].texcoord = { 0.5f,0.0f };
+		//右下3(右)
+		vertexData[2 + (3 * 2)].position = { 0.0f,-0.5f,sqrtf(3.0f) / 2.0f,1.0f };
+		vertexData[2 + (3 * 2)].texcoord = { 0.5f,0.0f };
+
+		//左下4(左)
+		vertexData[0 + (3 * 3)].position = { 0.0f,-0.5f,sqrtf(3.0f) / 2.0f,1.0f };
+		vertexData[0 + (3 * 3)].texcoord = { 0.5f,0.0f };
+		//上4(左)
+		vertexData[1 + (3 * 3)].position = { 0.0f,3.0f / 4.0f,sqrtf(3.0f) / 4.0f,1.0f };
+		vertexData[1 + (3 * 3)].texcoord = { 0.5f,0.0f };
+		//右下4(左)
+		vertexData[2 + (3 * 3)].position = { -0.5f,-0.5f,0.0f,1.0f };
+		vertexData[2 + (3 * 3)].texcoord = { 0.0f,1.0f };
+
+		for (int j = 0;j < (3 * 4);j++) {
+			vertexData[j].normal.x = vertexData[j].position.x;
+			vertexData[j].normal.y = vertexData[j].position.y;
+			vertexData[j].normal.z = vertexData[j].position.z;
+		}
 	}
-#pragma region 三角形の描画
+	////書き込む溜めのアドレスを取得
+	//vertexResource[0]->Map(0, nullptr, reinterpret_cast<void**>(&vertexData));
+	////左下
+	//vertexData[0].position = { -0.5f,-0.5f,0.0f,1.0f };
+	//vertexData[0].texcoord = { 0.0f,1.0f };
+	////上
+	//vertexData[1].position = { 0.0f,3.0f / 4.0f,sqrtf(3.0f) / 4.0f,1.0f};
+	//vertexData[1].texcoord = { 0.5f,0.0f };
+	////右下
+	//vertexData[2].position = { 0.5f,-0.5f,0.0f,1.0f };
+	//vertexData[2].texcoord = { 1.0f,1.0f };
+	////左下
+	//vertexData[2 + (3 * 1)].position = { -0.5f,-0.5f,0.0f,1.0f };
+	//vertexData[2 + (3 * 1)].texcoord = { 0.0f,1.0f };
+	////上2(奥)
+	//vertexData[1 + (3 * 1)].position = { 0.0f,-0.5f,sqrtf(3.0f) / 2.0f,1.0f};
+	//vertexData[1 + (3 * 1)].texcoord = { 0.5f,0.0f };
+	////右下
+	//vertexData[0 + (3 * 1)].position = { 0.5f,-0.5f,0.0f,1.0f };
+	//vertexData[0 + (3 * 1)].texcoord = { 1.0f,1.0f };
+
+	////左下3(右)
+	//vertexData[0 + (3 * 2)].position = { 0.5f,-0.5f,0.0f,1.0f };
+	//vertexData[0 + (3 * 2)].texcoord = { 1.0f,1.0f };
+	////上3(右)
+	//vertexData[1 + (3 * 2)].position = { 0.0f,3.0f / 4.0f,sqrtf(3.0f) / 4.0f,1.0f};
+	//vertexData[1 + (3 * 2)].texcoord = { 0.5f,0.0f };
+	////右下3(右)
+	//vertexData[2 + (3 * 2)].position = { 0.0f,-0.5f,sqrtf(3.0f) / 2.0f,1.0f };
+	//vertexData[2 + (3 * 2)].texcoord = { 0.5f,0.0f };
+
+	////左下4(左)
+	//vertexData[0 + (3 * 3)].position = { 0.0f,-0.5f,sqrtf(3.0f) / 2.0f,1.0f };
+	//vertexData[0 + (3 * 3)].texcoord = { 0.5f,0.0f };
+	////上4(左)
+	//vertexData[1 + (3 * 3)].position = { 0.0f,3.0f / 4.0f,sqrtf(3.0f) / 4.0f,1.0f };
+	//vertexData[1 + (3 * 3)].texcoord = { 0.5f,0.0f };
+	////右下4(左)
+	//vertexData[2 + (3 * 3)].position = { -0.5f,-0.5f,0.0f,1.0f };
+	//vertexData[2 + (3 * 3)].texcoord = { 0.0f,1.0f };
+
+	//for (int j = 0;j < (3 * 4);j++) {
+	//	vertexData[j].normal.x = vertexData[j].position.x;
+	//	vertexData[j].normal.y = vertexData[j].position.y;
+	//	vertexData[j].normal.z = vertexData[j].position.z;
+	//}
+	/*for (int i = 0;i < 3;i++) {
+		vertexData[i + (3 * 1)].normal.x = -vertexData[i + (3 * 1)].position.x;
+		vertexData[i + (3 * 1)].normal.y = -vertexData[i + (3 * 1)].position.y;
+		vertexData[i + (3 * 1)].normal.z = -vertexData[i + (3 * 1)].position.z;
+	}*/
+
+	vertexData = nullptr;
+	//書き込む溜めのアドレスを取得
+	vertexResource[spriteCount - 1]->Map(0, nullptr, reinterpret_cast<void**>(&vertexData));
 	//左下
-	vertexData[0][0].position = { -0.5f,-0.5f,0.0f,1.0f };
-	vertexData[0][0].texcoord = { 0.0f,1.0f };
+	vertexData[0].position = { -0.5f,-0.5f,-0.5f,1.0f };
+	vertexData[0].texcoord = { 0.0f,1.0f };
 	//上
-	vertexData[0][1].position = { 0.0f,0.5f,0.0f,1.0f };
-	vertexData[0][1].texcoord = { 0.5f,0.0f };
+	vertexData[1].position = { 0.0f,0.5f,0.0f,1.0f };
+	vertexData[1].texcoord = { 0.5f,0.0f };
 	//右下
-	vertexData[0][2].position = { 0.5f,-0.5f,0.0f,1.0f };
-	vertexData[0][2].texcoord = { 1.0f,1.0f };
+	vertexData[2].position = { 0.5f,-0.5f,0.5f,1.0f };
+	vertexData[2].texcoord = { 1.0f,1.0f };
 
-	//左下2
-	vertexData[1][0 + 3].position = { -0.5f,-0.5f,0.5f,1.0f };
-	vertexData[1][0 + 3].texcoord = { 0.0f,1.0f };
-	//上2
-	vertexData[1][1 + 3].position = { 0.0f,0.0f,0.0f,1.0f };
-	vertexData[1][1 + 3].texcoord = { 0.5f,0.0f };
-	//右下2
-	vertexData[1][2 + 3].position = { 0.5f,-0.5f,-0.5f,1.0f };
-	vertexData[1][2 + 3].texcoord = { 1.0f,1.0f };
-
-	for (int i = 0;i < 6;i++) {
-		vertexData[0][i].normal.x = vertexData[0][i].position.x;
-		vertexData[0][i].normal.y = vertexData[0][i].position.y;
-		vertexData[0][i].normal.z = vertexData[0][i].position.z;
-		vertexData[1][i].normal.x = vertexData[1][i].position.x;
-		vertexData[1][i].normal.y = vertexData[1][i].position.y;
-		vertexData[1][i].normal.z = vertexData[1][i].position.z;
+	for (int j = 0;j < 3;j++) {
+		vertexData[j].normal.x = vertexData[j].position.x;
+		vertexData[j].normal.y = vertexData[j].position.y;
+		vertexData[j].normal.z = vertexData[j].position.z;
 	}
+
+	//for (int i = 0;i < spriteCount;++i) {
+	//	VertexData* vertexData = nullptr;
+	//	//書き込む溜めのアドレスを取得
+	//	vertexResource[i]->Map(0, nullptr, reinterpret_cast<void**>(&vertexData));
+
+	//	//左下
+	//	vertexData[0].position = { -0.5f,-0.5f,0.0f,1.0f };
+	//	vertexData[0].texcoord = { 0.0f,1.0f };
+	//	//上
+	//	vertexData[1].position = { 0.0f,0.5f,0.0f,1.0f };
+	//	vertexData[1].texcoord = { 0.5f,0.0f };
+	//	//右下
+	//	vertexData[2].position = { 0.5f,-0.5f,0.0f,1.0f };
+	//	vertexData[2].texcoord = { 1.0f,1.0f };
+
+	//	//左下2
+	//	vertexData[0 + 3].position = { -0.5f,-0.5f,0.5f,1.0f };
+	//	vertexData[0 + 3].texcoord = { 0.0f,1.0f };
+	//	//上2
+	//	vertexData[1 + 3].position = { 0.0f,0.0f,0.0f,1.0f };
+	//	vertexData[1 + 3].texcoord = { 0.5f,0.0f };
+	//	//右下2
+	//	vertexData[2 + 3].position = { 0.5f,-0.5f,-0.5f,1.0f };
+	//	vertexData[2 + 3].texcoord = { 1.0f,1.0f };
+
+	//	for (int j = 0;j < 6;j++) {
+	//		vertexData[j].normal.x = vertexData[j].position.x;
+	//		vertexData[j].normal.y = vertexData[j].position.y;
+	//		vertexData[j].normal.z = vertexData[j].position.z;
+	//	}
+	//}
+#pragma region 三角形の描画
+//	//左下
+//	vertexData[0].position = { -0.5f,-0.5f,0.0f,1.0f };
+//	vertexData[0].texcoord = { 0.0f,1.0f };
+//	//上
+//	vertexData[1].position = { 0.0f,0.5f,0.0f,1.0f };
+//	vertexData[1].texcoord = { 0.5f,0.0f };
+//	//右下
+//	vertexData[2].position = { 0.5f,-0.5f,0.0f,1.0f };
+//	vertexData[2].texcoord = { 1.0f,1.0f };
+//
+//	//左下2
+//	vertexData[0 + 3].position = { -0.5f,-0.5f,0.5f,1.0f };
+//	vertexData[0 + 3].texcoord = { 0.0f,1.0f };
+//	//上2
+//	vertexData[1 + 3].position = { 0.0f,0.0f,0.0f,1.0f };
+//	vertexData[1 + 3].texcoord = { 0.5f,0.0f };
+//	//右下2
+//	vertexData[2 + 3].position = { 0.5f,-0.5f,-0.5f,1.0f };
+//	vertexData[2 + 3].texcoord = { 1.0f,1.0f };
+//
+//	for (int i = 0;i < 6;i++) {
+//		vertexData[i].normal.x = vertexData[i].position.x;
+//		vertexData[i].normal.y = vertexData[i].position.y;
+//		vertexData[i].normal.z = vertexData[i].position.z;
+//	}
 
 #pragma endregion
 
@@ -1286,6 +1432,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	vertexDataSprite[4].texcoord = { 1.0f, 0.0f };
 	vertexDataSprite[5].position = { 640.0f, 360.0f, 0.0f, 1.0f };
 	vertexDataSprite[5].texcoord = { 1.0f, 1.0f };
+
+
+
 #pragma endregion
 
 #pragma endregion
@@ -1341,12 +1490,16 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	MSG msg{};
 	bool useMonsterBall = true;
 	/*Transform transform = { {1.0f,1.0f,1.0f},{0.0f,0.0f,0.0f},{0.0f,0.0f,0.0f} };*/
-	Transform transform[2];
+	Transform transform[spriteCount];
+	Vector3 vel[spriteCount];
 	for (int i = 0;i < spriteCount;i++) {
-		transform[i] = { {1.0f,1.0f,1.0f},{0.0f,0.0f,0.0f},{0.0f,0.0f,0.0f} };
+		transform[i] = { {0.25f,0.25f,0.25f},{0.0f,0.0f,0.0f},{0.0f,0.0f,0.0f} };
+		vel[i] = { std::cos(10 * i * pi / 180.0f),0.0f,std::sin(10 * i * pi / 180.0f) };
 	}
-	Transform transformSprite{ {1.0f,1.0f,1.0f},{0.0f,0.0f,0.0f},{0.0f,0.0f,0.0f} };
-	Transform camera = { 1.0f, 1.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, -5.0f };
+	vel[spriteCount - 1] = {};
+	uint32_t plusCount = 0;
+	Transform transformSprite{ {2.0f,2.0f,1.0f},{0.0f,0.0f,0.0f},{0.0f,0.0f,640.0f} };
+	Transform camera = { 1.0f, 1.0f, 0.250f, -6.0f, 0.0f, 0.0f, 0.0f, 1.0f, -5.0f };
 	//ウィンドウのｘボタンが押されるまでループ
 	while (msg.message != WM_QUIT) {
 		//Widnowにメッセージが来てたら最優先で処理させる
@@ -1406,7 +1559,29 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			//}
 
 			for (int i = 0;i < spriteCount;++i) {
-				Matrix4x4 worldMatrix = MakeAffineMatrix(transform[0].scale, transform[0].rotate, transform[0].translate);
+				if (i != spriteCount-1) {
+					transform[i].rotate.x += 0.05f;
+					transform[i].rotate.y += 0.005f;
+					//transform[i].rotate.z += 0.1f;
+					if (plusCount <= 250) {
+						transform[i].translate.x += vel[i].x / 100.0f;
+						transform[i].translate.z += vel[i].z / 100.0f;
+					}
+					else if (plusCount <= 500) {
+						transform[i].translate.x -= vel[i].x / 100.0f;
+						transform[i].translate.z -= vel[i].z / 100.0f;
+					}
+					else if (plusCount <= 750) {
+						transform[i].translate.x -= vel[i].x / 100.0f;
+						transform[i].translate.z -= vel[i].z / 100.0f;
+					}
+					else if (plusCount > 750) {
+						transform[i].translate.x = std::cos((10 + (plusCount - 750.0f) / 10.0f) * i * pi / 180.0f) / 100.0f * 250.0f;
+						transform[i].translate.z = std::sin((10 + (plusCount - 750.0f) / 10.0f) * i * pi / 180.0f) / 100.0f * 250.0f;
+					}
+				}
+				transform[spriteCount - 1].rotate.y += 0.005f;
+				Matrix4x4 worldMatrix = MakeAffineMatrix(transform[i].scale, transform[i].rotate, transform[i].translate);
 				Matrix4x4 cameraMatrix = MakeAffineMatrix(camera.scale, camera.rotate, camera.translate);
 				Matrix4x4 viewMatrix = Inverse(cameraMatrix);
 				Matrix4x4 projectionMatrix = MakePerspectiveFovMatrix(0.45f, float(1280) / float(720), 0.1f, 100.0f);
@@ -1414,6 +1589,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 				wvpData[i]->WVP = worldViewProjectionMatrix;
 				wvpData[i]->World = worldMatrix;
 			}
+			plusCount += 1;
 
 			Matrix4x4 worldMatrixSprite = MakeAffineMatrix(transformSprite.scale, transformSprite.rotate, transformSprite.translate);
 			Matrix4x4 viewMatrixSprite = MakeIdentity4x4();
@@ -1427,18 +1603,26 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			ImGui::Begin("02");
 			//ImGui::ShowDemoWindow();
 			ImGui::Checkbox("UseMonsterBall", &useMonsterBall);
-			ImGui::SliderFloat3("Translate", &transform[0].translate.x, -1.0f, 1.0f);
-			ImGui::SliderFloat3("Rotate", &transform[0].rotate.x, -1.0f, 1.0f);
-			ImGui::SliderFloat3("Scale", &transform[0].scale.x, -1.0f, 10.0f);
+			ImGui::SliderFloat3("Translate##1", &transform[0].translate.x, -1.0f, 1.0f);
+			ImGui::SliderFloat3("Rotate##1", &transform[0].rotate.x, -1.0f, 10.0f);
+			ImGui::SliderFloat3("Scale##1", &transform[0].scale.x, -1.0f, 10.0f);
+			ImGui::SliderFloat3("Translate##2", &transform[1].translate.x, -1.0f, 1.0f);
+			ImGui::SliderFloat3("Rotate##2", &transform[1].rotate.x, -1.0f, 1.0f);
+			ImGui::SliderFloat3("Scale##2", &transform[1].scale.x, -1.0f, 10.0f);
 			//ImGui::SliderFloat("TranslateZ", &transform.translate.z, -0.5f, 1.0f);
 			ImGui::SliderFloat("R", &materialData[0]->color.x, 0.0f, 1.0f);
 			ImGui::SliderFloat("G", &materialData[0]->color.y, 0.0f, 1.0f);
 			ImGui::SliderFloat("B", &materialData[0]->color.z, 0.0f, 1.0f);
 			//ImGui::SliderFloat("A", &materialData->w, 0.0f, 1.0f);
-			ImGui::SliderFloat("TransFromSpriteX", &transformSprite.translate.y, -0.5f, 640.0f);
+			ImGui::SliderFloat3("ScaleSpriteX", &transformSprite.scale.x, 0.0f, 10.0f);
+			ImGui::SliderFloat3("RotateSpriteX", &transformSprite.rotate.x, -0.5f, 640.0f);
+			ImGui::SliderFloat3("TransformSpriteX", &transformSprite.translate.x, -0.5f, 640.0f);
 			ImGui::SliderFloat3("LightColor", &directionalLightData->color.x, 0, 1);
 			ImGui::SliderFloat3("LightDirectional", &directionalLightData->direction.x, -1.0f, 1.0f);
 			ImGui::SliderFloat("Intensity", &directionalLightData->intensity, 0, 1);
+			ImGui::SliderFloat3("CameraScale", &camera.scale.x, 0, 1);
+			ImGui::SliderFloat3("CameraRotate", &camera.rotate.x, -180, 180);
+			ImGui::SliderFloat3("CameraTranslate", &camera.translate.x, 0, 1);
 			ImGui::End();
 #pragma endregion
 			////////////////////////////////////////////////////////////
@@ -1457,23 +1641,20 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			commandList->SetPipelineState(graphicsPipelineState);
 			for (int i = 0;i < spriteCount;++i) {
 				commandList->IASetVertexBuffers(0, 1, &vertexBufferView[i]);
-			}
-			//形状を設定
-			commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-			//マテリアルCBufferの場所を設定
-			for (int i = 0;i < spriteCount;++i) {
+				//形状を設定
+				commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+				//マテリアルCBufferの場所を設定
 				commandList->SetGraphicsRootConstantBufferView(0, materialResource[i]->GetGPUVirtualAddress());
-			}
-			//wvp用のCBufferの場所を設定
-			for (int i = 0;i < spriteCount;++i) {
+				//wvp用のCBufferの場所を設定
 				commandList->SetGraphicsRootConstantBufferView(1, wvpResource[i]->GetGPUVirtualAddress());
+				//DirectionLight用のCBufferの場所を設定
+				commandList->SetGraphicsRootConstantBufferView(3, directionLightResource->GetGPUVirtualAddress());
+				//SRVのDescritorTableの先頭を設定。2はrootParameter[2]である
+				commandList->SetGraphicsRootDescriptorTable(2, useMonsterBall ? textureSrvHandleGPU2 : textureSrvHandleGPU);
+				//描画
+				//commandList->DrawInstanced(vertexCount, 1, 0, 0);
+				commandList->DrawInstanced((3 * 4), 1, 0, 0);
 			}
-			//DirectionLight用のCBufferの場所を設定
-			commandList->SetGraphicsRootConstantBufferView(3, directionLightResource->GetGPUVirtualAddress());
-			//SRVのDescritorTableの先頭を設定。2はrootParameter[2]である
-			commandList->SetGraphicsRootDescriptorTable(2, useMonsterBall ? textureSrvHandleGPU2 : textureSrvHandleGPU);
-			//描画
-			commandList->DrawInstanced(vertexCount, 1, 0, 0);
 			/////////////////////////////////////////////////////////////////////////
 
 			// Spriteの描画。変更が必要なものだけ変更する
