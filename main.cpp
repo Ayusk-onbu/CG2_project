@@ -17,6 +17,13 @@
 #include <wrl.h>
 #include <xaudio2.h>
 
+#pragma region Input
+#define DIRECTINPUT_VERSION 0x0800
+#include <dinput.h>
+#pragma comment(lib,"dinput8.lib")
+#pragma comment(lib,"dxguid.lib")
+#pragma endregion
+
 #include "externals/imgui/imgui.h"
 #include "externals/imgui/imgui_impl_dx12.h"
 #include "externals/imgui/imgui_impl_win32.h"
@@ -830,7 +837,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	// モデルデータを読み込み
 	ModelData modelData = LoadObjFile("resources", "axis.obj");
 	// 音声読み込み
-	SoundData soundData1 = SoundLoadWave("resources/Alarm01.wav");
+	//SoundData soundData1 = SoundLoadWave("resources/Alarm01.wav");
 	// XAudioの宣言
 	Microsoft::WRL::ComPtr<IXAudio2> xAudio2;
 	IXAudio2MasteringVoice* masterVoice;// これはComptr無理
@@ -1335,6 +1342,32 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 #pragma endregion
 ////////////////////////////////////////////////////////////
 
+#pragma region DirectInputの初期化
+	IDirectInput8* directInput = nullptr;
+	hr = DirectInput8Create(
+		wc.hInstance, DIRECTINPUT_VERSION, IID_IDirectInput8,
+		(void**)&directInput, nullptr);
+	assert(SUCCEEDED(hr));
+#pragma endregion
+
+#pragma region キーボードデバイスの生成
+	IDirectInputDevice8* keyboard = nullptr;
+	hr = directInput->CreateDevice(GUID_SysKeyboard, &keyboard, NULL);// GUIDで他にも設定
+	assert(SUCCEEDED(hr));
+#pragma endregion
+
+#pragma region 入力データ形式のセット
+	hr = keyboard->SetDataFormat(&c_dfDIKeyboard);// 標準形式
+	assert(SUCCEEDED(hr));
+#pragma endregion
+
+#pragma region 排他制御レベルのセット
+	hr = keyboard->SetCooperativeLevel(
+		// 画面が手前にある場合のみ | デバイスをこのアプリのみで占有しない | Windowsキーの無効
+		hwnd, DISCL_FOREGROUND | DISCL_NONEXCLUSIVE | DISCL_NOWINKEY);
+	assert(SUCCEEDED(hr));
+#pragma endregion
+
 ////////////////////////////////////////////////////////////
 #pragma region Textureを読み込んで転送
 	DirectX::ScratchImage mipImages = LoadTexture("resources/uvChecker.png");
@@ -1653,7 +1686,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	};
 	Transform camera = { 1.0f, 1.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, -5.0f };
 	// 音声再生
-	SoundPlayWave(xAudio2.Get(), soundData1);
+	//SoundPlayWave(xAudio2.Get(), soundData1);
 	//ウィンドウのｘボタンが押されるまでループ
 	while (msg.message != WM_QUIT) {
 		
@@ -1667,6 +1700,12 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			ImGui_ImplDX12_NewFrame();
 			ImGui_ImplWin32_NewFrame();
 			ImGui::NewFrame();
+
+			// キーボード情報の取得開始
+			keyboard->Acquire();
+			// 全キーの入力状態を取得
+			BYTE key[256] = {};
+			keyboard->GetDeviceState(sizeof(key), key);
 
 ////////////////////////////////////////////////////////////
 #pragma region コマンドを積み込んで確定させる
@@ -1854,7 +1893,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	//xAudio2の解放
 	xAudio2.Reset();
 	// 音声データの開放
-	SoundUnload(&soundData1);
+	//SoundUnload(&soundData1);
 
 #ifdef _DEBUG
 	//debugController->Release();
