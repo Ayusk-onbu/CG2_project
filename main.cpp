@@ -16,13 +16,9 @@
 #include <cmath>
 #include <wrl.h>
 #include <xaudio2.h>
-
-#pragma region Input
-#define DIRECTINPUT_VERSION 0x0800
-#include <dinput.h>
-#pragma comment(lib,"dinput8.lib")
-#pragma comment(lib,"dxguid.lib")
-#pragma endregion
+#include "Structures.h"
+#include "InputManager.h"
+#include "Mouse.h"
 
 #include "externals/imgui/imgui.h"
 #include "externals/imgui/imgui_impl_dx12.h"
@@ -40,9 +36,7 @@ extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hwnd, UINT msg
 
 #define pi float(3.14159265358979323846f)
 
-struct Vector3 {
-	float x, y, z;
-};
+
 struct Transform {
 	Vector3 scale;
 	Vector3 rotate;
@@ -55,26 +49,14 @@ float cot(float theta) {
 	float ret = 1.0f / std::tanf(theta);
 	return ret;
 }
-struct Vector2 {
-	float x, y;
-};
-// Vector4
-struct Vector4 {
-	float x, y, z, w;
-};
+
+
+
 
 struct VertexData {
 	Vector4 position;
 	Vector2 texcoord;//u座標とv座標のことかな
 	Vector3 normal;//法線ベクトル
-};
-
-struct Matrix3x3 {
-	float m[3][3];
-};
-
-struct Matrix4x4 {
-	float m[4][4];
 };
 
 struct Material {
@@ -834,6 +816,11 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	D3D12ResourceLeakChecker leakCheck;
 	int32_t kClienWidth = 1280;
 	int32_t kClienHeight = 720;
+
+	InputManager input;
+	//Key key;
+	//Mouse mouse;
+
 	// モデルデータを読み込み
 	ModelData modelData = LoadObjFile("resources", "axis.obj");
 	// 音声読み込み
@@ -841,12 +828,12 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	// XAudioの宣言
 	Microsoft::WRL::ComPtr<IXAudio2> xAudio2;
 	IXAudio2MasteringVoice* masterVoice;// これはComptr無理
-	
+
 	//分割数
 	static const float kSubdivision = 16.0f;
 	//頂点数 (分割数(縦÷緯度)x分割数(横÷経度)x６)
 	uint32_t vertexCount = static_cast<uint32_t>(kSubdivision * kSubdivision) * 6;
-////////////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////
 #pragma region DirectX12の初期化
 	//COMの初期化
 	CoInitializeEx(0, COINIT_MULTITHREADED);
@@ -860,7 +847,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	std::chrono::system_clock::time_point now = std::chrono::system_clock::now();
 	//ログファイルの名前にコンマ何秒はいらないので削って秒にする
 	std::chrono::time_point<std::chrono::system_clock, std::chrono::seconds>
-    nowSeconds = std::chrono::time_point_cast<std::chrono::seconds>(now);
+		nowSeconds = std::chrono::time_point_cast<std::chrono::seconds>(now);
 	//日本時間に変換(PCの設定時間)
 	std::chrono::zoned_time localTime{ std::chrono::current_zone(),nowSeconds };
 	//Formatを使って年月日＿時分秒の文字列に変換
@@ -887,9 +874,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	// ウィンドウクラスを登録する
 	RegisterClass(&wc);
 #pragma endregion
-////////////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////
 
-////////////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////
 #pragma region ウィンドウのサイズ決め
 	//クライアント領域（ゲーム画面）のサイズ
 	const int32_t kClientWidth = 1280;
@@ -899,9 +886,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	//クライアント領域をもとに実際のサイズにwrcを変更してもらう
 	AdjustWindowRect(&wrc, WS_OVERLAPPEDWINDOW, false);
 #pragma endregion
-////////////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////
 
-////////////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////
 #pragma region ウィンドウの生成＆表示
 	//ウィンドウの生成
 	HWND hwnd = CreateWindow(
@@ -920,9 +907,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	//ウィンドウを表示する
 	ShowWindow(hwnd, SW_SHOW);
 #pragma endregion
-////////////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////
 
-////////////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////
 #pragma region デバッグレイヤー(開発時のデバッグ支援)
 #ifdef _DEBUG
 	Microsoft::WRL::ComPtr <ID3D12Debug1> debugController = nullptr;
@@ -934,9 +921,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	}
 #endif 
 #pragma endregion
-////////////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////
 
-////////////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////
 #pragma region DXGIファクトリーの作成
 	Microsoft::WRL::ComPtr <IDXGIFactory7> dxgiFactory = nullptr;
 	//HRESULTはWindows系のエラーコードであり、
@@ -946,9 +933,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	// どうにもできない場合が多いのでassertにしておく
 	assert(SUCCEEDED(hr));
 #pragma endregion
-////////////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////
 
-////////////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////
 #pragma region 使用するアダプタの決定
 	//使用するアダプタ用の変数。最初にnullptrを入れておく
 	Microsoft::WRL::ComPtr <IDXGIAdapter4> useAdapter = nullptr;
@@ -971,16 +958,16 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	//適切なアダプタが見つからなかったので起動できない
 	assert(useAdapter != nullptr);
 #pragma endregion
-////////////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////
 
-////////////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////
 #pragma region D3D12Deviceの生成
 	Microsoft::WRL::ComPtr <ID3D12Device> device = nullptr;
 	//機能レベルとログ出力用の文字列
 	D3D_FEATURE_LEVEL featureLevels[] = {
 		D3D_FEATURE_LEVEL_12_2,D3D_FEATURE_LEVEL_12_1,D3D_FEATURE_LEVEL_12_0
 	};
-	const char* featureLevelStrings[] = { "12.2","12.1","12.0"};
+	const char* featureLevelStrings[] = { "12.2","12.1","12.0" };
 	//高い順に生成できるか試していく
 	for (size_t i = 0;i < _countof(featureLevels);++i) {
 		//採用したアダプターでデバイスを生成
@@ -994,11 +981,11 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	}
 	//デバイスの生成が上手くいかったので起動できない
 	assert(device != nullptr);
-	Log(logStream,"Complete create D3D12Device!!!\n");//初期化完了のログを出す
+	Log(logStream, "Complete create D3D12Device!!!\n");//初期化完了のログを出す
 #pragma endregion
-////////////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////
 
-////////////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////
 #pragma region エラー警告 直ちに停止
 #ifdef _DEBUG
 	Microsoft::WRL::ComPtr <ID3D12InfoQueue> infoQueue = nullptr;
@@ -1029,18 +1016,18 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	}
 #endif
 #pragma endregion
-////////////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////
 
-////////////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////
 #pragma region MaterialResource
 	Microsoft::WRL::ComPtr <ID3D12Resource> materialResource = CreateBufferResource(device.Get(), sizeof(Material));//
 #pragma region Sprite
 	Microsoft::WRL::ComPtr <ID3D12Resource> materialResourceSprite = CreateBufferResource(device.Get(), sizeof(Material));
 #pragma endregion
 #pragma endregion
-////////////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////
 
-////////////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////
 #pragma region CommandQueueの生成
 	//コマンドの生成
 	Microsoft::WRL::ComPtr <ID3D12CommandQueue> commandQueue = nullptr;
@@ -1050,9 +1037,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	//コマンドキューの生成が上手くいかなかったので起動できない
 	assert(SUCCEEDED(hr));
 #pragma endregion
-////////////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////
 
-////////////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////
 #pragma region CommandList
 	//コマンドアロケーターを生成
 	Microsoft::WRL::ComPtr <ID3D12CommandAllocator> commandAllocator = nullptr;
@@ -1067,9 +1054,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	//コマンドリストの生成がうまくいかなかったので起動できない
 	assert(SUCCEEDED(hr));
 #pragma endregion
-////////////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////
 
-////////////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////
 #pragma region SwapChain
 	Microsoft::WRL::ComPtr <IDXGISwapChain4> swapChain = nullptr;
 	DXGI_SWAP_CHAIN_DESC1 swapChainDesc = {};
@@ -1084,25 +1071,25 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	hr = dxgiFactory->CreateSwapChainForHwnd(commandQueue.Get(), hwnd, &swapChainDesc, nullptr, nullptr, reinterpret_cast<IDXGISwapChain1**>(swapChain.GetAddressOf()));
 	assert(SUCCEEDED(hr));
 #pragma endregion
-////////////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////
 
-////////////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////
 #pragma region ディスクリプタヒープの生成
 	Microsoft::WRL::ComPtr <ID3D12DescriptorHeap> rtvDescriptorHeap = CreateDescriptorHeap(device.Get(), D3D12_DESCRIPTOR_HEAP_TYPE_RTV, 2, false);
 	Microsoft::WRL::ComPtr <ID3D12DescriptorHeap> srvDescriptorHeap = CreateDescriptorHeap(device.Get(), D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, 128, true);
 	Microsoft::WRL::ComPtr <ID3D12DescriptorHeap> dsvDescriptorHeap = CreateDescriptorHeap(device.Get(), D3D12_DESCRIPTOR_HEAP_TYPE_DSV, 1, false);
 #pragma endregion
-////////////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////
 
-////////////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////
 #pragma region DescriptorSize
 	const uint32_t descriptorSizeSRV = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 	const uint32_t descriptorSizeRTV = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
 	const uint32_t descriptorSizeDSV = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_DSV);
 #pragma endregion
-////////////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////
 
-////////////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////
 #pragma region SwapChainからResourceを引っ張ってくる
 	Microsoft::WRL::ComPtr <ID3D12Resource> swapChainResources[2] = { nullptr };
 	hr = swapChain->GetBuffer(0, IID_PPV_ARGS(&swapChainResources[0]));
@@ -1111,9 +1098,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	hr = swapChain->GetBuffer(1, IID_PPV_ARGS(&swapChainResources[1]));
 	assert(SUCCEEDED(hr));
 #pragma endregion
-////////////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////
 
-////////////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////
 #pragma region VertexResource
 	//ID3D12Resource* vertexResource = CreateBufferResource(device, sizeof(VertexData) * vertexCount);//
 	// 頂点リソースを作る
@@ -1123,28 +1110,28 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	Microsoft::WRL::ComPtr <ID3D12Resource> indexResourceSprite = CreateBufferResource(device.Get(), sizeof(uint32_t) * 6);
 #pragma endregion
 #pragma endregion
-////////////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////
 
-////////////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////
 #pragma region DirectionLightResource
 	Microsoft::WRL::ComPtr <ID3D12Resource> directionLightResource = CreateBufferResource(device.Get(), sizeof(DirectionalLight) * vertexCount);
 #pragma endregion
-////////////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////
 
-////////////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////
 #pragma region DepthStencilTexture
 	Microsoft::WRL::ComPtr <ID3D12Resource> depthStencilResource = CreateDepthStencilTextureResource(device.Get(), kClienWidth, kClienHeight);
 #pragma endregion
-////////////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////
 
-////////////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////
 #pragma region TransformationMatrix
 	Microsoft::WRL::ComPtr <ID3D12Resource> wvpResource = CreateBufferResource(device.Get(), sizeof(TransformationMatrix));
 	Microsoft::WRL::ComPtr <ID3D12Resource> transformationMatrixResourceSprite = CreateBufferResource(device.Get(), sizeof(TransformationMatrix));
 #pragma endregion
-////////////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////
 
-////////////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////
 #pragma region RTVを作る
 	D3D12_RENDER_TARGET_VIEW_DESC rtvDesc = {};
 	rtvDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM_SRGB;//出力結果をSRGBに変換して書き込む
@@ -1161,9 +1148,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	//2つ目を作る
 	device->CreateRenderTargetView(swapChainResources[1].Get(), &rtvDesc, rtvHandles[1]);
 #pragma endregion
-////////////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////
 
-////////////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////
 #pragma region FenceとEvent
 	//初期値を０でFenceを作る
 	Microsoft::WRL::ComPtr<ID3D12Fence>fence = nullptr;
@@ -1175,9 +1162,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	HANDLE fenceEvent = CreateEvent(NULL, FALSE, FALSE, NULL);
 	assert(fenceEvent != nullptr);
 #pragma endregion
-////////////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////
 
-////////////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////
 #pragma region DXCの初期化
 	//dxCompilerを初期化
 	IDxcUtils* dxcUtils = nullptr;
@@ -1192,9 +1179,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	hr = dxcUtils->CreateDefaultIncludeHandler(&includeHandler);
 	assert(SUCCEEDED(hr));
 #pragma endregion
-////////////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////
 
-////////////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////
 #pragma region Pipeline State Object
 	// 1, RootSignatureの生成
 	D3D12_ROOT_SIGNATURE_DESC descriptionRootSignature = {};
@@ -1291,9 +1278,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		L"ps_6_0", dxcUtils, dxcCompiler, includeHandler);
 	assert(pixelShaderBlob != nullptr);
 #pragma endregion
-////////////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////
 
-////////////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////
 #pragma region PSOを生成
 	D3D12_GRAPHICS_PIPELINE_STATE_DESC graphicsPipelineStateDesc = {};
 	graphicsPipelineStateDesc.pRootSignature = rootSignature.Get();//RootSignature
@@ -1314,7 +1301,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	//比較関数はLessEqual。つまり、近ければ描画される
 	depthStencilDesc.DepthFunc = D3D12_COMPARISON_FUNC_LESS_EQUAL;
 #pragma endregion
-	
+
 	//書きこむRYVの情報
 	graphicsPipelineStateDesc.NumRenderTargets = 1;
 	graphicsPipelineStateDesc.RTVFormats[0] = DXGI_FORMAT_R8G8B8A8_UNORM_SRGB;
@@ -1333,42 +1320,22 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		IID_PPV_ARGS(&graphicsPipelineState));
 	assert(SUCCEEDED(hr));
 #pragma endregion
-////////////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////
 
-////////////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////
 #pragma region XAudio2
 	hr = XAudio2Create(&xAudio2, 0, XAUDIO2_DEFAULT_PROCESSOR);
 	hr = xAudio2->CreateMasteringVoice(&masterVoice);
 #pragma endregion
-////////////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////
 
-#pragma region DirectInputの初期化
-	IDirectInput8* directInput = nullptr;
-	hr = DirectInput8Create(
-		wc.hInstance, DIRECTINPUT_VERSION, IID_IDirectInput8,
-		(void**)&directInput, nullptr);
-	assert(SUCCEEDED(hr));
-#pragma endregion
+		// キー情報の初期化があった
+	//key.Initialize(wc, hwnd);
+	input.Initialize(wc, hwnd);
+	//mouse.Initialize(wc, hwnd);
+	//InputManager::Initialize(wc, hwnd);
 
-#pragma region キーボードデバイスの生成
-	IDirectInputDevice8* keyboard = nullptr;
-	hr = directInput->CreateDevice(GUID_SysKeyboard, &keyboard, NULL);// GUIDで他にも設定
-	assert(SUCCEEDED(hr));
-#pragma endregion
-
-#pragma region 入力データ形式のセット
-	hr = keyboard->SetDataFormat(&c_dfDIKeyboard);// 標準形式
-	assert(SUCCEEDED(hr));
-#pragma endregion
-
-#pragma region 排他制御レベルのセット
-	hr = keyboard->SetCooperativeLevel(
-		// 画面が手前にある場合のみ | デバイスをこのアプリのみで占有しない | Windowsキーの無効
-		hwnd, DISCL_FOREGROUND | DISCL_NONEXCLUSIVE | DISCL_NOWINKEY);
-	assert(SUCCEEDED(hr));
-#pragma endregion
-
-////////////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////
 #pragma region Textureを読み込んで転送
 	DirectX::ScratchImage mipImages = LoadTexture("resources/uvChecker.png");
 	const DirectX::TexMetadata& metaData = mipImages.GetMetadata();
@@ -1380,9 +1347,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	Microsoft::WRL::ComPtr <ID3D12Resource> textureResource2 = CreateTextureResource(device.Get(), metaData2);
 	UploadTextureData(textureResource2.Get(), mipImages2);
 #pragma endregion
-////////////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////
 
-////////////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////
 #pragma region ShaderResourceView(SRV)
 	//Textureより下は確定
 #pragma region Texture1
@@ -1413,9 +1380,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 #pragma endregion
 #pragma endregion
-////////////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////
 
-////////////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////
 #pragma region DepthStencilView(DSV)
 	D3D12_DEPTH_STENCIL_VIEW_DESC dsvDesc{};
 	dsvDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;//Format。基本的にはResorceに合わせる
@@ -1423,11 +1390,11 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	//DSVHeapの先頭にDSVを作る
 	device->CreateDepthStencilView(depthStencilResource.Get(), &dsvDesc, dsvDescriptorHeap->GetCPUDescriptorHandleForHeapStart());
 #pragma endregion
-////////////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////
 
-////////////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////
 #pragma region Resourceにデータを書き込む
-	
+
 
 	//マテリアルにデータを書き込む
 	Material* materialData = nullptr;
@@ -1465,7 +1432,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	transformationMatrixDataSprite->WVP = MakeIdentity4x4();
 #pragma endregion
 
-////////////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////
 #pragma region VertexBufferView
 	//D3D12_VERTEX_BUFFER_VIEW vertexBufferView = {};
 	////リソースの先頭のアドレスから使う
@@ -1500,7 +1467,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 #pragma endregion
 #pragma endregion
-////////////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////
 #pragma region VertexData
 	//頂点リソースにでーたを書き込む1
 	//VertexData* vertexData = nullptr;
@@ -1532,7 +1499,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	// 頂点リソースにデータを書き込む
 	VertexData* vertexData = nullptr;
 	vertexResource->Map(0, nullptr, reinterpret_cast<void**>(&vertexData));
-	std::memcpy(vertexData, modelData.vertices.data(), sizeof(VertexData)* modelData.vertices.size());
+	std::memcpy(vertexData, modelData.vertices.data(), sizeof(VertexData) * modelData.vertices.size());
 #pragma endregion
 
 #pragma region 球の描画
@@ -1638,9 +1605,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 #pragma endregion
 
 #pragma endregion
-////////////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////
 
-////////////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////
 #pragma region ViewportとScissor
 	//ビューポート
 	D3D12_VIEWPORT viewport = {};
@@ -1659,23 +1626,24 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	scissorRect.top = 0;
 	scissorRect.bottom = kClientHeight;
 #pragma endregion
-////////////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////
 
-	//出力ウィンドウへの文字出力
-	//OutputDebugStringA("Hello,DirectX!\n");
+		//出力ウィンドウへの文字出力
+		//OutputDebugStringA("Hello,DirectX!\n");
 	IMGUI_CHECKVERSION();
 	ImGui::CreateContext();
 	ImGui::StyleColorsDark();
 	ImGui_ImplWin32_Init(hwnd);
 	ImGui_ImplDX12_Init(device.Get(),
-		2,                                              
-		DXGI_FORMAT_R8G8B8A8_UNORM_SRGB,                
+		2,
+		DXGI_FORMAT_R8G8B8A8_UNORM_SRGB,
 		srvDescriptorHeap.Get(),
 		srvDescriptorHeap->GetCPUDescriptorHandleForHeapStart(),
 		srvDescriptorHeap->GetGPUDescriptorHandleForHeapStart()
 	);
-	
+
 	MSG msg{};
+
 	bool useMonsterBall = true;
 	Transform transform = { {1.0f,1.0f,1.0f},{0.0f,0.0f,0.0f},{0.0f,0.0f,0.0f} };
 	Transform transformSprite{ {1.0f,1.0f,1.0f},{0.0f,0.0f,0.0f},{0.0f,0.0f,0.0f} };
@@ -1701,11 +1669,10 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			ImGui_ImplWin32_NewFrame();
 			ImGui::NewFrame();
 
-			// キーボード情報の取得開始
-			keyboard->Acquire();
-			// 全キーの入力状態を取得
-			BYTE key[256] = {};
-			keyboard->GetDeviceState(sizeof(key), key);
+			// キー情報の更新があった
+			input.Update();
+			//InputManager::Update();
+			//mouse.Update();
 
 ////////////////////////////////////////////////////////////
 #pragma region コマンドを積み込んで確定させる
@@ -1739,6 +1706,18 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 #pragma endregion
 ////////////////////////////////////////////////////////////
 
+			/*if (input.GetKey().HoldKey(DIK_0)) {
+				transform.rotate.y += 0.01f;
+			}*/
+			Vector2 mousePosition;
+			input.GetMouse().GetPosition(mousePosition);
+			//mouse.GetPosition(mousePosition);
+			if(InputManager::GetKey().PressedKey(DIK_0) ){
+				transform.rotate.y += 0.01f;
+			}	
+			transform.translate.x = mousePosition.x;
+			transform.translate.y = mousePosition.y;
+
 			//ゲームの処理
 			Matrix4x4 worldMatrix = MakeAffineMatrix(transform.scale, transform.rotate, transform.translate);
 			Matrix4x4 cameraMatrix = MakeAffineMatrix(camera.scale, camera.rotate, camera.translate);
@@ -1760,7 +1739,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			uvTransformMatrix = Multiply(uvTransformMatrix, MakeRotateZMatrix(uvTransformSprite.rotate.z));
 			uvTransformMatrix = Multiply(uvTransformMatrix, MakeTranslateMatrix(uvTransformSprite.translate));
 			materialDataSprite->uvTransform = uvTransformMatrix;
-			
+
 			////////////////////////////////////////////////////////////
 #pragma region ImGui1系
 			ImGui::Begin("02");
@@ -1777,6 +1756,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			ImGui::SliderFloat3("LightColor", &directionalLightData->color.x, 0, 1);
 			ImGui::SliderFloat3("LightDirectional", &directionalLightData->direction.x, -1.0f, 1.0f);
 			ImGui::SliderFloat("Intensity", &directionalLightData->intensity, 0, 1);
+
 			ImGui::End();
 #pragma endregion
 #pragma region ImGuiUVTransform
@@ -1787,7 +1767,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			ImGui::End();
 #pragma endregion
 			////////////////////////////////////////////////////////////
-
+			
 			//描画
 			ImGui::Render();
 			ID3D12DescriptorHeap* descriptorHeaps[] = { srvDescriptorHeap.Get()};
