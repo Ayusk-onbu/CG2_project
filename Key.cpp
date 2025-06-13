@@ -3,7 +3,7 @@
 #include <iostream>
 
 #pragma region 初期化
-void Key::Initialize(Microsoft::WRL::ComPtr<IDirectInput8> directInput, HWND& hwnd) {
+void Key::Initialize(Microsoft::WRL::ComPtr<IDirectInput8> directInput, HWND hwnd) {
 
 	HRESULT result;
 #pragma region キーボードデバイスの生成

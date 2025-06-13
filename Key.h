@@ -14,7 +14,7 @@ public:
 	/// <summary>
 	/// キー情報について初期化
 	/// </summary>
-	void Initialize(Microsoft::WRL::ComPtr<IDirectInput8> directInput,HWND& hwnd);
+	void Initialize(Microsoft::WRL::ComPtr<IDirectInput8> directInput,HWND hwnd);
 #pragma endregion
 #pragma region 更新(Update)
 	/// <summary>

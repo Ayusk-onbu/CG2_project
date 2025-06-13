@@ -4,7 +4,7 @@
 Key InputManager::key_;
 Mouse InputManager::mouse_;
 
-void InputManager::Initialize(WNDCLASS& wc, HWND& hwnd) {
+void InputManager::Initialize(WNDCLASS& wc, HWND hwnd) {
 
 	HRESULT result;
 #pragma region DirectInputの初期化

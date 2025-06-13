@@ -9,7 +9,7 @@ public:
 	/// <summary>
 	/// Key, の初期化
 	/// </summary>
-	void Initialize(WNDCLASS& wc, HWND& hwnd);
+	void Initialize(WNDCLASS& wc, HWND hwnd);
 #pragma endregion
 #pragma region 更新(Update)
 	/// <summary>
