@@ -31,6 +31,7 @@
 #include "SwapChain.h"
 #include "TachyonSync.h"
 #include "OmnisTechOracle.h"
+#include "RenderTargetView.h"
 
 #include "ImGuiManager.h"
 #include "Structures.h"
@@ -521,26 +522,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 	////////////////////////////////////////////////////////////
 #pragma region D3D12Deviceの生成
-	//Microsoft::WRL::ComPtr <ID3D12Device> device = nullptr;
-	////機能レベルとログ出力用の文字列
-	//D3D_FEATURE_LEVEL featureLevels[] = {
-	//	D3D_FEATURE_LEVEL_12_2,D3D_FEATURE_LEVEL_12_1,D3D_FEATURE_LEVEL_12_0
-	//};
-	//const char* featureLevelStrings[] = { "12.2","12.1","12.0" };
-	////高い順に生成できるか試していく
-	//for (size_t i = 0;i < _countof(featureLevels);++i) {
-	//	//採用したアダプターでデバイスを生成
-	//	hr = D3D12CreateDevice(OmnisTechOracle::useAdapter_.Get(), featureLevels[i], IID_PPV_ARGS(&device));
-	//	//指定した機能レベルでデバイスが生成出来たかを確認
-	//	if (SUCCEEDED(hr)) {
-	//		//生成出来たのでログ出力を行ってループを抜ける
-	//		Log::View((std::format("FeatureLevel : {}\n", featureLevelStrings[i])));
-	//		break;
-	//	}
-	//}
-	////デバイスの生成が上手くいかったので起動できない
-	//assert(device != nullptr);
-	//Log::ViewFile("Complete create D3D12Device!!!\n");//初期化完了のログを出す
 #pragma endregion
 	D3D12System d3d12;
 	d3d12.SelectLevel();
@@ -550,15 +531,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 #pragma region エラー警告 直ちに停止独立している
 #pragma endregion
 	ErrorGuardian::SetQueue(d3d12.GetDevice().Get());
-
-	////////////////////////////////////////////////////////////
-#pragma region MaterialResourceこれが描画に必要
-	Microsoft::WRL::ComPtr <ID3D12Resource> materialResource = CreateBufferResource(d3d12.GetDevice().Get(), sizeof(Material));//
-#pragma region Sprite
-	Microsoft::WRL::ComPtr <ID3D12Resource> materialResourceSprite = CreateBufferResource(d3d12.GetDevice().Get(), sizeof(Material));
-#pragma endregion
-#pragma endregion
-	////////////////////////////////////////////////////////////
 
 	////////////////////////////////////////////////////////////
 #pragma region CommandQueueの生成
@@ -581,14 +553,16 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 #pragma region SwapChain
 #pragma endregion
 	SwapChain::Initialize(window);
-
-	////////////////////////////////////////////////////////////
 	//コマンドキュー、ウィンドウハンドル、設定を渡して生成する
 	DXGI::AssignTaskToEngineer(command.GetQueue().GetQueue().Get(), window);
+#pragma region SwapChainからResourceを引っ張ってくる
+#pragma endregion
+	SwapChain::MakeResource();
+
+	////////////////////////////////////////////////////////////
 
 	////////////////////////////////////////////////////////////
 #pragma region ディスクリプタヒープの生成
-	Microsoft::WRL::ComPtr <ID3D12DescriptorHeap> rtvDescriptorHeap = CreateDescriptorHeap(d3d12.GetDevice().Get(), D3D12_DESCRIPTOR_HEAP_TYPE_RTV, 2, false);
 	Microsoft::WRL::ComPtr <ID3D12DescriptorHeap> srvDescriptorHeap = CreateDescriptorHeap(d3d12.GetDevice().Get(), D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, 128, true);
 	Microsoft::WRL::ComPtr <ID3D12DescriptorHeap> dsvDescriptorHeap = CreateDescriptorHeap(d3d12.GetDevice().Get(), D3D12_DESCRIPTOR_HEAP_TYPE_DSV, 1, false);
 #pragma endregion
@@ -597,20 +571,15 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	////////////////////////////////////////////////////////////
 #pragma region DescriptorSize
 	const uint32_t descriptorSizeSRV = d3d12.GetDevice()->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
-	const uint32_t descriptorSizeRTV = d3d12.GetDevice()->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
-	const uint32_t descriptorSizeDSV = d3d12.GetDevice()->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_DSV);
 #pragma endregion
 	////////////////////////////////////////////////////////////
 
 	////////////////////////////////////////////////////////////
-#pragma region SwapChainからResourceを引っ張ってくる
-	Microsoft::WRL::ComPtr <ID3D12Resource> swapChainResources[2] = { nullptr };
-	hr = SwapChain::swapChain_->GetBuffer(0, IID_PPV_ARGS(&swapChainResources[0]));
-	//上手く取得出来なければ起動できない
-	assert(SUCCEEDED(hr));
-	hr = SwapChain::swapChain_->GetBuffer(1, IID_PPV_ARGS(&swapChainResources[1]));
-	assert(SUCCEEDED(hr));
+#pragma region RTVを作る
 #pragma endregion
+	RenderTargetView rtv;
+	rtv.Initialize(&d3d12);
+
 	////////////////////////////////////////////////////////////
 
 	////////////////////////////////////////////////////////////
@@ -621,6 +590,15 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 #pragma region Sprite
 	Microsoft::WRL::ComPtr <ID3D12Resource> vertexResourceSprite = CreateBufferResource(d3d12.GetDevice().Get(), sizeof(VertexData) * 4);
 	Microsoft::WRL::ComPtr <ID3D12Resource> indexResourceSprite = CreateBufferResource(d3d12.GetDevice().Get(), sizeof(uint32_t) * 6);
+#pragma endregion
+#pragma endregion
+	////////////////////////////////////////////////////////////
+
+		////////////////////////////////////////////////////////////
+#pragma region MaterialResourceこれが描画に必要
+	Microsoft::WRL::ComPtr <ID3D12Resource> materialResource = CreateBufferResource(d3d12.GetDevice().Get(), sizeof(Material));//
+#pragma region Sprite
+	Microsoft::WRL::ComPtr <ID3D12Resource> materialResourceSprite = CreateBufferResource(d3d12.GetDevice().Get(), sizeof(Material));
 #pragma endregion
 #pragma endregion
 	////////////////////////////////////////////////////////////
@@ -641,25 +619,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 #pragma region TransformationMatrix
 	Microsoft::WRL::ComPtr <ID3D12Resource> wvpResource = CreateBufferResource(d3d12.GetDevice().Get(), sizeof(TransformationMatrix));
 	Microsoft::WRL::ComPtr <ID3D12Resource> transformationMatrixResourceSprite = CreateBufferResource(d3d12.GetDevice().Get(), sizeof(TransformationMatrix));
-#pragma endregion
-	////////////////////////////////////////////////////////////
-
-	////////////////////////////////////////////////////////////
-#pragma region RTVを作る
-	D3D12_RENDER_TARGET_VIEW_DESC rtvDesc = {};
-	rtvDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM_SRGB;//出力結果をSRGBに変換して書き込む
-	rtvDesc.ViewDimension = D3D12_RTV_DIMENSION_TEXTURE2D;//２Dテクスチャッとして書き込む
-	//ディスクリプタの先頭を取得する
-	D3D12_CPU_DESCRIPTOR_HANDLE rtvStartHandle = rtvDescriptorHeap->GetCPUDescriptorHandleForHeapStart();
-	//RTVを２つ作るのでディスクリプタを二つ用意
-	D3D12_CPU_DESCRIPTOR_HANDLE rtvHandles[2];
-	//まず1つ目を作る。一つ目は最初のところに作る。作る場所をこちらで指定してあげる必要がある
-	rtvHandles[0] = rtvStartHandle;
-	d3d12.GetDevice()->CreateRenderTargetView(swapChainResources[0].Get(), &rtvDesc, rtvHandles[0]);
-	//2二つ目のディスクリプタ班どりを作る（自力で）
-	rtvHandles[1].ptr = rtvHandles[0].ptr + d3d12.GetDevice()->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
-	//2つ目を作る
-	d3d12.GetDevice()->CreateRenderTargetView(swapChainResources[1].Get(), &rtvDesc, rtvHandles[1]);
 #pragma endregion
 	////////////////////////////////////////////////////////////
 
@@ -896,7 +855,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 	////////////////////////////////////////////////////////////
 #pragma region Resourceにデータを書き込む描画に必要
-
 
 	//マテリアルにデータを書き込む
 	Material* materialData = nullptr;
@@ -1150,6 +1108,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	DebugCamera debugCamera;
 	debugCamera.Initialize();
 	
+	Audio audio;
+	audio.SoundPlayWave(MediaAudioDecoder::DecodeAudioFile(L"resources/maou_bgm_fantasy02.mp3"));
+
 	music.GetBGM().LoadWAVE("resources/loop101204.wav");
 	music.GetBGM().SetPlayAudioBuf();
 	//ウィンドウのｘボタンが押されるまでループ
@@ -1174,22 +1135,26 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			UINT backBufferIndex = SwapChain::swapChain_->GetCurrentBackBufferIndex();
 
 			ResourceBarrier barrier = {};
-			barrier.SetBarrier(command.GetList().GetList().Get(), swapChainResources[backBufferIndex].Get(),
+			barrier.SetBarrier(command.GetList().GetList().Get(), SwapChain::GetResource(backBufferIndex).Get(),
 				D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET);
 
 			//描画先のRTVを設定する
-			command.GetList().GetList()->OMSetRenderTargets(1, &rtvHandles[backBufferIndex], false, nullptr);
+			command.GetList().GetList()->OMSetRenderTargets(1, &rtv.GetHandle(backBufferIndex), false, nullptr);
 			//描画先のRTVとDSVを設定する
 			D3D12_CPU_DESCRIPTOR_HANDLE dsvHandle = dsvDescriptorHeap->GetCPUDescriptorHandleForHeapStart();
-			command.GetList().GetList()->OMSetRenderTargets(1, &rtvHandles[backBufferIndex], false, &dsvHandle);
+			command.GetList().GetList()->OMSetRenderTargets(1, &rtv.GetHandle(backBufferIndex), false, &dsvHandle);
 			//指定した色で画面全体をクリアする
 			float clearColor[] = { 0.1f,0.25f,0.5f,1.0f };//RGBAの設定
 			command.GetList().GetList()->ClearDepthStencilView(dsvHandle, D3D12_CLEAR_FLAG_DEPTH, 1.0f, 0, 0, nullptr);//
-			command.GetList().GetList()->ClearRenderTargetView(rtvHandles[backBufferIndex], clearColor, 0, nullptr);
+			command.GetList().GetList()->ClearRenderTargetView(rtv.GetHandle(backBufferIndex), clearColor, 0, nullptr);
 			
 #pragma endregion
 ////////////////////////////////////////////////////////////
 			debugCamera.UpData();
+
+			if (InputManager::GetMouse().IsButtonRelease(0)) {
+				transform.rotate.y += 0.01f;
+			}
 
 			//ゲームの処理
 			Matrix4x4 worldMatrix = Matrix4x4::Make::Affine(transform.scale, transform.rotate, transform.translate);

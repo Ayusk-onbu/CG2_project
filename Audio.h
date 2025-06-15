@@ -1,37 +1,65 @@
 #pragma once
 #include <xaudio2.h>
 
+#include <mfapi.h>
+#include <mfidl.h>
+#include <mfreadwrite.h>
+
+
 
 #include <cstdint>
 #include <fstream>
 #include <iostream>
 #include <cassert>
 #include <wrl.h>
+#include <vector>
+
+struct ChunkHeader {
+	char id[4]; // チャンクの識別子（4文字）
+	int32_t size; // チャンクのサイズ（ヘッダーを除く）
+};
+struct RiffHeader {
+	ChunkHeader chunk;// "RIFF"
+	char type[4];// "WAVE"
+};
+struct FormatChunk {
+	ChunkHeader chunk;// "fmt "
+	WAVEFORMATEX fmt; // WAVEフォーマット情報
+};
+
+struct SoundData {
+	// 波形フォーマット
+	WAVEFORMATEX wfex;
+	// バッファの先頭アドレス
+	BYTE* pBuffer;
+	// バッファのサイズ
+	unsigned int bufferSize;
+};
 
 class Audio
 {
 public:
-	struct ChunkHeader {
-		char id[4]; // チャンクの識別子（4文字）
-		int32_t size; // チャンクのサイズ（ヘッダーを除く）
-	};
-	struct RiffHeader {
-		ChunkHeader chunk;// "RIFF"
-		char type[4];// "WAVE"
-	};
-	struct FormatChunk {
-		ChunkHeader chunk;// "fmt "
-		WAVEFORMATEX fmt; // WAVEフォーマット情報
-	};
+	//struct ChunkHeader {
+	//	char id[4]; // チャンクの識別子（4文字）
+	//	int32_t size; // チャンクのサイズ（ヘッダーを除く）
+	//};
+	//struct RiffHeader {
+	//	ChunkHeader chunk;// "RIFF"
+	//	char type[4];// "WAVE"
+	//};
+	//struct FormatChunk {
+	//	ChunkHeader chunk;// "fmt "
+	//	WAVEFORMATEX fmt; // WAVEフォーマット情報
+	//};
 
-	struct SoundData {
-		// 波形フォーマット
-		WAVEFORMATEX wfex;
-		// バッファの先頭アドレス
-		BYTE* pBuffer;
-		// バッファのサイズ
-		unsigned int bufferSize;
-	};
+	//struct SoundData {
+	//	// 波形フォーマット
+	//	WAVEFORMATEX wfex;
+	//	// バッファの先頭アドレス
+	//	BYTE* pBuffer;
+	//	// バッファのサイズ
+	//	unsigned int bufferSize;
+	//};
 protected:
 
 	/// <summary>
@@ -90,8 +118,11 @@ public:
 
 	//void SetAudioBuf(const SoundData& soundData);
 
-
 	void PlayAudioWAVE(XAUDIO2_BUFFER& buf);
+
+#pragma region MF
+	
+#pragma endregion
 
 private:
 	 
@@ -106,5 +137,18 @@ public:
 	static IXAudio2SourceVoice* pSourceVoiceMP3_;
 	// wavプレイヤー
 	static IXAudio2SourceVoice* pSourceVoiceWAVE_;
+};
+
+class MediaAudioDecoder
+{
+	
+public:
+
+	static const SoundData DecodeAudioFile(const std::wstring& filePath);
+
+private:
+	Microsoft::WRL::ComPtr<IMFSourceReader> sourceReader;
+	WAVEFORMATEX waveFormat;
+
 };
 

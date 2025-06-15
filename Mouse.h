@@ -10,17 +10,6 @@
 #include <unordered_map>
 class Mouse
 {
-private:
-	const enum class Type {
-		LEFT,
-		RIGHT,
-		MIDDLE
-	};
-	const std::unordered_map<Mouse::Type, int> MouseButtonMap = {
-		{Mouse::Type::LEFT, VK_LBUTTON},
-		{Mouse::Type::RIGHT, VK_RBUTTON},
-		{Mouse::Type::MIDDLE, VK_MBUTTON}
-	};
 public:
 #pragma region 初期化(Initialize)
 	/// <summary>
@@ -51,7 +40,6 @@ private:
 	/// 	/// <returns></returns>
 	void CopyAllMouse(DIMOUSESTATE2* mouse) { mouse = &mouseState_; }
 #pragma endregion
-	void CopyState();
 public:
 	void GetPosition(Vector2& pos);
 	
@@ -64,17 +52,17 @@ public:
 	/// <summary>
 	/// ０なら左クリック １なら右クリック 2なら真ん中クリック
 	/// </summary>
-	bool IsButtonRelease(int button);
-	//float getScrollDelta();
-	//Vector2 getDelta();
-	//bool isDragging(int button);
-	//bool isDoubleClick(int button);
+	bool IsButtonRelease(int buttonIndex);
+	float getScrollDelta();
+	Vector2 getDelta();
+	bool isDragging(int buttonIndex);
+	//bool isDoubleClick(int buttonIndex);
 	//bool isHovering(Rect area);
 	//bool isSwipe(Vector2 direction);
 
 private:
 	Microsoft::WRL::ComPtr<IDirectInputDevice8> mouse = nullptr;
 	DIMOUSESTATE2 mouseState_;
-	bool preState[3];
+	DIMOUSESTATE2 preMouseState_;
 };
 

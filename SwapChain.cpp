@@ -1,7 +1,9 @@
 #include "SwapChain.h"
+#include <cassert>
 
 Microsoft::WRL::ComPtr <IDXGISwapChain4> SwapChain::swapChain_;
 DXGI_SWAP_CHAIN_DESC1 SwapChain::swapChainDesc_;
+Microsoft::WRL::ComPtr <ID3D12Resource> SwapChain::resources_[2] = {nullptr};
 
 void SwapChain::Initialize(Window window) {
 	swapChain_ = nullptr;
@@ -36,4 +38,13 @@ void SwapChain::SetSampleCount(int num) {
 
 void SwapChain::SetUseBufferCount(int num) {
 	swapChainDesc_.BufferCount = num;
+}
+
+void SwapChain::MakeResource() {
+	HRESULT hr;
+	hr = SwapChain::swapChain_->GetBuffer(0, IID_PPV_ARGS(&resources_[0]));
+	//上手く取得出来なければ起動できない
+	assert(SUCCEEDED(hr));
+	hr = SwapChain::swapChain_->GetBuffer(1, IID_PPV_ARGS(&resources_[1]));
+	assert(SUCCEEDED(hr));
 }

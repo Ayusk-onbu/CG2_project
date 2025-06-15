@@ -3,6 +3,11 @@
 
 #pragma comment(lib,"xaudio2.lib")
 
+#pragma comment(lib, "Mf.lib")
+#pragma comment(lib, "mfplat.lib")
+#pragma comment(lib, "Mfreadwrite.lib")
+#pragma comment(lib, "mfuuid.lib")
+
 // 指揮者
 Microsoft::WRL::ComPtr<IXAudio2> Audio::xAudio2_;
 // スピーカー
@@ -12,7 +17,7 @@ IXAudio2SourceVoice* Audio::pSourceVoiceMP3_ = nullptr;
 // wavプレイヤー
 IXAudio2SourceVoice* Audio::pSourceVoiceWAVE_ = nullptr;
 
-Audio::SoundData Audio::SoundLoadWave(const char* filename) {
+SoundData Audio::SoundLoadWave(const char* filename) {
 #pragma region ①ファイルオープン
 	//HRESULT result;
 	// ファイル入力ストリームのインスタンス
@@ -142,4 +147,70 @@ WAVEFORMATEX Audio::MakeWaveFmt() {
 	wfex.cbSize = 0;
 
 	return wfex;
+}
+
+
+
+const SoundData MediaAudioDecoder::DecodeAudioFile(const std::wstring& filePath)
+{
+	Microsoft::WRL::ComPtr<IMFSourceReader> sourceReader;
+	Microsoft::WRL::ComPtr<IMFMediaType> audioTypeOut;
+
+	// Media Foundation 初期化
+	MFStartup(MF_VERSION);
+
+	// ソースリーダー作成
+	HRESULT hr = MFCreateSourceReaderFromURL(filePath.c_str(), nullptr, &sourceReader);
+	if (FAILED(hr)) throw std::runtime_error("Failed to create source reader");
+
+	// 出力形式をPCMに設定
+	MFCreateMediaType(&audioTypeOut);
+	audioTypeOut->SetGUID(MF_MT_MAJOR_TYPE, MFMediaType_Audio);
+	audioTypeOut->SetGUID(MF_MT_SUBTYPE, MFAudioFormat_PCM); // LPCM
+	sourceReader->SetCurrentMediaType((DWORD)MF_SOURCE_READER_FIRST_AUDIO_STREAM, nullptr, audioTypeOut.Get());
+
+	// メディアタイプ取得
+	Microsoft::WRL::ComPtr<IMFMediaType> nativeType;
+	sourceReader->GetCurrentMediaType((DWORD)MF_SOURCE_READER_FIRST_AUDIO_STREAM, &nativeType);
+
+	// 波形フォーマット取得
+	WAVEFORMATEX* pWaveFormat = nullptr;
+	UINT32 size = 0;
+	MFCreateWaveFormatExFromMFMediaType(nativeType.Get(), &pWaveFormat, &size);
+
+	std::vector<BYTE> pcmBuffer;
+	DWORD streamIndex, flags;
+	LONGLONG timestamp;
+	Microsoft::WRL::ComPtr<IMFSample> sample;
+	while (true)
+	{
+		hr = sourceReader->ReadSample(
+			(DWORD)MF_SOURCE_READER_FIRST_AUDIO_STREAM,
+			0, &streamIndex, &flags, &timestamp, &sample);
+
+		if (FAILED(hr)) break;
+		if (flags & MF_SOURCE_READERF_ENDOFSTREAM) break;
+		if (!sample) continue;
+
+		// バッファを取得
+		Microsoft::WRL::ComPtr<IMFMediaBuffer> buffer;
+		sample->ConvertToContiguousBuffer(&buffer);
+
+		BYTE* audioData = nullptr;
+		DWORD maxLength = 0, currentLength = 0;
+		buffer->Lock(&audioData, &maxLength, &currentLength);
+
+		pcmBuffer.insert(pcmBuffer.end(), audioData, audioData + currentLength);
+
+		buffer->Unlock();
+	}
+
+	SoundData soundData{};
+	soundData.wfex = *pWaveFormat;
+	soundData.bufferSize = static_cast<UINT32>(pcmBuffer.size());
+	soundData.pBuffer = new BYTE[soundData.bufferSize];
+	memcpy(soundData.pBuffer, pcmBuffer.data(), soundData.bufferSize);
+
+	CoTaskMemFree(pWaveFormat);
+	return soundData;
 }

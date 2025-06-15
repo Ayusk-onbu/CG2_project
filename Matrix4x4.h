@@ -293,4 +293,13 @@ public:
 		return ret;
 	}
 #pragma endregion
+public:
+	Matrix4x4 operator+=(const Matrix4x4 M) {
+		for (int i = 0;i < 4;++i) {
+			for (int j = 0;j < 4;++j) {
+				m[i][j] += M.m[i][j];
+			}
+		}
+		return *this;
+	}
 };

@@ -9,9 +9,11 @@ extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hwnd, UINT msg
 #pragma endregion
 
 #include <type_traits>
+#include "Matrix4x4.h"
 #include "Vector4.h"
 #include "Vector3.h"
 #include "Vector2.h"
+#include <string>
 
 class ImGuiManager
 {
@@ -40,6 +42,16 @@ public:
 		ImGui::SliderFloat(label, &value, min, max);
 	}
 
+	static void CreateImGui(const char* label, Matrix4x4& value, float min, float max) {
+		ImGui::Text(label); // ラベルを表示
+
+		for (int i = 0; i < 4; ++i) {
+			ImGui::SliderFloat4(
+				(std::string(label) + " [" + std::to_string(i) + "]").c_str(),
+				&value.m[i][0], min, max
+			);
+		}
+	}
 	
 };
 

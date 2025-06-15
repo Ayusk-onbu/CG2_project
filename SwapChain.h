@@ -1,6 +1,7 @@
 #pragma once
 #include <wrl.h>
 #include <dxgi1_6.h>
+#include <d3d12.h>
 #include "Window.h"
 
 class SwapChain
@@ -33,6 +34,12 @@ public:
 
 	static void SetUseBufferCount(int num);
 
+public:
+
+	static void MakeResource();
+
+	static Microsoft::WRL::ComPtr <ID3D12Resource> GetResource(int i) { return resources_[i]; }
+
 	/*DXGI_SWAP_CHAIN_DESC1& GetDesc() { return swapChainDesc_; }
 
 	Microsoft::WRL::ComPtr <IDXGISwapChain4> Get() { return swapChain_; }*/
@@ -41,5 +48,7 @@ public:
 	static Microsoft::WRL::ComPtr <IDXGISwapChain4> swapChain_;
 	// CD(情報を入れる場所)
 	static DXGI_SWAP_CHAIN_DESC1 swapChainDesc_;
+
+	static Microsoft::WRL::ComPtr <ID3D12Resource> resources_[2];
 };
 

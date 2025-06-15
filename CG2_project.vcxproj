@@ -96,6 +96,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="CommandQueue.cpp" />
     <ClCompile Include="D3D12System.cpp" />
     <ClCompile Include="DebugCamera.cpp" />
+    <ClCompile Include="DescriptorHeap.cpp" />
     <ClCompile Include="DXGI.cpp" />
     <ClCompile Include="ErrorGuardian.cpp" />
     <ClCompile Include="externals\imgui\imgui.cpp" />
@@ -114,6 +115,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="Mouse.cpp" />
     <ClCompile Include="Music.cpp" />
     <ClCompile Include="OmnisTechOracle.cpp" />
+    <ClCompile Include="RenderTargetView.cpp" />
     <ClCompile Include="ResourceBarrier.cpp" />
     <ClCompile Include="SE.cpp" />
     <ClCompile Include="SwapChain.cpp" />
@@ -142,6 +144,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="CommandQueue.h" />
     <ClInclude Include="D3D12System.h" />
     <ClInclude Include="DebugCamera.h" />
+    <ClInclude Include="DescriptorHeap.h" />
     <ClInclude Include="DXGI.h" />
     <ClInclude Include="ErrorGuardian.h" />
     <ClInclude Include="externals\imgui\imconfig.h" />
@@ -162,6 +165,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="Mouse.h" />
     <ClInclude Include="Music.h" />
     <ClInclude Include="OmnisTechOracle.h" />
+    <ClInclude Include="RenderTargetView.h" />
     <ClInclude Include="ResourceBarrier.h" />
     <ClInclude Include="SE.h" />
     <ClInclude Include="Structures.h" />
