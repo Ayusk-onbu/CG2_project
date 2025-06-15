@@ -51,6 +51,10 @@ void Mouse::GetPosition(Vector2& pos) {
 	pos.y = -(static_cast<float>(cursorPos.y) / 720.0f - 0.5f);
 }
 
+float Mouse::GetWheel() {
+	return static_cast<float>(mouseState_.lZ);
+}
+
 bool Mouse::IsButtonPress(int buttonIndex) {
 	return (mouseState_.rgbButtons[buttonIndex] & 0x80);
 }
@@ -59,12 +63,10 @@ bool Mouse::IsButtonRelease(int buttonIndex) {
 	return (!(mouseState_.rgbButtons[buttonIndex] & 0x80) && (preMouseState_.rgbButtons[buttonIndex] & 0x80));
 }
 
-float Mouse::getScrollDelta() {
-	return static_cast<float>(mouseState_.lZ);
-}
-
 Vector2 Mouse::getDelta() {
-	return Vector2(static_cast<float>(mouseState_.lX), static_cast<float>(mouseState_.lY));
+	float lx = static_cast<float>(mouseState_.lX);
+	float ly = static_cast<float>(mouseState_.lY);
+	return Vector2(lx, ly);
 }
 bool Mouse::isDragging(int buttonIndex) {
 	return ((mouseState_.rgbButtons[buttonIndex] & 0x80) && (preMouseState_.rgbButtons[buttonIndex] & 0x80));

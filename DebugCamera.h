@@ -40,9 +40,11 @@ public:
 
 	Matrix4x4 DrawCamera(const Matrix4x4& world);
 
-	void MoveForward();
+	void Zoom();
 
-	void MoveBack();
+
+
+
 
 	void MoveRight();
 
@@ -68,6 +70,7 @@ public:
 public:
 	bool IsPivot_;
 	float speed_;
+	float sensitivity_;
 	Vector2 rotateSpeed_;
 private:
 	Camera camera_;

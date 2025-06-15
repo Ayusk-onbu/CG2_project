@@ -20,15 +20,17 @@ void DebugCamera::Initialize() {
 	IsPivot_ = true;
 	speed_ = 0.1f;
 	rotateSpeed_ = { 0.0f,0.0f };
+	sensitivity_ = 0.01f;
 }
 
 void DebugCamera::UpData() {
 
-	rotateSpeed_.x = InputManager::GetMouse().getDelta().x ;
-	rotateSpeed_.y = InputManager::GetMouse().getDelta().y ;
+	rotateSpeed_.x = InputManager::GetMouse().getDelta().x * sensitivity_;
+	rotateSpeed_.y = InputManager::GetMouse().getDelta().y * sensitivity_ * 0.5f;
 
-	MoveForward();
-	MoveBack();
+	Zoom();
+
+
 	MoveUp();
 	MoveDown();
 	MoveRight();
@@ -45,6 +47,8 @@ void DebugCamera::UpData() {
 	ImGuiManager::CreateImGui("translate", camera_.translation_, -5.0f, 5.0f);
 	ImGuiManager::CreateImGui("fovY", projection_.fovY, 0.45f, 1.0f);
 	ImGuiManager::CreateImGui("nearClip", projection_.nearClip, 0.1f, 1.0f);
+
+	ImGuiManager::CreateImGui("sensitivity", sensitivity_, -1.0f, 1.0f);
 	ImGui::End();
 
 	if (IsPivot_) {
@@ -64,16 +68,8 @@ Matrix4x4 DebugCamera::DrawCamera(const Matrix4x4& world) {
 	return WVP;
 }
 
-void DebugCamera::MoveForward() {
-	if (InputManager::GetKey().PressKey(DIK_UP)) {
-		camera_.translation_.z += speed_;
-	}
-}
-
-void DebugCamera::MoveBack() {
-	if (InputManager::GetKey().PressKey(DIK_DOWN)) {
-		camera_.translation_.z -= speed_;
-	}
+void DebugCamera::Zoom() {
+	camera_.translation_.z += InputManager::GetMouse().GetWheel() * 0.01f;
 }
 
 void DebugCamera::MoveRight() {
@@ -89,44 +85,34 @@ void DebugCamera::MoveLeft() {
 }
 
 void DebugCamera::MoveUp() {
-	if (InputManager::GetKey().PressKey(DIK_I)) {
+	if (InputManager::GetKey().PressKey(DIK_UP)) {
 		camera_.translation_.y -= speed_;
 	}
 }
 
 void DebugCamera::MoveDown() {
-	if (InputManager::GetKey().PressKey(DIK_K)) {
+	if (InputManager::GetKey().PressKey(DIK_DOWN)) {
 		camera_.translation_.y += speed_;
 	}
 }
 
 void DebugCamera::RotatePitch() {
-	if (InputManager::GetMouse().IsButtonPress(0)) {
-		if (IsPivot_) { GetRotateDelta(rotateSpeed_.x, 0.0f); } 
-		camera_.rotation_.x += rotateSpeed_.x;
-	}
-	if (InputManager::GetMouse().IsButtonPress(0)) {
-		if (IsPivot_) { GetRotateDelta(-rotateSpeed_.x, 0.0f); }
-		camera_.rotation_.x -= rotateSpeed_.x;
-	}
-}
-
-void DebugCamera::RotateYaw() {
-	if (InputManager::GetMouse().IsButtonPress(0)) {
-		camera_.rotation_.z += InputManager::GetMouse().getScrollDelta();
-	}
-	if (InputManager::GetMouse().IsButtonPress(0)) {
-		camera_.rotation_.z -= InputManager::GetMouse().getScrollDelta();
+	if (InputManager::GetMouse().IsButtonPress(2)) {
+		if (IsPivot_) { GetRotateDelta(rotateSpeed_.y, 0.0f); }
+		if (!IsPivot_) { camera_.rotation_.x -= rotateSpeed_.y; }
 	}
 }
 
 void DebugCamera::RotateRoll() {
-	if (InputManager::GetMouse().IsButtonPress(0)) {
-		if (IsPivot_) { GetRotateDelta(0.0f,rotateSpeed_.y); }
-		camera_.rotation_.y += rotateSpeed_.y;
+	if (InputManager::GetMouse().IsButtonPress(2)) {
+		if (IsPivot_) { GetRotateDelta(0.0f,rotateSpeed_.x); }
+		if (!IsPivot_) { camera_.rotation_.y += rotateSpeed_.x; }
 	}
+}
+
+
+void DebugCamera::RotateYaw() {
 	if (InputManager::GetMouse().IsButtonPress(0)) {
-		if (IsPivot_) { GetRotateDelta(0.0f,-rotateSpeed_.y); }
-		camera_.rotation_.y -= rotateSpeed_.y;
+		camera_.rotation_.z += rotateSpeed_.x;
 	}
 }

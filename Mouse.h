@@ -42,6 +42,8 @@ private:
 #pragma endregion
 public:
 	void GetPosition(Vector2& pos);
+
+	float GetWheel();
 	
 	// AIおすすめ
 	
@@ -53,7 +55,6 @@ public:
 	/// ０なら左クリック １なら右クリック 2なら真ん中クリック
 	/// </summary>
 	bool IsButtonRelease(int buttonIndex);
-	float getScrollDelta();
 	Vector2 getDelta();
 	bool isDragging(int buttonIndex);
 	//bool isDoubleClick(int buttonIndex);
