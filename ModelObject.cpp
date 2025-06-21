@@ -12,6 +12,12 @@ void ModelObject::Draw(TheOrderCommand& command, PSO& pso, DirectionLight& light
 	command.GetList().GetList()->DrawInstanced(UINT(modelData_.vertices.size()), 1, 0, 0);
 }
 
+void ModelObject::Draw(TheOrderCommand& command, PSO& pso, DirectionLight& light, D3D12_GPU_DESCRIPTOR_HANDLE& tex) {
+	command.GetList().GetList()->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+	object_.DrawBase(command, pso, light, tex);
+	command.GetList().GetList()->DrawInstanced(UINT(modelData_.vertices.size()), 1, 0, 0);
+}
+
 void ModelObject::SetWVPData(Matrix4x4 WVP, Matrix4x4 world, Matrix4x4 uv) {
 	object_.wvpData_->WVP = WVP;
 	object_.wvpData_->World = world;

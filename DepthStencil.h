@@ -8,9 +8,9 @@ class DepthStencil
 {
 public:
 
-	void InitializeHeap(D3D12System d3d12);
+	void InitializeHeap(D3D12System& d3d12);
 
-	void MakeResource(D3D12System d3d12, int32_t width, int32_t height);
+	void MakeResource(D3D12System& d3d12, int32_t width, int32_t height);
 
 	void InitializeDesc(BOOL is = true, 
 		D3D12_DEPTH_WRITE_MASK mask = D3D12_DEPTH_WRITE_MASK_ALL,

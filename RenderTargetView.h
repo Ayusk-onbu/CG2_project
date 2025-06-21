@@ -3,6 +3,9 @@
 #include "DescriptorHeap.h"
 #include "D3D12System.h"
 
+
+// Resourceの種類が一つになっているので他にも使えるようにする 引数にResourceの追加
+// handleの数が決まっているので変化出来るようにしたい handlesをvector<>で管理
 class RenderTargetView
 {
 public:

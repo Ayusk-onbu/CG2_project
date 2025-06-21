@@ -12,6 +12,12 @@ void SpriteObject::Draw(TheOrderCommand& command, PSO& pso, DirectionLight& ligh
 	command.GetList().GetList()->DrawIndexedInstanced(6, 1, 0, 0, 0);
 }
 
+void SpriteObject::Draw2(TheOrderCommand& command, PSO& pso, DirectionLight& light, D3D12_GPU_DESCRIPTOR_HANDLE& tex) {
+	command.GetList().GetList()->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+	object_.DrawBase(command, pso, light, tex);
+	command.GetList().GetList()->DrawIndexedInstanced(6, 1, 0, 0, 0);
+}
+
 void SpriteObject::SetWVPData(Matrix4x4 WVP, Matrix4x4 world, Matrix4x4 uv) {
 	object_.wvpData_->WVP = WVP;
 	object_.wvpData_->World = world;

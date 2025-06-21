@@ -1,7 +1,8 @@
 #include "PipelineStateObject.h"
 #include <cassert>
 
-DepthStencil PipelineStateObject::depthStencil_;
+//DepthStencil PipelineStateObject::depthStencil_;
+DXC PipelineStateObject::dxc_;
 
 void PipelineStateObject::Initialize(D3D12System& d3d12, PSOTYPE type) {
 	InitializeDescs(d3d12, type);

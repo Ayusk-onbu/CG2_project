@@ -10,6 +10,7 @@
 
 enum class PSOTYPE {
 	Normal,
+	OffScreen
 };
 
 class PipelineStateObject
@@ -45,7 +46,7 @@ public:
 	Microsoft::WRL::ComPtr <ID3D12PipelineState> GetGPS() {return graphicsPipelineState_;}
 
 private:
-	DXC dxc_;
+	static DXC dxc_;
 	RootSignature rootSignature_;
 	InputLayout inputLayoutDesc_;
 	BlendState blendState_;
@@ -53,7 +54,7 @@ private:
 	Microsoft::WRL::ComPtr<IDxcBlob> vertexShaderBlob_;
 	Microsoft::WRL::ComPtr<IDxcBlob> pixelShaderBlob_;
 
-	static DepthStencil depthStencil_;
+	DepthStencil depthStencil_;
 
 	D3D12_GRAPHICS_PIPELINE_STATE_DESC graphicsPipelineStateDesc_ = {};
 	Microsoft::WRL::ComPtr <ID3D12PipelineState> graphicsPipelineState_ = nullptr;

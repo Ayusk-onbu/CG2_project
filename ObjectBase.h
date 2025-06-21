@@ -18,6 +18,7 @@ class ObjectBase
 public:
 
 	void DrawBase(TheOrderCommand& command,PSO& pso,DirectionLight& light,Texture& tex);
+	void DrawBase(TheOrderCommand& command, PSO& pso, DirectionLight& light, D3D12_GPU_DESCRIPTOR_HANDLE& tex);
 
 	void InitializeMD(Vector4 color, bool isLight);
 

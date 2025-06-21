@@ -121,6 +121,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="Mouse.cpp" />
     <ClCompile Include="Music.cpp" />
     <ClCompile Include="ObjectBase.cpp" />
+    <ClCompile Include="OffScreenRendering.cpp" />
     <ClCompile Include="OmnisTechOracle.cpp" />
     <ClCompile Include="PipelineStateObject.cpp" />
     <ClCompile Include="RasterizerState.cpp" />
@@ -189,6 +190,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="Mouse.h" />
     <ClInclude Include="Music.h" />
     <ClInclude Include="ObjectBase.h" />
+    <ClInclude Include="OffScreenRendering.h" />
     <ClInclude Include="OmnisTechOracle.h" />
     <ClInclude Include="PipelineStateObject.h" />
     <ClInclude Include="RasterizerState.h" />

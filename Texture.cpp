@@ -9,10 +9,8 @@ void Texture::Initialize(D3D12System d3d12,const std::string& filePath,int num) 
 	UploadTextureData(textureResource_.Get(), mipImages_);
 
 	SetDesc(metaData_.format, D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING, D3D12_SRV_DIMENSION_TEXTURE2D, UINT(metaData_.mipLevels));
-	textureSrvHandleCPU_ = GetCPUDescriptorHandle(ShaderResourceView::descriptorHeap_.GetHeap().Get(),
-		SRV::descriptorSizeSRV_, num);
-	textureSrvHandleGPU_ = GetGPUDescriptorHandle(ShaderResourceView::descriptorHeap_.GetHeap().Get(),
-		SRV::descriptorSizeSRV_, num);
+	textureSrvHandleCPU_ = SRV::GetCPUDescriptorHandle();
+	textureSrvHandleGPU_ = SRV::GetGPUDescriptorHandle();
 	d3d12.GetDevice()->CreateShaderResourceView(textureResource_.Get(), &srvDesc_, textureSrvHandleCPU_);
 }
 
@@ -85,15 +83,15 @@ void Texture::UploadTextureData(ID3D12Resource* texture, const DirectX::ScratchI
 	}
 }
 
-// DescriptorHandleを取得する関数(CPU)
-D3D12_CPU_DESCRIPTOR_HANDLE Texture::GetCPUDescriptorHandle(ID3D12DescriptorHeap* descriptorHeap, uint32_t descriptorSize, uint32_t index) {
-	D3D12_CPU_DESCRIPTOR_HANDLE handleCPU = descriptorHeap->GetCPUDescriptorHandleForHeapStart();
-	handleCPU.ptr += descriptorSize * index;
-	return handleCPU;
-}
-// DescriptorHandleを取得する関数(GPU)
-D3D12_GPU_DESCRIPTOR_HANDLE Texture::GetGPUDescriptorHandle(ID3D12DescriptorHeap* descriptorHeap, uint32_t descriptorSize, uint32_t index) {
-	D3D12_GPU_DESCRIPTOR_HANDLE handleGPU = descriptorHeap->GetGPUDescriptorHandleForHeapStart();
-	handleGPU.ptr += descriptorSize * index;
-	return handleGPU;
-}
+//// DescriptorHandleを取得する関数(CPU)
+//D3D12_CPU_DESCRIPTOR_HANDLE Texture::GetCPUDescriptorHandle(ID3D12DescriptorHeap* descriptorHeap, uint32_t descriptorSize, uint32_t index) {
+//	D3D12_CPU_DESCRIPTOR_HANDLE handleCPU = descriptorHeap->GetCPUDescriptorHandleForHeapStart();
+//	handleCPU.ptr += descriptorSize * index;
+//	return handleCPU;
+//}
+//// DescriptorHandleを取得する関数(GPU)
+//D3D12_GPU_DESCRIPTOR_HANDLE Texture::GetGPUDescriptorHandle(ID3D12DescriptorHeap* descriptorHeap, uint32_t descriptorSize, uint32_t index) {
+//	D3D12_GPU_DESCRIPTOR_HANDLE handleGPU = descriptorHeap->GetGPUDescriptorHandleForHeapStart();
+//	handleGPU.ptr += descriptorSize * index;
+//	return handleGPU;
+//}

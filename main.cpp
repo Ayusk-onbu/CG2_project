@@ -35,6 +35,7 @@
 #include "PipelineStateObject.h"
 #include "Texture.h"
 
+#include "OffScreenRendering.h"
 
 #include "SpriteObject.h"
 #include "ModelObject.h"
@@ -151,7 +152,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	SwapChain::MakeResource();
 #pragma region DescriptorSize
 #pragma endregion
-	SRV::InitializeHeap(d3d12);
+	SRV::InitializeHeap(d3d12); 
 #pragma region RTVを作る
 #pragma endregion
 	RenderTargetView rtv;
@@ -180,6 +181,10 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 #pragma endregion
 	PSO pso;
 	pso.Initialize(d3d12, PSOTYPE::Normal);
+
+	OffScreenRendering osr;
+	osr.Initialize(d3d12,1280.0f,720.0f);
+
 #pragma region XAudio2初期化
 #pragma endregion
 	Music music;
@@ -198,11 +203,11 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	SpriteObject sprite;
 	sprite.Initialize(d3d12,640.0f,360.0f);
 
-	TriangleObject triangle;
+	/*TriangleObject triangle;
 	triangle.Initialize(d3d12, 2.0f, 2.0f);
 
 	SphereObject sphere;
-	sphere.Initialize(d3d12);
+	sphere.Initialize(d3d12);*/
 
 	Texture tex;
 	tex.Initialize(d3d12, "resources/uvChecker.png", 1);
@@ -247,14 +252,15 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		{0.0f,0.0f,0.0f},
 	};
 	Transform camera = { 1.0f, 1.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, -5.0f };
+
 	DebugCamera debugCamera;
 	debugCamera.Initialize();
 	
-	Audio audio;
-	audio.SoundPlayWave(MediaAudioDecoder::DecodeAudioFile(L"resources/maou_bgm_fantasy02.mp3"));
+	//Audio audio;
+	//audio.SoundPlayWave(MediaAudioDecoder::DecodeAudioFile(L"resources/maou_bgm_fantasy02.mp3"));
 
 	music.GetBGM().LoadWAVE("resources/loop101204.wav");
-	music.GetBGM().SetPlayAudioBuf();
+	//music.GetBGM().SetPlayAudioBuf();
 	//ウィンドウのｘボタンが押されるまでループ
 	while (msg.message != WM_QUIT) {
 		
@@ -269,7 +275,41 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 			// キー情報の更新があった
 			input.Update();
-			
+
+			ResourceBarrier barrierO = {};
+			barrierO.SetBarrier(command.GetList().GetList().Get(), osr.GetResource().Get(),
+				D3D12_RESOURCE_STATE_COMMON, D3D12_RESOURCE_STATE_RENDER_TARGET);
+			osr.Begin(command);
+			ID3D12DescriptorHeap* descriptorHeaps[] = { SRV::descriptorHeap_.GetHeap().Get() };
+			command.GetList().GetList()->SetDescriptorHeaps(1, descriptorHeaps);
+			/////////////////////////////////////////////////////////////////////////
+			//描画0200
+			command.GetList().GetList()->RSSetViewports(1, &viewport);
+			command.GetList().GetList()->RSSetScissorRects(1, &scissorRect);
+
+
+			debugCamera.UpData();
+
+			//ゲームの処理
+			Matrix4x4 worldMatrixO = Matrix4x4::Make::Affine(transform.scale, transform.rotate, transform.translate);
+
+			Matrix4x4 worldMatrixSpriteO = Matrix4x4::Make::Affine(transformSprite.scale, transformSprite.rotate, transformSprite.translate);
+			Matrix4x4 viewMatrixSpriteO = Matrix4x4::Make::Identity();
+			Matrix4x4 projectionMatrixSpriteO = Matrix4x4::Make::OrthoGraphic(0.0f, 0.0f, static_cast<float>(window.GetWindowRect().right), static_cast<float>(window.GetWindowRect().bottom), 0.0f, 100.0f);
+			Matrix4x4 worldViewProjectionMatrixSpriteO = Matrix4x4::Multiply(worldMatrixSpriteO, Matrix4x4::Multiply(viewMatrixSpriteO, projectionMatrixSpriteO));
+
+			Matrix4x4 uvTransformMatrixO = Matrix4x4::Make::Scale(uvTransformSprite.scale);
+			uvTransformMatrixO = Matrix4x4::Multiply(uvTransformMatrixO, Matrix4x4::Make::RotateZ(uvTransformSprite.rotate.z));
+			uvTransformMatrixO = Matrix4x4::Multiply(uvTransformMatrixO, Matrix4x4::Make::Translate(uvTransformSprite.translate));
+
+			model.SetWVPData(debugCamera.DrawCamera(worldMatrixO), worldMatrixO, uvTransformMatrixO);
+			sprite.SetWVPData(worldViewProjectionMatrixSpriteO, worldMatrixSpriteO, uvTransformMatrixO);
+
+			model.Draw(command, pso, light, tex);
+			sprite.Draw2(command, pso, light, osr.GetHandleGPU());
+
+			barrierO.SetTransition(command.GetList().GetList().Get(), D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
+
 
 ////////////////////////////////////////////////////////////
 #pragma region コマンドを積み込んで確定させる
@@ -290,16 +330,16 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			command.GetList().GetList()->ClearDepthStencilView(dsvHandle, D3D12_CLEAR_FLAG_DEPTH, 1.0f, 0, 0, nullptr);//
 			command.GetList().GetList()->ClearRenderTargetView(rtv.GetHandle(backBufferIndex), clearColor, 0, nullptr);
 
-			ID3D12DescriptorHeap* descriptorHeaps[] = { SRV::descriptorHeap_.GetHeap().Get() };
-			command.GetList().GetList()->SetDescriptorHeaps(1, descriptorHeaps);
-			/////////////////////////////////////////////////////////////////////////
-			//描画0200
-			command.GetList().GetList()->RSSetViewports(1, &viewport);
-			command.GetList().GetList()->RSSetScissorRects(1, &scissorRect);
+			//ID3D12DescriptorHeap* descriptorHeaps[] = { SRV::descriptorHeap_.GetHeap().Get() };
+			//command.GetList().GetList()->SetDescriptorHeaps(1, descriptorHeaps);
+			///////////////////////////////////////////////////////////////////////////
+			////描画0200
+			//command.GetList().GetList()->RSSetViewports(1, &viewport);
+			//command.GetList().GetList()->RSSetScissorRects(1, &scissorRect);
 			
 #pragma endregion
 ////////////////////////////////////////////////////////////
-			debugCamera.UpData();
+			//debugCamera.UpData();
 
 			//ゲームの処理
 			Matrix4x4 worldMatrix = Matrix4x4::Make::Affine(transform.scale, transform.rotate, transform.translate);
@@ -315,8 +355,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		
 			model.SetWVPData(debugCamera.DrawCamera(worldMatrix), worldMatrix, uvTransformMatrix);
 			sprite.SetWVPData(worldViewProjectionMatrixSprite, worldMatrixSprite, uvTransformMatrix);
-			triangle.SetWVPData(debugCamera.DrawCamera(worldMatrix), worldMatrix, uvTransformMatrix);
-			sphere.SetWVPData(debugCamera.DrawCamera(worldMatrix), worldMatrix, uvTransformMatrix);
+			/*triangle.SetWVPData(debugCamera.DrawCamera(worldMatrix), worldMatrix, uvTransformMatrix);
+			sphere.SetWVPData(debugCamera.DrawCamera(worldMatrix), worldMatrix, uvTransformMatrix);*/
 
 			////////////////////////////////////////////////////////////
 
@@ -360,8 +400,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			
 			model.Draw(command, pso, light, tex);
 			sprite.Draw(command, pso, light, tex2);
-			triangle.Draw(command, pso, light, tex2);
-			sphere.Draw(command, pso, light, tex);
+			/*triangle.Draw(command, pso, light, tex2);
+			sphere.Draw(command, pso, light, tex);*/
 
 			//描画
 			ImGuiManager::EndFrame(command.GetList().GetList());

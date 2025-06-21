@@ -1,7 +1,7 @@
 #include "DepthStencil.h"
 #include <cassert>
 
-void DepthStencil::InitializeHeap(D3D12System d3d12) {
+void DepthStencil::InitializeHeap(D3D12System& d3d12) {
 	heap_.CreateDescriptorHeap(d3d12.GetDevice().Get(), D3D12_DESCRIPTOR_HEAP_TYPE_DSV, 1, false);
 }
 
@@ -11,7 +11,7 @@ void DepthStencil::InitializeDesc(BOOL is, D3D12_DEPTH_WRITE_MASK mask, D3D12_CO
 	SetFunc(func);
 }
 
-void DepthStencil::MakeResource(D3D12System d3d12, int32_t width, int32_t height) {
+void DepthStencil::MakeResource(D3D12System& d3d12, int32_t width, int32_t height) {
 	depthStencilResource_ = CreateDepthStencilTextureResource(d3d12.GetDevice().Get(), width, height);
 	SetDesc();
 }
