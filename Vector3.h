@@ -7,3 +7,6 @@ struct Vector3 {
 		return{ x + other.x,y + other.y, z + other.z };
 	}
 };
+
+
+Vector3 Lerp(const Vector3& p0, const Vector3& p1, float t);

@@ -28,7 +28,7 @@ void SpriteObject::InitializeResource(D3D12System& d3d12) {
 }
 
 void SpriteObject::InitializeData() {
-	object_.InitializeMD(Vector4(1.0f, 1.0f, 1.0f, 1.0f), false);
+	object_.InitializeMD(Vector4(0.0f, 0.0f, 0.0f, 1.0f), false);
 	object_.InitializeWVPD();
 	//リソースの先頭のアドレスから使う
 	object_.vertexBufferView_.BufferLocation = object_.vertexResource_->GetGPUVirtualAddress();

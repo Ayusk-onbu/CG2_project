@@ -9,6 +9,13 @@ public:
 	void Draw(TheOrderCommand& command, PSO& pso, DirectionLight& light, Texture& tex);
 
 	void SetWVPData(Matrix4x4 WVP,Matrix4x4 world,Matrix4x4 uv);
+
+	void SetColor(Vector4 color) { object_.materialData_->color = color; }
+
+	Vector4& GetColor() {
+		return  object_.materialData_->color
+			;
+	}
 private:
 	void InitializeResource(D3D12System& d3d12);
 

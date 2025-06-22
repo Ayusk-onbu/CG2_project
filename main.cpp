@@ -52,6 +52,14 @@
 #include "DebugCamera.h"
 
 
+
+#include "Player.h"
+#include "Enemy.h"
+#include "MapChip.h"
+#include "SkyDome.h"
+#include "DeathParticle.h"
+#include "Text.h"
+
 #include "externals/DirectXTex/DirectXTex.h"
 
 #pragma comment(lib, "d3d12.lib")
@@ -84,10 +92,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	int32_t kClienWidth = 1280;
 	int32_t kClienHeight = 720;
 	InputManager input;
-	//分割数
-	static const float kSubdivision = 16.0f;
-	//頂点数 (分割数(縦÷緯度)x分割数(横÷経度)x６)
-	uint32_t vertexCount = static_cast<uint32_t>(kSubdivision * kSubdivision) * 6;
+
+#pragma region 初期化
 ////////////////////////////////////////////////////////////
 #pragma region DirectX12の初期化独立している
 
@@ -182,32 +188,57 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	pso.Initialize(d3d12, PSOTYPE::Normal);
 #pragma region XAudio2初期化
 #pragma endregion
-	Music music;
-	music.Initialize();
+	/*Music music;
+	music.Initialize();*/
 #pragma region 入力情報の初期化
 #pragma endregion
 	input.Initialize(window.GetWindowClass(), window.GetHwnd());
 
 	DirectionLight light;
 	light.Initialize(d3d12);
+#pragma endregion
 
-// 頂点リソースを作る
-	ModelObject model;
-	model.Initialize(d3d12, "axis.obj");
+	ModelObject playerModel;
+	playerModel.Initialize(d3d12, "player.obj");
+	
+	ModelObject blockModel;
+	blockModel.Initialize(d3d12, "brickBlock.obj");
+	
+	/*const int enemyNum = 3;
+	std::vector<ModelObject> enemyModel(3);
+	for (int i = 0;i < enemyNum;++i) {
+		enemyModel[i].Initialize(d3d12, "player.obj");
+	}*/
+	//enemyModel[0].Initialize(d3d12, "player.obj");
+	//enemyModel[1].Initialize(d3d12, "player.obj");
+	//enemyModel[2].Initialize(d3d12, "player.obj");
+	ModelObject enemyModel;
+	enemyModel.Initialize(d3d12, "player.obj");
+	
+	ModelObject skyDomeModel;
+	skyDomeModel.Initialize(d3d12, "skydome.obj");
 
-	SpriteObject sprite;
-	sprite.Initialize(d3d12,640.0f,360.0f);
+	ModelObject deathParticleModel;
+	deathParticleModel.Initialize(d3d12, "deathParticle.obj");
 
-	TriangleObject triangle;
-	triangle.Initialize(d3d12, 2.0f, 2.0f);
+	ModelObject textModel;
+	textModel.Initialize(d3d12, "Text.obj");
 
-	SphereObject sphere;
-	sphere.Initialize(d3d12);
+	SpriteObject feedInOut;
+	feedInOut.Initialize(d3d12,1280.0f,720.0f);
 
 	Texture tex;
 	tex.Initialize(d3d12, "resources/uvChecker.png", 1);
-	Texture tex2;
-	tex2.Initialize(d3d12, model.GetFilePath(), 2);
+	Texture playerTex;
+	playerTex.Initialize(d3d12, playerModel.GetFilePath(), 2);
+	Texture blockTex;
+	blockTex.Initialize(d3d12, blockModel.GetFilePath(), 3);
+	Texture skyDomeTex;
+	skyDomeTex.Initialize(d3d12, skyDomeModel.GetFilePath(), 4);
+	Texture deathParticleTex;
+	deathParticleTex.Initialize(d3d12, deathParticleModel.GetFilePath(), 5);
+	Texture textTex;
+	textTex.Initialize(d3d12, textModel.GetFilePath(), 6);
 
 #pragma region ViewportとScissor独立しているが後回し
 	//ビューポート
@@ -233,28 +264,91 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 	MSG msg{};
 
-	float left = static_cast<float>(scissorRect.left);
-	float right = static_cast<float>(scissorRect.right);
-	float top = static_cast<float>(scissorRect.top);
-	float bottom = static_cast<float>(scissorRect.bottom);
-
-	bool useMonsterBall = true;
-	Transform transform = { {1.0f,1.0f,1.0f},{0.0f,0.0f,0.0f},{0.0f,0.0f,0.0f} };
-	Transform transformSprite{ {1.0f,1.0f,1.0f},{0.0f,0.0f,0.0f},{0.0f,0.0f,0.0f} };
-	Transform uvTransformSprite{
-		{1.0f,1.0f,1.0f},
-		{0.0f,0.0f,0.0f},
-		{0.0f,0.0f,0.0f},
-	};
-	Transform camera = { 1.0f, 1.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, -5.0f };
 	DebugCamera debugCamera;
 	debugCamera.Initialize();
-	
-	Audio audio;
-	audio.SoundPlayWave(MediaAudioDecoder::DecodeAudioFile(L"resources/maou_bgm_fantasy02.mp3"));
 
-	music.GetBGM().LoadWAVE("resources/loop101204.wav");
-	music.GetBGM().SetPlayAudioBuf();
+	Camera camera;
+	camera.Initialize();
+
+	bool isDebug = false;
+
+	MapChipField mapChip;
+	mapChip.LoadMapChipCsv("resources/mapChip.csv");
+
+	Player player;
+	Vector3 playerPosition = mapChip.GetBlockPositionByIndex(2, 18);
+	player.Initialize(&playerModel,playerPosition);
+	player.SetMapChipField(&mapChip);
+
+
+	/*Enemy enemy[enemyNum];
+	for (int i = 0;i < enemyNum;++i) {
+		Vector3 enemyPosition = mapChip.GetBlockPositionByIndex(10 + i, 18);
+		enemy[i].Initialize(&enemyModel[i], enemyPosition);
+	}*/
+	//Vector3 enemyPosition = mapChip.GetBlockPositionByIndex(10 + 1, 18);
+	//enemy[0].Initialize(&enemyModel[0], enemyPosition);
+	//enemyPosition = mapChip.GetBlockPositionByIndex(10 + 2, 18);
+	//enemy[1].Initialize(&enemyModel[1], enemyPosition);
+	//enemyPosition = mapChip.GetBlockPositionByIndex(10 + 3, 18);
+	//enemy[2].Initialize(&enemyModel[2], enemyPosition);
+	Enemy enemy;
+	Vector3 enemyPosition = mapChip.GetBlockPositionByIndex(10 , 18);
+	enemy.Initialize(&enemyModel, enemyPosition);
+
+	SkyDome skyDome;
+	skyDome.Initialize(&skyDomeModel);
+
+	DeathParticle deathParticle;
+	deathParticle.Initialize(&deathParticleModel, playerPosition);
+
+	Text text;
+	text.Initialize(&textModel);
+
+	int time = 120;
+	Vector4 color = { 0.0f,0.0f,0.0f,1.0f };
+
+	//Block blocks[20][100];
+	std::vector<std::vector<Transform*>> worldTransformBlocks_;
+	//要素数
+	uint32_t kNumBlockVirtical = mapChip.GetNumBlockVirtical();
+	uint32_t kNumBlockHorizontal = mapChip.GetNumBlockHorizontal();
+	//要素数を変更
+	//列数を設定（縦方向のブロック数）
+	worldTransformBlocks_.resize(kNumBlockVirtical);
+	for (uint32_t i = 0; i < kNumBlockVirtical; ++i) {
+		// 1列の要素数を設定（横方向のブロック数）
+		worldTransformBlocks_[i].resize(kNumBlockHorizontal);
+	}
+	// キューブの生成
+	for (uint32_t i = 0; i < kNumBlockVirtical; ++i) {
+		for (uint32_t j = 0; j < kNumBlockHorizontal; ++j) {
+			if (mapChip.GetMapChipTypeByIndex(j, i) == MapChipType::kBlock) {
+				Transform* worldTransform = new Transform();
+				worldTransform->Initialize();
+				worldTransformBlocks_[i][j] = worldTransform;
+				worldTransformBlocks_[i][j]->translate = mapChip.GetBlockPositionByIndex(j, i);
+			}
+		}
+	}
+	CameraController cameraController;
+	cameraController.Initialize(&camera);
+	cameraController.SetTarget(&player);
+	cameraController.Reset();
+	// 移動範囲の指定
+	Rect area = { 0, 100, 0, 100 };
+	area.left = 11;
+	area.right = mapChip.GetBlockPositionByIndex(100, 0).x;
+	area.bottom = mapChip.GetBlockPositionByIndex(0, 13).y;
+	area.top = mapChip.GetBlockPositionByIndex(0, 20).y - 10;
+	cameraController.SetMovableArea(area);
+
+	enum Scene {
+		TITLE,
+		GAME
+	};
+	int scene = 0;
+
 	//ウィンドウのｘボタンが押されるまでループ
 	while (msg.message != WM_QUIT) {
 		
@@ -299,70 +393,173 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			
 #pragma endregion
 ////////////////////////////////////////////////////////////
+			cameraController.Update();
 			debugCamera.UpData();
+			camera.UpData();
+			time -= 1;
+			color.w = time / 120.0f < 0 ? 0 : time / 120.0f;
+			feedInOut.SetColor(color);
 
-			//ゲームの処理
-			Matrix4x4 worldMatrix = Matrix4x4::Make::Affine(transform.scale, transform.rotate, transform.translate);
+			switch (scene) {
+			case TITLE:
 
-			Matrix4x4 worldMatrixSprite = Matrix4x4::Make::Affine(transformSprite.scale, transformSprite.rotate, transformSprite.translate);
+				
+				if (InputManager::GetKey().HoldKey(DIK_SPACE)) {
+					time += 2;
+				}
+				if (time >= 121) {
+					scene = 1;
+					color = { 1.0f,1.0f,1.0f,1.0f };
+					feedInOut.SetColor(color);
+				}
+
+				text.UpDate();
+				ImGui::Begin("text");
+				ImGuiManager::CreateImGui("Tra",text.GetTranslate().translate,1.0f,10.0f);
+				ImGuiManager::CreateImGui("Getcolor", feedInOut.GetColor(), 0.0f, 1.0f);
+				ImGuiManager::CreateImGui("color", color, 0.0f, 1.0f);
+				ImGui::End();
+
+				if (isDebug) {
+					text.Draw(debugCamera, command, pso, light, textTex);
+					player.Draw(debugCamera, command, pso, light, playerTex);
+					if (InputManager::GetKey().ReleaseKey(DIK_RETURN)) {
+						isDebug = false;
+					}
+				}
+				else {
+					text.Draw(camera, command, pso, light, textTex);
+					player.Draw(camera, command, pso, light, playerTex);
+					if (InputManager::GetKey().ReleaseKey(DIK_RETURN)) {
+						isDebug = true;
+					}
+				}
+				
+
+				break;
+			case GAME:
+				
+
+				// 更新処理
+
+
+
+				if (!player.GetIsDeathFlag())
+					player.UpDate();
+				enemy.UpDate();
+				/*for (int i = 0;i < enemyNum;++i) {
+					enemy[i].UpDate();
+				}*/
+				/*enemy[0].UpDate();
+				enemy[1].UpDate();
+				enemy[2].UpDate();*/
+				skyDome.UpDate();
+
+				AABB aabb1, aabb2;
+				aabb1 = AABB::World2AABB(player.GetWorldTransform().translate);
+				aabb2 = AABB::World2AABB(enemy.GetWorldTransform().translate);
+
+				if (AABB::IsHitAABB2AABB(aabb1, aabb2)) {
+					if (!player.GetIsDeathFlag())
+						player.OnCollision(&enemy);
+					enemy.OnCollision(&player);
+
+					deathParticle.UpDate();
+				}
+
+
+
+				// 描画処理
+				if (isDebug) {
+					skyDome.Draw(debugCamera, command, pso, light, skyDomeTex);
+					if (AABB::IsHitAABB2AABB(aabb1, aabb2)) {
+						if (!player.GetIsDeathFlag())
+							player.OnCollision(&enemy);
+						enemy.OnCollision(&player);
+
+						deathParticle.Draw(debugCamera, command, pso, light, deathParticleTex);
+					}
+
+					for (std::vector<Transform*>& worldTransformBlockLine : worldTransformBlocks_) {
+						for (Transform* worldTransformBlock : worldTransformBlockLine) {
+							if (!worldTransformBlock)
+								continue;
+							ImGui::Begin("Block");
+							ImGuiManager::CreateImGui("Transform", worldTransformBlock->translate, -10.0f, 100.0f);
+							ImGui::End();
+							Matrix4x4 worldMatrix = Matrix4x4::Make::Affine(worldTransformBlock->scale, worldTransformBlock->rotate, worldTransformBlock->translate);
+							Matrix4x4 uvTransformMatrix = Matrix4x4::Make::Scale({ 1.0f,1.0f,1.0f });
+							uvTransformMatrix = Matrix4x4::Multiply(uvTransformMatrix, Matrix4x4::Make::RotateZ(0.0f));
+							uvTransformMatrix = Matrix4x4::Multiply(uvTransformMatrix, Matrix4x4::Make::Translate({ 0.0f,0.0f,0.0f }));
+							blockModel.SetWVPData(debugCamera.DrawCamera(worldMatrix), worldMatrix, uvTransformMatrix);
+							blockModel.Draw(command, pso, light, blockTex);
+
+						}
+					}
+					if (!player.GetIsDeathFlag())
+						player.Draw(debugCamera, command, pso, light, playerTex);
+					/*for (int i = 0;i < enemyNum;++i) {
+						enemy[i].Draw(debugCamera, command, pso, light, playerTex);
+					}*/
+					/*enemy[0].Draw(debugCamera, command, pso, light, playerTex);
+					enemy[1].Draw(debugCamera, command, pso, light, playerTex);
+					enemy[2].Draw(debugCamera, command, pso, light, playerTex);*/
+					enemy.Draw(debugCamera, command, pso, light, playerTex);
+					if (InputManager::GetKey().ReleaseKey(DIK_RETURN)) {
+						isDebug = false;
+					}
+				}
+				else {
+					skyDome.Draw(camera, command, pso, light, skyDomeTex);
+					if (AABB::IsHitAABB2AABB(aabb1, aabb2)) {
+						if (!player.GetIsDeathFlag())
+							player.OnCollision(&enemy);
+						enemy.OnCollision(&player);
+						deathParticle.Draw(camera, command, pso, light, deathParticleTex);
+					}
+
+					for (std::vector<Transform*>& worldTransformBlockLine : worldTransformBlocks_) {
+						for (Transform* worldTransformBlock : worldTransformBlockLine) {
+							if (!worldTransformBlock)
+								continue;
+							ImGui::Begin("Block");
+							ImGuiManager::CreateImGui("Transform", worldTransformBlock->translate, -10.0f, 100.0f);
+							ImGui::End();
+							Matrix4x4 worldMatrix = Matrix4x4::Make::Affine(worldTransformBlock->scale, worldTransformBlock->rotate, worldTransformBlock->translate);
+							Matrix4x4 uvTransformMatrix = Matrix4x4::Make::Scale({ 1.0f,1.0f,1.0f });
+							uvTransformMatrix = Matrix4x4::Multiply(uvTransformMatrix, Matrix4x4::Make::RotateZ(0.0f));
+							uvTransformMatrix = Matrix4x4::Multiply(uvTransformMatrix, Matrix4x4::Make::Translate({ 0.0f,0.0f,0.0f }));
+							blockModel.SetWVPData(camera.DrawCamera(worldMatrix), worldMatrix, uvTransformMatrix);
+							blockModel.Draw(command, pso, light, blockTex);
+						}
+					}
+					if (!player.GetIsDeathFlag())
+						player.Draw(camera, command, pso, light, playerTex);
+					/*for (int i = 0;i < enemyNum;++i) {
+						enemy[i].Draw(debugCamera, command, pso, light, playerTex);
+					}*/
+					/*enemy[0].Draw(debugCamera, command, pso, light, playerTex);
+					enemy[1].Draw(debugCamera, command, pso, light, playerTex);
+					enemy[2].Draw(debugCamera, command, pso, light, playerTex);*/
+					enemy.Draw(camera, command, pso, light, playerTex);
+					if (InputManager::GetKey().ReleaseKey(DIK_RETURN)) {
+						isDebug = true;
+					}
+				}
+				break;
+			}
+			Matrix4x4 worldMatrixSprite = Matrix4x4::Make::Affine({ 1.0f,1.0f,1.0f }, { 0.0f,0.0f,0.0f }, { 0.0f,0.0f,0.0f });
 			Matrix4x4 viewMatrixSprite = Matrix4x4::Make::Identity();
 			Matrix4x4 projectionMatrixSprite = Matrix4x4::Make::OrthoGraphic(0.0f, 0.0f, static_cast<float>(window.GetWindowRect().right), static_cast<float>(window.GetWindowRect().bottom), 0.0f, 100.0f);
 			Matrix4x4 worldViewProjectionMatrixSprite = Matrix4x4::Multiply(worldMatrixSprite, Matrix4x4::Multiply(viewMatrixSprite, projectionMatrixSprite));
 
-			Matrix4x4 uvTransformMatrix = Matrix4x4::Make::Scale(uvTransformSprite.scale);
-			uvTransformMatrix = Matrix4x4::Multiply(uvTransformMatrix, Matrix4x4::Make::RotateZ(uvTransformSprite.rotate.z));
-			uvTransformMatrix = Matrix4x4::Multiply(uvTransformMatrix, Matrix4x4::Make::Translate(uvTransformSprite.translate));
-		
-			model.SetWVPData(debugCamera.DrawCamera(worldMatrix), worldMatrix, uvTransformMatrix);
-			sprite.SetWVPData(worldViewProjectionMatrixSprite, worldMatrixSprite, uvTransformMatrix);
-			triangle.SetWVPData(debugCamera.DrawCamera(worldMatrix), worldMatrix, uvTransformMatrix);
-			sphere.SetWVPData(debugCamera.DrawCamera(worldMatrix), worldMatrix, uvTransformMatrix);
+			Matrix4x4 uvTransformMatrix = Matrix4x4::Make::Scale({ 1.0f,1.0f,1.0f });
+			uvTransformMatrix = Matrix4x4::Multiply(uvTransformMatrix, Matrix4x4::Make::RotateZ(0.0f));
+			uvTransformMatrix = Matrix4x4::Multiply(uvTransformMatrix, Matrix4x4::Make::Translate({ 0.0f,0.0f,0.0f }));
 
-			////////////////////////////////////////////////////////////
-
-#pragma region FPS
-			ImGui::Begin("FPS");
-			ImGui::Text("FPS: %.1f", ImGui::GetIO().Framerate);
-			ImGui::End();
-#pragma endregion
-#pragma region ImGui1系
-			ImGui::Begin("02");
-			ImGui::Checkbox("UseMonsterBall", &useMonsterBall);
-			ImGuiManager::CreateImGui("Translate", transform.translate, -0.5f, 0.5f);
-			ImGuiManager::CreateImGui("Rotate", transform.rotate, -180.0f, 180.0f);
-			//ImGuiManager::CreateImGui("RGB", materialData->color, 0.0f, 1.0f);
-			ImGuiManager::CreateImGui("TransFromSpriteX", transformSprite.translate, -0.5f, 640.0f);
-			ImGuiManager::CreateImGui("LightColor", light.directionalLightData_->color, 0, 1);
-			ImGuiManager::CreateImGui("LightDirectional", light.directionalLightData_->direction, -1.0f, 1.0f);
-			ImGuiManager::CreateImGui("Intensity", light.directionalLightData_->intensity, 0, 1);
-			ImGui::GetFrameCount();
-			ImGui::End();
-#pragma endregion
-#pragma region ImGuiUVTransform
-			ImGui::Begin("UV系");
-			ImGui::DragFloat2("UVTranslate", &uvTransformSprite.translate.x, 0.01f, -10.0f, 10.0f);
-			ImGui::DragFloat2("UVScale", &uvTransformSprite.scale.x, 0.01f, -10.0f, 10.0f);
-			ImGui::SliderAngle("UVRotate", &uvTransformSprite.rotate.z);
-			ImGui::End();
-#pragma endregion
-#pragma region Scisser
-			ImGui::Begin("scissorRect");
-			ImGuiManager::CreateImGui("left", left, 0.0f, 10.0f);
-			ImGuiManager::CreateImGui("right", right, 0.0f, static_cast<float>(window.GetWindowRect().right));
-			ImGuiManager::CreateImGui("top", top, 0.0f, 10.0f);
-			ImGuiManager::CreateImGui("bottom", bottom, 0.0f, static_cast<float>(window.GetWindowRect().bottom));
-			ImGui::End();
-			scissorRect.left = static_cast<LONG>(left);
-			scissorRect.right = static_cast<LONG>(right);
-			scissorRect.top = static_cast<LONG>(top);
-			scissorRect.bottom = static_cast<LONG>(bottom);
-#pragma endregion
+			feedInOut.SetWVPData(worldViewProjectionMatrixSprite, worldMatrixSprite, uvTransformMatrix);
+			feedInOut.Draw(command, pso, light, deathParticleTex);
 			
-			model.Draw(command, pso, light, tex);
-			sprite.Draw(command, pso, light, tex2);
-			triangle.Draw(command, pso, light, tex2);
-			sphere.Draw(command, pso, light, tex);
-
 			//描画
 			ImGuiManager::EndFrame(command.GetList().GetList());
 
@@ -395,13 +592,17 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 #pragma endregion
 ////////////////////////////////////////////////////////////
 		}
-		
 	}
 	ImGuiManager::Shutdown();
 
 	//解放処理
 	TachyonSync::GetCGPU().UnLoad();
-	music.UnLoad();
+	for (std::vector<Transform*>& worldTransformBlockLine : worldTransformBlocks_) {
+		for (Transform* worldTransformBlock : worldTransformBlockLine) {
+			delete worldTransformBlock;
+		}
+	}
+	//music.UnLoad();
 
 #ifdef _DEBUG
 	//debugController->Release();
