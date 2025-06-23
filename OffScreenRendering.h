@@ -14,8 +14,6 @@ public:
 
 	void MakeDesc(DXGI_FORMAT fmt = DXGI_FORMAT_R8G8B8A8_UNORM_SRGB, D3D12_RTV_DIMENSION dimension = D3D12_RTV_DIMENSION_TEXTURE2D);
 
-	void SetHandle();
-
 	void MakeHandle(Microsoft::WRL::ComPtr <ID3D12Device> device, Microsoft::WRL::ComPtr <ID3D12Resource> resource);
 
 	D3D12_CPU_DESCRIPTOR_HANDLE& GetHandle() { return handle_; }

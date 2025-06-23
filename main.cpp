@@ -287,6 +287,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			command.GetList().GetList()->RSSetViewports(1, &viewport);
 			command.GetList().GetList()->RSSetScissorRects(1, &scissorRect);
 
+			//描画先のRTVとDSVを設定する
+			//D3D12_CPU_DESCRIPTOR_HANDLE dsvHandle = dsv.GetHeap().GetHeap()->GetCPUDescriptorHandleForHeapStart();
+			//command.GetList().GetList()->OMSetRenderTargets(1, &rtv.GetHandle(backBufferIndex), false, &dsvHandle);
 
 			debugCamera.UpData();
 
@@ -303,13 +306,18 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			uvTransformMatrixO = Matrix4x4::Multiply(uvTransformMatrixO, Matrix4x4::Make::Translate(uvTransformSprite.translate));
 
 			model.SetWVPData(debugCamera.DrawCamera(worldMatrixO), worldMatrixO, uvTransformMatrixO);
-			sprite.SetWVPData(worldViewProjectionMatrixSpriteO, worldMatrixSpriteO, uvTransformMatrixO);
+			//sprite.SetWVPData(worldViewProjectionMatrixSpriteO, worldMatrixSpriteO, uvTransformMatrixO);
 
 			model.Draw(command, pso, light, tex);
-			sprite.Draw2(command, pso, light, osr.GetHandleGPU());
+			//sprite.Draw2(command, pso, light, osr.GetHandleGPU());
 
 			barrierO.SetTransition(command.GetList().GetList().Get(), D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
 
+			// RTVのバインディングを解除
+			/*ID3D11RenderTargetView* nullRTVs = { nullptr };
+			m_DeviceContext->OMSetRenderTargets(_countof(nullRTVs), nullRTVs, nullptr);
+
+			*/// デフォルトのRTVを再設定
 
 ////////////////////////////////////////////////////////////
 #pragma region コマンドを積み込んで確定させる
@@ -321,7 +329,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 				D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET);
 
 			//描画先のRTVを設定する
-			command.GetList().GetList()->OMSetRenderTargets(1, &rtv.GetHandle(backBufferIndex), false, nullptr);
+			//command.GetList().GetList()->OMSetRenderTargets(1, &rtv.GetHandle(backBufferIndex), false, nullptr);
 			//描画先のRTVとDSVを設定する
 			D3D12_CPU_DESCRIPTOR_HANDLE dsvHandle = dsv.GetHeap().GetHeap()->GetCPUDescriptorHandleForHeapStart();
 			command.GetList().GetList()->OMSetRenderTargets(1, &rtv.GetHandle(backBufferIndex), false, &dsvHandle);
@@ -353,7 +361,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			uvTransformMatrix = Matrix4x4::Multiply(uvTransformMatrix, Matrix4x4::Make::RotateZ(uvTransformSprite.rotate.z));
 			uvTransformMatrix = Matrix4x4::Multiply(uvTransformMatrix, Matrix4x4::Make::Translate(uvTransformSprite.translate));
 		
-			model.SetWVPData(debugCamera.DrawCamera(worldMatrix), worldMatrix, uvTransformMatrix);
+			//model.SetWVPData(debugCamera.DrawCamera(worldMatrix), worldMatrix, uvTransformMatrix);
 			sprite.SetWVPData(worldViewProjectionMatrixSprite, worldMatrixSprite, uvTransformMatrix);
 			/*triangle.SetWVPData(debugCamera.DrawCamera(worldMatrix), worldMatrix, uvTransformMatrix);
 			sphere.SetWVPData(debugCamera.DrawCamera(worldMatrix), worldMatrix, uvTransformMatrix);*/
@@ -385,21 +393,11 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			ImGui::SliderAngle("UVRotate", &uvTransformSprite.rotate.z);
 			ImGui::End();
 #pragma endregion
-#pragma region Scisser
-			ImGui::Begin("scissorRect");
-			ImGuiManager::CreateImGui("left", left, 0.0f, 10.0f);
-			ImGuiManager::CreateImGui("right", right, 0.0f, static_cast<float>(window.GetWindowRect().right));
-			ImGuiManager::CreateImGui("top", top, 0.0f, 10.0f);
-			ImGuiManager::CreateImGui("bottom", bottom, 0.0f, static_cast<float>(window.GetWindowRect().bottom));
-			ImGui::End();
-			scissorRect.left = static_cast<LONG>(left);
-			scissorRect.right = static_cast<LONG>(right);
-			scissorRect.top = static_cast<LONG>(top);
-			scissorRect.bottom = static_cast<LONG>(bottom);
-#pragma endregion
+
 			
+			//model.Draw(command, pso, light, tex);
 			model.Draw(command, pso, light, tex);
-			sprite.Draw(command, pso, light, tex2);
+			sprite.Draw2(command, pso, light, osr.GetHandleGPU());
 			/*triangle.Draw(command, pso, light, tex2);
 			sphere.Draw(command, pso, light, tex);*/
 

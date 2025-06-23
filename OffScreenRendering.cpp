@@ -7,6 +7,8 @@
 
 void OffScreenRendering::Initialize(D3D12System& d3d12, float width, float height,
 	DXGI_FORMAT fmt,D3D12_RTV_DIMENSION dimension) {
+	
+
 	D3D12_RESOURCE_DESC renderingDesc{};
 	//   テクスチャの種類
 	renderingDesc.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE2D;
@@ -22,11 +24,9 @@ void OffScreenRendering::Initialize(D3D12System& d3d12, float width, float heigh
 	// Renderingするので１でいい
 	renderingDesc.MipLevels = 1;
 	//   ピクセルのフォーマット
-	renderingDesc.Format = fmt;
+	renderingDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM_SRGB;
 	//   サンプル数
 	renderingDesc.SampleDesc.Count = 1;
-	//   レイアウト(?)
-
 	//   リソースのフラグ
 	renderingDesc.Flags = D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET;
 
@@ -35,7 +35,7 @@ void OffScreenRendering::Initialize(D3D12System& d3d12, float width, float heigh
 	clearValue.Color[0] = 0.0f;
 	clearValue.Color[1] = 0.0f;
 	clearValue.Color[2] = 0.0f;
-	clearValue.Color[2] = 1.0f;
+	clearValue.Color[3] = 1.0f;
 
 	//   利用するHeapの設定
 	D3D12_HEAP_PROPERTIES heapProperties = {};
@@ -51,28 +51,31 @@ void OffScreenRendering::Initialize(D3D12System& d3d12, float width, float heigh
 
 	offRTV_.Initialize(&d3d12, offScreenTexture_, fmt, dimension);
 
+	//////////////////// ここまでがRTVの設定 ///////////////////////////
+
+	srvDesc_.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+	//ZeroMemory(&srvDesc_, sizeof(srvDesc_));
+	srvDesc_.Format = offScreenTexture_->GetDesc().Format;
+	srvDesc_.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
+	srvDesc_.Texture2D.MostDetailedMip = 0;
+	srvDesc_.Texture2D.MipLevels = renderingDesc.MipLevels;
+	textureSrvHandleCPU_ = ShaderResourceView::GetCPUDescriptorHandle();
+	textureSrvHandleGPU_ = ShaderResourceView::GetGPUDescriptorHandle();
+	d3d12.GetDevice()->CreateShaderResourceView(offScreenTexture_.Get(), &srvDesc_, textureSrvHandleCPU_);
+
+
 	dsv_.InitializeHeap(d3d12);
 	dsv_.MakeResource(d3d12,int32_t(width),int32_t(height)); 
 	d3d12.GetDevice()->CreateDepthStencilView(dsv_.GetResource().Get(), &dsv_.GetDSVDesc(), dsv_.GetHeap().GetHeap()->GetCPUDescriptorHandleForHeapStart());
 
 	pso_.Initialize(d3d12, PSOTYPE::Normal);
-
-	srvDesc_.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
-	srvDesc_.Format = offScreenTexture_->GetDesc().Format;
-	srvDesc_.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
-	srvDesc_.Texture2D.MipLevels = 1;
-	srvDesc_.Texture2D.MostDetailedMip = 0;
-	srvDesc_.Texture2D.ResourceMinLODClamp = 0.0f;
-
-	textureSrvHandleCPU_ = ShaderResourceView::GetCPUDescriptorHandle();
-	textureSrvHandleGPU_ = ShaderResourceView::GetGPUDescriptorHandle();
-	d3d12.GetDevice()->CreateShaderResourceView(offScreenTexture_.Get(), &srvDesc_, textureSrvHandleCPU_);
+	
 }
 
 void OffScreenRendering::Begin(TheOrderCommand& command) {
 	
 	// レンダーターゲットをクリアする色 (例: 青)
-	FLOAT clearColor[] = { 0.0f, 0.0f, 0.5f, 1.0f }; // R, G, B, A
+	FLOAT clearColor[] = { 1.0f,0.25f,0.5f,1.0f }; // R, G, B, A
 
 	// コマンドリストにレンダーターゲットを設定
 	// 深度ステンシルバッファを使用する場合は、DSVハンドルもここに渡す
