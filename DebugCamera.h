@@ -40,6 +40,8 @@ public:
 
 	Matrix4x4 DrawCamera(const Matrix4x4& world);
 
+	Matrix4x4 DrawMirrorCamera(const Matrix4x4& world, Vector3 mirrorPos, Vector3 MirrorNormal);
+
 	void Zoom();
 
 
@@ -77,4 +79,6 @@ private:
 	Projection projection_;
 	Matrix4x4 viewProjectionMatrix_;
 };
+
+Vector3 ChangeMirror(Vector3 pos,Vector3 mirrorPos,Vector3 MirrorNormal);
 
