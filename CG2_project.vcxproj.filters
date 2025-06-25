@@ -16,6 +16,9 @@
     <Filter Include="imgui">
       <UniqueIdentifier>{b07034c3-2d41-439e-91e5-ac7d068b16f2}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Music">
+      <UniqueIdentifier>{360f95ac-f69f-4aa4-8b9f-0ac237c4d239}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -58,9 +61,6 @@
       <Filter>ソース ファイル</Filter>
     </ClCompile>
     <ClCompile Include="ImGuiManager.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="Audio.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
     <ClCompile Include="BGM.cpp">
@@ -192,6 +192,9 @@
     <ClCompile Include="Text.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
+    <ClCompile Include="Music\Audio.cpp">
+      <Filter>Music</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Object3d.VS.hlsl" />
@@ -262,9 +265,6 @@
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
     <ClInclude Include="ImGuiManager.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="Audio.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
     <ClInclude Include="BGM.h">
@@ -407,6 +407,9 @@
     </ClInclude>
     <ClInclude Include="Text.h">
       <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="Music\Audio.h">
+      <Filter>Music</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
