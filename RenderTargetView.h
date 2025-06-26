@@ -27,3 +27,6 @@ private:
 	D3D12_CPU_DESCRIPTOR_HANDLE handles_[2];
 };
 
+
+using RTV = RenderTargetView;
+

@@ -8,13 +8,13 @@ void SpriteObject::Initialize(D3D12System& d3d12, float width, float height) {
 
 void SpriteObject::Draw(TheOrderCommand& command, PSO& pso, DirectionLight& light, Texture& tex) {
 	command.GetList().GetList()->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-	object_.DrawBase(command, pso, light, tex);
+	object_.DrawIndexBase(command, pso, light, tex);
 	command.GetList().GetList()->DrawIndexedInstanced(6, 1, 0, 0, 0);
 }
 
 void SpriteObject::Draw2(TheOrderCommand& command, PSO& pso, DirectionLight& light, D3D12_GPU_DESCRIPTOR_HANDLE& tex) {
 	command.GetList().GetList()->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-	object_.DrawBase(command, pso, light, tex);
+	object_.DrawIndexBase(command, pso, light, tex);
 	command.GetList().GetList()->DrawIndexedInstanced(6, 1, 0, 0, 0);
 }
 

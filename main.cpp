@@ -21,20 +21,15 @@
 #include "Log.h"
 #include "DXGI.h"
 #include "D3D12System.h"
-
-#include "CommandQueue.h"
-#include "CommandList.h"
-
+//#include "CommandQueue.h"
+//#include "CommandList.h"
 #include "TheOrderCommand.h"
-
 #include "SwapChain.h"
 #include "TachyonSync.h"
 #include "OmnisTechOracle.h"
 #include "RenderTargetView.h"
-
-#include "PipelineStateObject.h"
 #include "Texture.h"
-
+#include "PipelineStateObject.h"
 #include "OffScreenRendering.h"
 
 #include "SpriteObject.h"
@@ -85,10 +80,10 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	int32_t kClienWidth = 1280;
 	int32_t kClienHeight = 720;
 	InputManager input;
-	//分割数
-	static const float kSubdivision = 16.0f;
-	//頂点数 (分割数(縦÷緯度)x分割数(横÷経度)x６)
-	uint32_t vertexCount = static_cast<uint32_t>(kSubdivision * kSubdivision) * 6;
+	////分割数
+	//static const float kSubdivision = 16.0f;
+	////頂点数 (分割数(縦÷緯度)x分割数(横÷経度)x６)
+	//uint32_t vertexCount = static_cast<uint32_t>(kSubdivision * kSubdivision) * 6;
 ////////////////////////////////////////////////////////////
 #pragma region DirectX12の初期化独立している
 
@@ -207,13 +202,17 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	sprite.Initialize(d3d12,12.8f,7.2f);
 
 	/*TriangleObject triangle;
-	triangle.Initialize(d3d12, 2.0f, 2.0f);
+	triangle.Initialize(d3d12, 2.0f, 2.0f);*/
 
-	SphereObject sphere;
-	sphere.Initialize(d3d12);*/
+	const int num = 3;
+	SphereObject sphere[num];
+	for (int i = 0;i < num;++i) {
+		sphere[i].Initialize(d3d12);
+	}
+	
 
 	Texture tex;
-	tex.Initialize(d3d12, "resources/uvChecker.png", 1);
+	tex.Initialize(d3d12, "resources/monsterBall.png", 1);
 	Texture tex2;
 	tex2.Initialize(d3d12, model.GetFilePath(), 2);
 
@@ -240,11 +239,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	ImGuiManager::SetImGui(window.GetHwnd(),d3d12.GetDevice().Get(),SRV::descriptorHeap_.GetHeap().Get());
 
 	MSG msg{};
-
-	float left = static_cast<float>(scissorRect.left);
-	float right = static_cast<float>(scissorRect.right);
-	float top = static_cast<float>(scissorRect.top);
-	float bottom = static_cast<float>(scissorRect.bottom);
 
 	bool useMonsterBall = true;
 	Transform transform = { {1.0f,1.0f,1.0f},{0.0f,0.0f,0.0f},{0.0f,0.0f,0.0f} };
@@ -279,37 +273,26 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			// キー情報の更新があった
 			input.Update();
 
-			ResourceBarrier barrierO = {};
+#pragma region OffScreenRendering
+			/*ResourceBarrier barrierO = {};
 			barrierO.SetBarrier(command.GetList().GetList().Get(), osr.GetResource().Get(),
 				D3D12_RESOURCE_STATE_COMMON, D3D12_RESOURCE_STATE_RENDER_TARGET);
-			osr.Begin(command);
-			ID3D12DescriptorHeap* descriptorHeaps[] = { SRV::descriptorHeap_.GetHeap().Get() };
-			command.GetList().GetList()->SetDescriptorHeaps(1, descriptorHeaps);
-			/////////////////////////////////////////////////////////////////////////
-			//描画0200
-			command.GetList().GetList()->RSSetViewports(1, &viewport);
-			command.GetList().GetList()->RSSetScissorRects(1, &scissorRect);
+			osr.Begin(command);*/
+			//ID3D12DescriptorHeap* descriptorHeaps[] = { SRV::descriptorHeap_.GetHeap().Get() };
+			//command.GetList().GetList()->SetDescriptorHeaps(1, descriptorHeaps);
+			///////////////////////////////////////////////////////////////////////////
+			////描画0200
+			//command.GetList().GetList()->RSSetViewports(1, &viewport);
+			//command.GetList().GetList()->RSSetScissorRects(1, &scissorRect);
 
-			debugCamera.UpData();
+			
 
-			//ゲームの処理
-		//ゲームの処理
-			Matrix4x4 worldMatrix = Matrix4x4::Make::Affine(transform.scale, transform.rotate, transform.translate);
+			//model.SetWVPData(debugCamera.DrawMirrorCamera(worldMatrix, transformSprite.translate, {0.0f,0.0f,-1.0f}), worldMatrix, uvTransformMatrix);
 
-			Matrix4x4 worldMatrixSprite = Matrix4x4::Make::Affine(transformSprite.scale, transformSprite.rotate, transformSprite.translate);
-			Matrix4x4 viewMatrixSprite = Matrix4x4::Make::Identity();
-			Matrix4x4 projectionMatrixSprite = Matrix4x4::Make::OrthoGraphic(0.0f, 0.0f, static_cast<float>(window.GetWindowRect().right), static_cast<float>(window.GetWindowRect().bottom), 0.0f, 100.0f);
-			Matrix4x4 worldViewProjectionMatrixSprite = Matrix4x4::Multiply(worldMatrixSprite, Matrix4x4::Multiply(viewMatrixSprite, projectionMatrixSprite));
+			//model.Draw(command, pso, light, tex);
 
-			Matrix4x4 uvTransformMatrix = Matrix4x4::Make::Scale(uvTransformSprite.scale);
-			uvTransformMatrix = Matrix4x4::Multiply(uvTransformMatrix, Matrix4x4::Make::RotateZ(uvTransformSprite.rotate.z));
-			uvTransformMatrix = Matrix4x4::Multiply(uvTransformMatrix, Matrix4x4::Make::Translate(uvTransformSprite.translate));
-
-			model.SetWVPData(debugCamera.DrawMirrorCamera(worldMatrix, transformSprite.translate, {0.0f,0.0f,-1.0f}), worldMatrix, uvTransformMatrix);
-
-			model.Draw(command, pso, light, tex);
-
-			barrierO.SetTransition(command.GetList().GetList().Get(), D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
+			//barrierO.SetTransition(command.GetList().GetList().Get(), D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
+#pragma endregion
 ////////////////////////////////////////////////////////////
 #pragma region コマンドを積み込んで確定させる
 	//これから書き込むバックバッファのインデックスを取得
@@ -329,16 +312,31 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			command.GetList().GetList()->ClearDepthStencilView(dsvHandle, D3D12_CLEAR_FLAG_DEPTH, 1.0f, 0, 0, nullptr);//
 			command.GetList().GetList()->ClearRenderTargetView(rtv.GetHandle(backBufferIndex), clearColor, 0, nullptr);
 
-			//ID3D12DescriptorHeap* descriptorHeaps[] = { SRV::descriptorHeap_.GetHeap().Get() };
-			//command.GetList().GetList()->SetDescriptorHeaps(1, descriptorHeaps);
-			///////////////////////////////////////////////////////////////////////////
-			////描画0200
-			//command.GetList().GetList()->RSSetViewports(1, &viewport);
-			//command.GetList().GetList()->RSSetScissorRects(1, &scissorRect);
+			ID3D12DescriptorHeap* descriptorHeaps[] = { SRV::descriptorHeap_.GetHeap().Get() };
+			command.GetList().GetList()->SetDescriptorHeaps(1, descriptorHeaps);
+			/////////////////////////////////////////////////////////////////////////
+			//描画0200
+			command.GetList().GetList()->RSSetViewports(1, &viewport);
+			command.GetList().GetList()->RSSetScissorRects(1, &scissorRect);
 			
 #pragma endregion
 ////////////////////////////////////////////////////////////
 			//debugCamera.UpData();
+			debugCamera.UpData();
+
+			//ゲームの処理
+		//ゲームの処理
+			Matrix4x4 worldMatrix = Matrix4x4::Make::Affine(transform.scale, transform.rotate, transform.translate);
+
+			Matrix4x4 worldMatrixSprite = Matrix4x4::Make::Affine(transformSprite.scale, transformSprite.rotate, transformSprite.translate);
+			Matrix4x4 viewMatrixSprite = Matrix4x4::Make::Identity();
+			Matrix4x4 projectionMatrixSprite = Matrix4x4::Make::OrthoGraphic(0.0f, 0.0f, static_cast<float>(window.GetWindowRect().right), static_cast<float>(window.GetWindowRect().bottom), 0.0f, 100.0f);
+			Matrix4x4 worldViewProjectionMatrixSprite = Matrix4x4::Multiply(worldMatrixSprite, Matrix4x4::Multiply(viewMatrixSprite, projectionMatrixSprite));
+
+
+			Matrix4x4 uvTransformMatrix = Matrix4x4::Make::Scale(uvTransformSprite.scale);
+			uvTransformMatrix = Matrix4x4::Multiply(uvTransformMatrix, Matrix4x4::Make::RotateZ(uvTransformSprite.rotate.z));
+			uvTransformMatrix = Matrix4x4::Multiply(uvTransformMatrix, Matrix4x4::Make::Translate(uvTransformSprite.translate));
 			Matrix4x4 uvTransformMatrixq = Matrix4x4::Make::Scale({ -uvTransformSprite.scale.x,uvTransformSprite.scale.y,uvTransformSprite.scale.z });
 			uvTransformMatrixq = Matrix4x4::Multiply(uvTransformMatrixq, Matrix4x4::Make::RotateZ(uvTransformSprite.rotate.z));
 			uvTransformMatrixq = Matrix4x4::Multiply(uvTransformMatrixq, Matrix4x4::Make::Translate(uvTransformSprite.translate));
@@ -346,6 +344,10 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		
 			model2.SetWVPData(debugCamera.DrawCamera(worldMatrix), worldMatrix, uvTransformMatrix);
 			sprite.SetWVPData(debugCamera.DrawCamera(worldMatrixSprite), worldMatrixSprite, uvTransformMatrixq);
+			for (int i = 0;i < num;++i) {
+				sphere[i].SetWVPData(debugCamera.DrawCamera(worldMatrix), worldMatrix, uvTransformMatrix);
+			}
+			sphere[0].SetWVPData(debugCamera.DrawCamera(worldMatrixSprite), worldMatrixSprite, uvTransformMatrix);
 
 			////////////////////////////////////////////////////////////
 			Matrix4x4 test = debugCamera.DrawMirrorCamera(worldMatrix, transformSprite.translate, { 0.0f,0.0f,-1.0f });
@@ -384,13 +386,17 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 			
 			model2.Draw(command, pso, light, tex);
-			sprite.Draw2(command, pso, light, osr.GetHandleGPU());
+			sprite.Draw(command, pso, light, tex);
+			
+			sphere[0].Draw(command, pso, light, tex);
+			sphere[1].Draw(command, pso, light, tex2);
+			sphere[2].Draw(command, pso, light, tex2);
 
 			//描画
 			ImGuiManager::EndFrame(command.GetList().GetList());
 
 
-			barrierO.SetTransition(command.GetList().GetList().Get(), D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_COMMON);
+			//barrierO.SetTransition(command.GetList().GetList().Get(), D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_COMMON);
 			barrier.SetTransition(command.GetList().GetList().Get(), D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT);
 
 			//画面表示できるようにするために
