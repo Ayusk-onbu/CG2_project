@@ -45,6 +45,7 @@
 #include "InputManager.h"
 #include "Mouse.h"
 #include "Music.h"
+#include "CameraBase.h"
 #include "DebugCamera.h"
 
 
@@ -252,6 +253,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 	DebugCamera debugCamera;
 	debugCamera.Initialize();
+
+	CameraBase cameraBase;
+	cameraBase.Initialize();
 	
 	//Audio audio;
 	//audio.SoundPlayWave(MediaAudioDecoder::DecodeAudioFile(L"resources/maou_bgm_fantasy02.mp3"));
@@ -323,6 +327,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 ////////////////////////////////////////////////////////////
 			//debugCamera.UpData();
 			debugCamera.UpData();
+			cameraBase.UpDate();
 
 			//ゲームの処理
 		//ゲームの処理
@@ -342,15 +347,22 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			uvTransformMatrixq = Matrix4x4::Multiply(uvTransformMatrixq, Matrix4x4::Make::Translate(uvTransformSprite.translate));
 			
 		
-			model2.SetWVPData(debugCamera.DrawCamera(worldMatrix), worldMatrix, uvTransformMatrix);
+			/*model2.SetWVPData(debugCamera.DrawCamera(worldMatrix), worldMatrix, uvTransformMatrix);
 			sprite.SetWVPData(debugCamera.DrawCamera(worldMatrixSprite), worldMatrixSprite, uvTransformMatrixq);
 			for (int i = 0;i < num;++i) {
 				sphere[i].SetWVPData(debugCamera.DrawCamera(worldMatrix), worldMatrix, uvTransformMatrix);
 			}
-			sphere[0].SetWVPData(debugCamera.DrawCamera(worldMatrixSprite), worldMatrixSprite, uvTransformMatrix);
+			sphere[0].SetWVPData(debugCamera.DrawCamera(worldMatrixSprite), worldMatrixSprite, uvTransformMatrix);*/
+
+			model2.SetWVPData(cameraBase.DrawCamera(worldMatrix), worldMatrix, uvTransformMatrix);
+			sprite.SetWVPData(cameraBase.DrawCamera(worldMatrixSprite), worldMatrixSprite, uvTransformMatrixq);
+			for (int i = 0;i < num;++i) {
+				sphere[i].SetWVPData(cameraBase.DrawCamera(worldMatrix), worldMatrix, uvTransformMatrix);
+			}
+			sphere[0].SetWVPData(cameraBase.DrawCamera(worldMatrixSprite), worldMatrixSprite, uvTransformMatrix);
 
 			////////////////////////////////////////////////////////////
-			Matrix4x4 test = debugCamera.DrawMirrorCamera(worldMatrix, transformSprite.translate, { 0.0f,0.0f,-1.0f });
+			Matrix4x4 test = cameraBase.DrawCamera(worldMatrix);
 #pragma region FPS
 			ImGui::Begin("FPS");
 			ImGui::Text("FPS: %.1f", ImGui::GetIO().Framerate);
@@ -369,7 +381,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			ImGuiManager::CreateImGui("RotateSprite", transformSprite.rotate, -360.0f, 360.0f);
 			ImGuiManager::CreateImGui("TransFromSprite", transformSprite.translate, -128.0f, 128.0f);
 
-			ImGuiManager::CreateImGui("mirror", test, -180.0f, 180.0f);
+			ImGuiManager::CreateImGui("camera", test, -180.0f, 180.0f);
 			ImGuiManager::CreateImGui("LightColor", light.directionalLightData_->color, 0, 1);
 			ImGuiManager::CreateImGui("LightDirectional", light.directionalLightData_->direction, -1.0f, 1.0f);
 			ImGuiManager::CreateImGui("Intensity", light.directionalLightData_->intensity, 0, 1);

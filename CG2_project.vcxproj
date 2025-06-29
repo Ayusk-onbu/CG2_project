@@ -50,10 +50,11 @@
       <PreprocessorDefinitions>_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
-      <AdditionalOptions>/utf-8 /ignore:4049 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions>/utf-8 %(AdditionalOptions)</AdditionalOptions>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <TreatWarningAsError>true</TreatWarningAsError>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)Music;$(ProjectDir)Input;$(ProjectDir)Common;$(ProjectDir)Common\Vector;$(ProjectDir)Common\Matrix;$(ProjectDir)Advanced;$(ProjectDir)Common\Functions;$(ProjectDir)Core;$(ProjectDir)Core\Command;$(ProjectDir)Core\DebugTeam;$(ProjectDir)ResourceView;$(ProjectDir)ResourceView\PipelineStateObject;$(ProjectDir)Objects;$(ProjectDir)Objects\Model;$(ProjectDir)Objects\Primitive</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -77,6 +78,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
       <AdditionalOptions>/utf-8 %(AdditionalOptions)</AdditionalOptions>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)Music;$(ProjectDir)Input;$(ProjectDir)Common;$(ProjectDir)Common\Vector;$(ProjectDir)Common\Matrix;$(ProjectDir)Advanced;$(ProjectDir)Common\Functions;$(ProjectDir)Core;$(ProjectDir)Core\Command;$(ProjectDir)Core\DebugTeam;$(ProjectDir)ResourceView;$(ProjectDir)ResourceView\PipelineStateObject;$(ProjectDir)Objects;$(ProjectDir)Objects\Model;$(ProjectDir)Objects\Primitive</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -90,19 +92,23 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="Audio.cpp" />
-    <ClCompile Include="BGM.cpp" />
-    <ClCompile Include="BlendState.cpp" />
-    <ClCompile Include="CommandList.cpp" />
-    <ClCompile Include="CommandQueue.cpp" />
-    <ClCompile Include="D3D12System.cpp" />
+    <ClCompile Include="CameraBase.cpp" />
+    <ClCompile Include="Common\Functions\Trigonometric.cpp" />
+    <ClCompile Include="Common\Matrix\Matrix4x4.cpp" />
+    <ClCompile Include="Common\Vector\Vector3.cpp" />
+    <ClCompile Include="Core\Command\CommandList.cpp" />
+    <ClCompile Include="Core\Command\CommandQueue.cpp" />
+    <ClCompile Include="Core\Command\TheOrderCommand.cpp" />
+    <ClCompile Include="Core\D3D12System.cpp" />
+    <ClCompile Include="Core\DebugTeam\ErrorGuardian.cpp" />
+    <ClCompile Include="Core\DebugTeam\ImGuiManager.cpp" />
+    <ClCompile Include="Core\DebugTeam\Log.cpp" />
+    <ClCompile Include="Core\DXGI.cpp" />
+    <ClCompile Include="Core\OmnisTechOracle.cpp" />
+    <ClCompile Include="Core\TachyonSync.cpp" />
+    <ClCompile Include="Core\Window.cpp" />
     <ClCompile Include="DebugCamera.cpp" />
-    <ClCompile Include="DepthStencil.cpp" />
-    <ClCompile Include="DescriptorHeap.cpp" />
     <ClCompile Include="DirectionLight.cpp" />
-    <ClCompile Include="DXC.cpp" />
-    <ClCompile Include="DXGI.cpp" />
-    <ClCompile Include="ErrorGuardian.cpp" />
     <ClCompile Include="externals\imgui\imgui.cpp" />
     <ClCompile Include="externals\imgui\imgui_demo.cpp" />
     <ClCompile Include="externals\imgui\imgui_draw.cpp" />
@@ -110,37 +116,36 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="externals\imgui\imgui_impl_win32.cpp" />
     <ClCompile Include="externals\imgui\imgui_tables.cpp" />
     <ClCompile Include="externals\imgui\imgui_widgets.cpp" />
-    <ClCompile Include="Fence.cpp" />
     <ClCompile Include="Fngine.cpp" />
-    <ClCompile Include="ImGuiManager.cpp" />
-    <ClCompile Include="InputLayout.cpp" />
-    <ClCompile Include="InputManager.cpp" />
-    <ClCompile Include="Key.cpp" />
-    <ClCompile Include="Log.cpp" />
+    <ClCompile Include="Input\InputManager.cpp" />
+    <ClCompile Include="Input\Key.cpp" />
+    <ClCompile Include="Input\Mouse.cpp" />
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="Math.cpp" />
-    <ClCompile Include="ModelObject.cpp" />
-    <ClCompile Include="Mouse.cpp" />
-    <ClCompile Include="Music.cpp" />
-    <ClCompile Include="ObjectBase.cpp" />
+    <ClCompile Include="Music\Audio.cpp" />
+    <ClCompile Include="Music\BGM.cpp" />
+    <ClCompile Include="Music\Music.cpp" />
+    <ClCompile Include="Music\SE.cpp" />
+    <ClCompile Include="Objects\Model\ModelObject.cpp" />
+    <ClCompile Include="Objects\ObjectBase.cpp" />
+    <ClCompile Include="Objects\Primitive\SphereObject.cpp" />
+    <ClCompile Include="Objects\Primitive\SpriteObject.cpp" />
+    <ClCompile Include="Objects\Primitive\TriangleObject.cpp" />
     <ClCompile Include="OffScreenRendering.cpp" />
-    <ClCompile Include="OmnisTechOracle.cpp" />
-    <ClCompile Include="PipelineStateObject.cpp" />
-    <ClCompile Include="RasterizerState.cpp" />
-    <ClCompile Include="RenderTargetView.cpp" />
-    <ClCompile Include="ResourceBarrier.cpp" />
-    <ClCompile Include="ResourceFunc.cpp" />
-    <ClCompile Include="RootSignature.cpp" />
-    <ClCompile Include="SE.cpp" />
-    <ClCompile Include="ShaderResourceView.cpp" />
-    <ClCompile Include="SphereObject.cpp" />
-    <ClCompile Include="SpriteObject.cpp" />
-    <ClCompile Include="SwapChain.cpp" />
-    <ClCompile Include="TachyonSync.cpp" />
-    <ClCompile Include="Texture.cpp" />
-    <ClCompile Include="TheOrderCommand.cpp" />
-    <ClCompile Include="TriangleObject.cpp" />
-    <ClCompile Include="Window.cpp" />
+    <ClCompile Include="ResourceView\DepthStencil.cpp" />
+    <ClCompile Include="ResourceView\DescriptorHeap.cpp" />
+    <ClCompile Include="ResourceView\Fence.cpp" />
+    <ClCompile Include="ResourceView\PipelineStateObject\BlendState.cpp" />
+    <ClCompile Include="ResourceView\PipelineStateObject\DXC.cpp" />
+    <ClCompile Include="ResourceView\PipelineStateObject\InputLayout.cpp" />
+    <ClCompile Include="ResourceView\PipelineStateObject\PipelineStateObject.cpp" />
+    <ClCompile Include="ResourceView\PipelineStateObject\RasterizerState.cpp" />
+    <ClCompile Include="ResourceView\PipelineStateObject\RootSignature.cpp" />
+    <ClCompile Include="ResourceView\RenderTargetView.cpp" />
+    <ClCompile Include="ResourceView\ResourceBarrier.cpp" />
+    <ClCompile Include="ResourceView\ResourceFunc.cpp" />
+    <ClCompile Include="ResourceView\ShaderResourceView.cpp" />
+    <ClCompile Include="ResourceView\SwapChain.cpp" />
+    <ClCompile Include="ResourceView\Texture.cpp" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Object3d.PS.hlsl">
@@ -157,19 +162,31 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     </FxCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Audio.h" />
-    <ClInclude Include="BGM.h" />
-    <ClInclude Include="BlendState.h" />
-    <ClInclude Include="CommandList.h" />
-    <ClInclude Include="CommandQueue.h" />
-    <ClInclude Include="D3D12System.h" />
+    <ClInclude Include="Advanced\Material.h" />
+    <ClInclude Include="Advanced\Transform.h" />
+    <ClInclude Include="Advanced\TransformationMatrix.h" />
+    <ClInclude Include="Advanced\VertexData.h" />
+    <ClInclude Include="CameraBase.h" />
+    <ClInclude Include="Common\Functions\Trigonometric.h" />
+    <ClInclude Include="Common\Matrix\Matrix3x3.h" />
+    <ClInclude Include="Common\Matrix\Matrix4x4.h" />
+    <ClInclude Include="Common\Structures.h" />
+    <ClInclude Include="Common\Vector\Vector2.h" />
+    <ClInclude Include="Common\Vector\Vector3.h" />
+    <ClInclude Include="Common\Vector\Vector4.h" />
+    <ClInclude Include="Core\Command\CommandList.h" />
+    <ClInclude Include="Core\Command\CommandQueue.h" />
+    <ClInclude Include="Core\Command\TheOrderCommand.h" />
+    <ClInclude Include="Core\D3D12System.h" />
+    <ClInclude Include="Core\DebugTeam\ErrorGuardian.h" />
+    <ClInclude Include="Core\DebugTeam\ImGuiManager.h" />
+    <ClInclude Include="Core\DebugTeam\Log.h" />
+    <ClInclude Include="Core\DXGI.h" />
+    <ClInclude Include="Core\OmnisTechOracle.h" />
+    <ClInclude Include="Core\TachyonSync.h" />
+    <ClInclude Include="Core\Window.h" />
     <ClInclude Include="DebugCamera.h" />
-    <ClInclude Include="DepthStencil.h" />
-    <ClInclude Include="DescriptorHeap.h" />
     <ClInclude Include="DirectionLight.h" />
-    <ClInclude Include="DXC.h" />
-    <ClInclude Include="DXGI.h" />
-    <ClInclude Include="ErrorGuardian.h" />
     <ClInclude Include="externals\imgui\imconfig.h" />
     <ClInclude Include="externals\imgui\imgui.h" />
     <ClInclude Include="externals\imgui\imgui_impl_dx12.h" />
@@ -178,49 +195,36 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="externals\imgui\imstb_rectpack.h" />
     <ClInclude Include="externals\imgui\imstb_textedit.h" />
     <ClInclude Include="externals\imgui\imstb_truetype.h" />
-    <ClInclude Include="Fence.h" />
     <ClInclude Include="Fngine.h" />
-    <ClInclude Include="ImGuiManager.h" />
-    <ClInclude Include="InputLayout.h" />
-    <ClInclude Include="InputManager.h" />
-    <ClInclude Include="Key.h" />
-    <ClInclude Include="Log.h" />
-    <ClInclude Include="Material.h" />
-    <ClInclude Include="Math.h" />
-    <ClInclude Include="Matrix3x3.h" />
-    <ClInclude Include="Matrix4x4.h" />
-    <ClInclude Include="ModelData.h" />
-    <ClInclude Include="ModelObject.h" />
-    <ClInclude Include="Mouse.h" />
-    <ClInclude Include="Music.h" />
-    <ClInclude Include="ObjectBase.h" />
+    <ClInclude Include="Input\InputManager.h" />
+    <ClInclude Include="Input\Key.h" />
+    <ClInclude Include="Input\Mouse.h" />
+    <ClInclude Include="Music\Audio.h" />
+    <ClInclude Include="Music\BGM.h" />
+    <ClInclude Include="Music\Music.h" />
+    <ClInclude Include="Music\SE.h" />
+    <ClInclude Include="Objects\Model\ModelData.h" />
+    <ClInclude Include="Objects\Model\ModelObject.h" />
+    <ClInclude Include="Objects\ObjectBase.h" />
+    <ClInclude Include="Objects\Primitive\SphereObject.h" />
+    <ClInclude Include="Objects\Primitive\SpriteObject.h" />
+    <ClInclude Include="Objects\Primitive\TriangleObject.h" />
     <ClInclude Include="OffScreenRendering.h" />
-    <ClInclude Include="OmnisTechOracle.h" />
-    <ClInclude Include="PipelineStateObject.h" />
-    <ClInclude Include="RasterizerState.h" />
-    <ClInclude Include="RenderTargetView.h" />
-    <ClInclude Include="ResourceBarrier.h" />
-    <ClInclude Include="ResourceFunc.h" />
-    <ClInclude Include="RootSignature.h" />
-    <ClInclude Include="SE.h" />
-    <ClInclude Include="ShaderResourceView.h" />
-    <ClInclude Include="SphereObject.h" />
-    <ClInclude Include="SpriteObject.h" />
-    <ClInclude Include="Structures.h" />
-    <ClInclude Include="SwapChain.h" />
-    <ClInclude Include="TachyonSync.h" />
-    <ClInclude Include="Texture.h" />
-    <ClInclude Include="TheOrderCommand.h" />
-    <ClInclude Include="Transform.h" />
-    <ClInclude Include="TransformationMatrix.h" />
-    <ClInclude Include="TriangleObject.h" />
-    <ClInclude Include="Trigonometric.h" />
-    <ClInclude Include="Vector2.h" />
-    <ClInclude Include="Vector3.h" />
-    <ClInclude Include="Vector4.h" />
-    <ClInclude Include="VertexData.h" />
-    <ClInclude Include="wakaranaikusa.h" />
-    <ClInclude Include="Window.h" />
+    <ClInclude Include="ResourceView\DepthStencil.h" />
+    <ClInclude Include="ResourceView\DescriptorHeap.h" />
+    <ClInclude Include="ResourceView\Fence.h" />
+    <ClInclude Include="ResourceView\PipelineStateObject\BlendState.h" />
+    <ClInclude Include="ResourceView\PipelineStateObject\DXC.h" />
+    <ClInclude Include="ResourceView\PipelineStateObject\InputLayout.h" />
+    <ClInclude Include="ResourceView\PipelineStateObject\PipelineStateObject.h" />
+    <ClInclude Include="ResourceView\PipelineStateObject\RasterizerState.h" />
+    <ClInclude Include="ResourceView\PipelineStateObject\RootSignature.h" />
+    <ClInclude Include="ResourceView\RenderTargetView.h" />
+    <ClInclude Include="ResourceView\ResourceBarrier.h" />
+    <ClInclude Include="ResourceView\ResourceFunc.h" />
+    <ClInclude Include="ResourceView\ShaderResourceView.h" />
+    <ClInclude Include="ResourceView\SwapChain.h" />
+    <ClInclude Include="ResourceView\Texture.h" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="externals\imgui\LICENSE.txt" />

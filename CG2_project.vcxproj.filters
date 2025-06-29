@@ -16,6 +16,51 @@
     <Filter Include="imgui">
       <UniqueIdentifier>{b07034c3-2d41-439e-91e5-ac7d068b16f2}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Music">
+      <UniqueIdentifier>{2e84dc7b-27fa-4082-bfa6-83fb3fb98629}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Input">
+      <UniqueIdentifier>{71cdaf64-7385-4b3e-919e-6541408a0d05}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Common">
+      <UniqueIdentifier>{82bfec0a-2d07-4c17-a917-572a43c36529}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Common\Vector">
+      <UniqueIdentifier>{8b1fbb18-d537-4ed8-aee2-25c244228a9f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Common\Matrix">
+      <UniqueIdentifier>{44a6bb54-c085-4cf7-ac16-4b4430b003ba}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Advanced">
+      <UniqueIdentifier>{b65f3c2e-68b8-428e-989d-0ef105d11d18}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Common\Functions">
+      <UniqueIdentifier>{fb08376d-97b2-4e6f-97a1-9f43f7c0c384}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Core">
+      <UniqueIdentifier>{37575191-edb4-460c-9ff7-002ef7d3d54d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Core\Command">
+      <UniqueIdentifier>{1125dd49-756c-4f37-8066-56338603e718}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Core\DebugTeam">
+      <UniqueIdentifier>{aeced32e-848a-4d6e-b771-20c2c0bb1419}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ResourceView">
+      <UniqueIdentifier>{e5decfee-77fc-4db9-9546-b56e6f7f4819}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ResourceView\PipelineStateObject">
+      <UniqueIdentifier>{ac395bff-e14e-4703-bcd6-05dec05fb553}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Objects">
+      <UniqueIdentifier>{183125af-291c-4b32-891b-53febd541f4f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Objects\Model">
+      <UniqueIdentifier>{62082bfc-8ad8-442c-8ece-436a3c4c7e5f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Objects\Primitive">
+      <UniqueIdentifier>{b2e93039-8c54-44fd-b094-585c6030dab9}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -45,130 +90,139 @@
     <ClCompile Include="DebugCamera.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="Key.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="InputManager.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="Mouse.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="Window.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="ImGuiManager.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="Audio.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="BGM.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="SE.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="Music.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="Log.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="SwapChain.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="ErrorGuardian.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="ResourceBarrier.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="Fence.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="TachyonSync.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="DXGI.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="OmnisTechOracle.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="D3D12System.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="CommandQueue.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="CommandList.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="TheOrderCommand.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="RenderTargetView.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="DescriptorHeap.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="DXC.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="RootSignature.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="InputLayout.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="BlendState.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="RasterizerState.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="PipelineStateObject.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="DepthStencil.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="ShaderResourceView.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="Texture.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
     <ClCompile Include="DirectionLight.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="ResourceFunc.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="ObjectBase.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="SpriteObject.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="ModelObject.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="TriangleObject.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="SphereObject.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
     <ClCompile Include="OffScreenRendering.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="Math.cpp">
-      <Filter>ソース ファイル</Filter>
+    <ClCompile Include="Music\Audio.cpp">
+      <Filter>Music</Filter>
+    </ClCompile>
+    <ClCompile Include="Music\BGM.cpp">
+      <Filter>Music</Filter>
+    </ClCompile>
+    <ClCompile Include="Music\Music.cpp">
+      <Filter>Music</Filter>
+    </ClCompile>
+    <ClCompile Include="Music\SE.cpp">
+      <Filter>Music</Filter>
+    </ClCompile>
+    <ClCompile Include="Input\InputManager.cpp">
+      <Filter>Input</Filter>
+    </ClCompile>
+    <ClCompile Include="Input\Key.cpp">
+      <Filter>Input</Filter>
+    </ClCompile>
+    <ClCompile Include="Input\Mouse.cpp">
+      <Filter>Input</Filter>
+    </ClCompile>
+    <ClCompile Include="Common\Vector\Vector3.cpp">
+      <Filter>Common\Vector</Filter>
+    </ClCompile>
+    <ClCompile Include="Common\Matrix\Matrix4x4.cpp">
+      <Filter>Common\Matrix</Filter>
+    </ClCompile>
+    <ClCompile Include="Common\Functions\Trigonometric.cpp">
+      <Filter>Common\Functions</Filter>
+    </ClCompile>
+    <ClCompile Include="Core\Window.cpp">
+      <Filter>Core</Filter>
+    </ClCompile>
+    <ClCompile Include="Core\Command\CommandList.cpp">
+      <Filter>Core\Command</Filter>
+    </ClCompile>
+    <ClCompile Include="Core\Command\CommandQueue.cpp">
+      <Filter>Core\Command</Filter>
+    </ClCompile>
+    <ClCompile Include="Core\Command\TheOrderCommand.cpp">
+      <Filter>Core\Command</Filter>
+    </ClCompile>
+    <ClCompile Include="Core\D3D12System.cpp">
+      <Filter>Core</Filter>
+    </ClCompile>
+    <ClCompile Include="Core\DXGI.cpp">
+      <Filter>Core</Filter>
+    </ClCompile>
+    <ClCompile Include="Core\OmnisTechOracle.cpp">
+      <Filter>Core</Filter>
+    </ClCompile>
+    <ClCompile Include="Core\TachyonSync.cpp">
+      <Filter>Core</Filter>
+    </ClCompile>
+    <ClCompile Include="Core\DebugTeam\ErrorGuardian.cpp">
+      <Filter>Core\DebugTeam</Filter>
+    </ClCompile>
+    <ClCompile Include="Core\DebugTeam\Log.cpp">
+      <Filter>Core\DebugTeam</Filter>
+    </ClCompile>
+    <ClCompile Include="Core\DebugTeam\ImGuiManager.cpp">
+      <Filter>Core\DebugTeam</Filter>
+    </ClCompile>
+    <ClCompile Include="ResourceView\RenderTargetView.cpp">
+      <Filter>ResourceView</Filter>
+    </ClCompile>
+    <ClCompile Include="ResourceView\ShaderResourceView.cpp">
+      <Filter>ResourceView</Filter>
+    </ClCompile>
+    <ClCompile Include="ResourceView\DepthStencil.cpp">
+      <Filter>ResourceView</Filter>
+    </ClCompile>
+    <ClCompile Include="ResourceView\DescriptorHeap.cpp">
+      <Filter>ResourceView</Filter>
+    </ClCompile>
+    <ClCompile Include="ResourceView\PipelineStateObject\BlendState.cpp">
+      <Filter>ResourceView\PipelineStateObject</Filter>
+    </ClCompile>
+    <ClCompile Include="ResourceView\PipelineStateObject\DXC.cpp">
+      <Filter>ResourceView\PipelineStateObject</Filter>
+    </ClCompile>
+    <ClCompile Include="ResourceView\PipelineStateObject\InputLayout.cpp">
+      <Filter>ResourceView\PipelineStateObject</Filter>
+    </ClCompile>
+    <ClCompile Include="ResourceView\PipelineStateObject\RasterizerState.cpp">
+      <Filter>ResourceView\PipelineStateObject</Filter>
+    </ClCompile>
+    <ClCompile Include="ResourceView\PipelineStateObject\RootSignature.cpp">
+      <Filter>ResourceView\PipelineStateObject</Filter>
+    </ClCompile>
+    <ClCompile Include="ResourceView\SwapChain.cpp">
+      <Filter>ResourceView</Filter>
+    </ClCompile>
+    <ClCompile Include="ResourceView\Fence.cpp">
+      <Filter>ResourceView</Filter>
     </ClCompile>
     <ClCompile Include="Fngine.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="ResourceView\PipelineStateObject\PipelineStateObject.cpp">
+      <Filter>ResourceView\PipelineStateObject</Filter>
+    </ClCompile>
+    <ClCompile Include="Objects\Model\ModelObject.cpp">
+      <Filter>Objects\Model</Filter>
+    </ClCompile>
+    <ClCompile Include="Objects\Primitive\SphereObject.cpp">
+      <Filter>Objects\Primitive</Filter>
+    </ClCompile>
+    <ClCompile Include="Objects\Primitive\SpriteObject.cpp">
+      <Filter>Objects\Primitive</Filter>
+    </ClCompile>
+    <ClCompile Include="Objects\Primitive\TriangleObject.cpp">
+      <Filter>Objects\Primitive</Filter>
+    </ClCompile>
+    <ClCompile Include="Objects\ObjectBase.cpp">
+      <Filter>Objects</Filter>
+    </ClCompile>
+    <ClCompile Include="ResourceView\ResourceBarrier.cpp">
+      <Filter>ResourceView</Filter>
+    </ClCompile>
+    <ClCompile Include="ResourceView\ResourceFunc.cpp">
+      <Filter>ResourceView</Filter>
+    </ClCompile>
+    <ClCompile Include="ResourceView\Texture.cpp">
+      <Filter>ResourceView</Filter>
+    </ClCompile>
+    <ClCompile Include="CameraBase.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
   </ItemGroup>
@@ -201,172 +255,169 @@
     <ClInclude Include="externals\imgui\imstb_truetype.h">
       <Filter>imgui</Filter>
     </ClInclude>
-    <ClInclude Include="wakaranaikusa.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
     <ClInclude Include="DebugCamera.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="Vector2.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="Vector3.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="Vector4.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="Structures.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="Matrix4x4.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="Matrix3x3.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="Key.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="InputManager.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="Mouse.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="Trigonometric.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="Window.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="ImGuiManager.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="Audio.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="BGM.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="SE.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="Music.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="Log.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="SwapChain.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="ErrorGuardian.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="ResourceBarrier.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="Fence.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="TachyonSync.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="DXGI.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="OmnisTechOracle.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="D3D12System.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="CommandQueue.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="CommandList.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="TheOrderCommand.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="RenderTargetView.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="DescriptorHeap.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="DXC.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="RootSignature.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="InputLayout.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="BlendState.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="RasterizerState.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="PipelineStateObject.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="DepthStencil.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="ShaderResourceView.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="Texture.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="ResourceFunc.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
     <ClInclude Include="DirectionLight.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="ObjectBase.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="Material.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="TransformationMatrix.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="ModelData.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="VertexData.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="Transform.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="SpriteObject.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="ModelObject.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="TriangleObject.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="SphereObject.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
     <ClInclude Include="OffScreenRendering.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="Math.h">
+    <ClInclude Include="Fngine.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="Fngine.h">
+    <ClInclude Include="Music\Audio.h">
+      <Filter>Music</Filter>
+    </ClInclude>
+    <ClInclude Include="Music\BGM.h">
+      <Filter>Music</Filter>
+    </ClInclude>
+    <ClInclude Include="Music\Music.h">
+      <Filter>Music</Filter>
+    </ClInclude>
+    <ClInclude Include="Music\SE.h">
+      <Filter>Music</Filter>
+    </ClInclude>
+    <ClInclude Include="Input\InputManager.h">
+      <Filter>Input</Filter>
+    </ClInclude>
+    <ClInclude Include="Input\Key.h">
+      <Filter>Input</Filter>
+    </ClInclude>
+    <ClInclude Include="Input\Mouse.h">
+      <Filter>Input</Filter>
+    </ClInclude>
+    <ClInclude Include="Common\Vector\Vector2.h">
+      <Filter>Common\Vector</Filter>
+    </ClInclude>
+    <ClInclude Include="Common\Vector\Vector3.h">
+      <Filter>Common\Vector</Filter>
+    </ClInclude>
+    <ClInclude Include="Common\Vector\Vector4.h">
+      <Filter>Common\Vector</Filter>
+    </ClInclude>
+    <ClInclude Include="Common\Matrix\Matrix3x3.h">
+      <Filter>Common\Matrix</Filter>
+    </ClInclude>
+    <ClInclude Include="Common\Matrix\Matrix4x4.h">
+      <Filter>Common\Matrix</Filter>
+    </ClInclude>
+    <ClInclude Include="Advanced\Material.h">
+      <Filter>Advanced</Filter>
+    </ClInclude>
+    <ClInclude Include="Advanced\Transform.h">
+      <Filter>Advanced</Filter>
+    </ClInclude>
+    <ClInclude Include="Advanced\TransformationMatrix.h">
+      <Filter>Advanced</Filter>
+    </ClInclude>
+    <ClInclude Include="Advanced\VertexData.h">
+      <Filter>Advanced</Filter>
+    </ClInclude>
+    <ClInclude Include="Common\Structures.h">
+      <Filter>Common</Filter>
+    </ClInclude>
+    <ClInclude Include="Common\Functions\Trigonometric.h">
+      <Filter>Common\Functions</Filter>
+    </ClInclude>
+    <ClInclude Include="Core\Window.h">
+      <Filter>Core</Filter>
+    </ClInclude>
+    <ClInclude Include="Core\Command\CommandList.h">
+      <Filter>Core\Command</Filter>
+    </ClInclude>
+    <ClInclude Include="Core\Command\CommandQueue.h">
+      <Filter>Core\Command</Filter>
+    </ClInclude>
+    <ClInclude Include="Core\Command\TheOrderCommand.h">
+      <Filter>Core\Command</Filter>
+    </ClInclude>
+    <ClInclude Include="Core\D3D12System.h">
+      <Filter>Core</Filter>
+    </ClInclude>
+    <ClInclude Include="Core\DXGI.h">
+      <Filter>Core</Filter>
+    </ClInclude>
+    <ClInclude Include="Core\OmnisTechOracle.h">
+      <Filter>Core</Filter>
+    </ClInclude>
+    <ClInclude Include="Core\TachyonSync.h">
+      <Filter>Core</Filter>
+    </ClInclude>
+    <ClInclude Include="Core\DebugTeam\ErrorGuardian.h">
+      <Filter>Core\DebugTeam</Filter>
+    </ClInclude>
+    <ClInclude Include="Core\DebugTeam\Log.h">
+      <Filter>Core\DebugTeam</Filter>
+    </ClInclude>
+    <ClInclude Include="Core\DebugTeam\ImGuiManager.h">
+      <Filter>Core\DebugTeam</Filter>
+    </ClInclude>
+    <ClInclude Include="ResourceView\RenderTargetView.h">
+      <Filter>ResourceView</Filter>
+    </ClInclude>
+    <ClInclude Include="ResourceView\ShaderResourceView.h">
+      <Filter>ResourceView</Filter>
+    </ClInclude>
+    <ClInclude Include="ResourceView\DepthStencil.h">
+      <Filter>ResourceView</Filter>
+    </ClInclude>
+    <ClInclude Include="ResourceView\DescriptorHeap.h">
+      <Filter>ResourceView</Filter>
+    </ClInclude>
+    <ClInclude Include="ResourceView\PipelineStateObject\BlendState.h">
+      <Filter>ResourceView\PipelineStateObject</Filter>
+    </ClInclude>
+    <ClInclude Include="ResourceView\PipelineStateObject\DXC.h">
+      <Filter>ResourceView\PipelineStateObject</Filter>
+    </ClInclude>
+    <ClInclude Include="ResourceView\PipelineStateObject\InputLayout.h">
+      <Filter>ResourceView\PipelineStateObject</Filter>
+    </ClInclude>
+    <ClInclude Include="ResourceView\PipelineStateObject\RasterizerState.h">
+      <Filter>ResourceView\PipelineStateObject</Filter>
+    </ClInclude>
+    <ClInclude Include="ResourceView\PipelineStateObject\RootSignature.h">
+      <Filter>ResourceView\PipelineStateObject</Filter>
+    </ClInclude>
+    <ClInclude Include="ResourceView\Fence.h">
+      <Filter>ResourceView</Filter>
+    </ClInclude>
+    <ClInclude Include="ResourceView\SwapChain.h">
+      <Filter>ResourceView</Filter>
+    </ClInclude>
+    <ClInclude Include="ResourceView\PipelineStateObject\PipelineStateObject.h">
+      <Filter>ResourceView\PipelineStateObject</Filter>
+    </ClInclude>
+    <ClInclude Include="Objects\Model\ModelData.h">
+      <Filter>Objects\Model</Filter>
+    </ClInclude>
+    <ClInclude Include="Objects\Model\ModelObject.h">
+      <Filter>Objects\Model</Filter>
+    </ClInclude>
+    <ClInclude Include="Objects\Primitive\SphereObject.h">
+      <Filter>Objects\Primitive</Filter>
+    </ClInclude>
+    <ClInclude Include="Objects\Primitive\SpriteObject.h">
+      <Filter>Objects\Primitive</Filter>
+    </ClInclude>
+    <ClInclude Include="Objects\Primitive\TriangleObject.h">
+      <Filter>Objects\Primitive</Filter>
+    </ClInclude>
+    <ClInclude Include="Objects\ObjectBase.h">
+      <Filter>Objects</Filter>
+    </ClInclude>
+    <ClInclude Include="ResourceView\ResourceBarrier.h">
+      <Filter>ResourceView</Filter>
+    </ClInclude>
+    <ClInclude Include="ResourceView\ResourceFunc.h">
+      <Filter>ResourceView</Filter>
+    </ClInclude>
+    <ClInclude Include="ResourceView\Texture.h">
+      <Filter>ResourceView</Filter>
+    </ClInclude>
+    <ClInclude Include="CameraBase.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
   </ItemGroup>
