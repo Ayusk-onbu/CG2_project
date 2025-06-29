@@ -61,6 +61,18 @@
     <Filter Include="Objects\Primitive">
       <UniqueIdentifier>{b2e93039-8c54-44fd-b094-585c6030dab9}</UniqueIdentifier>
     </Filter>
+    <Filter Include="UsefulTool">
+      <UniqueIdentifier>{63c7b401-3a1a-4c83-b1a9-768566e34b20}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="UsefulTool\Camera">
+      <UniqueIdentifier>{9b79ef11-d094-4927-a325-ba44865bac8e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="UsefulTool\Light">
+      <UniqueIdentifier>{4861fd1a-3f45-4f97-9dc0-706166aeb207}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="UsefulTool\OSR">
+      <UniqueIdentifier>{4bcca42f-af47-4045-9c75-02a6243e7bf8}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -86,15 +98,6 @@
     </ClCompile>
     <ClCompile Include="externals\imgui\imgui_widgets.cpp">
       <Filter>imgui</Filter>
-    </ClCompile>
-    <ClCompile Include="DebugCamera.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="DirectionLight.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="OffScreenRendering.cpp">
-      <Filter>ソース ファイル</Filter>
     </ClCompile>
     <ClCompile Include="Music\Audio.cpp">
       <Filter>Music</Filter>
@@ -222,8 +225,17 @@
     <ClCompile Include="ResourceView\Texture.cpp">
       <Filter>ResourceView</Filter>
     </ClCompile>
-    <ClCompile Include="CameraBase.cpp">
-      <Filter>ソース ファイル</Filter>
+    <ClCompile Include="UsefulTool\Camera\CameraBase.cpp">
+      <Filter>UsefulTool\Camera</Filter>
+    </ClCompile>
+    <ClCompile Include="UsefulTool\Camera\DebugCamera.cpp">
+      <Filter>UsefulTool\Camera</Filter>
+    </ClCompile>
+    <ClCompile Include="UsefulTool\Light\DirectionLight.cpp">
+      <Filter>UsefulTool\Light</Filter>
+    </ClCompile>
+    <ClCompile Include="UsefulTool\OSR\OffScreenRendering.cpp">
+      <Filter>UsefulTool\OSR</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -254,15 +266,6 @@
     </ClInclude>
     <ClInclude Include="externals\imgui\imstb_truetype.h">
       <Filter>imgui</Filter>
-    </ClInclude>
-    <ClInclude Include="DebugCamera.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="DirectionLight.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="OffScreenRendering.h">
-      <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
     <ClInclude Include="Fngine.h">
       <Filter>ヘッダー ファイル</Filter>
@@ -417,8 +420,17 @@
     <ClInclude Include="ResourceView\Texture.h">
       <Filter>ResourceView</Filter>
     </ClInclude>
-    <ClInclude Include="CameraBase.h">
-      <Filter>ヘッダー ファイル</Filter>
+    <ClInclude Include="UsefulTool\Camera\CameraBase.h">
+      <Filter>UsefulTool\Camera</Filter>
+    </ClInclude>
+    <ClInclude Include="UsefulTool\Camera\DebugCamera.h">
+      <Filter>UsefulTool\Camera</Filter>
+    </ClInclude>
+    <ClInclude Include="UsefulTool\Light\DirectionLight.h">
+      <Filter>UsefulTool\Light</Filter>
+    </ClInclude>
+    <ClInclude Include="UsefulTool\OSR\OffScreenRendering.h">
+      <Filter>UsefulTool\OSR</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
