@@ -29,7 +29,7 @@
 #include "Music.h"
 #include "CameraBase.h"
 #include "DebugCamera.h"
-
+#include "Chronos.h"
 
 #include "externals/DirectXTex/DirectXTex.h"
 
@@ -187,42 +187,15 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	DirectionLight light;
 	light.Initialize(d3d12);
 #pragma endregion
-// 頂点リソースを作る
-	ModelObject model;
-	model.Initialize(d3d12, "axis.obj");
 
-	ModelObject model2;
-	model2.Initialize(d3d12, "axis.obj");
-
-	SpriteObject sprite;
-	sprite.Initialize(d3d12,12.8f,7.2f);
-	
-
-	Texture tex;
-	tex.Initialize(d3d12, "resources/monsterBall.png", 1);
-	Texture tex2;
-	tex2.Initialize(d3d12, model.GetFilePath(), 2);
+	//   ここからモデル系の処理
 
 
-	////////////////////////////////////////////////////////////
-
-	
+	//   ここまでモデル系の処理
 
 	MSG msg{};
-
-	bool useMonsterBall = true;
-	Transform transform = { {1.0f,1.0f,1.0f},{0.0f,0.0f,0.0f},{0.0f,0.0f,0.0f} };
-	Transform transformSprite{ {1.0f,1.0f,1.0f},{0.0f,135.0f,0.0f},{0.0f,0.0f,0.0f} };
-	Transform uvTransformSprite{
-		{1.0f,1.0f,1.0f},
-		{0.0f,0.0f,0.0f},
-		{0.0f,0.0f,0.0f},
-	};
-	Transform camera = { 1.0f, 1.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, -5.0f };
-
 	DebugCamera debugCamera;
 	debugCamera.Initialize();
-
 	CameraBase cameraBase;
 	cameraBase.Initialize();
 	
@@ -242,9 +215,10 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		}
 		else {
 			ImGuiManager::BeginFrame();
-
-			// キー情報の更新があった
+			Chronos::Update();
 			input.Update();
+			debugCamera.UpData();
+			cameraBase.UpDate();
 
 #pragma region OffScreenRendering
 			/*ResourceBarrier barrierO = {};
@@ -294,74 +268,18 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			
 #pragma endregion
 ////////////////////////////////////////////////////////////
-			//debugCamera.UpData();
-			debugCamera.UpData();
-			cameraBase.UpDate();
-
-			//ゲームの処理
-		//ゲームの処理
-			Matrix4x4 worldMatrix = Matrix4x4::Make::Affine(transform.scale, transform.rotate, transform.translate);
-
-			Matrix4x4 worldMatrixSprite = Matrix4x4::Make::Affine(transformSprite.scale, transformSprite.rotate, transformSprite.translate);
-			Matrix4x4 viewMatrixSprite = Matrix4x4::Make::Identity();
-			Matrix4x4 projectionMatrixSprite = Matrix4x4::Make::OrthoGraphic(0.0f, 0.0f, static_cast<float>(window.GetWindowRect().right), static_cast<float>(window.GetWindowRect().bottom), 0.0f, 100.0f);
-			Matrix4x4 worldViewProjectionMatrixSprite = Matrix4x4::Multiply(worldMatrixSprite, Matrix4x4::Multiply(viewMatrixSprite, projectionMatrixSprite));
-
-
-			Matrix4x4 uvTransformMatrix = Matrix4x4::Make::Scale(uvTransformSprite.scale);
-			uvTransformMatrix = Matrix4x4::Multiply(uvTransformMatrix, Matrix4x4::Make::RotateZ(uvTransformSprite.rotate.z));
-			uvTransformMatrix = Matrix4x4::Multiply(uvTransformMatrix, Matrix4x4::Make::Translate(uvTransformSprite.translate));
-			Matrix4x4 uvTransformMatrixq = Matrix4x4::Make::Scale({ -uvTransformSprite.scale.x,uvTransformSprite.scale.y,uvTransformSprite.scale.z });
-			uvTransformMatrixq = Matrix4x4::Multiply(uvTransformMatrixq, Matrix4x4::Make::RotateZ(uvTransformSprite.rotate.z));
-			uvTransformMatrixq = Matrix4x4::Multiply(uvTransformMatrixq, Matrix4x4::Make::Translate(uvTransformSprite.translate));
-			
-
-			model2.SetWVPData(cameraBase.DrawCamera(worldMatrix), worldMatrix, uvTransformMatrix);
-			sprite.SetWVPData(cameraBase.DrawCamera(worldMatrixSprite), worldMatrixSprite, uvTransformMatrixq);
 		
-			////////////////////////////////////////////////////////////
-			Matrix4x4 test = cameraBase.DrawCamera(worldMatrix);
-#pragma region FPS
-			ImGui::Begin("FPS");
-			ImGui::Text("FPS: %.1f", ImGui::GetIO().Framerate);
-			ImGui::End();
-#pragma endregion
-#pragma region ImGui1系
-			ImGui::Begin("02");
-			ImGui::Checkbox("UseMonsterBall", &useMonsterBall);
-			ImGui::Text("Model");
-			ImGuiManager::CreateImGui("Scale", transform.scale, -5.0f, 5.0f);
-			ImGuiManager::CreateImGui("Rotate", transform.rotate, -360.0f, 360.0f);
-			ImGuiManager::CreateImGui("Translate", transform.translate, -0.0f, 128.0f);
 
-			ImGui::Text("Sprite");
-			ImGuiManager::CreateImGui("ScaleSprite", transformSprite.scale, -5.0f, 5.0f);
-			ImGuiManager::CreateImGui("RotateSprite", transformSprite.rotate, -360.0f, 360.0f);
-			ImGuiManager::CreateImGui("TransFromSprite", transformSprite.translate, -128.0f, 128.0f);
-
-			ImGuiManager::CreateImGui("camera", test, -180.0f, 180.0f);
-			ImGuiManager::CreateImGui("LightColor", light.directionalLightData_->color, 0, 1);
-			ImGuiManager::CreateImGui("LightDirectional", light.directionalLightData_->direction, -1.0f, 1.0f);
-			ImGuiManager::CreateImGui("Intensity", light.directionalLightData_->intensity, 0, 1);
-			ImGui::GetFrameCount();
-			ImGui::End();
-#pragma endregion
-#pragma region ImGuiUVTransform
-			ImGui::Begin("UV系");
-			ImGui::DragFloat2("UVTranslate", &uvTransformSprite.translate.x, 0.01f, -10.0f, 10.0f);
-			ImGui::DragFloat2("UVScale", &uvTransformSprite.scale.x, 0.01f, -10.0f, 10.0f);
-			ImGui::SliderAngle("UVRotate", &uvTransformSprite.rotate.z);
-			ImGui::End();
-#pragma endregion
-
-			//   ここから描画処理↓↓↓↓
-			
-			model2.Draw(command, pso, light, tex);
-			sprite.Draw(command, pso, light, tex);
+			//   ここからゲームの処理↓↓↓↓
+		
 
 
-			//   ここまで描画処理↑↑↑↑
+			//   ここまでゲームの処理↑↑↑↑
+			//   ここから描画関係処理↓↓↓↓
 
+
+
+			//   ここまで描画関係処理↑↑↑↑
 			//描画
 			ImGuiManager::EndFrame(command.GetList().GetList());
 			//barrierO.SetTransition(command.GetList().GetList().Get(), D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_COMMON);
