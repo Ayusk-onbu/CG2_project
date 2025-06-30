@@ -73,6 +73,9 @@
     <Filter Include="UsefulTool\OSR">
       <UniqueIdentifier>{4bcca42f-af47-4045-9c75-02a6243e7bf8}</UniqueIdentifier>
     </Filter>
+    <Filter Include="UsefulTool\Time">
+      <UniqueIdentifier>{7d4c0291-ada0-4787-bbc2-5c54a71be084}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -236,6 +239,9 @@
     </ClCompile>
     <ClCompile Include="UsefulTool\OSR\OffScreenRendering.cpp">
       <Filter>UsefulTool\OSR</Filter>
+    </ClCompile>
+    <ClCompile Include="UsefulTool\Time\Chronos.cpp">
+      <Filter>UsefulTool\Time</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -431,6 +437,9 @@
     </ClInclude>
     <ClInclude Include="UsefulTool\OSR\OffScreenRendering.h">
       <Filter>UsefulTool\OSR</Filter>
+    </ClInclude>
+    <ClInclude Include="UsefulTool\Time\Chronos.h">
+      <Filter>UsefulTool\Time</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

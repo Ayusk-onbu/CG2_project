@@ -55,6 +55,11 @@ class Fngine
 {
 public:
 	void Initialize();
+	void BeginOSRFrame();
+	void EndOSRFrame();
+	void BeginFrame();
+	void EndFrame();
+	D3D12System& GetD3D12System() { return d3d12_; }
 private:
 
 	int32_t kClienWidth_;

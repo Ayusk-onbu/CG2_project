@@ -1,28 +1,10 @@
-//#include <windows.h>
-//#include <cstdint>
-//#include <d3d12.h>
-#include <dxgi1_6.h>
-//#include <cassert>
-#include <string>
-#include <format>
-#include <filesystem>
-#include <fstream>//ファイルに書いたり読んだりするライブラリ
-#include <sstream>
-#include <chrono>//時間を扱うライブラリ
-//#include <dbghelp.h>//CrashHandler06
-//#include <strsafe.h>//Dumpを出力06
-#include <dxgidebug.h>//0103 ReportLiveobject
-//#include <dxcapi.h>//DXCの初期化
-#include <cmath>
-#include <wrl.h>
 
+#include <dxgidebug.h>//0103 ReportLiveobject
 #include "Window.h"
 #include "ErrorGuardian.h"
 #include "Log.h"
 #include "DXGI.h"
 #include "D3D12System.h"
-//#include "CommandQueue.h"
-//#include "CommandList.h"
 #include "TheOrderCommand.h"
 #include "SwapChain.h"
 #include "TachyonSync.h"
@@ -53,9 +35,7 @@
 
 #pragma comment(lib, "d3d12.lib")
 #pragma comment(lib,"dxgi.lib")
-//#pragma comment(lib,"Dbghelp.lib")//ClashHandler06
 #pragma comment(lib,"dxguid.lib")//0103 ReportLiveobject
-//#pragma comment(lib,"dxcompiler.lib")//DXCの初期化
 
 
 #define pi float(3.14159265358979323846f)
@@ -81,10 +61,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	int32_t kClienWidth = 1280;
 	int32_t kClienHeight = 720;
 	InputManager input;
-	////分割数
-	//static const float kSubdivision = 16.0f;
-	////頂点数 (分割数(縦÷緯度)x分割数(横÷経度)x６)
-	//uint32_t vertexCount = static_cast<uint32_t>(kSubdivision * kSubdivision) * 6;
+#pragma region Engine
 ////////////////////////////////////////////////////////////
 #pragma region DirectX12の初期化独立している
 
@@ -180,43 +157,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 	OffScreenRendering osr;
 	osr.Initialize(d3d12,1280.0f,720.0f);
-
-#pragma region XAudio2初期化
-#pragma endregion
-	Music music;
-	music.Initialize();
-#pragma region 入力情報の初期化
-#pragma endregion
-	input.Initialize(window.GetWindowClass(), window.GetHwnd());
-
-	DirectionLight light;
-	light.Initialize(d3d12);
-
-// 頂点リソースを作る
-	ModelObject model;
-	model.Initialize(d3d12, "axis.obj");
-
-	ModelObject model2;
-	model2.Initialize(d3d12, "axis.obj");
-
-	SpriteObject sprite;
-	sprite.Initialize(d3d12,12.8f,7.2f);
-
-	/*TriangleObject triangle;
-	triangle.Initialize(d3d12, 2.0f, 2.0f);*/
-
-	const int num = 3;
-	SphereObject sphere[num];
-	for (int i = 0;i < num;++i) {
-		sphere[i].Initialize(d3d12);
-	}
-	
-
-	Texture tex;
-	tex.Initialize(d3d12, "resources/monsterBall.png", 1);
-	Texture tex2;
-	tex2.Initialize(d3d12, model.GetFilePath(), 2);
-
 #pragma region ViewportとScissor独立しているが後回し
 	//ビューポート
 	D3D12_VIEWPORT viewport = {};
@@ -235,9 +175,38 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	scissorRect.top = 0;
 	scissorRect.bottom = window.GetWindowRect().bottom;
 #pragma endregion
+	ImGuiManager::SetImGui(window.GetHwnd(), d3d12.GetDevice().Get(), SRV::descriptorHeap_.GetHeap().Get());
+#pragma region XAudio2初期化
+#pragma endregion
+	Music music;
+	music.Initialize();
+#pragma region 入力情報の初期化
+#pragma endregion
+	input.Initialize(window.GetWindowClass(), window.GetHwnd());
+
+	DirectionLight light;
+	light.Initialize(d3d12);
+#pragma endregion
+// 頂点リソースを作る
+	ModelObject model;
+	model.Initialize(d3d12, "axis.obj");
+
+	ModelObject model2;
+	model2.Initialize(d3d12, "axis.obj");
+
+	SpriteObject sprite;
+	sprite.Initialize(d3d12,12.8f,7.2f);
+	
+
+	Texture tex;
+	tex.Initialize(d3d12, "resources/monsterBall.png", 1);
+	Texture tex2;
+	tex2.Initialize(d3d12, model.GetFilePath(), 2);
+
+
 	////////////////////////////////////////////////////////////
 
-	ImGuiManager::SetImGui(window.GetHwnd(),d3d12.GetDevice().Get(),SRV::descriptorHeap_.GetHeap().Get());
+	
 
 	MSG msg{};
 
@@ -346,21 +315,10 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			uvTransformMatrixq = Matrix4x4::Multiply(uvTransformMatrixq, Matrix4x4::Make::RotateZ(uvTransformSprite.rotate.z));
 			uvTransformMatrixq = Matrix4x4::Multiply(uvTransformMatrixq, Matrix4x4::Make::Translate(uvTransformSprite.translate));
 			
-		
-			/*model2.SetWVPData(debugCamera.DrawCamera(worldMatrix), worldMatrix, uvTransformMatrix);
-			sprite.SetWVPData(debugCamera.DrawCamera(worldMatrixSprite), worldMatrixSprite, uvTransformMatrixq);
-			for (int i = 0;i < num;++i) {
-				sphere[i].SetWVPData(debugCamera.DrawCamera(worldMatrix), worldMatrix, uvTransformMatrix);
-			}
-			sphere[0].SetWVPData(debugCamera.DrawCamera(worldMatrixSprite), worldMatrixSprite, uvTransformMatrix);*/
 
 			model2.SetWVPData(cameraBase.DrawCamera(worldMatrix), worldMatrix, uvTransformMatrix);
 			sprite.SetWVPData(cameraBase.DrawCamera(worldMatrixSprite), worldMatrixSprite, uvTransformMatrixq);
-			for (int i = 0;i < num;++i) {
-				sphere[i].SetWVPData(cameraBase.DrawCamera(worldMatrix), worldMatrix, uvTransformMatrix);
-			}
-			sphere[0].SetWVPData(cameraBase.DrawCamera(worldMatrixSprite), worldMatrixSprite, uvTransformMatrix);
-
+		
 			////////////////////////////////////////////////////////////
 			Matrix4x4 test = cameraBase.DrawCamera(worldMatrix);
 #pragma region FPS
@@ -396,23 +354,20 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			ImGui::End();
 #pragma endregion
 
+			//   ここから描画処理↓↓↓↓
 			
 			model2.Draw(command, pso, light, tex);
 			sprite.Draw(command, pso, light, tex);
-			
-			sphere[0].Draw(command, pso, light, tex);
-			sphere[1].Draw(command, pso, light, tex2);
-			sphere[2].Draw(command, pso, light, tex2);
+
+
+			//   ここまで描画処理↑↑↑↑
 
 			//描画
 			ImGuiManager::EndFrame(command.GetList().GetList());
-
-
 			//barrierO.SetTransition(command.GetList().GetList().Get(), D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_COMMON);
 			barrier.SetTransition(command.GetList().GetList().Get(), D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT);
 
 			//画面表示できるようにするために
-
 			//コマンドリストの内容を確定させる。全てのコマンドを積んでからCloseすること
 			hr = command.GetList().GetList()->Close();
 			assert(SUCCEEDED(hr));

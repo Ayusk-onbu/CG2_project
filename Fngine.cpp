@@ -60,3 +60,19 @@ void Fngine::Initialize() {
 
 	light_.Initialize(d3d12_);
 }
+
+void Fngine::BeginOSRFrame() {
+
+}
+
+void Fngine::EndOSRFrame() {
+
+}
+
+void Fngine::BeginFrame() {
+
+}
+
+void Fngine::EndFrame() {
+
+}
