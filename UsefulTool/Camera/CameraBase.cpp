@@ -12,7 +12,7 @@ void CameraBase::Initialize() {
 	0.0f,0.0f,1.0f,0.0f,
 	0.0f,0.0f,0.0f,1.0f, };
 	camera_.translation_ = { 0.0f,10.0f,50.0f }; // カメラの位置
-	targetPos_ = { 0.0f,0.0f,10.0f };
+	targetPos_ = { 0.0f,0.0f,0.0f };
 	phi_ = 270.0f; // Y軸回転
 	theta_ = 0.0f; // X軸回転
 	radius_ = 50.0f;
