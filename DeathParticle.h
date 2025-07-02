@@ -32,6 +32,7 @@ private:
 	Vector4 color_;
 
 	// モデル
+	//std::array<ModelObject*, kNumParticles> model_;
 	ModelObject* model_ = nullptr;
 	// カメラ
 	CameraBase* camera_ = nullptr;
