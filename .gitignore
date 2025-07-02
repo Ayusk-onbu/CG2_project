@@ -99,6 +99,8 @@ StyleCopReport.xml
 *.scc
 *.dmp
 
+!resources/**/*.obj
+
 # Chutzpah Test files
 _Chutzpah*
 
@@ -363,4 +365,3 @@ MigrationBackup/
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
 
-/resources
