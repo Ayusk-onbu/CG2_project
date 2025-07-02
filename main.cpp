@@ -31,6 +31,15 @@
 #include "DebugCamera.h"
 #include "Chronos.h"
 
+#include "Player.h"
+#include "Enemy.h"
+#include "SkyDome.h"
+#include "MapChip.h"
+#include "CameraController.h"
+#include "AABB.h"
+#include "DeathParticle.h"
+
+
 #include "externals/DirectXTex/DirectXTex.h"
 
 #pragma comment(lib, "d3d12.lib")
@@ -189,7 +198,38 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 #pragma endregion
 
 	//   ここからモデル系の処理
+	ModelObject playerModel;
+	playerModel.Initialize(d3d12, "player.obj");
+	Texture playerTex;
+	playerTex.Initialize(d3d12, playerModel.GetFilePath(), 1);
 
+	ModelObject skyDomeModel;
+	skyDomeModel.Initialize(d3d12, "skyDome.obj");
+	Texture skyDomeTex;
+	skyDomeTex.Initialize(d3d12, skyDomeModel.GetFilePath(), 2);
+
+	ModelObject mapChipModel[20][100];
+	for (int i = 0;i < 20;++i) {
+		for (int j = 0;j < 100;++j) {
+			mapChipModel[i][j].Initialize(d3d12, "brickBlock.obj");
+		}
+	}
+	Texture mapChipTex;
+	mapChipTex.Initialize(d3d12, mapChipModel[0][0].GetFilePath(), 3);
+
+	ModelObject deathParticleModel[1];
+	for (int i = 0;i < 1;++i) {
+		deathParticleModel[i].Initialize(d3d12, "deathParticle.obj");
+	}
+	Texture deathParticleTex;
+	deathParticleTex.Initialize(d3d12, deathParticleModel[0].GetFilePath(), 4);
+
+	std::vector<ModelObject*> enemyModel;
+	for (int i = 0;i < 3;++i) {
+		ModelObject* newModel = new ModelObject;
+		newModel->Initialize(d3d12, "player.obj");
+		enemyModel.push_back(newModel);
+	}
 
 	//   ここまでモデル系の処理
 
@@ -198,12 +238,69 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	debugCamera.Initialize();
 	CameraBase cameraBase;
 	cameraBase.Initialize();
-	
 	//Audio audio;
 	//audio.SoundPlayWave(MediaAudioDecoder::DecodeAudioFile(L"resources/maou_bgm_fantasy02.mp3"));
-
 	music.GetBGM().LoadWAVE("resources/loop101204.wav");
 	//music.GetBGM().SetPlayAudioBuf();
+	 
+	SkyDome skyDome;
+	skyDome.Initialize(skyDomeModel, cameraBase);
+	MapChip mapChip;
+	mapChip.LoadMapChipCsv("resources/mapChip.csv");
+	std::vector<std::vector<Transform*>> worldTransformBlocks_;
+	std::vector<std::vector<Transform*>> uvTransformBlocks_;
+	Transform uvTransformBlock= { {1.0f, 1.0f, 1.0f},
+					              {0.0f, 0.0f, 0.0f},
+					              {0.0f, 0.0f, 0.0f} };
+	//要素数
+	uint32_t kNumBlockVirtical = mapChip.GetNumBlockVirtical();
+	uint32_t kNumBlockHorizontal = mapChip.GetNumBlockHorizontal();
+	//要素数を変更
+	//列数を設定（縦方向のブロック数）
+	worldTransformBlocks_.resize(kNumBlockVirtical);
+	for (uint32_t i = 0; i < kNumBlockVirtical; ++i) {
+		// 1列の要素数を設定（横方向のブロック数）
+		worldTransformBlocks_[i].resize(kNumBlockHorizontal);
+	}
+	// キューブの生成
+	for (uint32_t i = 0; i < kNumBlockVirtical; ++i) {
+		for (uint32_t j = 0; j < kNumBlockHorizontal; ++j) {
+			if (mapChip.GetMapChipTypeByIndex(j, i) == MapChipType::kBlock) {
+
+				Transform* worldTransform = new Transform;
+				worldTransform->scale = { 1.0f,1.0f,1.0f };
+				worldTransform->rotate = { 0.0f,0.0f,0.0f };
+				worldTransform->translate = {0.0f,0.0f,0.0f};
+				worldTransformBlocks_[i][j] = worldTransform;
+				worldTransformBlocks_[i][j]->translate = mapChip.GetBlockPositionByIndex(j, i);
+			}
+		}
+	}
+	Player player;
+	player.Initialize(playerModel, cameraBase,mapChip.GetBlockPositionByIndex(2,18));
+	player.SetMapChipField(&mapChip);
+
+	std::list<Enemy*> enemys;
+	for (int i = 0;i < 3;++i) {
+		Enemy* newEnemy = new Enemy;
+		newEnemy->Initialize(enemyModel[i], &cameraBase, mapChip.GetBlockPositionByIndex(10 + i * 2, 18));
+		enemys.push_back(newEnemy);
+	}
+	DeathParticle deathParticle;
+	deathParticle.Initialize(&deathParticleModel[0], &cameraBase, player.GetWorldTransform().translate);
+
+	CameraController cameraController;
+	cameraController.Initialize(&cameraBase);
+	cameraController.SetTarget(&player);
+	cameraController.Reset();
+	//カメラの移動範囲を設定
+	Rect area = { 0, 100, 0, 100 };
+	area.left = 11;
+	area.right = mapChip.GetBlockPositionByIndex(100, 0).x;
+	area.bottom = mapChip.GetBlockPositionByIndex(0, 13).y;
+	area.top = mapChip.GetBlockPositionByIndex(0, 20).y - 10;
+	cameraController.SetMovableArea(area);
+	//cameraBase.SetTargetPos(player.GetWorldTransform().translate);
 	//ウィンドウのｘボタンが押されるまでループ
 	while (msg.message != WM_QUIT) {
 		
@@ -218,8 +315,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			Chronos::Update();
 			input.Update();
 			debugCamera.UpData();
+			
+			cameraController.Update();
 			cameraBase.UpDate();
-
 #pragma region OffScreenRendering
 			/*ResourceBarrier barrierO = {};
 			barrierO.SetBarrier(command.GetList().GetList().Get(), osr.GetResource().Get(),
@@ -272,12 +370,59 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 			//   ここからゲームの処理↓↓↓↓
 		
+			player.Update();
+			for (Enemy* enemy : enemys) {
+				enemy->UpDate();
+			}
+			skyDome.Update();
+			// ブロックの更新
+			for (uint32_t i = 0; i < kNumBlockVirtical; ++i) {
+				for (uint32_t j = 0; j < kNumBlockHorizontal; ++j) {
+					if (mapChip.GetMapChipTypeByIndex(j, i) == MapChipType::kBlock) {
+						// uv
+						Matrix4x4 uvBlock = Matrix4x4::Make::Scale(uvTransformBlock.scale);
+						uvBlock = Matrix4x4::Multiply(uvBlock, Matrix4x4::Make::RotateZ(uvTransformBlock.rotate.z));
+						uvBlock = Matrix4x4::Multiply(uvBlock, Matrix4x4::Make::Translate(uvTransformBlock.translate));
 
+						Matrix4x4 matWorld;
+						matWorld = Matrix4x4::Make::Affine(worldTransformBlocks_[i][j]->scale, worldTransformBlocks_[i][j]->rotate, worldTransformBlocks_[i][j]->translate);
+						mapChipModel[i][j].SetWVPData(cameraBase.DrawCamera(matWorld), matWorld, uvBlock);
+					}
+				}
+			}
+
+			AABB aabb1, aabb2;
+			aabb1 = AABB::World2AABB(player.GetWorldTransform().translate);
+
+			for (Enemy* enemy : enemys) {
+				aabb2 = AABB::World2AABB(enemy->GetWorldTransform().translate);
+
+				if (AABB::IsHitAABB2AABB(aabb1, aabb2)) {
+					deathParticle.UpDate();
+					player.OnCollision(enemy);
+					enemy->OnCollision(&player);
+				}
+
+			}
 
 			//   ここまでゲームの処理↑↑↑↑
 			//   ここから描画関係処理↓↓↓↓
 
-
+			player.Draw(command, pso, light, playerTex);
+			for (Enemy* enemy : enemys) {
+				enemy->Draw(command, pso, light, playerTex);
+			}
+			skyDome.Draw(command, pso, light, skyDomeTex);
+			for (uint32_t i = 0; i < kNumBlockVirtical; ++i) {
+				for (uint32_t j = 0; j < kNumBlockHorizontal; ++j) {
+					if (mapChip.GetMapChipTypeByIndex(j, i) == MapChipType::kBlock) {
+						mapChipModel[i][j].Draw(command, pso, light, mapChipTex);
+					}
+				}
+			}
+			
+			deathParticle.Draw(command, pso, light, deathParticleTex);
+			
 
 			//   ここまで描画関係処理↑↑↑↑
 			//描画
@@ -318,6 +463,26 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	//解放処理
 	TachyonSync::GetCGPU().UnLoad();
 	music.UnLoad();
+	for (std::vector<Transform*>& worldTransformBlockLine : worldTransformBlocks_) {
+		for (Transform* worldTransformBlock : worldTransformBlockLine) {
+			delete worldTransformBlock;
+		}
+	}
+	worldTransformBlocks_.clear();
+	for (std::vector<Transform*>& worldTransformBlockLine : uvTransformBlocks_) {
+		for (Transform* worldTransformBlock : worldTransformBlockLine) {
+			delete worldTransformBlock;
+		}
+	}
+	uvTransformBlocks_.clear();
+	for (ModelObject* enemy : enemyModel) {
+		delete enemy;
+	}
+	enemyModel.clear();
+	for (Enemy* enemy : enemys) {
+		delete enemy;
+	}
+	enemys.clear();
 
 #ifdef _DEBUG
 	//debugController->Release();

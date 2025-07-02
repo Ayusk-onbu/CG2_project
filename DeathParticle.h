@@ -1,0 +1,39 @@
+#pragma once
+#include <array>
+#include "Transform.h"
+#include "ModelObject.h"
+#include "CameraBase.h"
+
+class DeathParticle
+{
+
+	static inline const uint32_t kNumParticles = 8;
+	// 消滅時間
+	static inline const float kDuraction = 2.0f;
+	// 移動の速さ
+	static inline const float kSpeed = 0.1f;
+	// 角度
+	static inline const float kAngle = 2 * 3.141592f / kNumParticles;
+
+public:
+	void Initialize(ModelObject* model, CameraBase* camera, const Vector3& position);
+	void UpDate();
+	void Draw(TheOrderCommand& command, PSO& pso, DirectionLight& light, Texture& tex);
+	bool IsFinished() const { return isFinished_; }
+
+private:
+
+	std::array<Transform, kNumParticles> worldTransform_;
+	Transform uvTransform_;
+
+	bool isFinished_ = false;
+	float counter_ = 0.0f;
+
+	Vector4 color_;
+
+	// モデル
+	ModelObject* model_ = nullptr;
+	// カメラ
+	CameraBase* camera_ = nullptr;
+};
+

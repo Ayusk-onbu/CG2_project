@@ -30,3 +30,5 @@ Vector3 Project(const Vector3& v1, const Vector3& v2);
 //Vector3 ClosestPoint(const Vector3& point, const Segment& segment);
 // 適当な垂直ベクトルを求める
 Vector3 Perpendicular(const Vector3& vector);
+
+Vector3 Lerp(const Vector3& p0, const Vector3& p1, float t);

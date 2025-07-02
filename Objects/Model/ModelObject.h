@@ -11,6 +11,8 @@ public:
 
 	void SetWVPData(Matrix4x4 WVP, Matrix4x4 world, Matrix4x4 uv);
 
+	void SetColor(Vector4& color);
+
 	std::string GetFilePath() { return modelData_.material.textureFilePath; }
 private:
 	void InitializeResource(D3D12System d3d12,const std::string& filename, const std::string& directoryPath);

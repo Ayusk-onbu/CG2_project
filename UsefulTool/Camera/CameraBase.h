@@ -29,7 +29,7 @@ public:
 
 	Matrix4x4 DrawCamera(const Matrix4x4& world);
 
-	void SetTargetPos(Vector3 target);
+	void SetTargetPos(Vector3& target);
 private:
 	Vector3 CalculateRight();
 	Vector3 CalculateUp();
@@ -42,6 +42,10 @@ private:
 	float theta_;
 	float phi_;
 	float radius_;
+
+	Vector3 xAxis_;
+	Vector3 yAxis_;
+	Vector3 zAxis_;
 
 	Camera camera_;
 	Projection projection_;

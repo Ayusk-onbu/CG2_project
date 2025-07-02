@@ -105,3 +105,11 @@ Vector3 Perpendicular(const Vector3& vector) {
 	// Xを消して同じ値で相殺
 	return{ 0.0f,-vector.z,vector.y };
 }
+
+Vector3 Lerp(const Vector3& p0, const Vector3& p1, float t) {
+	Vector3 ret;
+	ret.x = p0.x + (p1.x - p0.x) * t;
+	ret.y = p0.y + (p1.y - p0.y) * t;
+	ret.z = p0.z + (p1.z - p0.z) * t;
+	return ret;
+}

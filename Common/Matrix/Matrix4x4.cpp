@@ -132,6 +132,25 @@ Matrix4x4 Matrix4x4::Make::LookAt(const Vector3& eye, const Vector3& target, con
 	return ret;
 }
 
+Matrix4x4 Matrix4x4::Make::LookAt(const Vector3& eye, const Vector3& target, const Vector3& up, Vector3& xAxis, Vector3& yAxis, Vector3& zAxis) {
+	zAxis = Normalize(Subtract(target, eye));
+	xAxis = Normalize(CrossProduct(up, zAxis));
+	yAxis = Normalize(CrossProduct(zAxis, xAxis));
+	Matrix4x4 ret = {
+		xAxis.x, yAxis.x, zAxis.x, 0,
+		xAxis.y, yAxis.y, zAxis.y, 0,
+		xAxis.z, yAxis.z, zAxis.z, 0,
+		-DotProduct(xAxis, eye), -DotProduct(yAxis, eye), -DotProduct(zAxis, eye), 1
+	};
+	/*Matrix4x4 ret = {
+		xAxis.x, xAxis.y, xAxis.z, 0,
+		yAxis.x, yAxis.y, yAxis.z, 0,
+		xAxis.x, zAxis.y, zAxis.z, 0,
+		-DotProduct(xAxis, eye), -DotProduct(yAxis, eye), -DotProduct(zAxis, eye), 1
+	};*/
+	return ret;
+}
+
 	Matrix4x4 Matrix4x4::Multiply(const Matrix4x4& m1, const Matrix4x4 m2) {
 		float a11 = m1.m[0][0], a12 = m1.m[0][1], a13 = m1.m[0][2], a14 = m1.m[0][3],
 			a21 = m1.m[1][0], a22 = m1.m[1][1], a23 = m1.m[1][2], a24 = m1.m[1][3],
@@ -184,6 +203,14 @@ Matrix4x4 Matrix4x4::Make::LookAt(const Vector3& eye, const Vector3& target, con
 			(-a11 * a22 * a43 - a12 * a23 * a41 - a13 * a21 * a42 + a13 * a22 * a41 + a12 * a21 * a43 + a11 * a23 * a42) / A,
 			(a11 * a22 * a33 + a12 * a23 * a31 + a13 * a21 * a32 - a13 * a22 * a31 - a12 * a21 * a33 - a11 * a23 * a32) / A
 		};
+		return ret;
+	}
+
+	Vector3 Matrix4x4::Transform(const Vector3& v, const Matrix4x4& m) {
+		Vector3 ret;
+		ret.x = v.x * m.m[0][0] + v.y * m.m[1][0] + v.z * m.m[2][0] + m.m[3][0];
+		ret.y = v.x * m.m[0][1] + v.y * m.m[1][1] + v.z * m.m[2][1] + m.m[3][1];
+		ret.z = v.x * m.m[0][2] + v.y * m.m[1][2] + v.z * m.m[2][2] + m.m[3][2];
 		return ret;
 	}
 

@@ -92,6 +92,8 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Advanced\AABB.cpp" />
+    <ClCompile Include="CameraController.cpp" />
     <ClCompile Include="Common\Functions\Trigonometric.cpp" />
     <ClCompile Include="Common\Matrix\Matrix4x4.cpp" />
     <ClCompile Include="Common\Vector\Vector3.cpp" />
@@ -106,6 +108,8 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="Core\OmnisTechOracle.cpp" />
     <ClCompile Include="Core\TachyonSync.cpp" />
     <ClCompile Include="Core\Window.cpp" />
+    <ClCompile Include="DeathParticle.cpp" />
+    <ClCompile Include="Enemy.cpp" />
     <ClCompile Include="externals\imgui\imgui.cpp" />
     <ClCompile Include="externals\imgui\imgui_demo.cpp" />
     <ClCompile Include="externals\imgui\imgui_draw.cpp" />
@@ -118,6 +122,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="Input\Key.cpp" />
     <ClCompile Include="Input\Mouse.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="MapChip.cpp" />
     <ClCompile Include="Music\Audio.cpp" />
     <ClCompile Include="Music\BGM.cpp" />
     <ClCompile Include="Music\Music.cpp" />
@@ -127,6 +132,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="Objects\Primitive\SphereObject.cpp" />
     <ClCompile Include="Objects\Primitive\SpriteObject.cpp" />
     <ClCompile Include="Objects\Primitive\TriangleObject.cpp" />
+    <ClCompile Include="Player.cpp" />
     <ClCompile Include="ResourceView\DepthStencil.cpp" />
     <ClCompile Include="ResourceView\DescriptorHeap.cpp" />
     <ClCompile Include="ResourceView\Fence.cpp" />
@@ -142,6 +148,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="ResourceView\ShaderResourceView.cpp" />
     <ClCompile Include="ResourceView\SwapChain.cpp" />
     <ClCompile Include="ResourceView\Texture.cpp" />
+    <ClCompile Include="SkyDome.cpp" />
     <ClCompile Include="UsefulTool\Camera\CameraBase.cpp" />
     <ClCompile Include="UsefulTool\Camera\DebugCamera.cpp" />
     <ClCompile Include="UsefulTool\Light\DirectionLight.cpp" />
@@ -163,10 +170,12 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     </FxCompile>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Advanced\AABB.h" />
     <ClInclude Include="Advanced\Material.h" />
     <ClInclude Include="Advanced\Transform.h" />
     <ClInclude Include="Advanced\TransformationMatrix.h" />
     <ClInclude Include="Advanced\VertexData.h" />
+    <ClInclude Include="CameraController.h" />
     <ClInclude Include="Common\Functions\Trigonometric.h" />
     <ClInclude Include="Common\Matrix\Matrix3x3.h" />
     <ClInclude Include="Common\Matrix\Matrix4x4.h" />
@@ -185,6 +194,8 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="Core\OmnisTechOracle.h" />
     <ClInclude Include="Core\TachyonSync.h" />
     <ClInclude Include="Core\Window.h" />
+    <ClInclude Include="DeathParticle.h" />
+    <ClInclude Include="Enemy.h" />
     <ClInclude Include="externals\imgui\imconfig.h" />
     <ClInclude Include="externals\imgui\imgui.h" />
     <ClInclude Include="externals\imgui\imgui_impl_dx12.h" />
@@ -197,6 +208,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="Input\InputManager.h" />
     <ClInclude Include="Input\Key.h" />
     <ClInclude Include="Input\Mouse.h" />
+    <ClInclude Include="MapChip.h" />
     <ClInclude Include="Music\Audio.h" />
     <ClInclude Include="Music\BGM.h" />
     <ClInclude Include="Music\Music.h" />
@@ -207,6 +219,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="Objects\Primitive\SphereObject.h" />
     <ClInclude Include="Objects\Primitive\SpriteObject.h" />
     <ClInclude Include="Objects\Primitive\TriangleObject.h" />
+    <ClInclude Include="Player.h" />
     <ClInclude Include="ResourceView\DepthStencil.h" />
     <ClInclude Include="ResourceView\DescriptorHeap.h" />
     <ClInclude Include="ResourceView\Fence.h" />
@@ -222,6 +235,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="ResourceView\ShaderResourceView.h" />
     <ClInclude Include="ResourceView\SwapChain.h" />
     <ClInclude Include="ResourceView\Texture.h" />
+    <ClInclude Include="SkyDome.h" />
     <ClInclude Include="UsefulTool\Camera\CameraBase.h" />
     <ClInclude Include="UsefulTool\Camera\DebugCamera.h" />
     <ClInclude Include="UsefulTool\Light\DirectionLight.h" />

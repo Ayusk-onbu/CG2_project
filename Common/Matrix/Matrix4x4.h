@@ -124,6 +124,7 @@ public:
 #pragma endregion
 
 		static Matrix4x4 LookAt(const Vector3& eye, const Vector3& target, const Vector3& up);
+		static Matrix4x4 LookAt(const Vector3& eye, const Vector3& target, const Vector3& up,Vector3& xAxis,Vector3& yAxis,Vector3& zAxis);
 	};
 #pragma endregion
 
@@ -145,6 +146,9 @@ public:
 	/// <returns></returns>
 	static Matrix4x4 Inverse(const Matrix4x4& m);
 #pragma endregion
+
+	static Vector3 Transform(const Vector3& v, const Matrix4x4& m);
+
 public:
 	Matrix4x4 operator+=(const Matrix4x4 M);
 };
