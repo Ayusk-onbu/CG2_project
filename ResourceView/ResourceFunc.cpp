@@ -1,7 +1,7 @@
 #include "ResourceFunc.h"
 
-ID3D12Resource* CreateBufferResource(ID3D12Device* device, size_t sizeInBytes) {
-	ID3D12Resource* buffer = nullptr;
+Microsoft::WRL::ComPtr<ID3D12Resource> CreateBufferResource(ID3D12Device* device, size_t sizeInBytes) {
+	Microsoft::WRL::ComPtr<ID3D12Resource> buffer = nullptr;
 	// ヒーププロパティの設定
 	//頂点リソース用のヒープの生成
 	D3D12_HEAP_PROPERTIES heapProps = {};

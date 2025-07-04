@@ -56,8 +56,16 @@ void DeathParticle::Draw(TheOrderCommand& command, PSO& pso, DirectionLight& lig
 	for (Transform& worldTransform : worldTransform_) {
 		Matrix4x4 world = Matrix4x4::Make::Affine(worldTransform.scale, worldTransform.rotate, worldTransform.translate);
 
-		ModelObject model = *model_;
+		ModelObject& model = *model_;
 		model.SetWVPData(camera_->DrawCamera(world), world, uv);
 		model.Draw(command, pso, light, tex);
+	}
+}
+
+void DeathParticle::SetPosition(const Vector3& position) {
+
+	for (Transform& worldTransform : worldTransform_) {
+
+		worldTransform.translate = position;
 	}
 }

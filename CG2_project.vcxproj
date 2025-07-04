@@ -123,6 +123,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="Input\Mouse.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="MapChip.cpp" />
+    <ClCompile Include="ModelManager.cpp" />
     <ClCompile Include="Music\Audio.cpp" />
     <ClCompile Include="Music\BGM.cpp" />
     <ClCompile Include="Music\Music.cpp" />
@@ -209,6 +210,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="Input\Key.h" />
     <ClInclude Include="Input\Mouse.h" />
     <ClInclude Include="MapChip.h" />
+    <ClInclude Include="ModelManager.h" />
     <ClInclude Include="Music\Audio.h" />
     <ClInclude Include="Music\BGM.h" />
     <ClInclude Include="Music\Music.h" />

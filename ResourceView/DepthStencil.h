@@ -17,7 +17,7 @@ public:
 		D3D12_COMPARISON_FUNC func = D3D12_COMPARISON_FUNC_LESS_EQUAL);
 
 	//DepthStencilTexture(奥行きの根幹をなすもの大量に読み書きするらしい)
-	ID3D12Resource* CreateDepthStencilTextureResource(ID3D12Device* device, int32_t width, int32_t height);
+	Microsoft::WRL::ComPtr < ID3D12Resource> CreateDepthStencilTextureResource(ID3D12Device* device, int32_t width, int32_t height);
 
 	D3D12_DEPTH_STENCIL_DESC GetDesc() const { return depthStencilDesc_; }
 	D3D12_DEPTH_STENCIL_VIEW_DESC& GetDSVDesc() { return dsvDesc_; }

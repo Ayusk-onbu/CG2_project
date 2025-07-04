@@ -234,8 +234,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	//   ここまでモデル系の処理
 
 	MSG msg{};
-	DebugCamera debugCamera;
-	debugCamera.Initialize();
 	CameraBase cameraBase;
 	cameraBase.Initialize();
 	//Audio audio;
@@ -277,6 +275,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		}
 	}
 	Player player;
+	player.Initialize(playerModel, cameraBase, Vector3 (0.0f,0.0f,0.0f));
 	player.Initialize(playerModel, cameraBase,mapChip.GetBlockPositionByIndex(2,18));
 	player.SetMapChipField(&mapChip);
 
@@ -300,7 +299,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	area.bottom = mapChip.GetBlockPositionByIndex(0, 13).y;
 	area.top = mapChip.GetBlockPositionByIndex(0, 20).y - 10;
 	cameraController.SetMovableArea(area);
-	//cameraBase.SetTargetPos(player.GetWorldTransform().translate);
+	cameraBase.SetTargetPos(player.GetWorldTransform().translate);
 	//ウィンドウのｘボタンが押されるまでループ
 	while (msg.message != WM_QUIT) {
 		
@@ -314,9 +313,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			ImGuiManager::BeginFrame();
 			Chronos::Update();
 			input.Update();
-			debugCamera.UpData();
+		
 			
-			cameraController.Update();
+			//cameraController.Update();
 			cameraBase.UpDate();
 #pragma region OffScreenRendering
 			/*ResourceBarrier barrierO = {};
@@ -399,6 +398,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 				if (AABB::IsHitAABB2AABB(aabb1, aabb2)) {
 					deathParticle.UpDate();
+					if (!player.IsDead()) {
+						deathParticle.SetPosition(player.GetWorldTransform().translate);
+					}
 					player.OnCollision(enemy);
 					enemy->OnCollision(&player);
 				}
@@ -407,7 +409,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 			//   ここまでゲームの処理↑↑↑↑
 			//   ここから描画関係処理↓↓↓↓
-
 			player.Draw(command, pso, light, playerTex);
 			for (Enemy* enemy : enemys) {
 				enemy->Draw(command, pso, light, playerTex);
@@ -420,10 +421,10 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 					}
 				}
 			}
+			if (player.IsDead()) {
+				deathParticle.Draw(command, pso, light, deathParticleTex);
+			}
 			
-			deathParticle.Draw(command, pso, light, deathParticleTex);
-			
-
 			//   ここまで描画関係処理↑↑↑↑
 			//描画
 			ImGuiManager::EndFrame(command.GetList().GetList());

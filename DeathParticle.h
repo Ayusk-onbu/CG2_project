@@ -20,6 +20,7 @@ public:
 	void UpDate();
 	void Draw(TheOrderCommand& command, PSO& pso, DirectionLight& light, Texture& tex);
 	bool IsFinished() const { return isFinished_; }
+	void SetPosition(const Vector3& position);
 
 private:
 

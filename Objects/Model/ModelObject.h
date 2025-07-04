@@ -13,6 +13,10 @@ public:
 
 	void SetColor(Vector4& color);
 
+	void SetObject(ObjectBase& object) { object_ = object; }
+
+	void SetModelData(ModelData& modelData) { modelData_ = modelData; }
+
 	std::string GetFilePath() { return modelData_.material.textureFilePath; }
 private:
 	void InitializeResource(D3D12System d3d12,const std::string& filename, const std::string& directoryPath);

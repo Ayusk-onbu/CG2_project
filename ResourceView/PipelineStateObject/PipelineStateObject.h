@@ -22,7 +22,7 @@ public:
 
 	void Compile();
 
-	IDxcBlob* CompileShader(
+	Microsoft::WRL::ComPtr < IDxcBlob> CompileShader(
 		//CompilerするShaderファイルへのパス
 		const std::wstring& filePath,
 		//Compilerに使用するProfile

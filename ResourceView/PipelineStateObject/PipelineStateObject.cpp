@@ -32,7 +32,7 @@ void PipelineStateObject::Compile() {
 }
 
 //CompileShader関数
-IDxcBlob* PipelineStateObject::CompileShader(
+Microsoft::WRL::ComPtr < IDxcBlob> PipelineStateObject::CompileShader(
 	//CompilerするShaderファイルへのパス
 	const std::wstring& filePath,
 	//Compilerに使用するProfile
@@ -88,7 +88,7 @@ IDxcBlob* PipelineStateObject::CompileShader(
 	}
 	// ４，Compile結果を受け取って返す
 	//コンパイル結果から実行用のバイナリ部分を取得
-	IDxcBlob* shaderBlob = nullptr;
+	Microsoft::WRL::ComPtr < IDxcBlob> shaderBlob = nullptr;
 	hr = shaderResult->GetOutput(DXC_OUT_OBJECT, IID_PPV_ARGS(&shaderBlob), nullptr);
 	assert(SUCCEEDED(hr));
 	//成功したログを出す

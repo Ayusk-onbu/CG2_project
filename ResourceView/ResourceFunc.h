@@ -4,9 +4,10 @@
 #include "Vector2.h"
 #include "Vector3.h"
 #include "Vector4.h"
+#include "wrl.h"
 
 
-ID3D12Resource* CreateBufferResource(ID3D12Device* device, size_t sizeInBytes);
+Microsoft::WRL::ComPtr<ID3D12Resource> CreateBufferResource(ID3D12Device* device, size_t sizeInBytes);
 
 class ResourceObject {
 public:

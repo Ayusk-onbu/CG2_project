@@ -17,7 +17,7 @@ void DepthStencil::MakeResource(D3D12System& d3d12, int32_t width, int32_t heigh
 }
 
 //DepthStencilTexture(奥行きの根幹をなすもの大量に読み書きするらしい)
-ID3D12Resource* DepthStencil::CreateDepthStencilTextureResource(ID3D12Device* device, int32_t width, int32_t height) {
+Microsoft::WRL::ComPtr < ID3D12Resource> DepthStencil::CreateDepthStencilTextureResource(ID3D12Device* device, int32_t width, int32_t height) {
 	/////////////////////////////////////////////
 #pragma region Resource/Heapの設定(生成するResourceと配置するHeapの場所の設定)
 	D3D12_RESOURCE_DESC resourceDesc{};
@@ -46,7 +46,7 @@ ID3D12Resource* DepthStencil::CreateDepthStencilTextureResource(ID3D12Device* de
 
 	/////////////////////////////////////////////
 #pragma region MakeResource
-	ID3D12Resource* resource = nullptr;
+	Microsoft::WRL::ComPtr < ID3D12Resource> resource = nullptr;
 	HRESULT hr = device->CreateCommittedResource(
 		&heapProperties,//HEAPの設定
 		D3D12_HEAP_FLAG_NONE,//HEAPの特殊な設定。特になし

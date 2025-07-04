@@ -36,7 +36,7 @@ DirectX::ScratchImage Texture::LoadTexture(const std::string& filePath) {
 }
 
 // 2,DirectX12のテクスチャリソースを作成する
-ID3D12Resource* Texture::CreateTextureResource(ID3D12Device* device, const DirectX::TexMetadata& metadata) {
+Microsoft::WRL::ComPtr < ID3D12Resource> Texture::CreateTextureResource(ID3D12Device* device, const DirectX::TexMetadata& metadata) {
 	// 1,metadataをもとにResourceの設定
 	D3D12_RESOURCE_DESC resourceDesc = {};
 	resourceDesc.Width = UINT(metadata.width);//テクスチャの幅
@@ -52,7 +52,7 @@ ID3D12Resource* Texture::CreateTextureResource(ID3D12Device* device, const Direc
 	heapProperties.CPUPageProperty = D3D12_CPU_PAGE_PROPERTY_WRITE_BACK;//WriteBackポリシーでアクセス可能
 	heapProperties.MemoryPoolPreference = D3D12_MEMORY_POOL_L0;//プロセッサの近くに配置
 	// 3,Resourceを生成する
-	ID3D12Resource* resource = nullptr;
+	Microsoft::WRL::ComPtr < ID3D12Resource> resource = nullptr;
 	HRESULT hr = device->CreateCommittedResource(
 		&heapProperties,
 		D3D12_HEAP_FLAG_NONE,
