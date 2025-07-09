@@ -51,7 +51,7 @@ void ErrorGuardian::SetQueue(Microsoft::WRL::ComPtr <ID3D12Device> device) {
 		//エラー時に止まる
 		infoQueue_->SetBreakOnSeverity(D3D12_MESSAGE_SEVERITY_ERROR, true);
 		//警告時に止まる(全部の情報を出すために)
-		infoQueue_->SetBreakOnSeverity(D3D12_MESSAGE_SEVERITY_WARNING, true);
+		//infoQueue_->SetBreakOnSeverity(D3D12_MESSAGE_SEVERITY_WARNING, true);
 		//抑制するメッセージのID
 		D3D12_MESSAGE_ID denyIds[] = {
 			//Windows11出のDXGIデバッグレイヤーとDX12デバッグレイヤーの相互作用バグによるエラーメッセージ

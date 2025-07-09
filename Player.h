@@ -24,8 +24,20 @@ struct CollisionMapInfo {
 	bool isWallTouchFlag = false;// 壁
 	Vector3 displacement;// 移動量
 };
+
+enum class Behavior {
+	kRoot,
+	kAttack,
+	kUnknown,
+};
 class Player
 {
+	enum class AttackPhase {
+		Charge,
+		Attack,
+		after,
+	};
+
 	// キャラクターの当たり判定サイズ
 	static inline const float kWidth = 0.8f;
 	static inline const float kHeight = 0.8f;
@@ -49,7 +61,10 @@ class Player
 	static inline const float kJumpAcceleration = 0.2f;
 public:
 	void Initialize(ModelObject& model,CameraBase& camera,Vector3 translate);
+	void EffectInitialize(ModelObject& model);
 	void Update();
+	void BehaviorRootUpdate();
+	void AttackBehavior();
 	void Draw(TheOrderCommand& command, PSO& pso, DirectionLight& light, Texture& tex);
 	Transform& GetWorldTransform() { return transform_; }
 	const Vector3& GetVelocity() const { return velocity_; }
@@ -71,11 +86,18 @@ private:
 
 	bool isDead_ = false;
 
+	Behavior behavior_ = Behavior::kRoot;
+	Behavior behaviorRequest_ = Behavior::kUnknown;
+	uint32_t attackParameter_ = 0;
+	uint32_t kAttackTime_ = 6;
+	AttackPhase attackPhase_;
 
 	Transform transform_;
 	Transform uvTransform_;
 	ModelObject* model_;
 	CameraBase* camera_;
+
+	ModelObject* ATKModel_;
 
 private:
 
@@ -89,5 +111,9 @@ private:
 	void IsMapChipHitFunctionBottom(CollisionMapInfo& info);
 	void IsMapChipHitFunctionLeft(CollisionMapInfo& info);
 	void IsMapChipHitFunctionRight(CollisionMapInfo& info);
+	void BehaviorTransition();
+	void RootInitialize();
+	void AttackInitialize();
+	void BehaviorUpdate();
 };
 

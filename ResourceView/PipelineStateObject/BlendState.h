@@ -11,6 +11,7 @@ enum class USECOLOR {
 
 enum class BLENDMODE {
 	AlphaBlend = 0,
+	None,
 	Additive,
 	Multiplicative,
 	Subtractive,
@@ -29,7 +30,7 @@ public:
 
 	void SetBlendMode(BLENDMODE blendMode);
 
-	void SetDeac();
+	void SetDesc();
 private:
 	D3D12_BLEND_DESC blendDesc_ = {};
 	BLENDMODE blendMode_ = BLENDMODE::AlphaBlend;

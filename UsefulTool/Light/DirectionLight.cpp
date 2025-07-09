@@ -5,7 +5,7 @@ void DirectionLight::Initialize(D3D12System d3d12) {
 	GetResourceAddress();
 	//デフォルト値
 	directionalLightData_->color = { 1.0f,1.0f,1.0f,1.0f };
-	directionalLightData_->direction = { 0.0f,-1.0f,0.0f };
+	directionalLightData_->direction = { 0.0f,0.0f,1.0f };
 	directionalLightData_->intensity = 1.0f;
 }
 

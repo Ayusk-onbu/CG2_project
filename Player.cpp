@@ -21,7 +21,69 @@ void Player::Initialize(ModelObject& model,CameraBase& camera, Vector3 translate
 					 {0.0f, 0.0f, 0.0f} };
 }
 
+void Player::EffectInitialize(ModelObject& model) {
+	ATKModel_ = &model;
+	Vector4 color = { 0.0f, 0.0f, 1.0f, 1.0f };
+	ATKModel_->SetColor(color);
+}
+
 void Player::Update() {
+
+	BehaviorTransition();
+
+	if (!isDead_) {
+		BehaviorUpdate();
+#pragma region ②移動量を加味して衝突判定する
+		// 衝突情報を初期化
+		CollisionMapInfo collisionMapInfo;
+		// 移動量に速度の値をコピー
+		collisionMapInfo.displacement = velocity_;
+
+		IsMapChipHitFunction(collisionMapInfo);
+#pragma endregion
+		////////////////////////////////////////////////////
+#pragma region ③判定結果を反映して移動させる
+		Player::MapChipMove(collisionMapInfo);
+#pragma endregion
+		////////////////////////////////////////////////////
+#pragma region ④天井に接触している場合の処理
+		Player::DoOnHandingCeiling(collisionMapInfo);
+#pragma endregion
+		////////////////////////////////////////////////////
+#pragma region ⑤壁に接触している場合の処理
+
+#pragma endregion
+////////////////////////////////////////////////////
+#pragma region ⑥設置状態の切替
+	// 着地判定
+		ChangeOnGroundFlag(collisionMapInfo);
+#pragma endregion
+		////////////////////////////////////////////////////
+#pragma region ⑦旋回制御
+	// 回転
+		if (turnTimer_ > 0.0f) {
+			// 旋回時間を減算
+			turnTimer_ -= 1.0f / 60.0f;
+			// 左右の自キャラ角度テーブル
+			float destinationRotationYTable[] = { std::numbers::pi_v<float> / 2.0f, std::numbers::pi_v<float> *3.0f / 2.0f };
+			// 状況に応じた角度を取得する
+			float destinationRotationY = destinationRotationYTable[static_cast<uint32_t>(lrDirection_)];
+			// 自キャラの角度を設定する
+			transform_.rotate.y =
+				// 旋回開始時の角度と目的地の角度を補間する
+				turnFirstRotationY_ + (destinationRotationY - turnFirstRotationY_) * (1.0f - turnTimer_ / kTimeTurn);
+		}
+#pragma endregion
+		////////////////////////////////////////////////////
+	}
+}
+
+void Player::BehaviorRootUpdate() {
+
+	if (InputManager::GetKey().PressedKey(DIK_SPACE)) {
+		behaviorRequest_ = Behavior::kAttack;
+	}
+
 	// 着地フラグ
 		//bool landing = false;
 	////////////////////////////////////////////////////
@@ -29,50 +91,64 @@ void Player::Update() {
 	Player::Move();
 #pragma endregion
 	////////////////////////////////////////////////////
-#pragma region ②移動量を加味して衝突判定する
-		// 衝突情報を初期化
-	CollisionMapInfo collisionMapInfo;
-	// 移動量に速度の値をコピー
-	collisionMapInfo.displacement = velocity_;
 
-	IsMapChipHitFunction(collisionMapInfo);
-#pragma endregion
-	////////////////////////////////////////////////////
-#pragma region ③判定結果を反映して移動させる
-	Player::MapChipMove(collisionMapInfo);
-#pragma endregion
-	////////////////////////////////////////////////////
-#pragma region ④天井に接触している場合の処理
-	Player::DoOnHandingCeiling(collisionMapInfo);
-#pragma endregion
-	////////////////////////////////////////////////////
-#pragma region ⑤壁に接触している場合の処理
-
-#pragma endregion
-////////////////////////////////////////////////////
-#pragma region ⑥設置状態の切替
-	// 着地判定
-	ChangeOnGroundFlag(collisionMapInfo);
-#pragma endregion
-	////////////////////////////////////////////////////
-#pragma region ⑦旋回制御
-	// 回転
-	if (turnTimer_ > 0.0f) {
-		// 旋回時間を減算
-		turnTimer_ -= 1.0f / 60.0f;
-		// 左右の自キャラ角度テーブル
-		float destinationRotationYTable[] = { std::numbers::pi_v<float> / 2.0f, std::numbers::pi_v<float> *3.0f / 2.0f };
-		// 状況に応じた角度を取得する
-		float destinationRotationY = destinationRotationYTable[static_cast<uint32_t>(lrDirection_)];
-		// 自キャラの角度を設定する
-		transform_.rotate.y =
-			// 旋回開始時の角度と目的地の角度を補間する
-			turnFirstRotationY_ + (destinationRotationY - turnFirstRotationY_) * (1.0f - turnTimer_ / kTimeTurn);
-	}
-#pragma endregion
-	////////////////////////////////////////////////////
 }
 
+void Player::AttackBehavior() {
+	switch (attackPhase_) {
+	case AttackPhase::Charge:
+	default:
+	{
+		//更新
+		float tC = static_cast<float>(attackParameter_) / kAttackTime_ / 3.0f;
+		transform_.scale.z = 0.3f + (1.0f - 0.3f)*(1.0f - std::powf((1.0f - tC), 2));
+		transform_.scale.y = 1.0f;
+		if (attackParameter_ >= kAttackTime_ / 3.0f) {
+			attackPhase_ = AttackPhase::Attack;
+			attackParameter_ = 0;
+		}
+		break;
+	}
+	case AttackPhase::Attack:
+	{
+		//更新
+		float tA = static_cast<float>(attackParameter_) / kAttackTime_ / 3.0f;
+		transform_.scale.z = 1.3f + (0.3f - 1.3f)*(1.0f - std::powf((1.0f - tA), 2));
+		transform_.scale.y = 0.7f + (1.0f - 0.7f)*(1.0f - std::powf((1.0f - tA), 2));
+		if (attackParameter_ >= kAttackTime_ / 3.0f) {
+			attackPhase_ = AttackPhase::after;
+			attackParameter_ = 0;
+		}
+
+		//Vector3 velocity{};
+		if (lrDirection_ == LRDirection::kRight) {
+			velocity_ = { 0.6f,0.0f,0.0f };
+		}
+		else {
+			velocity_ = { -0.6f,0.0f,0.0f };
+		}
+
+		break;
+	}
+	case AttackPhase::after:
+	{
+		//更新]
+		float t = static_cast<float>(attackParameter_) / kAttackTime_ / 3.0f;
+		transform_.scale.z = 1.0f + (1.3f - 1.0f)*(1.0f - std::powf((1.0f - t), 2));
+		transform_.scale.y = 1.0f + (0.7f - 1.0f)*(1.0f - std::powf((1.0f - t), 2));
+		break;
+	}
+	}
+	
+	// 更新処理
+	attackParameter_++;
+
+	if (attackParameter_ >= kAttackTime_) {
+		behaviorRequest_ = Behavior::kRoot;
+		attackPhase_ = AttackPhase::Charge;
+		attackParameter_ = 0;
+	}
+}
 void Player::Draw(TheOrderCommand& command, PSO& pso, DirectionLight& light, Texture& tex) {
 	if (model_ && !isDead_) {
 		Matrix4x4 world = Matrix4x4::Make::Affine(transform_.scale, transform_.rotate, transform_.translate);
@@ -83,14 +159,17 @@ void Player::Draw(TheOrderCommand& command, PSO& pso, DirectionLight& light, Tex
 
 		model_->SetWVPData(camera_->DrawCamera(world), world, uv);
 		model_->Draw(command, pso, light, tex);
+
+		if (attackPhase_ == AttackPhase::Attack) {
+			ATKModel_->SetWVPData(camera_->DrawCamera(world), world, uv);
+			ATKModel_->Draw(command, pso, light, tex);
+		}
 	}
 }
-
 void Player::OnCollision(const Enemy* enemy) {
 	(void)enemy;
 	isDead_ = true;
 }
-
 void Player::Move() {
 	// 設置上程なら
 	if (onGround_) {
@@ -155,7 +234,6 @@ void Player::Move() {
 	}
 
 }
-
 void Player::IsMapChipHitFunction(CollisionMapInfo& collisionMapInfo)
 {
 	Player::IsMapChipHitFunctionTop(collisionMapInfo);
@@ -163,8 +241,6 @@ void Player::IsMapChipHitFunction(CollisionMapInfo& collisionMapInfo)
 	Player::IsMapChipHitFunctionLeft(collisionMapInfo);
 	Player::IsMapChipHitFunctionRight(collisionMapInfo);
 }
-
-
 void Player::IsMapChipHitFunctionTop(CollisionMapInfo& collisionMapInfo) {
 	// 上昇中か否か
 	if (collisionMapInfo.displacement.y <= 0) {
@@ -381,7 +457,6 @@ void Player::IsMapChipHitFunctionRight(CollisionMapInfo& collisionMapInfo) {
 		}
 	}
 }
-
 Vector3 Player::CornerPosition(const Vector3& center, Corner corner) {
 	Vector3 offsetTable[kNumCorner] = {
 		{(kWidth / 2.0f),  -kHeight / 2.0f, 0}, // 右下
@@ -392,13 +467,11 @@ Vector3 Player::CornerPosition(const Vector3& center, Corner corner) {
 
 	return center + offsetTable[static_cast<uint32_t>(corner)];
 }
-
 // ③判定結果を反映して移動させる
 void Player::MapChipMove(const CollisionMapInfo& collisionMapInfo) {
 	// 移動
 	transform_.translate = transform_.translate + collisionMapInfo.displacement;
 }
-
 // ④天井に接触している場合の処理
 void Player::DoOnHandingCeiling(const CollisionMapInfo& info) {
 	// 天井に当たっていたら
@@ -406,7 +479,6 @@ void Player::DoOnHandingCeiling(const CollisionMapInfo& info) {
 		velocity_.y = 0;
 	}
 }
-
 // ⑤壁に接触している場合の処理
 void Player::DoTouchWall(const CollisionMapInfo& info) {
 	// 壁に当たっていたら
@@ -415,7 +487,6 @@ void Player::DoTouchWall(const CollisionMapInfo& info) {
 		velocity_.x *= (1.0f - kAttenuationWall);
 	}
 }
-
 // ⑥設置状態の切替
 void Player::ChangeOnGroundFlag(const CollisionMapInfo& info) {
 	// 地面に接触している場合
@@ -466,5 +537,43 @@ void Player::ChangeOnGroundFlag(const CollisionMapInfo& info) {
 			// Y速度をゼロにする
 			velocity_.y = 0.0f;
 		}
+	}
+}
+
+void Player::BehaviorTransition() {
+	if (behaviorRequest_ != Behavior::kUnknown) {
+		if(behavior_ != behaviorRequest_)
+		{
+			behavior_ = behaviorRequest_;
+		}
+		
+		switch (behavior_) {
+		case Behavior::kRoot:
+			//   初期化
+			RootInitialize();
+			break;
+		case Behavior::kAttack:
+			//   初期化
+			AttackInitialize();
+			break;
+		}
+		behaviorRequest_ = Behavior::kUnknown;
+	}
+}
+void Player::RootInitialize() {
+	attackParameter_ = 0;
+}
+void Player::AttackInitialize() {
+	attackParameter_ = 0;
+}
+
+void Player::BehaviorUpdate() {
+	switch (behavior_) {
+	case Behavior::kRoot:
+		BehaviorRootUpdate();
+			break;
+	case Behavior::kAttack:
+		AttackBehavior();
+		break;
 	}
 }

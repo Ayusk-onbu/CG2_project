@@ -3,7 +3,7 @@
 #include "Matrix4x4.h"
 
 
-void DeathParticle::Initialize(ModelObject* model, CameraBase* camera, const Vector3& position) {
+void DeathParticle::Initialize(const Vector3& position) {
 	for (Transform& worldTransform : worldTransform_) {
 		worldTransform.scale = { 1.0f, 1.0f, 1.0f };
 		worldTransform.rotate = { 0.0f, 0.0f, 0.0f };
@@ -13,8 +13,7 @@ void DeathParticle::Initialize(ModelObject* model, CameraBase* camera, const Vec
 					 {0.0f, 0.0f, 0.0f},
 					 {0.0f, 0.0f, 0.0f} };
 	color_ = { 1.0f, 1.0f, 1.0f, 1.0f };
-	model_ = model;
-	camera_ = camera;
+	isFinished_ = true;
 }
 void DeathParticle::UpDate() {
 
@@ -37,8 +36,6 @@ void DeathParticle::UpDate() {
 	}
 
 	color_.w = std::clamp(1.0f - (counter_ / kDuraction), 0.0f, 1.0f);
-	model_->SetColor(color_);
-
 	if (counter_ >= kDuraction) {
 
 		counter_ = kDuraction;
@@ -46,26 +43,34 @@ void DeathParticle::UpDate() {
 	}
 
 }
-void DeathParticle::Draw(TheOrderCommand& command, PSO& pso, DirectionLight& light, Texture& tex) {
-	if (isFinished_) {
-		return;
-	}
-	Matrix4x4 uv = Matrix4x4::Make::Scale(uvTransform_.scale);
-	uv = Matrix4x4::Multiply(uv, Matrix4x4::Make::RotateZ(uvTransform_.rotate.z));
-	uv = Matrix4x4::Multiply(uv, Matrix4x4::Make::Translate(uvTransform_.translate));
-	for (Transform& worldTransform : worldTransform_) {
-		Matrix4x4 world = Matrix4x4::Make::Affine(worldTransform.scale, worldTransform.rotate, worldTransform.translate);
+//void DeathParticle::Draw(TheOrderCommand& command, PSO& pso, DirectionLight& light, Texture& tex) {
+//	if (isFinished_) {
+//		return;
+//	}
+//	Matrix4x4 uv = Matrix4x4::Make::Scale(uvTransform_.scale);
+//	uv = Matrix4x4::Multiply(uv, Matrix4x4::Make::RotateZ(uvTransform_.rotate.z));
+//	uv = Matrix4x4::Multiply(uv, Matrix4x4::Make::Translate(uvTransform_.translate));
+//	int i = 0;
+//	for (Transform& worldTransform : worldTransform_) {
+//		Matrix4x4 world = Matrix4x4::Make::Affine(worldTransform.scale, worldTransform.rotate, worldTransform.translate);
+//
+//		model_[i]->SetWVPData(camera_->DrawCamera(world), world, uv);
+//		model_[i]->Draw(command, pso, light, tex);
+//	}
+//}
 
-		ModelObject& model = *model_;
-		model.SetWVPData(camera_->DrawCamera(world), world, uv);
-		model.Draw(command, pso, light, tex);
+void DeathParticle::SetPosition(const Vector3& position) {
+	if (isFinished_) {
+		for (Transform& worldTransform : worldTransform_) {
+
+			worldTransform.translate = position;
+		}
+		if(counter_ != kDuraction)
+		isFinished_ = false;
 	}
 }
 
-void DeathParticle::SetPosition(const Vector3& position) {
-
-	for (Transform& worldTransform : worldTransform_) {
-
-		worldTransform.translate = position;
-	}
+Matrix4x4 DeathParticle::GetPosition(int i){
+	Matrix4x4 world = Matrix4x4::Make::Affine(worldTransform_[i].scale, worldTransform_[i].rotate, worldTransform_[i].translate);
+	return world;
 }

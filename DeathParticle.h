@@ -16,11 +16,12 @@ class DeathParticle
 	static inline const float kAngle = 2 * 3.141592f / kNumParticles;
 
 public:
-	void Initialize(ModelObject* model, CameraBase* camera, const Vector3& position);
+	void Initialize(const Vector3& position);
 	void UpDate();
-	void Draw(TheOrderCommand& command, PSO& pso, DirectionLight& light, Texture& tex);
 	bool IsFinished() const { return isFinished_; }
 	void SetPosition(const Vector3& position);
+	Matrix4x4 GetPosition(int i);
+	Vector4& GetColor(){ return color_; }
 
 private:
 
@@ -31,11 +32,5 @@ private:
 	float counter_ = 0.0f;
 
 	Vector4 color_;
-
-	// モデル
-	//std::array<ModelObject*, kNumParticles> model_;
-	ModelObject* model_ = nullptr;
-	// カメラ
-	CameraBase* camera_ = nullptr;
 };
 

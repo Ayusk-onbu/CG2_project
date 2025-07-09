@@ -40,6 +40,7 @@ public:
 	RootSignature GetRootSignature() { return rootSignature_; }
 	InputLayout GetInputLayout() { return inputLayoutDesc_; }
 	BlendState GetBlendState() { return blendState_; }
+	void SetBlendState(BLENDMODE blendMode) { blendState_.SetBlendMode(blendMode); }
 	RasterizerState  GetRasterizer() { return rasterizer_; }
 	Microsoft::WRL::ComPtr<IDxcBlob> GetVSB() { return vertexShaderBlob_; }
 	Microsoft::WRL::ComPtr<IDxcBlob> GetPSB() { return pixelShaderBlob_; }

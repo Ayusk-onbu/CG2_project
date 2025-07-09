@@ -38,7 +38,7 @@
 #include "CameraController.h"
 #include "AABB.h"
 #include "DeathParticle.h"
-
+#include <algorithm>
 
 #include "externals/DirectXTex/DirectXTex.h"
 
@@ -202,6 +202,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	playerModel.Initialize(d3d12, "player.obj");
 	Texture playerTex;
 	playerTex.Initialize(d3d12, playerModel.GetFilePath(), 1);
+	ModelObject ATKEffectModel;
+	ATKEffectModel.Initialize(d3d12, "attackEffect.obj");
 
 	ModelObject skyDomeModel;
 	skyDomeModel.Initialize(d3d12, "skyDome.obj");
@@ -217,10 +219,11 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	Texture mapChipTex;
 	mapChipTex.Initialize(d3d12, mapChipModel[0][0].GetFilePath(), 3);
 
-	ModelObject deathParticleModel[1];
-	for (int i = 0;i < 1;++i) {
+	ModelObject deathParticleModel[8];
+	for (int i = 0;i < 8;++i) {
 		deathParticleModel[i].Initialize(d3d12, "deathParticle.obj");
 	}
+
 	Texture deathParticleTex;
 	deathParticleTex.Initialize(d3d12, deathParticleModel[0].GetFilePath(), 4);
 
@@ -230,6 +233,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		newModel->Initialize(d3d12, "player.obj");
 		enemyModel.push_back(newModel);
 	}
+
+	SpriteObject fadeModel;
+	fadeModel.Initialize(d3d12, 1280.0f, 720.0f);
 
 	//   ここまでモデル系の処理
 
@@ -275,8 +281,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		}
 	}
 	Player player;
-	player.Initialize(playerModel, cameraBase, Vector3 (0.0f,0.0f,0.0f));
+	//player.Initialize(playerModel, cameraBase, Vector3 (0.0f,0.0f,0.0f));
 	player.Initialize(playerModel, cameraBase,mapChip.GetBlockPositionByIndex(2,18));
+	player.EffectInitialize(ATKEffectModel);
 	player.SetMapChipField(&mapChip);
 
 	std::list<Enemy*> enemys;
@@ -286,7 +293,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		enemys.push_back(newEnemy);
 	}
 	DeathParticle deathParticle;
-	deathParticle.Initialize(&deathParticleModel[0], &cameraBase, player.GetWorldTransform().translate);
+	deathParticle.Initialize(player.GetWorldTransform().translate);
 
 	CameraController cameraController;
 	cameraController.Initialize(&cameraBase);
@@ -300,6 +307,23 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	area.top = mapChip.GetBlockPositionByIndex(0, 20).y - 10;
 	cameraController.SetMovableArea(area);
 	cameraBase.SetTargetPos(player.GetWorldTransform().translate);
+
+	enum SCENE {
+		Title,
+		Game,
+	};
+	SCENE scene = Title;
+	enum FADE {
+		In,
+		None,
+		Out,
+	};
+	Vector4 fadeColor = { 0.0f,0.0f,0.0f,1.0f };
+	float fadeTimer = 0.0f;
+	float fadeLimit = 3.0f;
+	bool isFade = false;
+	uint32_t fadeType = In;
+
 	//ウィンドウのｘボタンが押されるまでループ
 	while (msg.message != WM_QUIT) {
 		
@@ -315,7 +339,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			input.Update();
 		
 			
-			//cameraController.Update();
+			cameraController.Update();
 			cameraBase.UpDate();
 #pragma region OffScreenRendering
 			/*ResourceBarrier barrierO = {};
@@ -369,61 +393,148 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 			//   ここからゲームの処理↓↓↓↓
 		
-			player.Update();
-			for (Enemy* enemy : enemys) {
-				enemy->UpDate();
-			}
-			skyDome.Update();
-			// ブロックの更新
-			for (uint32_t i = 0; i < kNumBlockVirtical; ++i) {
-				for (uint32_t j = 0; j < kNumBlockHorizontal; ++j) {
-					if (mapChip.GetMapChipTypeByIndex(j, i) == MapChipType::kBlock) {
-						// uv
-						Matrix4x4 uvBlock = Matrix4x4::Make::Scale(uvTransformBlock.scale);
-						uvBlock = Matrix4x4::Multiply(uvBlock, Matrix4x4::Make::RotateZ(uvTransformBlock.rotate.z));
-						uvBlock = Matrix4x4::Multiply(uvBlock, Matrix4x4::Make::Translate(uvTransformBlock.translate));
+			//fadeTimer = std::clamp(fadeTimer, 0.0f, fadeLimit);
+			switch (scene) {
+			case Title:
+				switch (fadeType) {
+				case In:
+					if (fadeLimit <= fadeTimer) {
+						fadeType = None;
+						fadeTimer = 0.0f;
+					}
+					fadeTimer += 1.0f / 60.0f;
+					fadeColor.w = 1.0f * (fadeLimit - fadeTimer) / fadeLimit;
+					break;
+				case None:
+					if (InputManager::GetKey().PressKey(DIK_SPACE)) {
+						fadeType = Out;
+					}
+					fadeColor.w = 0.0f;
+					break;
+				case Out:
+					if (fadeLimit <= fadeTimer) {
+						fadeType = In;
+						scene = Game;
+						fadeTimer = 0.0f;
+					}
+					fadeTimer += 1.0f / 60.0f;
+					fadeColor.w = 1.0f * fadeTimer / fadeLimit;
+					break;
+				}
+				
 
-						Matrix4x4 matWorld;
-						matWorld = Matrix4x4::Make::Affine(worldTransformBlocks_[i][j]->scale, worldTransformBlocks_[i][j]->rotate, worldTransformBlocks_[i][j]->translate);
-						mapChipModel[i][j].SetWVPData(cameraBase.DrawCamera(matWorld), matWorld, uvBlock);
+				
+				break;
+			case Game:
+				switch (fadeType) {
+				case In:
+					if (fadeLimit <= fadeTimer) {
+						fadeType = None;
+						fadeTimer = 0.0f;
+					}
+					fadeTimer += 1.0f / 60.0f;
+					fadeColor.w = 1.0f * (fadeLimit - fadeTimer) / fadeLimit;
+					break;
+				case None:
+					if (player.IsDead()) {
+						if (deathParticle.IsFinished()) {
+							fadeType = Out;
+						}
+					}
+					fadeColor.w = 0.0f;
+					break;
+				case Out:
+					if (fadeLimit <= fadeTimer) {
+						fadeType = In;
+						scene = Title;
+						fadeTimer = 0.0f;
+					}
+					fadeTimer += 1.0f / 60.0f;
+					fadeColor.w = 1.0f * fadeTimer / fadeLimit;
+					break;
+				}
+
+				player.Update();
+				for (Enemy* enemy : enemys) {
+					enemy->UpDate();
+				}
+				skyDome.Update();
+				// ブロックの更新
+				for (uint32_t i = 0; i < kNumBlockVirtical; ++i) {
+					for (uint32_t j = 0; j < kNumBlockHorizontal; ++j) {
+						if (mapChip.GetMapChipTypeByIndex(j, i) == MapChipType::kBlock) {
+							// uv
+							Matrix4x4 uvBlock = Matrix4x4::Make::Scale(uvTransformBlock.scale);
+							uvBlock = Matrix4x4::Multiply(uvBlock, Matrix4x4::Make::RotateZ(uvTransformBlock.rotate.z));
+							uvBlock = Matrix4x4::Multiply(uvBlock, Matrix4x4::Make::Translate(uvTransformBlock.translate));
+
+							Matrix4x4 matWorld;
+							matWorld = Matrix4x4::Make::Affine(worldTransformBlocks_[i][j]->scale, worldTransformBlocks_[i][j]->rotate, worldTransformBlocks_[i][j]->translate);
+							mapChipModel[i][j].SetWVPData(cameraBase.DrawCamera(matWorld), matWorld, uvBlock);
+						}
 					}
 				}
-			}
 
-			AABB aabb1, aabb2;
-			aabb1 = AABB::World2AABB(player.GetWorldTransform().translate);
+				AABB aabb1, aabb2;
+				aabb1 = AABB::World2AABB(player.GetWorldTransform().translate);
 
-			for (Enemy* enemy : enemys) {
-				aabb2 = AABB::World2AABB(enemy->GetWorldTransform().translate);
+				for (Enemy* enemy : enemys) {
+					aabb2 = AABB::World2AABB(enemy->GetWorldTransform().translate);
 
-				if (AABB::IsHitAABB2AABB(aabb1, aabb2)) {
+					if (AABB::IsHitAABB2AABB(aabb1, aabb2)) {
+						
+						if (!player.IsDead()) {
+							deathParticle.SetPosition(player.GetWorldTransform().translate);
+						}
+						player.OnCollision(enemy);
+						enemy->OnCollision(&player);
+					}
+
+				}
+				if (!deathParticle.IsFinished()) {
 					deathParticle.UpDate();
-					if (!player.IsDead()) {
-						deathParticle.SetPosition(player.GetWorldTransform().translate);
-					}
-					player.OnCollision(enemy);
-					enemy->OnCollision(&player);
 				}
-
+				ImGui::Begin("DirectionalLight");
+				ImGuiManager::CreateImGui("Direction", light.directionalLightData_->direction, -1.0f, 1.0f);
+				ImGui::End();
+				break;
 			}
-
-			//   ここまでゲームの処理↑↑↑↑
+			Matrix4x4 world = Matrix4x4::Make::Affine({ 1.0f,1.0f,1.0f }, { 0.0f,Deg2Rad(180),0.0f }, { 640.0f,-360.0f,0.0f });
+			fadeModel.SetWVPData(world, world, world);
+			fadeModel.SetColor(fadeColor);
+			
+			switch (scene) {
+			case Title:
+				
+				break;
+			case Game:
+				//   ここまでゲームの処理↑↑↑↑
 			//   ここから描画関係処理↓↓↓↓
-			player.Draw(command, pso, light, playerTex);
-			for (Enemy* enemy : enemys) {
-				enemy->Draw(command, pso, light, playerTex);
-			}
-			skyDome.Draw(command, pso, light, skyDomeTex);
-			for (uint32_t i = 0; i < kNumBlockVirtical; ++i) {
-				for (uint32_t j = 0; j < kNumBlockHorizontal; ++j) {
-					if (mapChip.GetMapChipTypeByIndex(j, i) == MapChipType::kBlock) {
-						mapChipModel[i][j].Draw(command, pso, light, mapChipTex);
+				player.Draw(command, pso, light, playerTex);
+				for (Enemy* enemy : enemys) {
+					enemy->Draw(command, pso, light, playerTex);
+				}
+				skyDome.Draw(command, pso, light, skyDomeTex);
+				for (uint32_t i = 0; i < kNumBlockVirtical; ++i) {
+					for (uint32_t j = 0; j < kNumBlockHorizontal; ++j) {
+						if (mapChip.GetMapChipTypeByIndex(j, i) == MapChipType::kBlock) {
+							mapChipModel[i][j].Draw(command, pso, light, mapChipTex);
+						}
 					}
 				}
+				if (player.IsDead()) {
+					deathParticle.SetPosition(player.GetWorldTransform().translate);
+					if (!deathParticle.IsFinished()) {
+						for (int i = 0;i < 8;++i) {
+							deathParticleModel[i].SetWVPData(cameraBase.DrawCamera(deathParticle.GetPosition(i)), deathParticle.GetPosition(i), deathParticle.GetPosition(i));
+							deathParticleModel[i].SetColor(deathParticle.GetColor());
+							deathParticleModel[i].Draw(command, pso, light, deathParticleTex);
+						}
+					}
+				}
+				break;
 			}
-			if (player.IsDead()) {
-				deathParticle.Draw(command, pso, light, deathParticleTex);
-			}
+			fadeModel.Draw(command, pso, light, deathParticleTex);
 			
 			//   ここまで描画関係処理↑↑↑↑
 			//描画
