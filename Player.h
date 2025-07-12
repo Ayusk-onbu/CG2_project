@@ -72,6 +72,7 @@ public:
 	Vector3 CornerPosition(const Vector3& center, Corner corner);
 	void OnCollision(const Enemy* enemy);
 	bool IsDead() const { return isDead_; }
+	bool IsAttack() const;
 private:
 	Vector3 velocity_ = {};
 	LRDirection lrDirection_ = LRDirection::kRight;

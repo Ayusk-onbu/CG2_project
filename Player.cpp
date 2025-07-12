@@ -168,6 +168,12 @@ void Player::Draw(TheOrderCommand& command, PSO& pso, DirectionLight& light, Tex
 }
 void Player::OnCollision(const Enemy* enemy) {
 	(void)enemy;
+	if (IsAttack()) {
+		return;
+	}
+	if (enemy->IsDeathBehavior()) {
+		return;
+	}
 	isDead_ = true;
 }
 void Player::Move() {
@@ -576,4 +582,11 @@ void Player::BehaviorUpdate() {
 		AttackBehavior();
 		break;
 	}
+}
+
+bool Player::IsAttack() const {
+	if (behavior_ == Behavior::kAttack) {
+		return true;
+	}
+	return false;
 }

@@ -30,6 +30,7 @@
 #include "CameraBase.h"
 #include "DebugCamera.h"
 #include "Chronos.h"
+#include "RandomUtils.h"
 
 #include "Player.h"
 #include "Enemy.h"
@@ -38,6 +39,7 @@
 #include "CameraController.h"
 #include "AABB.h"
 #include "DeathParticle.h"
+#include "HitEffect.h"
 #include <algorithm>
 
 #include "externals/DirectXTex/DirectXTex.h"
@@ -196,6 +198,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	DirectionLight light;
 	light.Initialize(d3d12);
 #pragma endregion
+	TimeRandom::Initialize();
 
 	//   ここからモデル系の処理
 	ModelObject playerModel;
@@ -233,6 +236,16 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		newModel->Initialize(d3d12, "player.obj");
 		enemyModel.push_back(newModel);
 	}
+
+	std::vector<ModelObject*> enemyDeathModel;
+	for (int i = 0;i < 3;++i) {
+		ModelObject* newModel = new ModelObject;
+		newModel->Initialize(d3d12, "enemyDeathParticle.obj");
+		enemyDeathModel.push_back(newModel);
+	}
+
+	Texture enemyDeathTex;
+	enemyDeathTex.Initialize(d3d12, enemyDeathModel[0]->GetFilePath(), 5);
 
 	SpriteObject fadeModel;
 	fadeModel.Initialize(d3d12, 1280.0f, 720.0f);
@@ -289,11 +302,17 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	std::list<Enemy*> enemys;
 	for (int i = 0;i < 3;++i) {
 		Enemy* newEnemy = new Enemy;
-		newEnemy->Initialize(enemyModel[i], &cameraBase, mapChip.GetBlockPositionByIndex(10 + i * 2, 18));
+		newEnemy->Initialize(enemyModel[i], &cameraBase, mapChip.GetBlockPositionByIndex(10 + i * 7, 18));
 		enemys.push_back(newEnemy);
 	}
 	DeathParticle deathParticle;
 	deathParticle.Initialize(player.GetWorldTransform().translate);
+
+	HitEffect::SetCamera(&cameraBase);
+	HitEffect::SetModel(enemyDeathModel[0]);
+	HitEffect::SetModel2(enemyDeathModel[1]);
+	HitEffect::SetModel3(enemyDeathModel[2]);
+	HitEffect hitEffect;
 
 	CameraController cameraController;
 	cameraController.Initialize(&cameraBase);
@@ -488,9 +507,21 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 						}
 						player.OnCollision(enemy);
 						enemy->OnCollision(&player);
+						if (enemy->IsDeathBehavior()) {
+							hitEffect.Initialize(enemy->GetWorldTransform().translate);
+						}
 					}
 
 				}
+				hitEffect.Update();
+				enemys.remove_if([](Enemy* enemy) {
+					if (enemy->IsDeath()) {
+						delete enemy;
+						return true;
+					}
+					return false;
+				});
+
 				if (!deathParticle.IsFinished()) {
 					deathParticle.UpDate();
 				}
@@ -514,6 +545,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 				for (Enemy* enemy : enemys) {
 					enemy->Draw(command, pso, light, playerTex);
 				}
+
+				hitEffect.Draw(command, pso, light, enemyDeathTex);
+
 				skyDome.Draw(command, pso, light, skyDomeTex);
 				for (uint32_t i = 0; i < kNumBlockVirtical; ++i) {
 					for (uint32_t j = 0; j < kNumBlockHorizontal; ++j) {
@@ -595,6 +629,10 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		delete enemy;
 	}
 	enemys.clear();
+	for (ModelObject* enemy : enemyDeathModel) {
+		delete enemy;
+	}
+	enemyDeathModel.clear();
 
 #ifdef _DEBUG
 	//debugController->Release();

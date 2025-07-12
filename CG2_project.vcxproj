@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|x64">
@@ -119,6 +119,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="externals\imgui\imgui_tables.cpp" />
     <ClCompile Include="externals\imgui\imgui_widgets.cpp" />
     <ClCompile Include="Fngine.cpp" />
+    <ClCompile Include="HitEffect.cpp" />
     <ClCompile Include="Input\InputManager.cpp" />
     <ClCompile Include="Input\Key.cpp" />
     <ClCompile Include="Input\Mouse.cpp" />
@@ -135,6 +136,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="Objects\Primitive\SpriteObject.cpp" />
     <ClCompile Include="Objects\Primitive\TriangleObject.cpp" />
     <ClCompile Include="Player.cpp" />
+    <ClCompile Include="RandomUtils.cpp" />
     <ClCompile Include="ResourceView\DepthStencil.cpp" />
     <ClCompile Include="ResourceView\DescriptorHeap.cpp" />
     <ClCompile Include="ResourceView\Fence.cpp" />
@@ -208,6 +210,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="externals\imgui\imstb_textedit.h" />
     <ClInclude Include="externals\imgui\imstb_truetype.h" />
     <ClInclude Include="Fngine.h" />
+    <ClInclude Include="HitEffect.h" />
     <ClInclude Include="Input\InputManager.h" />
     <ClInclude Include="Input\Key.h" />
     <ClInclude Include="Input\Mouse.h" />
@@ -224,6 +227,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="Objects\Primitive\SpriteObject.h" />
     <ClInclude Include="Objects\Primitive\TriangleObject.h" />
     <ClInclude Include="Player.h" />
+    <ClInclude Include="RandomUtils.h" />
     <ClInclude Include="ResourceView\DepthStencil.h" />
     <ClInclude Include="ResourceView\DescriptorHeap.h" />
     <ClInclude Include="ResourceView\Fence.h" />
