@@ -1,9 +1,6 @@
 #include "ErrorGuardian.h"
 #pragma comment(lib,"Dbghelp.lib")//ClashHandler06
 
-Microsoft::WRL::ComPtr <ID3D12Debug1> ErrorGuardian::debugController_;
-Microsoft::WRL::ComPtr <ID3D12InfoQueue> ErrorGuardian::infoQueue_;
-
 //CrashHandler06
 LONG WINAPI ErrorGuardian::ExportDump(EXCEPTION_POINTERS* exception) {
 	//ファイルはクラッシュしたexeまたは、ドイツの同一のexeとソースファイルと同じ場所
@@ -51,7 +48,7 @@ void ErrorGuardian::SetQueue(Microsoft::WRL::ComPtr <ID3D12Device> device) {
 		//エラー時に止まる
 		infoQueue_->SetBreakOnSeverity(D3D12_MESSAGE_SEVERITY_ERROR, true);
 		//警告時に止まる(全部の情報を出すために)
-		//infoQueue_->SetBreakOnSeverity(D3D12_MESSAGE_SEVERITY_WARNING, true);
+		infoQueue_->SetBreakOnSeverity(D3D12_MESSAGE_SEVERITY_WARNING, true);
 		//抑制するメッセージのID
 		D3D12_MESSAGE_ID denyIds[] = {
 			//Windows11出のDXGIデバッグレイヤーとDX12デバッグレイヤーの相互作用バグによるエラーメッセージ

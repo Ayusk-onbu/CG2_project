@@ -9,13 +9,13 @@
 class Texture
 {
 public:
-	void Initialize(D3D12System d3d12, const std::string& filePath,int num);
+	void Initialize(D3D12System d3d12, SRV& srv,const std::string& filePath,int num);
 	D3D12_GPU_DESCRIPTOR_HANDLE GetHandleGPU() { return textureSrvHandleGPU_; }
 private:
 	
 	DirectX::ScratchImage LoadTexture(const std::string& filePath);
 	Microsoft::WRL::ComPtr < ID3D12Resource> CreateTextureResource(ID3D12Device* device, const DirectX::TexMetadata& metadata);
-	void UploadTextureData(ID3D12Resource* texture, const DirectX::ScratchImage& mipImages);
+	void UploadTextureData(Microsoft::WRL::ComPtr <ID3D12Resource> texture, const DirectX::ScratchImage& mipImages);
 
 	void SetDesc(DXGI_FORMAT fmt, UINT mapping, D3D12_SRV_DIMENSION dimension, UINT mipLevel);
 private:

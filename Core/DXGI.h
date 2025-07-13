@@ -11,11 +11,11 @@ public:
 	/// <summary>
 	/// GPUのインフラ整備士を雇う
 	/// </summary>
-	static void RecruitEngineer();
+	void RecruitEngineer();
 
-	static void AssignTaskToEngineer(Microsoft::WRL::ComPtr <ID3D12CommandQueue> commandQueue,const Window& window);
+	void AssignTaskToEngineer(Microsoft::WRL::ComPtr <ID3D12CommandQueue> commandQueue,const Window& window,SwapChain& swapChain);
 
 public:
-	static Microsoft::WRL::ComPtr <IDXGIFactory7> dxgiFactory_;
+	Microsoft::WRL::ComPtr <IDXGIFactory7> dxgiFactory_;
 };
 

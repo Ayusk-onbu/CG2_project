@@ -22,7 +22,7 @@ public:
 	D3D12_DEPTH_STENCIL_DESC GetDesc() const { return depthStencilDesc_; }
 	D3D12_DEPTH_STENCIL_VIEW_DESC& GetDSVDesc() { return dsvDesc_; }
 	DescriptorHeap GetHeap() { return heap_; }
-	Microsoft::WRL::ComPtr <ID3D12Resource> GetResource() { return depthStencilResource_; }
+	Microsoft::WRL::ComPtr <ID3D12Resource>& GetResource() { return depthStencilResource_; }
 private:
 	/// <summary>
 	/// 深度テストを使うか否かの設定

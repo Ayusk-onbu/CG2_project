@@ -70,14 +70,20 @@ private:
 
 	Window window_;
 	D3D12System d3d12_;
+	DXGI dxgi_;
+	ErrorGuardian errorGuardian_;
 	TheOrderCommand command_;
+	OmnisTechOracle omnisTechOracle_;
+	TachyonSync tachyonSync_;
 
+	SRV srv_;
 	RTV rtv_;
 	DSV dsv_;
 	PSO pso_;
 	OffScreenRendering osr_;
 	D3D12_VIEWPORT viewport_;
 	D3D12_RECT scissorRect_;
+	SwapChain swapChain_;
 
 	Music music_;
 	InputManager input_;

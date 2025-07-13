@@ -4,8 +4,8 @@
 class TachyonSync
 {
 public:
-	static Fence& GetCGPU() { return CGPU_; }
+	Fence& GetCGPU() { return CGPU_; }
 private:
-	static Fence CGPU_;
+	Fence CGPU_;
 };
 

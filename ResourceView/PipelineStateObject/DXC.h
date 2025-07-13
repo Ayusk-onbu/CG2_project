@@ -7,9 +7,9 @@ class DXC
 public:
 	void Initialize();
 
-	Microsoft::WRL::ComPtr<IDxcUtils> GetUtils() { return dxcUtils_; }
-	Microsoft::WRL::ComPtr<IDxcCompiler3> GetCompiler() { return dxcCompiler_; }
-	Microsoft::WRL::ComPtr<IDxcIncludeHandler> GetIncludeHandle() { return includeHandler_; }
+	Microsoft::WRL::ComPtr<IDxcUtils>& GetUtils() { return dxcUtils_; }
+	Microsoft::WRL::ComPtr<IDxcCompiler3>& GetCompiler() { return dxcCompiler_; }
+	Microsoft::WRL::ComPtr<IDxcIncludeHandler>& GetIncludeHandle() { return includeHandler_; }
 private:
 	Microsoft::WRL::ComPtr<IDxcUtils>dxcUtils_;
 	Microsoft::WRL::ComPtr<IDxcCompiler3>dxcCompiler_;

@@ -10,7 +10,8 @@
 
 enum class PSOTYPE {
 	Normal,
-	OffScreen
+	OffScreen,
+	Line
 };
 
 class PipelineStateObject
@@ -34,7 +35,7 @@ public:
 
 	void MargeDesc();
 
-	void SetDesc(D3D12System& d3d12);
+	void SetDesc(D3D12System& d3d12, PSOTYPE type);
 
 	DXC GetDXC() { return dxc_; }
 	RootSignature GetRootSignature() { return rootSignature_; }
@@ -42,9 +43,9 @@ public:
 	BlendState GetBlendState() { return blendState_; }
 	void SetBlendState(BLENDMODE blendMode) { blendState_.SetBlendMode(blendMode); }
 	RasterizerState  GetRasterizer() { return rasterizer_; }
-	Microsoft::WRL::ComPtr<IDxcBlob> GetVSB() { return vertexShaderBlob_; }
-	Microsoft::WRL::ComPtr<IDxcBlob> GetPSB() { return pixelShaderBlob_; }
-	Microsoft::WRL::ComPtr <ID3D12PipelineState> GetGPS() {return graphicsPipelineState_;}
+	Microsoft::WRL::ComPtr<IDxcBlob>& GetVSB() { return vertexShaderBlob_; }
+	Microsoft::WRL::ComPtr<IDxcBlob>& GetPSB() { return pixelShaderBlob_; }
+	Microsoft::WRL::ComPtr <ID3D12PipelineState>& GetGPS() {return graphicsPipelineState_;}
 
 private:
 	static DXC dxc_;

@@ -11,44 +11,48 @@ public:
 	/// SwapChainをどの様なものにするかの設定
 	/// </summary>
 	/// <param name="window"></param>
-	static void Initialize(Window window);
+	void Initialize(Window window);
 	/// <summary>
 	/// 画面の幅を決める
 	/// </summary>
 	/// <param name="width 画面の幅"></param>
-	static void SetWidth(LONG width);
+	void SetWidth(LONG width);
 	/// <summary>
 	/// 画面の高さを決める
 	/// </summary>
 	/// <param name="height 画面の高さ"></param>
-	static void SetHeight(LONG height);
+	void SetHeight(LONG height);
 	/// <summary>
 	/// trueならSRGBを使う falseならSRGBを使わない
 	/// </summary>
-	static void SetFormat(bool IsSRGB);
+	void SetFormat(bool IsSRGB);
 	/// <summary>
 	/// サンプリング数を決める
 	/// </summary>
 	/// <param name="num　サンプリング数"></param>
-	static void SetSampleCount(int num);
+	void SetSampleCount(int num);
 
-	static void SetUseBufferCount(int num);
+	void SetUseBufferCount(int num);
+
+	Microsoft::WRL::ComPtr <ID3D12Resource>& GetResource(int i) { return resources_[i]; }
+
+	Microsoft::WRL::ComPtr <IDXGISwapChain4>& GetSwapChain() { return swapChain_; }
+
+	DXGI_SWAP_CHAIN_DESC1& GetDesc() { return swapChainDesc_; }
 
 public:
 
-	static void MakeResource();
-
-	static Microsoft::WRL::ComPtr <ID3D12Resource> GetResource(int i) { return resources_[i]; }
+	void MakeResource();
 
 	/*DXGI_SWAP_CHAIN_DESC1& GetDesc() { return swapChainDesc_; }
 
 	Microsoft::WRL::ComPtr <IDXGISwapChain4> Get() { return swapChain_; }*/
-public:
+private:
 	// CDプレイヤー
-	static Microsoft::WRL::ComPtr <IDXGISwapChain4> swapChain_;
+	Microsoft::WRL::ComPtr <IDXGISwapChain4> swapChain_;
 	// CD(情報を入れる場所)
-	static DXGI_SWAP_CHAIN_DESC1 swapChainDesc_;
+	DXGI_SWAP_CHAIN_DESC1 swapChainDesc_;
 
-	static Microsoft::WRL::ComPtr <ID3D12Resource> resources_[2];
+	Microsoft::WRL::ComPtr <ID3D12Resource> resources_[2];
 };
 

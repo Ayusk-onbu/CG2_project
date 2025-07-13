@@ -2,15 +2,15 @@
 #include "Log.h"
 
 
-void Texture::Initialize(D3D12System d3d12,const std::string& filePath,int num) {
+void Texture::Initialize(D3D12System d3d12, SRV& srv, const std::string& filePath,int num) {
 	mipImages_ = LoadTexture(filePath);
 	const DirectX::TexMetadata metaData_ = mipImages_.GetMetadata();
 	textureResource_ = CreateTextureResource(d3d12.GetDevice().Get(), metaData_);
 	UploadTextureData(textureResource_.Get(), mipImages_);
 
 	SetDesc(metaData_.format, D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING, D3D12_SRV_DIMENSION_TEXTURE2D, UINT(metaData_.mipLevels));
-	textureSrvHandleCPU_ = SRV::GetCPUDescriptorHandle();
-	textureSrvHandleGPU_ = SRV::GetGPUDescriptorHandle();
+	textureSrvHandleCPU_ = srv.GetCPUDescriptorHandle();
+	textureSrvHandleGPU_ = srv.GetGPUDescriptorHandle();
 	d3d12.GetDevice()->CreateShaderResourceView(textureResource_.Get(), &srvDesc_, textureSrvHandleCPU_);
 }
 
@@ -64,7 +64,7 @@ Microsoft::WRL::ComPtr < ID3D12Resource> Texture::CreateTextureResource(ID3D12De
 	return resource;
 }
 
-void Texture::UploadTextureData(ID3D12Resource* texture, const DirectX::ScratchImage& mipImages) {
+void Texture::UploadTextureData(Microsoft::WRL::ComPtr <ID3D12Resource> texture, const DirectX::ScratchImage& mipImages) {
 	//Meta情報を取得
 	const DirectX::TexMetadata& metadata = mipImages.GetMetadata();
 	//全MipMapに対して

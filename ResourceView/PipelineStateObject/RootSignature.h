@@ -18,7 +18,7 @@ public:
 	/// <param name="type"></param>
 	void CreateRootSignature(D3D12System& d3d12, ROOTTYPE type);
 
-	Microsoft::WRL::ComPtr <ID3D12RootSignature> GetRS() { return rootSignature_; }
+	Microsoft::WRL::ComPtr <ID3D12RootSignature>& GetRS() { return rootSignature_; }
 
 private:
 	Microsoft::WRL::ComPtr <ID3D12RootSignature> rootSignature_ = nullptr;

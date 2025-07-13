@@ -2,6 +2,7 @@
 #include <wrl.h>
 #include "D3D12System.h"
 #include "DescriptorHeap.h"
+#include "ShaderResourceView.h"
 #include "DepthStencil.h"
 #include "PipelineStateObject.h"
 #include "TheOrderCommand.h"
@@ -10,7 +11,7 @@ class OffRTV
 {
 public:
 
-	void Initialize(D3D12System* d3d12, Microsoft::WRL::ComPtr <ID3D12Resource> resource, DXGI_FORMAT fmt = DXGI_FORMAT_R8G8B8A8_UNORM_SRGB, D3D12_RTV_DIMENSION dimension = D3D12_RTV_DIMENSION_TEXTURE2D);
+	void Initialize(D3D12System* d3d12, Microsoft::WRL::ComPtr <ID3D12Resource> resource,DXGI_FORMAT fmt = DXGI_FORMAT_R8G8B8A8_UNORM_SRGB, D3D12_RTV_DIMENSION dimension = D3D12_RTV_DIMENSION_TEXTURE2D);
 
 	void MakeDesc(DXGI_FORMAT fmt = DXGI_FORMAT_R8G8B8A8_UNORM_SRGB, D3D12_RTV_DIMENSION dimension = D3D12_RTV_DIMENSION_TEXTURE2D);
 
@@ -30,7 +31,7 @@ class OffScreenRendering
 {
 public:
 
-	void Initialize(D3D12System& d3d12,float width,float height,
+	void Initialize(D3D12System& d3d12, SRV& srv, float width,float height,
 		DXGI_FORMAT fmt = DXGI_FORMAT_R8G8B8A8_UNORM_SRGB, 
 		D3D12_RTV_DIMENSION dimension = D3D12_RTV_DIMENSION_TEXTURE2D
 		);

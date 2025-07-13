@@ -18,6 +18,7 @@
 #include "ModelObject.h"
 #include "TriangleObject.h"
 #include "SphereObject.h"
+#include "LineObject.h"
 
 #include "DirectionLight.h"
 
@@ -32,14 +33,6 @@
 #include "Chronos.h"
 #include "RandomUtils.h"
 
-#include "Player.h"
-#include "Enemy.h"
-#include "SkyDome.h"
-#include "MapChip.h"
-#include "CameraController.h"
-#include "AABB.h"
-#include "DeathParticle.h"
-#include "HitEffect.h"
 #include <algorithm>
 
 #include "externals/DirectXTex/DirectXTex.h"
@@ -94,21 +87,24 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	window.Initialize(L"CG2CLASSNAME", L"CG2");
 #pragma region デバッグレイヤー(開発時のデバッグ支援)
 #pragma endregion
-	ErrorGuardian::SetDebugInterface();
+	ErrorGuardian errorGuardian;
+	errorGuardian.SetDebugInterface();
 #pragma region DXGIファクトリーの作成
 #pragma endregion
-	DXGI::RecruitEngineer();
+	DXGI dxgi;
+	dxgi.RecruitEngineer();
 	HRESULT hr;
 #pragma region 使用するアダプタの決定
 #pragma endregion
-	OmnisTechOracle::Oracle();
+	OmnisTechOracle omnisTechOracle;
+	omnisTechOracle.Oracle(dxgi);
 #pragma region D3D12Deviceの生成
 #pragma endregion
 	D3D12System d3d12;
-	d3d12.SelectLevel();
+	d3d12.SelectLevel(omnisTechOracle);
 #pragma region エラー警告 直ちに停止独立している
 #pragma endregion
-	ErrorGuardian::SetQueue(d3d12.GetDevice().Get());
+	errorGuardian.SetQueue(d3d12.GetDevice().Get());
 #pragma region CommandQueueの生成
 #pragma endregion
 #pragma region CommandList
@@ -126,21 +122,24 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	IID_PPV_ARGS(&command.GetList().GetList()));
 	//コマンドリストの生成がうまくいかなかったので起動できない
 	assert(SUCCEEDED(hr));
+	command.GetList().GetAllocator()->SetName(L"CommandAllocator");
+	command.GetList().GetList()->SetName(L"commandList");
+	command.GetQueue().GetQueue()->SetName(L"CommandQueue");
 #pragma region SwapChain
 #pragma endregion
-	SwapChain::Initialize(window);
+	SwapChain swapChain;
+	swapChain.Initialize(window);
 	//コマンドキュー、ウィンドウハンドル、設定を渡して生成する
-	DXGI::AssignTaskToEngineer(command.GetQueue().GetQueue().Get(), window);
-#pragma region SwapChainからResourceを引っ張ってくる
-#pragma endregion
-	SwapChain::MakeResource();
-#pragma region DescriptorSize
-#pragma endregion
-	SRV::InitializeHeap(d3d12); 
+	dxgi.AssignTaskToEngineer(command.GetQueue().GetQueue().Get(), window,swapChain);
+
+	swapChain.MakeResource();
+
+	SRV srv;
+	srv.InitializeHeap(d3d12); 
 #pragma region RTVを作る
 #pragma endregion
 	RenderTargetView rtv;
-	rtv.Initialize(&d3d12);
+	rtv.Initialize(&d3d12,swapChain);
 #pragma region ディスクリプタヒープの生成
 #pragma endregion
 	DepthStencil dsv;
@@ -154,7 +153,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	d3d12.GetDevice()->CreateDepthStencilView(dsv.GetResource().Get(), &dsv.GetDSVDesc(), dsv.GetHeap().GetHeap()->GetCPUDescriptorHandleForHeapStart());
 #pragma region FenceとEvent
 #pragma endregion
-	TachyonSync::GetCGPU().Initialize(d3d12.GetDevice().Get());
+	TachyonSync tachyonSync;
+	tachyonSync.GetCGPU().Initialize(d3d12.GetDevice().Get());
 #pragma region DXCの初期化
 #pragma endregion
 #pragma region Pipeline State Object
@@ -166,8 +166,11 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	PSO pso;
 	pso.Initialize(d3d12, PSOTYPE::Normal);
 
+	PSO psoLine;
+	psoLine.Initialize(d3d12, PSOTYPE::Line);
+
 	OffScreenRendering osr;
-	osr.Initialize(d3d12,1280.0f,720.0f);
+	osr.Initialize(d3d12,srv,1280.0f,720.0f);
 #pragma region ViewportとScissor独立しているが後回し
 	//ビューポート
 	D3D12_VIEWPORT viewport = {};
@@ -186,11 +189,11 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	scissorRect.top = 0;
 	scissorRect.bottom = window.GetWindowRect().bottom;
 #pragma endregion
-	ImGuiManager::SetImGui(window.GetHwnd(), d3d12.GetDevice().Get(), SRV::descriptorHeap_.GetHeap().Get());
+	ImGuiManager::SetImGui(window.GetHwnd(), d3d12.GetDevice().Get(), srv.GetDescriptorHeap().GetHeap().Get());
 #pragma region XAudio2初期化
 #pragma endregion
-	Music music;
-	music.Initialize();
+	//Music music;
+	//music.Initialize();
 #pragma region 入力情報の初期化
 #pragma endregion
 	input.Initialize(window.GetWindowClass(), window.GetHwnd());
@@ -201,54 +204,23 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	TimeRandom::Initialize();
 
 	//   ここからモデル系の処理
-	ModelObject playerModel;
-	playerModel.Initialize(d3d12, "player.obj");
-	Texture playerTex;
-	playerTex.Initialize(d3d12, playerModel.GetFilePath(), 1);
-	ModelObject ATKEffectModel;
-	ATKEffectModel.Initialize(d3d12, "attackEffect.obj");
+	
+	Texture lineTex;
+	lineTex.Initialize(d3d12, srv, "resources/GridLine.png", 1);
 
-	ModelObject skyDomeModel;
-	skyDomeModel.Initialize(d3d12, "skyDome.obj");
-	Texture skyDomeTex;
-	skyDomeTex.Initialize(d3d12, skyDomeModel.GetFilePath(), 2);
-
-	ModelObject mapChipModel[20][100];
-	for (int i = 0;i < 20;++i) {
-		for (int j = 0;j < 100;++j) {
-			mapChipModel[i][j].Initialize(d3d12, "brickBlock.obj");
-		}
-	}
-	Texture mapChipTex;
-	mapChipTex.Initialize(d3d12, mapChipModel[0][0].GetFilePath(), 3);
-
-	ModelObject deathParticleModel[8];
-	for (int i = 0;i < 8;++i) {
-		deathParticleModel[i].Initialize(d3d12, "deathParticle.obj");
+	const uint32_t lineX = 50;
+	const uint32_t lineXCenter = lineX / 2;
+	LineObject line[lineX];
+	for (uint32_t i = 0;i < lineX;++i) {
+		line[i].Initialize(d3d12, 50.0f, 0.0f);
 	}
 
-	Texture deathParticleTex;
-	deathParticleTex.Initialize(d3d12, deathParticleModel[0].GetFilePath(), 4);
-
-	std::vector<ModelObject*> enemyModel;
-	for (int i = 0;i < 3;++i) {
-		ModelObject* newModel = new ModelObject;
-		newModel->Initialize(d3d12, "player.obj");
-		enemyModel.push_back(newModel);
+	const uint32_t lineZ = 50;
+	const uint32_t lineZCenter = lineZ / 2;
+	LineObject lineZ_[lineZ];
+	for (uint32_t i = 0;i < lineZ;++i) {
+		lineZ_[i].Initialize(d3d12, 50.0f, 0.0f);
 	}
-
-	std::vector<ModelObject*> enemyDeathModel;
-	for (int i = 0;i < 3;++i) {
-		ModelObject* newModel = new ModelObject;
-		newModel->Initialize(d3d12, "enemyDeathParticle.obj");
-		enemyDeathModel.push_back(newModel);
-	}
-
-	Texture enemyDeathTex;
-	enemyDeathTex.Initialize(d3d12, enemyDeathModel[0]->GetFilePath(), 5);
-
-	SpriteObject fadeModel;
-	fadeModel.Initialize(d3d12, 1280.0f, 720.0f);
 
 	//   ここまでモデル系の処理
 
@@ -257,91 +229,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	cameraBase.Initialize();
 	//Audio audio;
 	//audio.SoundPlayWave(MediaAudioDecoder::DecodeAudioFile(L"resources/maou_bgm_fantasy02.mp3"));
-	music.GetBGM().LoadWAVE("resources/loop101204.wav");
+	//music.GetBGM().LoadWAVE("resources/loop101204.wav");
 	//music.GetBGM().SetPlayAudioBuf();
-	 
-	SkyDome skyDome;
-	skyDome.Initialize(skyDomeModel, cameraBase);
-	MapChip mapChip;
-	mapChip.LoadMapChipCsv("resources/mapChip.csv");
-	std::vector<std::vector<Transform*>> worldTransformBlocks_;
-	std::vector<std::vector<Transform*>> uvTransformBlocks_;
-	Transform uvTransformBlock= { {1.0f, 1.0f, 1.0f},
-					              {0.0f, 0.0f, 0.0f},
-					              {0.0f, 0.0f, 0.0f} };
-	//要素数
-	uint32_t kNumBlockVirtical = mapChip.GetNumBlockVirtical();
-	uint32_t kNumBlockHorizontal = mapChip.GetNumBlockHorizontal();
-	//要素数を変更
-	//列数を設定（縦方向のブロック数）
-	worldTransformBlocks_.resize(kNumBlockVirtical);
-	for (uint32_t i = 0; i < kNumBlockVirtical; ++i) {
-		// 1列の要素数を設定（横方向のブロック数）
-		worldTransformBlocks_[i].resize(kNumBlockHorizontal);
-	}
-	// キューブの生成
-	for (uint32_t i = 0; i < kNumBlockVirtical; ++i) {
-		for (uint32_t j = 0; j < kNumBlockHorizontal; ++j) {
-			if (mapChip.GetMapChipTypeByIndex(j, i) == MapChipType::kBlock) {
-
-				Transform* worldTransform = new Transform;
-				worldTransform->scale = { 1.0f,1.0f,1.0f };
-				worldTransform->rotate = { 0.0f,0.0f,0.0f };
-				worldTransform->translate = {0.0f,0.0f,0.0f};
-				worldTransformBlocks_[i][j] = worldTransform;
-				worldTransformBlocks_[i][j]->translate = mapChip.GetBlockPositionByIndex(j, i);
-			}
-		}
-	}
-	Player player;
-	//player.Initialize(playerModel, cameraBase, Vector3 (0.0f,0.0f,0.0f));
-	player.Initialize(playerModel, cameraBase,mapChip.GetBlockPositionByIndex(2,18));
-	player.EffectInitialize(ATKEffectModel);
-	player.SetMapChipField(&mapChip);
-
-	std::list<Enemy*> enemys;
-	for (int i = 0;i < 3;++i) {
-		Enemy* newEnemy = new Enemy;
-		newEnemy->Initialize(enemyModel[i], &cameraBase, mapChip.GetBlockPositionByIndex(10 + i * 7, 18));
-		enemys.push_back(newEnemy);
-	}
-	DeathParticle deathParticle;
-	deathParticle.Initialize(player.GetWorldTransform().translate);
-
-	HitEffect::SetCamera(&cameraBase);
-	HitEffect::SetModel(enemyDeathModel[0]);
-	HitEffect::SetModel2(enemyDeathModel[1]);
-	HitEffect::SetModel3(enemyDeathModel[2]);
-	HitEffect hitEffect;
-
-	CameraController cameraController;
-	cameraController.Initialize(&cameraBase);
-	cameraController.SetTarget(&player);
-	cameraController.Reset();
-	//カメラの移動範囲を設定
-	Rect area = { 0, 100, 0, 100 };
-	area.left = 11;
-	area.right = mapChip.GetBlockPositionByIndex(100, 0).x;
-	area.bottom = mapChip.GetBlockPositionByIndex(0, 13).y;
-	area.top = mapChip.GetBlockPositionByIndex(0, 20).y - 10;
-	cameraController.SetMovableArea(area);
-	cameraBase.SetTargetPos(player.GetWorldTransform().translate);
-
-	enum SCENE {
-		Title,
-		Game,
-	};
-	SCENE scene = Title;
-	enum FADE {
-		In,
-		None,
-		Out,
-	};
-	Vector4 fadeColor = { 0.0f,0.0f,0.0f,1.0f };
-	float fadeTimer = 0.0f;
-	float fadeLimit = 3.0f;
-	bool isFade = false;
-	uint32_t fadeType = In;
 
 	//ウィンドウのｘボタンが押されるまでループ
 	while (msg.message != WM_QUIT) {
@@ -356,9 +245,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			ImGuiManager::BeginFrame();
 			Chronos::Update();
 			input.Update();
-		
-			
-			cameraController.Update();
 			cameraBase.UpDate();
 #pragma region OffScreenRendering
 			/*ResourceBarrier barrierO = {};
@@ -383,10 +269,10 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 ////////////////////////////////////////////////////////////
 #pragma region コマンドを積み込んで確定させる
 	//これから書き込むバックバッファのインデックスを取得
-			UINT backBufferIndex = SwapChain::swapChain_->GetCurrentBackBufferIndex();
+			UINT backBufferIndex = swapChain.GetSwapChain()->GetCurrentBackBufferIndex();
 
 			ResourceBarrier barrier = {};
-			barrier.SetBarrier(command.GetList().GetList().Get(), SwapChain::GetResource(backBufferIndex).Get(),
+			barrier.SetBarrier(command.GetList().GetList().Get(), swapChain.GetResource(backBufferIndex).Get(),
 				D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET);
 
 			//描画先のRTVを設定する
@@ -399,7 +285,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			command.GetList().GetList()->ClearDepthStencilView(dsvHandle, D3D12_CLEAR_FLAG_DEPTH, 1.0f, 0, 0, nullptr);//
 			command.GetList().GetList()->ClearRenderTargetView(rtv.GetHandle(backBufferIndex), clearColor, 0, nullptr);
 
-			ID3D12DescriptorHeap* descriptorHeaps[] = { SRV::descriptorHeap_.GetHeap().Get() };
+			ID3D12DescriptorHeap* descriptorHeaps[] = { srv.GetDescriptorHeap().GetHeap().Get()};
 			command.GetList().GetList()->SetDescriptorHeaps(1, descriptorHeaps);
 			/////////////////////////////////////////////////////////////////////////
 			//描画0200
@@ -412,164 +298,40 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 			//   ここからゲームの処理↓↓↓↓
 		
-			//fadeTimer = std::clamp(fadeTimer, 0.0f, fadeLimit);
-			switch (scene) {
-			case Title:
-				switch (fadeType) {
-				case In:
-					if (fadeLimit <= fadeTimer) {
-						fadeType = None;
-						fadeTimer = 0.0f;
-					}
-					fadeTimer += 1.0f / 60.0f;
-					fadeColor.w = 1.0f * (fadeLimit - fadeTimer) / fadeLimit;
-					break;
-				case None:
-					if (InputManager::GetKey().PressKey(DIK_SPACE)) {
-						fadeType = Out;
-					}
-					fadeColor.w = 0.0f;
-					break;
-				case Out:
-					if (fadeLimit <= fadeTimer) {
-						fadeType = In;
-						scene = Game;
-						fadeTimer = 0.0f;
-					}
-					fadeTimer += 1.0f / 60.0f;
-					fadeColor.w = 1.0f * fadeTimer / fadeLimit;
-					break;
-				}
-				
-
-				
-				break;
-			case Game:
-				switch (fadeType) {
-				case In:
-					if (fadeLimit <= fadeTimer) {
-						fadeType = None;
-						fadeTimer = 0.0f;
-					}
-					fadeTimer += 1.0f / 60.0f;
-					fadeColor.w = 1.0f * (fadeLimit - fadeTimer) / fadeLimit;
-					break;
-				case None:
-					if (player.IsDead()) {
-						if (deathParticle.IsFinished()) {
-							fadeType = Out;
-						}
-					}
-					fadeColor.w = 0.0f;
-					break;
-				case Out:
-					if (fadeLimit <= fadeTimer) {
-						fadeType = In;
-						scene = Title;
-						fadeTimer = 0.0f;
-					}
-					fadeTimer += 1.0f / 60.0f;
-					fadeColor.w = 1.0f * fadeTimer / fadeLimit;
-					break;
-				}
-
-				player.Update();
-				for (Enemy* enemy : enemys) {
-					enemy->UpDate();
-				}
-				skyDome.Update();
-				// ブロックの更新
-				for (uint32_t i = 0; i < kNumBlockVirtical; ++i) {
-					for (uint32_t j = 0; j < kNumBlockHorizontal; ++j) {
-						if (mapChip.GetMapChipTypeByIndex(j, i) == MapChipType::kBlock) {
-							// uv
-							Matrix4x4 uvBlock = Matrix4x4::Make::Scale(uvTransformBlock.scale);
-							uvBlock = Matrix4x4::Multiply(uvBlock, Matrix4x4::Make::RotateZ(uvTransformBlock.rotate.z));
-							uvBlock = Matrix4x4::Multiply(uvBlock, Matrix4x4::Make::Translate(uvTransformBlock.translate));
-
-							Matrix4x4 matWorld;
-							matWorld = Matrix4x4::Make::Affine(worldTransformBlocks_[i][j]->scale, worldTransformBlocks_[i][j]->rotate, worldTransformBlocks_[i][j]->translate);
-							mapChipModel[i][j].SetWVPData(cameraBase.DrawCamera(matWorld), matWorld, uvBlock);
-						}
-					}
-				}
-
-				AABB aabb1, aabb2;
-				aabb1 = AABB::World2AABB(player.GetWorldTransform().translate);
-
-				for (Enemy* enemy : enemys) {
-					aabb2 = AABB::World2AABB(enemy->GetWorldTransform().translate);
-
-					if (AABB::IsHitAABB2AABB(aabb1, aabb2)) {
-						
-						if (!player.IsDead()) {
-							deathParticle.SetPosition(player.GetWorldTransform().translate);
-						}
-						player.OnCollision(enemy);
-						enemy->OnCollision(&player);
-						if (enemy->IsDeathBehavior()) {
-							hitEffect.Initialize(enemy->GetWorldTransform().translate);
-						}
-					}
-
-				}
-				hitEffect.Update();
-				enemys.remove_if([](Enemy* enemy) {
-					if (enemy->IsDeath()) {
-						delete enemy;
-						return true;
-					}
-					return false;
-				});
-
-				if (!deathParticle.IsFinished()) {
-					deathParticle.UpDate();
-				}
-				ImGui::Begin("DirectionalLight");
-				ImGuiManager::CreateImGui("Direction", light.directionalLightData_->direction, -1.0f, 1.0f);
-				ImGui::End();
-				break;
-			}
-			Matrix4x4 world = Matrix4x4::Make::Affine({ 1.0f,1.0f,1.0f }, { 0.0f,Deg2Rad(180),0.0f }, { 640.0f,-360.0f,0.0f });
-			fadeModel.SetWVPData(world, world, world);
-			fadeModel.SetColor(fadeColor);
 			
-			switch (scene) {
-			case Title:
-				
-				break;
-			case Game:
-				//   ここまでゲームの処理↑↑↑↑
-			//   ここから描画関係処理↓↓↓↓
-				player.Draw(command, pso, light, playerTex);
-				for (Enemy* enemy : enemys) {
-					enemy->Draw(command, pso, light, playerTex);
+			for (uint32_t i = 0;i < lineX;++i) {
+				Matrix4x4 world = Matrix4x4::Make::Affine({1.0f,1.0f,1.0f}, {0.0f,0.0f,0.0f}, {0.0f,0.0f,(i * 1.0f)-25.0f});
+				line[i].SetWVPData(cameraBase.DrawCamera(world), world, world);
+				int offset = static_cast<int>(i - lineXCenter);
+				if (offset == 0) {
+					line[i].SetColor({ 1.0f,0.0f,0.0f,1.0f });
 				}
-
-				hitEffect.Draw(command, pso, light, enemyDeathTex);
-
-				skyDome.Draw(command, pso, light, skyDomeTex);
-				for (uint32_t i = 0; i < kNumBlockVirtical; ++i) {
-					for (uint32_t j = 0; j < kNumBlockHorizontal; ++j) {
-						if (mapChip.GetMapChipTypeByIndex(j, i) == MapChipType::kBlock) {
-							mapChipModel[i][j].Draw(command, pso, light, mapChipTex);
-						}
-					}
+				else if (std::abs(offset) % 10 == 0) {
+					line[i].SetColor({ 0.25f,0.0f,0.0f,1.0f });
 				}
-				if (player.IsDead()) {
-					deathParticle.SetPosition(player.GetWorldTransform().translate);
-					if (!deathParticle.IsFinished()) {
-						for (int i = 0;i < 8;++i) {
-							deathParticleModel[i].SetWVPData(cameraBase.DrawCamera(deathParticle.GetPosition(i)), deathParticle.GetPosition(i), deathParticle.GetPosition(i));
-							deathParticleModel[i].SetColor(deathParticle.GetColor());
-							deathParticleModel[i].Draw(command, pso, light, deathParticleTex);
-						}
-					}
+				else {
+					//line[i].SetColor({ 0.0f,0.0f,0.0f,1.0f });
+					line[i].SetColor({ 0.5f,0.5f,0.5f,1.0f });
 				}
-				break;
+				line[i].Draw(command, psoLine, light, lineTex);
 			}
-			fadeModel.Draw(command, pso, light, deathParticleTex);
-			
+			for (uint32_t i = 0;i < lineZ;++i) {
+				Matrix4x4 world = Matrix4x4::Make::Affine({ 1.0f,1.0f,1.0f }, { 0.0f,Deg2Rad(90),0.0f }, { (i * 1.0f) - 25.0f,0.0f,0.0f });
+				lineZ_[i].SetWVPData(cameraBase.DrawCamera(world), world, world);
+				int offset = static_cast<int>(i - lineZCenter);
+				if (offset == 0) {
+					lineZ_[i].SetColor({ 0.0f,1.0f,0.0f,1.0f });
+				}
+				else if (std::abs(offset) % 10 == 0) {
+					lineZ_[i].SetColor({ 0.0f,0.25f,0.0f,1.0f });
+				}
+				else {
+					//lineZ_[i].SetColor({ 0.0f,0.0f,0.0f,1.0f });
+					lineZ_[i].SetColor({ 0.5f,0.5f,0.5f,1.0f });
+				}
+				lineZ_[i].Draw(command, psoLine, light, lineTex);
+			}
+
 			//   ここまで描画関係処理↑↑↑↑
 			//描画
 			ImGuiManager::EndFrame(command.GetList().GetList());
@@ -589,9 +351,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 
 			//GPUとOSに画面の交換を行うように通知する
-			SwapChain::swapChain_->Present(1, 0);
+			swapChain.GetSwapChain()->Present(1, 0);
 
-			TachyonSync::GetCGPU().Update(command.GetQueue().GetQueue().Get());
+			tachyonSync.GetCGPU().Update(command.GetQueue().GetQueue().Get());
 
 
 			//次のフレーム用のコマンドリストを準備
@@ -607,32 +369,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	ImGuiManager::Shutdown();
 
 	//解放処理
-	TachyonSync::GetCGPU().UnLoad();
-	music.UnLoad();
-	for (std::vector<Transform*>& worldTransformBlockLine : worldTransformBlocks_) {
-		for (Transform* worldTransformBlock : worldTransformBlockLine) {
-			delete worldTransformBlock;
-		}
-	}
-	worldTransformBlocks_.clear();
-	for (std::vector<Transform*>& worldTransformBlockLine : uvTransformBlocks_) {
-		for (Transform* worldTransformBlock : worldTransformBlockLine) {
-			delete worldTransformBlock;
-		}
-	}
-	uvTransformBlocks_.clear();
-	for (ModelObject* enemy : enemyModel) {
-		delete enemy;
-	}
-	enemyModel.clear();
-	for (Enemy* enemy : enemys) {
-		delete enemy;
-	}
-	enemys.clear();
-	for (ModelObject* enemy : enemyDeathModel) {
-		delete enemy;
-	}
-	enemyDeathModel.clear();
+	tachyonSync.GetCGPU().UnLoad();
+	//music.UnLoad();
 
 #ifdef _DEBUG
 	//debugController->Release();

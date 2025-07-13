@@ -2,10 +2,9 @@
 #include<dxgi1_6.h>
 #include <d3d12.h>
 #include <cassert>
-#include "ShaderResourceView.h"
 #include "ResourceBarrier.h"
 
-void OffScreenRendering::Initialize(D3D12System& d3d12, float width, float height,
+void OffScreenRendering::Initialize(D3D12System& d3d12, SRV& srv, float width, float height,
 	DXGI_FORMAT fmt,D3D12_RTV_DIMENSION dimension) {
 	
 
@@ -59,8 +58,8 @@ void OffScreenRendering::Initialize(D3D12System& d3d12, float width, float heigh
 	srvDesc_.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
 	srvDesc_.Texture2D.MostDetailedMip = 0;
 	srvDesc_.Texture2D.MipLevels = renderingDesc.MipLevels;
-	textureSrvHandleCPU_ = ShaderResourceView::GetCPUDescriptorHandle();
-	textureSrvHandleGPU_ = ShaderResourceView::GetGPUDescriptorHandle();
+	textureSrvHandleCPU_ = srv.GetCPUDescriptorHandle();
+	textureSrvHandleGPU_ = srv.GetGPUDescriptorHandle();
 	d3d12.GetDevice()->CreateShaderResourceView(offScreenTexture_.Get(), &srvDesc_, textureSrvHandleCPU_);
 
 

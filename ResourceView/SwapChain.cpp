@@ -1,10 +1,6 @@
 #include "SwapChain.h"
 #include <cassert>
 
-Microsoft::WRL::ComPtr <IDXGISwapChain4> SwapChain::swapChain_;
-DXGI_SWAP_CHAIN_DESC1 SwapChain::swapChainDesc_;
-Microsoft::WRL::ComPtr <ID3D12Resource> SwapChain::resources_[2] = {nullptr};
-
 void SwapChain::Initialize(Window window) {
 	swapChain_ = nullptr;
 	swapChainDesc_ = {};
@@ -18,6 +14,7 @@ void SwapChain::Initialize(Window window) {
 	SetUseBufferCount(2);
 	//モニタにうつしたら、中身を破棄
 	swapChainDesc_.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;
+
 }
 
 void SwapChain::SetWidth(LONG width) {

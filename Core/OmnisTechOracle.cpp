@@ -1,15 +1,11 @@
 #include "OmnisTechOracle.h"
 #include <cassert>
-
-#include "DXGI.h"
 #include "Log.h"
 
-Microsoft::WRL::ComPtr <IDXGIAdapter4> OmnisTechOracle::useAdapter_ = nullptr;
-
-void OmnisTechOracle::Oracle() {
+void OmnisTechOracle::Oracle(DXGI& dxgi) {
 	HRESULT hr;
 	//よい順にアダプタを頼む
-	for (UINT i = 0;DXGI::dxgiFactory_->EnumAdapterByGpuPreference(i,
+	for (UINT i = 0;dxgi.dxgiFactory_->EnumAdapterByGpuPreference(i,
 		DXGI_GPU_PREFERENCE_HIGH_PERFORMANCE, IID_PPV_ARGS(&useAdapter_)) !=
 		DXGI_ERROR_NOT_FOUND; ++i) {
 		//アダプターの情報を取得する

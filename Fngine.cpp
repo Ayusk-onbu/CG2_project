@@ -9,11 +9,11 @@ void Fngine::Initialize() {
 	Log::Initialize();
 
 	window_.Initialize(L"CG2ClassName", L"CG2");
-	ErrorGuardian::SetDebugInterface();
-	DXGI::RecruitEngineer();
-	OmnisTechOracle::Oracle();
-	d3d12_.SelectLevel();
-	ErrorGuardian::SetQueue(d3d12_.GetDevice().Get());
+	errorGuardian_.SetDebugInterface();
+	dxgi_.RecruitEngineer();
+	omnisTechOracle_.Oracle(dxgi_);
+	d3d12_.SelectLevel(omnisTechOracle_);
+	errorGuardian_.SetQueue(d3d12_.GetDevice().Get());
 	command_.GetQueue().SetDescD();
 	HRESULT hr;
 	hr = d3d12_.GetDevice()->CreateCommandQueue(&command_.GetQueue().GetDesc(), IID_PPV_ARGS(&command_.GetQueue().GetQueue()));
@@ -30,18 +30,17 @@ void Fngine::Initialize() {
 	if (FAILED(hr)) {
 		Log::ViewFile("CreateCommandList failed!!!\n");
 	}
-	SwapChain::Initialize(window_);
-	DXGI::AssignTaskToEngineer(command_.GetQueue().GetQueue().Get(), window_);
+	swapChain_.Initialize(window_);
+	dxgi_.AssignTaskToEngineer(command_.GetQueue().GetQueue().Get(), window_,swapChain_);
 
-	SwapChain::MakeResource();
-	SRV::InitializeHeap(d3d12_);
-	rtv_.Initialize(&d3d12_);
+	srv_.InitializeHeap(d3d12_);
+	rtv_.Initialize(&d3d12_,swapChain_);
 	dsv_.InitializeHeap(d3d12_);
 	dsv_.MakeResource(d3d12_, kClienWidth_, kClienHeight_);
 	d3d12_.GetDevice()->CreateDepthStencilView(dsv_.GetResource().Get(), &dsv_.GetDSVDesc(), dsv_.GetHeap().GetHeap()->GetCPUDescriptorHandleForHeapStart());
-	TachyonSync::GetCGPU().Initialize(d3d12_.GetDevice().Get());
+	tachyonSync_.GetCGPU().Initialize(d3d12_.GetDevice().Get());
 	pso_.Initialize(d3d12_, PSOTYPE::Normal);
-	osr_.Initialize(d3d12_, float(kClienWidth_), float(kClienHeight_));
+	osr_.Initialize(d3d12_,srv_, float(kClienWidth_), float(kClienHeight_));
 	viewport_.Width = static_cast<float>(window_.GetWindowRect().right);
 	viewport_.Height = static_cast<float>(window_.GetWindowRect().bottom);
 	viewport_.TopLeftX = 0;
@@ -56,7 +55,7 @@ void Fngine::Initialize() {
 	music_.Initialize();
 	input_.Initialize(window_.GetWindowClass(), window_.GetHwnd());
 
-	ImGuiManager::SetImGui(window_.GetHwnd(), d3d12_.GetDevice().Get(), SRV::descriptorHeap_.GetHeap().Get());
+	ImGuiManager::SetImGui(window_.GetHwnd(), d3d12_.GetDevice().Get(), srv_.GetDescriptorHeap().GetHeap().Get());
 
 	light_.Initialize(d3d12_);
 }

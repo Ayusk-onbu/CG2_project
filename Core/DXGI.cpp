@@ -1,8 +1,6 @@
 #include "DXGI.h"
 #include <cassert>
 
-Microsoft::WRL::ComPtr <IDXGIFactory7> DXGI::dxgiFactory_;
-
 void DXGI::RecruitEngineer() {
 	//HRESULTはWindows系のエラーコードであり、
 	//関数が成功したかどうかをSUCCEEDEDマクロで判定できる
@@ -12,8 +10,8 @@ void DXGI::RecruitEngineer() {
 	assert(SUCCEEDED(hr));
 }
 
-void DXGI::AssignTaskToEngineer(Microsoft::WRL::ComPtr <ID3D12CommandQueue> commandQueue, const Window& window) {
+void DXGI::AssignTaskToEngineer(Microsoft::WRL::ComPtr <ID3D12CommandQueue> commandQueue, const Window& window, SwapChain& swapChain) {
 	//コマンドキュー、ウィンドウハンドル、設定を渡して生成する
-	HRESULT hr = dxgiFactory_->CreateSwapChainForHwnd(commandQueue.Get(), window.GetHwnd(), &SwapChain::swapChainDesc_, nullptr, nullptr, reinterpret_cast<IDXGISwapChain1**>(SwapChain::swapChain_.GetAddressOf()));
+	HRESULT hr = dxgiFactory_->CreateSwapChainForHwnd(commandQueue.Get(), window.GetHwnd(), &swapChain.GetDesc(), nullptr, nullptr, reinterpret_cast<IDXGISwapChain1**>(swapChain.GetSwapChain().GetAddressOf()));
 	assert(SUCCEEDED(hr));
 }

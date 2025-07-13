@@ -10,12 +10,12 @@ public:
 
 	static LONG WINAPI ExportDump(EXCEPTION_POINTERS* exception);
 
-	static void SetDebugInterface();
+	void SetDebugInterface();
 
-	static void SetQueue(Microsoft::WRL::ComPtr <ID3D12Device> device);
+	void SetQueue(Microsoft::WRL::ComPtr <ID3D12Device> device);
 
 private:
-	static Microsoft::WRL::ComPtr <ID3D12Debug1> debugController_;
-	static Microsoft::WRL::ComPtr <ID3D12InfoQueue> infoQueue_;
+	Microsoft::WRL::ComPtr <ID3D12Debug1> debugController_;
+	Microsoft::WRL::ComPtr <ID3D12InfoQueue> infoQueue_;
 };
 

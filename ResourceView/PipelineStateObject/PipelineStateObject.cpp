@@ -8,18 +8,22 @@ void PipelineStateObject::Initialize(D3D12System& d3d12, PSOTYPE type) {
 	InitializeDescs(d3d12, type);
 	MargeDesc();
 	depthStencil_.InitializeDesc();
-	SetDesc(d3d12);
+	SetDesc(d3d12,type);
 }
 
 void PipelineStateObject::InitializeDescs(D3D12System& d3d12, PSOTYPE type) {
 	if (type == PSOTYPE::Normal) {
-		dxc_.Initialize();
-		rootSignature_.CreateRootSignature(d3d12, ROOTTYPE::Normal);
-		inputLayoutDesc_.Initialize();
-		blendState_.Initialize(USECOLOR::All);
-		rasterizer_.SetDesc(D3D12_CULL_MODE_BACK, D3D12_FILL_MODE_SOLID);
-		Compile();
+		
 	}
+	dxc_.Initialize();
+	rootSignature_.CreateRootSignature(d3d12, ROOTTYPE::Normal);
+	inputLayoutDesc_.Initialize();
+	blendState_.Initialize(USECOLOR::All);
+	rasterizer_.SetDesc(D3D12_CULL_MODE_BACK, D3D12_FILL_MODE_SOLID);
+	if (type == PSOTYPE::Line) {
+		rasterizer_.GetDesc().AntialiasedLineEnable = true;
+	}
+	Compile();
 }
 
 void PipelineStateObject::Compile() {
@@ -111,13 +115,17 @@ void PipelineStateObject::MargeDesc() {
 	pixelShaderBlob_->GetBufferSize() };//PixelShader
 }
 
-void PipelineStateObject::SetDesc(D3D12System& d3d12) {
+void PipelineStateObject::SetDesc(D3D12System& d3d12, PSOTYPE type) {
 	//書きこむRYVの情報
 	graphicsPipelineStateDesc_.NumRenderTargets = 1;
 	graphicsPipelineStateDesc_.RTVFormats[0] = DXGI_FORMAT_R8G8B8A8_UNORM_SRGB;
 	//利用するトボロジ（形状）のタイプ。三角形
-	graphicsPipelineStateDesc_.PrimitiveTopologyType =
-		D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
+	if (type == PSOTYPE::Line) {
+		graphicsPipelineStateDesc_.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_LINE;
+	}
+	else {
+		graphicsPipelineStateDesc_.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
+	}
 	//どのように画面に色を打ち込むかの設定
 	graphicsPipelineStateDesc_.SampleDesc.Count = 1;
 	graphicsPipelineStateDesc_.SampleMask = D3D12_DEFAULT_SAMPLE_MASK;
