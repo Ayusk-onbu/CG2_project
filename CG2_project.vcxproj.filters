@@ -76,6 +76,12 @@
     <Filter Include="UsefulTool\Time">
       <UniqueIdentifier>{7d4c0291-ada0-4787-bbc2-5c54a71be084}</UniqueIdentifier>
     </Filter>
+    <Filter Include="UsefulTool\Easing">
+      <UniqueIdentifier>{74a47522-2689-4d21-9d2f-b123fd0a4c34}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="UsefulTool\Random">
+      <UniqueIdentifier>{bf730b97-464f-456a-9b90-dae3ac4f4071}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -246,17 +252,17 @@
     <ClCompile Include="Advanced\AABB.cpp">
       <Filter>Advanced</Filter>
     </ClCompile>
-    <ClCompile Include="ModelManager.cpp">
-      <Filter>ソース ファイル</Filter>
+    <ClCompile Include="Objects\Primitive\LineObject.cpp">
+      <Filter>Objects\Primitive</Filter>
     </ClCompile>
-    <ClCompile Include="Easing.cpp">
-      <Filter>ソース ファイル</Filter>
+    <ClCompile Include="Objects\ModelManager.cpp">
+      <Filter>Objects</Filter>
     </ClCompile>
-    <ClCompile Include="RandomUtils.cpp">
-      <Filter>ソース ファイル</Filter>
+    <ClCompile Include="UsefulTool\Easing\Easing.cpp">
+      <Filter>UsefulTool\Easing</Filter>
     </ClCompile>
-    <ClCompile Include="LineObject.cpp">
-      <Filter>ソース ファイル</Filter>
+    <ClCompile Include="UsefulTool\Random\RandomUtils.cpp">
+      <Filter>UsefulTool\Random</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -459,17 +465,17 @@
     <ClInclude Include="Advanced\AABB.h">
       <Filter>Advanced</Filter>
     </ClInclude>
-    <ClInclude Include="ModelManager.h">
-      <Filter>ヘッダー ファイル</Filter>
+    <ClInclude Include="Objects\Primitive\LineObject.h">
+      <Filter>Objects\Primitive</Filter>
     </ClInclude>
-    <ClInclude Include="Easing.h">
-      <Filter>ヘッダー ファイル</Filter>
+    <ClInclude Include="Objects\ModelManager.h">
+      <Filter>Objects</Filter>
     </ClInclude>
-    <ClInclude Include="RandomUtils.h">
-      <Filter>ヘッダー ファイル</Filter>
+    <ClInclude Include="UsefulTool\Easing\Easing.h">
+      <Filter>UsefulTool\Easing</Filter>
     </ClInclude>
-    <ClInclude Include="LineObject.h">
-      <Filter>ヘッダー ファイル</Filter>
+    <ClInclude Include="UsefulTool\Random\RandomUtils.h">
+      <Filter>UsefulTool\Random</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

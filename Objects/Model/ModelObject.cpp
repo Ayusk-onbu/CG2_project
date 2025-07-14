@@ -6,6 +6,11 @@ void ModelObject::Initialize(D3D12System d3d12, const std::string& filename, con
 	InitializeData();
 }
 
+void ModelObject::Initialize(D3D12System d3d12, ModelData& modelData) {
+	InitializeResource(d3d12,modelData);
+	InitializeData();
+}
+
 void ModelObject::Draw(TheOrderCommand& command, PSO& pso, DirectionLight& light, Texture& tex) {
 	command.GetList().GetList()->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 	object_.DrawBase(command, pso, light, tex);
@@ -28,13 +33,19 @@ void ModelObject::SetColor(Vector4& color) {
 	object_.materialData_->color = color;
 }
 
+// ----------------------------------------------------- [ PRIVATE ] -------------------------------------------------- //
 void ModelObject::InitializeResource(D3D12System d3d12, const std::string& filename, const std::string& directoryPath) {
-
 	modelData_ = LoadObjFile(filename, directoryPath);
 	object_.vertexResource_ = CreateBufferResource(d3d12.GetDevice().Get(), sizeof(VertexData) * modelData_.vertices.size());
 	object_.materialResource_ = CreateBufferResource(d3d12.GetDevice().Get(), sizeof(Material));
 	object_.wvpResource_ = CreateBufferResource(d3d12.GetDevice().Get(), sizeof(TransformationMatrix));
+}
 
+void ModelObject::InitializeResource(D3D12System d3d12, ModelData& modelData) {
+	modelData_ = modelData;
+	object_.vertexResource_ = CreateBufferResource(d3d12.GetDevice().Get(), sizeof(VertexData) * modelData_.vertices.size());
+	object_.materialResource_ = CreateBufferResource(d3d12.GetDevice().Get(), sizeof(Material));
+	object_.wvpResource_ = CreateBufferResource(d3d12.GetDevice().Get(), sizeof(TransformationMatrix));
 }
 
 void ModelObject::InitializeData() {

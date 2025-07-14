@@ -65,7 +65,7 @@ void ErrorGuardian::SetQueue(Microsoft::WRL::ComPtr <ID3D12Device> device) {
 		//確定したメッセージの表示を抑制する
 		infoQueue_->PushStorageFilter(&filter);
 		//解放
-		infoQueue_->Release();
+		//infoQueue_->Release();
 	}
 #endif 
 }

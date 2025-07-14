@@ -38,6 +38,9 @@ PixelShaderOutPut main(VertexShaderOutput input)
         //float cos = saturate(dot(normalize(input.normal), -gDirectionalLight.direction));
         float cos = pow(NdotL * 0.5f + 0.5f, 2.0f);
         // Light is RGB only!! Alpha dont blend with light.
+        //float3 rgbColor = gMaterial.color * textureColor.rgb * gDirectionalLight.color * cos * gDirectionalLight.intensity;
+        //float alpha = gMaterial.color * textureColor.a;
+        //output.color = float4(rgbColor, alpha);
         output.color = gMaterial.color * textureColor * gDirectionalLight.color * cos * gDirectionalLight.intensity;
     }else{
         output.color = gMaterial.color * textureColor;

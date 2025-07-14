@@ -169,8 +169,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	PSO psoLine;
 	psoLine.Initialize(d3d12, PSOTYPE::Line);
 
-	OffScreenRendering osr;
-	osr.Initialize(d3d12,srv,1280.0f,720.0f);
+	//OffScreenRendering osr;
+	//osr.Initialize(d3d12,srv,1280.0f,720.0f);
 #pragma region ViewportとScissor独立しているが後回し
 	//ビューポート
 	D3D12_VIEWPORT viewport = {};
@@ -204,8 +204,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	TimeRandom::Initialize();
 
 	//   ここからモデル系の処理
-	
+
 	Texture lineTex;
+	//lineTex.Initialize(d3d12, srv, "resources/GridLine.png", 1);
 	lineTex.Initialize(d3d12, srv, "resources/GridLine.png", 1);
 
 	const uint32_t lineX = 50;
@@ -231,6 +232,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	//audio.SoundPlayWave(MediaAudioDecoder::DecodeAudioFile(L"resources/maou_bgm_fantasy02.mp3"));
 	//music.GetBGM().LoadWAVE("resources/loop101204.wav");
 	//music.GetBGM().SetPlayAudioBuf();
+
+	bool isCopy = false;
 
 	//ウィンドウのｘボタンが押されるまでループ
 	while (msg.message != WM_QUIT) {
@@ -298,7 +301,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 			//   ここからゲームの処理↓↓↓↓
 		
-			
 			for (uint32_t i = 0;i < lineX;++i) {
 				Matrix4x4 world = Matrix4x4::Make::Affine({1.0f,1.0f,1.0f}, {0.0f,0.0f,0.0f}, {0.0f,0.0f,(i * 1.0f)-25.0f});
 				line[i].SetWVPData(cameraBase.DrawCamera(world), world, world);
