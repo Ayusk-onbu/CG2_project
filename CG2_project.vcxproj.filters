@@ -82,6 +82,12 @@
     <Filter Include="UsefulTool\Random">
       <UniqueIdentifier>{bf730b97-464f-456a-9b90-dae3ac4f4071}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Scene">
+      <UniqueIdentifier>{66cdf496-1406-412f-8459-8d24f4b21b89}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="UsefulTool\GridLine">
+      <UniqueIdentifier>{d0e9114e-ea52-4c3c-a00d-517d8ebb8861}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -263,6 +269,27 @@
     </ClCompile>
     <ClCompile Include="UsefulTool\Random\RandomUtils.cpp">
       <Filter>UsefulTool\Random</Filter>
+    </ClCompile>
+    <ClCompile Include="Scene\Scene.cpp">
+      <Filter>Scene</Filter>
+    </ClCompile>
+    <ClCompile Include="Scene\GameScene.cpp">
+      <Filter>Scene</Filter>
+    </ClCompile>
+    <ClCompile Include="Scene\SceneDirector.cpp">
+      <Filter>Scene</Filter>
+    </ClCompile>
+    <ClCompile Include="UsefulTool\GridLine\GridLine.cpp">
+      <Filter>UsefulTool\GridLine</Filter>
+    </ClCompile>
+    <ClCompile Include="Player.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="Advanced\Transform.cpp">
+      <Filter>Advanced</Filter>
+    </ClCompile>
+    <ClCompile Include="Advanced\WorldTransform.cpp">
+      <Filter>Advanced</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -476,6 +503,24 @@
     </ClInclude>
     <ClInclude Include="UsefulTool\Random\RandomUtils.h">
       <Filter>UsefulTool\Random</Filter>
+    </ClInclude>
+    <ClInclude Include="Scene\Scene.h">
+      <Filter>Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="Scene\GameScene.h">
+      <Filter>Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="Scene\SceneDirector.h">
+      <Filter>Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="UsefulTool\GridLine\GridLine.h">
+      <Filter>UsefulTool\GridLine</Filter>
+    </ClInclude>
+    <ClInclude Include="Player.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="Advanced\WorldTransform.h">
+      <Filter>Advanced</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

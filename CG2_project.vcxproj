@@ -54,7 +54,7 @@
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <TreatWarningAsError>true</TreatWarningAsError>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
-      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)Music;$(ProjectDir)Input;$(ProjectDir)Common;$(ProjectDir)Common\Vector;$(ProjectDir)Common\Matrix;$(ProjectDir)Advanced;$(ProjectDir)Common\Functions;$(ProjectDir)Core;$(ProjectDir)Core\Command;$(ProjectDir)Core\DebugTeam;$(ProjectDir)ResourceView;$(ProjectDir)ResourceView\PipelineStateObject;$(ProjectDir)Objects;$(ProjectDir)Objects\Model;$(ProjectDir)Objects\Primitive;$(ProjectDir)UsefulTool\Time;$(ProjectDir)UsefulTool\Camera;$(ProjectDir)UsefulTool\Light;$(ProjectDir)UsefulTool\OSR;$(ProjectDir)UsefulTool\Easing;$(ProjectDir)UsefulTool\Random</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)Music;$(ProjectDir)Input;$(ProjectDir)Common;$(ProjectDir)Common\Vector;$(ProjectDir)Common\Matrix;$(ProjectDir)Advanced;$(ProjectDir)Common\Functions;$(ProjectDir)Core;$(ProjectDir)Core\Command;$(ProjectDir)Core\DebugTeam;$(ProjectDir)ResourceView;$(ProjectDir)ResourceView\PipelineStateObject;$(ProjectDir)Objects;$(ProjectDir)Objects\Model;$(ProjectDir)Objects\Primitive;$(ProjectDir)UsefulTool\Time;$(ProjectDir)UsefulTool\Camera;$(ProjectDir)UsefulTool\Light;$(ProjectDir)UsefulTool\OSR;$(ProjectDir)UsefulTool\Easing;$(ProjectDir)UsefulTool\GridLine;$(ProjectDir)Scene;$(ProjectDir)UsefulTool\Random</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -78,7 +78,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
       <AdditionalOptions>/utf-8 %(AdditionalOptions)</AdditionalOptions>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
-      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)Music;$(ProjectDir)Input;$(ProjectDir)Common;$(ProjectDir)Common\Vector;$(ProjectDir)Common\Matrix;$(ProjectDir)Advanced;$(ProjectDir)Common\Functions;$(ProjectDir)Core;$(ProjectDir)Core\Command;$(ProjectDir)Core\DebugTeam;$(ProjectDir)ResourceView;$(ProjectDir)ResourceView\PipelineStateObject;$(ProjectDir)Objects;$(ProjectDir)Objects\Model;$(ProjectDir)Objects\Primitive;$(ProjectDir)UsefulTool\Time;$(ProjectDir)UsefulTool\Camera;$(ProjectDir)UsefulTool\Light;$(ProjectDir)UsefulTool\OSR;$(ProjectDir)UsefulTool\Easing;$(ProjectDir)UsefulTool\Random</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)Music;$(ProjectDir)Input;$(ProjectDir)Common;$(ProjectDir)Common\Vector;$(ProjectDir)Common\Matrix;$(ProjectDir)Advanced;$(ProjectDir)Common\Functions;$(ProjectDir)Core;$(ProjectDir)Core\Command;$(ProjectDir)Core\DebugTeam;$(ProjectDir)ResourceView;$(ProjectDir)ResourceView\PipelineStateObject;$(ProjectDir)Objects;$(ProjectDir)Objects\Model;$(ProjectDir)Objects\Primitive;$(ProjectDir)UsefulTool\Time;$(ProjectDir)UsefulTool\Camera;$(ProjectDir)UsefulTool\Light;$(ProjectDir)UsefulTool\OSR;$(ProjectDir)UsefulTool\Easing;$(ProjectDir)UsefulTool\GridLine;$(ProjectDir)Scene;$(ProjectDir)UsefulTool\Random</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -93,6 +93,8 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Advanced\AABB.cpp" />
+    <ClCompile Include="Advanced\Transform.cpp" />
+    <ClCompile Include="Advanced\WorldTransform.cpp" />
     <ClCompile Include="Common\Functions\Trigonometric.cpp" />
     <ClCompile Include="Common\Matrix\Matrix4x4.cpp" />
     <ClCompile Include="Common\Vector\Vector3.cpp" />
@@ -130,6 +132,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="Objects\Primitive\SphereObject.cpp" />
     <ClCompile Include="Objects\Primitive\SpriteObject.cpp" />
     <ClCompile Include="Objects\Primitive\TriangleObject.cpp" />
+    <ClCompile Include="Player.cpp" />
     <ClCompile Include="ResourceView\DepthStencil.cpp" />
     <ClCompile Include="ResourceView\DescriptorHeap.cpp" />
     <ClCompile Include="ResourceView\Fence.cpp" />
@@ -145,9 +148,13 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="ResourceView\ShaderResourceView.cpp" />
     <ClCompile Include="ResourceView\SwapChain.cpp" />
     <ClCompile Include="ResourceView\Texture.cpp" />
+    <ClCompile Include="Scene\GameScene.cpp" />
+    <ClCompile Include="Scene\Scene.cpp" />
+    <ClCompile Include="Scene\SceneDirector.cpp" />
     <ClCompile Include="UsefulTool\Camera\CameraBase.cpp" />
     <ClCompile Include="UsefulTool\Camera\DebugCamera.cpp" />
     <ClCompile Include="UsefulTool\Easing\Easing.cpp" />
+    <ClCompile Include="UsefulTool\GridLine\GridLine.cpp" />
     <ClCompile Include="UsefulTool\Light\DirectionLight.cpp" />
     <ClCompile Include="UsefulTool\OSR\OffScreenRendering.cpp" />
     <ClCompile Include="UsefulTool\Random\RandomUtils.cpp" />
@@ -173,6 +180,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="Advanced\Transform.h" />
     <ClInclude Include="Advanced\TransformationMatrix.h" />
     <ClInclude Include="Advanced\VertexData.h" />
+    <ClInclude Include="Advanced\WorldTransform.h" />
     <ClInclude Include="Common\Functions\Trigonometric.h" />
     <ClInclude Include="Common\Matrix\Matrix3x3.h" />
     <ClInclude Include="Common\Matrix\Matrix4x4.h" />
@@ -215,6 +223,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="Objects\Primitive\SphereObject.h" />
     <ClInclude Include="Objects\Primitive\SpriteObject.h" />
     <ClInclude Include="Objects\Primitive\TriangleObject.h" />
+    <ClInclude Include="Player.h" />
     <ClInclude Include="ResourceView\DepthStencil.h" />
     <ClInclude Include="ResourceView\DescriptorHeap.h" />
     <ClInclude Include="ResourceView\Fence.h" />
@@ -230,9 +239,13 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="ResourceView\ShaderResourceView.h" />
     <ClInclude Include="ResourceView\SwapChain.h" />
     <ClInclude Include="ResourceView\Texture.h" />
+    <ClInclude Include="Scene\GameScene.h" />
+    <ClInclude Include="Scene\Scene.h" />
+    <ClInclude Include="Scene\SceneDirector.h" />
     <ClInclude Include="UsefulTool\Camera\CameraBase.h" />
     <ClInclude Include="UsefulTool\Camera\DebugCamera.h" />
     <ClInclude Include="UsefulTool\Easing\Easing.h" />
+    <ClInclude Include="UsefulTool\GridLine\GridLine.h" />
     <ClInclude Include="UsefulTool\Light\DirectionLight.h" />
     <ClInclude Include="UsefulTool\OSR\OffScreenRendering.h" />
     <ClInclude Include="UsefulTool\Random\RandomUtils.h" />

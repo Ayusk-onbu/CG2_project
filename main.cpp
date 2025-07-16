@@ -32,6 +32,13 @@
 #include "DebugCamera.h"
 #include "Chronos.h"
 #include "RandomUtils.h"
+#include "SceneDirector.h"
+
+//GameStart
+
+#include "Player.h"
+
+//GameEnd
 
 #include <algorithm>
 
@@ -205,10 +212,17 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 	//   ここからモデル系の処理
 
+	std::unique_ptr<ModelObject> playerModel = std::make_unique<ModelObject>();
+	playerModel->Initialize(d3d12, "F-14.obj");
+
 	Texture lineTex;
 	//lineTex.Initialize(d3d12, srv, "resources/GridLine.png", 1);
 	lineTex.Initialize(d3d12, srv, "resources/GridLine.png", 1);
 
+	Texture playerTex;
+	playerTex.Initialize(d3d12, srv, playerModel->GetFilePath(),2);
+
+#pragma region GridLine
 	const uint32_t lineX = 50;
 	const uint32_t lineXCenter = lineX / 2;
 	LineObject line[lineX];
@@ -222,10 +236,12 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	for (uint32_t i = 0;i < lineZ;++i) {
 		lineZ_[i].Initialize(d3d12, 50.0f, 0.0f);
 	}
-
+#pragma endregion
 	//   ここまでモデル系の処理
-
 	MSG msg{};
+
+	//   基礎的な物の処理
+
 	CameraBase cameraBase;
 	cameraBase.Initialize();
 	//Audio audio;
@@ -233,7 +249,10 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	//music.GetBGM().LoadWAVE("resources/loop101204.wav");
 	//music.GetBGM().SetPlayAudioBuf();
 
-	bool isCopy = false;
+	//   基礎的な物の処理
+
+	Player player;
+	player.Initialize(move(playerModel),&cameraBase);
 
 	//ウィンドウのｘボタンが押されるまでループ
 	while (msg.message != WM_QUIT) {
@@ -300,9 +319,14 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		
 
 			//   ここからゲームの処理↓↓↓↓
-		
+
+			player.Update();
+
+			//   ここまでゲームの処理↑↑↑↑
+			//   ここからゲームの描画↓↓↓↓
+#pragma region GridLine
 			for (uint32_t i = 0;i < lineX;++i) {
-				Matrix4x4 world = Matrix4x4::Make::Affine({1.0f,1.0f,1.0f}, {0.0f,0.0f,0.0f}, {0.0f,0.0f,(i * 1.0f)-25.0f});
+				Matrix4x4 world = Matrix4x4::Make::Affine({ 1.0f,1.0f,1.0f }, { 0.0f,0.0f,0.0f }, { 0.0f,0.0f,(i * 1.0f) - 25.0f });
 				line[i].SetWVPData(cameraBase.DrawCamera(world), world, world);
 				int offset = static_cast<int>(i - lineXCenter);
 				if (offset == 0) {
@@ -333,6 +357,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 				}
 				lineZ_[i].Draw(command, psoLine, light, lineTex);
 			}
+#pragma endregion
+			player.Draw(command,pso,light,playerTex);
 
 			//   ここまで描画関係処理↑↑↑↑
 			//描画
