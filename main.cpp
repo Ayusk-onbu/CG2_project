@@ -215,12 +215,18 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	std::unique_ptr<ModelObject> playerModel = std::make_unique<ModelObject>();
 	playerModel->Initialize(d3d12, "F-14.obj");
 
+	ModelObject bulletModel;
+	bulletModel.Initialize(d3d12, "bullet.obj");
+
 	Texture lineTex;
 	//lineTex.Initialize(d3d12, srv, "resources/GridLine.png", 1);
 	lineTex.Initialize(d3d12, srv, "resources/GridLine.png", 1);
 
 	Texture playerTex;
 	playerTex.Initialize(d3d12, srv, playerModel->GetFilePath(),2);
+
+	Texture bulletTex;
+	bulletTex.Initialize(d3d12, srv, bulletModel.GetFilePath(), 3);
 
 #pragma region GridLine
 	const uint32_t lineX = 50;
@@ -252,7 +258,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	//   基礎的な物の処理
 
 	Player player;
-	player.Initialize(move(playerModel),&cameraBase);
+	player.Initialize(d3d12,move(playerModel),&cameraBase);
+	player.GetBullet(&bulletModel, &bulletTex);
 
 	//ウィンドウのｘボタンが押されるまでループ
 	while (msg.message != WM_QUIT) {

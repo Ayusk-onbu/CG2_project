@@ -133,6 +133,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="Objects\Primitive\SpriteObject.cpp" />
     <ClCompile Include="Objects\Primitive\TriangleObject.cpp" />
     <ClCompile Include="Player.cpp" />
+    <ClCompile Include="PlayerBullet.cpp" />
     <ClCompile Include="ResourceView\DepthStencil.cpp" />
     <ClCompile Include="ResourceView\DescriptorHeap.cpp" />
     <ClCompile Include="ResourceView\Fence.cpp" />
