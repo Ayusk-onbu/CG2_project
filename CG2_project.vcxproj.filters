@@ -300,6 +300,9 @@
     <ClCompile Include="Common\MathUtils\MathUtils.cpp">
       <Filter>Common\MathUtils</Filter>
     </ClCompile>
+    <ClCompile Include="Enemy.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Object3d.VS.hlsl" />
@@ -533,6 +536,9 @@
     </ClInclude>
     <ClInclude Include="Common\MathUtils\MathUtils.h">
       <Filter>Common\MathUtils</Filter>
+    </ClInclude>
+    <ClInclude Include="Enemy.h">
+      <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -37,6 +37,7 @@
 //GameStart
 
 #include "Player.h"
+#include "Enemy.h"
 
 //GameEnd
 
@@ -218,6 +219,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	ModelObject bulletModel;
 	bulletModel.Initialize(d3d12, "bullet.obj");
 
+	ModelObject enemyModel;
+	enemyModel.Initialize(d3d12, "enemy41-F.obj");
+
 	Texture lineTex;
 	//lineTex.Initialize(d3d12, srv, "resources/GridLine.png", 1);
 	lineTex.Initialize(d3d12, srv, "resources/GridLine.png", 1);
@@ -227,6 +231,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 	Texture bulletTex;
 	bulletTex.Initialize(d3d12, srv, bulletModel.GetFilePath(), 3);
+
+	Texture enemyTex;
+	enemyTex.Initialize(d3d12, srv, enemyModel.GetFilePath(), 4);
 
 #pragma region GridLine
 	const uint32_t lineX = 50;
@@ -260,6 +267,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	Player player;
 	player.Initialize(d3d12,move(playerModel),&cameraBase);
 	player.GetBullet(&bulletModel, &bulletTex);
+
+	Enemy enemy;
+	enemy.Initialize(d3d12, enemyModel, &cameraBase, {0.0f,0.0f,40.0f});
 
 	//ウィンドウのｘボタンが押されるまでループ
 	while (msg.message != WM_QUIT) {
@@ -328,6 +338,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			//   ここからゲームの処理↓↓↓↓
 
 			player.Update();
+			enemy.Update();
 
 			//   ここまでゲームの処理↑↑↑↑
 			//   ここからゲームの描画↓↓↓↓
@@ -366,6 +377,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			}
 #pragma endregion
 			player.Draw(command,pso,light,playerTex);
+			enemy.Draw(command,pso,light,enemyTex);
 
 			//   ここまで描画関係処理↑↑↑↑
 			//描画

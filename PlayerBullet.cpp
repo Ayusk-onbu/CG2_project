@@ -8,6 +8,7 @@ void PlayerBullet::Initialize(D3D12System& d3d12, ModelObject*model,const Vector
 	model_.Initialize(d3d12, model->GetModelData());
 	worldTransform_.Initialize();
 	worldTransform_.set_.Translation(position);
+	worldTransform_.set_.Scale({ 0.5f,0.5f,0.5f });
 	velocity_ = velocity;
 }
 
