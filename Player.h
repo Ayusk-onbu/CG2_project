@@ -19,6 +19,8 @@ private:
 class Player
 {
 public:
+	~Player();
+public:
 	void Initialize(D3D12System& d3d12, std::unique_ptr<ModelObject>model, CameraBase* camera);
 	void GetBullet(ModelObject* model,Texture*texture);
 	void Update();
@@ -34,7 +36,7 @@ private:
 	CameraBase* camera_;
 	WorldTransform worldTransform_;
 
-	PlayerBullet* bullet_ = nullptr;
+	std::list<PlayerBullet*> bullets_;
 	ModelObject* bulletModel_ = nullptr;
 	Texture* bulletTex_ = nullptr;
 

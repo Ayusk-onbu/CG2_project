@@ -3,6 +3,12 @@
 #include "ImGuiManager.h"
 #include <algorithm>
 
+Player::~Player() {
+	for (PlayerBullet* bullet : bullets_) {
+		delete bullet;
+	}
+}
+
 void Player::Initialize(D3D12System& d3d12, std::unique_ptr<ModelObject>model,CameraBase* camera) {
 	d3d12_ = &d3d12;
 	model_ = move(model);// 所有権の以降
@@ -24,8 +30,10 @@ void Player::Update() {
 	Rotate(rotation);
 	Attack();
 
-	if (bullet_) {
-		bullet_->Update();
+	for (PlayerBullet* bullet:bullets_) {
+		if (bullet) {
+			bullet->Update();
+		}
 	}
 
 	ImGui::Begin("Player");
@@ -51,9 +59,10 @@ void Player::Draw(TheOrderCommand& command, PSO& pso, DirectionLight& light, Tex
 	worldTransform_.LocalToWorld();
 	model_->SetWVPData(camera_->DrawCamera(worldTransform_.mat_), worldTransform_.mat_,Matrix4x4::Make::Identity());
 	model_->Draw(command,pso,light,tex);
-
-	if (bullet_) {
-		bullet_->Draw(*camera_,command,pso,light,*bulletTex_);
+	for (PlayerBullet* bullet : bullets_) {
+		if (bullet) {
+			bullet->Draw(*camera_, command, pso, light, *bulletTex_);
+		}
 	}
 }
 
@@ -91,6 +100,6 @@ void Player::Attack() {
 	if (InputManager::GetKey().PressedKey(DIK_SPACE)) {
 		PlayerBullet* newBullet = new PlayerBullet();
 		newBullet->Initialize(*d3d12_, bulletModel_, worldTransform_.get_.Translation());
-		bullet_ = newBullet;
+		bullets_.push_back(newBullet);
 	}
 }
