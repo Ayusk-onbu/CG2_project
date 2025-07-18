@@ -2,17 +2,24 @@
 #include "ImGuiManager.h"
 #include <cassert>
 
-void PlayerBullet::Initialize(D3D12System& d3d12, ModelObject*model,const Vector3&position) {
+void PlayerBullet::Initialize(D3D12System& d3d12, ModelObject*model,const Vector3&position, const Vector3& velocity) {
 	assert(model);
 	model_ = {};
 	model_.Initialize(d3d12, model->GetModelData());
 	worldTransform_.Initialize();
 	worldTransform_.set_.Translation(position);
+	velocity_ = velocity;
 }
 
 void PlayerBullet::Update() {
+	Vector3 translation = worldTransform_.get_.Translation();
 
-	
+	translation += velocity_;
+
+	worldTransform_.set_.Translation(translation);
+	if (--deathTimer_ <= 0) {
+		isDead_ = true;
+	}
 }
 
 void PlayerBullet::Draw(CameraBase& camera,

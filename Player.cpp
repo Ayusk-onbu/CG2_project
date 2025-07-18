@@ -1,6 +1,7 @@
 #include "Player.h"
 #include "InputManager.h"
 #include "ImGuiManager.h"
+#include "MathUtils.h"
 #include <algorithm>
 
 Player::~Player() {
@@ -22,6 +23,15 @@ void Player::GetBullet(ModelObject* model, Texture* texture) {
 }
 
 void Player::Update() {
+
+	bullets_.remove_if([](PlayerBullet* bullet) {
+		if (bullet->IsDead()) {
+			delete bullet;
+			return true;
+		}
+		return false;
+	});
+
 	Vector3 pos = worldTransform_.get_.Translation();
 	Vector3 rotation = {worldTransform_.get_.Rotation().x,worldTransform_.get_.Rotation().y,0.0f};
 	//worldTransform_.set_.Rotation({0.0f,worldTransform_.get_.Rotation().y + 0.01f,0.0f});
@@ -98,8 +108,13 @@ void Player::Rotate(Vector3& rotation) {
 
 void Player::Attack() {
 	if (InputManager::GetKey().PressedKey(DIK_SPACE)) {
+		const float kBulletSpeed = 1.0f;
+		Vector3 velocity(0.0f, 0.0f, kBulletSpeed);
+
+		velocity = TransformNormal(velocity, worldTransform_.mat_);
+
 		PlayerBullet* newBullet = new PlayerBullet();
-		newBullet->Initialize(*d3d12_, bulletModel_, worldTransform_.get_.Translation());
+		newBullet->Initialize(*d3d12_, bulletModel_, worldTransform_.get_.Translation(),velocity);
 		bullets_.push_back(newBullet);
 	}
 }

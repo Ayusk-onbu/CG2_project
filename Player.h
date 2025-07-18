@@ -7,13 +7,20 @@
 
 class PlayerBullet {
 public:
-	void Initialize(D3D12System& d3d12, ModelObject* model, const Vector3& position);
+	void Initialize(D3D12System& d3d12, ModelObject* model, const Vector3& position,const Vector3& velocity);
 	void Update();
 	void Draw(CameraBase& camera,
 		TheOrderCommand& command, PSO& pso, DirectionLight& light, Texture& tex);
+
+	bool IsDead()const { return isDead_; }
 private:
 	ModelObject model_;
 	WorldTransform worldTransform_;
+	Vector3 velocity_;
+
+	static const int32_t kLifeTime = 60 * 5;
+	int32_t deathTimer_ = kLifeTime;
+	bool isDead_ = false;
 };
 
 class Player

@@ -54,7 +54,7 @@
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <TreatWarningAsError>true</TreatWarningAsError>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
-      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)Music;$(ProjectDir)Input;$(ProjectDir)Common;$(ProjectDir)Common\Vector;$(ProjectDir)Common\Matrix;$(ProjectDir)Advanced;$(ProjectDir)Common\Functions;$(ProjectDir)Core;$(ProjectDir)Core\Command;$(ProjectDir)Core\DebugTeam;$(ProjectDir)ResourceView;$(ProjectDir)ResourceView\PipelineStateObject;$(ProjectDir)Objects;$(ProjectDir)Objects\Model;$(ProjectDir)Objects\Primitive;$(ProjectDir)UsefulTool\Time;$(ProjectDir)UsefulTool\Camera;$(ProjectDir)UsefulTool\Light;$(ProjectDir)UsefulTool\OSR;$(ProjectDir)UsefulTool\Easing;$(ProjectDir)UsefulTool\GridLine;$(ProjectDir)Scene;$(ProjectDir)UsefulTool\Random</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)Music;$(ProjectDir)Input;$(ProjectDir)Common;$(ProjectDir)Common\Vector;$(ProjectDir)Common\Matrix;$(ProjectDir)Common\MathUtils;$(ProjectDir)Advanced;$(ProjectDir)Common\Functions;$(ProjectDir)Core;$(ProjectDir)Core\Command;$(ProjectDir)Core\DebugTeam;$(ProjectDir)ResourceView;$(ProjectDir)ResourceView\PipelineStateObject;$(ProjectDir)Objects;$(ProjectDir)Objects\Model;$(ProjectDir)Objects\Primitive;$(ProjectDir)UsefulTool\Time;$(ProjectDir)UsefulTool\Camera;$(ProjectDir)UsefulTool\Light;$(ProjectDir)UsefulTool\OSR;$(ProjectDir)UsefulTool\Easing;$(ProjectDir)UsefulTool\GridLine;$(ProjectDir)Scene;$(ProjectDir)UsefulTool\Random</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -78,7 +78,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
       <AdditionalOptions>/utf-8 %(AdditionalOptions)</AdditionalOptions>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
-      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)Music;$(ProjectDir)Input;$(ProjectDir)Common;$(ProjectDir)Common\Vector;$(ProjectDir)Common\Matrix;$(ProjectDir)Advanced;$(ProjectDir)Common\Functions;$(ProjectDir)Core;$(ProjectDir)Core\Command;$(ProjectDir)Core\DebugTeam;$(ProjectDir)ResourceView;$(ProjectDir)ResourceView\PipelineStateObject;$(ProjectDir)Objects;$(ProjectDir)Objects\Model;$(ProjectDir)Objects\Primitive;$(ProjectDir)UsefulTool\Time;$(ProjectDir)UsefulTool\Camera;$(ProjectDir)UsefulTool\Light;$(ProjectDir)UsefulTool\OSR;$(ProjectDir)UsefulTool\Easing;$(ProjectDir)UsefulTool\GridLine;$(ProjectDir)Scene;$(ProjectDir)UsefulTool\Random</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)Music;$(ProjectDir)Input;$(ProjectDir)Common;$(ProjectDir)Common\Vector;$(ProjectDir)Common\Matrix;$(ProjectDir)Common\MathUtils;$(ProjectDir)Advanced;$(ProjectDir)Common\Functions;$(ProjectDir)Core;$(ProjectDir)Core\Command;$(ProjectDir)Core\DebugTeam;$(ProjectDir)ResourceView;$(ProjectDir)ResourceView\PipelineStateObject;$(ProjectDir)Objects;$(ProjectDir)Objects\Model;$(ProjectDir)Objects\Primitive;$(ProjectDir)UsefulTool\Time;$(ProjectDir)UsefulTool\Camera;$(ProjectDir)UsefulTool\Light;$(ProjectDir)UsefulTool\OSR;$(ProjectDir)UsefulTool\Easing;$(ProjectDir)UsefulTool\GridLine;$(ProjectDir)Scene;$(ProjectDir)UsefulTool\Random</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -96,6 +96,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="Advanced\Transform.cpp" />
     <ClCompile Include="Advanced\WorldTransform.cpp" />
     <ClCompile Include="Common\Functions\Trigonometric.cpp" />
+    <ClCompile Include="Common\MathUtils\MathUtils.cpp" />
     <ClCompile Include="Common\Matrix\Matrix4x4.cpp" />
     <ClCompile Include="Common\Vector\Vector3.cpp" />
     <ClCompile Include="Core\Command\CommandList.cpp" />
@@ -183,6 +184,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="Advanced\VertexData.h" />
     <ClInclude Include="Advanced\WorldTransform.h" />
     <ClInclude Include="Common\Functions\Trigonometric.h" />
+    <ClInclude Include="Common\MathUtils\MathUtils.h" />
     <ClInclude Include="Common\Matrix\Matrix3x3.h" />
     <ClInclude Include="Common\Matrix\Matrix4x4.h" />
     <ClInclude Include="Common\Structures.h" />

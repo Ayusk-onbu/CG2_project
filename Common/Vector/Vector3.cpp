@@ -1,6 +1,17 @@
 #include "Vector3.h"
 #include <cmath>
 
+Vector3& Vector3::operator+=(const Vector3& other) {
+	x += other.x;
+	y += other.y;
+	z += other.z;
+	return *this;
+}
+
+Vector3 operator+(const Vector3& v1, const Vector3& v2){
+	return{ v1.x + v2.x,v1.y + v2.y, v1.z + v2.z };
+}
+
 //加算
 Vector3 Add(const Vector3& v1, const Vector3& v2) {
 	Vector3 ret;

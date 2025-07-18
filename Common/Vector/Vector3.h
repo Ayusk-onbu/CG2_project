@@ -3,10 +3,10 @@
 struct Vector3 {
 	float x, y, z;
 
-	Vector3 operator+(const Vector3& other)const {
-		return{ x + other.x,y + other.y, z + other.z };
-	}
+	Vector3& operator+=(const Vector3& other);
 };
+
+Vector3 operator+(const Vector3& v1, const Vector3& v2);
 
 //加算
 Vector3 Add(const Vector3& v1, const Vector3& v2);
