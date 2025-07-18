@@ -16,11 +16,16 @@ void Enemy::Initialize(D3D12System& d3d12, ModelObject& model, CameraBase* camer
 
 void Enemy::Update() {
 	Vector3 pos = worldTransform_.get_.Translation();
-	Vector3 rotation = { worldTransform_.get_.Rotation().x,worldTransform_.get_.Rotation().y,0.0f };
-	//worldTransform_.set_.Rotation({0.0f,worldTransform_.get_.Rotation().y + 0.01f,0.0f});
-
-	Move(pos);
-	Rotate(rotation);
+	Vector3 rotation = worldTransform_.get_.Rotation();
+	
+	switch (phase_) {
+	case Phase::Approach:
+		ApproachUpdate(pos,rotation);
+		break;
+	case Phase::Leave:
+		LeaveUpdate(pos,rotation);
+		break;
+	}
 
 	ImGui::Begin("Player");
 
@@ -44,10 +49,31 @@ void Enemy::Draw(TheOrderCommand& command, PSO& pso, DirectionLight& light, Text
 	model_.Draw(command, pso, light, tex);
 }
 
-void Enemy::Move(Vector3& pos) {
-	pos.z -= kMoveSpeed_;
+void Enemy::ApproachUpdate(Vector3& pos, Vector3& rotation) {
+	ApproachMove(pos);
+	ApproachRotate(rotation);
 }
 
-void Enemy::Rotate(Vector3& rotation) {
+void Enemy::ApproachMove(Vector3& pos) {
+	pos.z -= kMoveSpeed_;
+	if (pos.z < 0.0f) {
+		phase_ = Phase::Leave;
+	}
+}
+
+void Enemy::ApproachRotate(Vector3& rotation) {
 	
+}
+
+void Enemy::LeaveUpdate(Vector3& pos, Vector3& rotation) {
+	LeaveMove(pos);
+	LeaveRotate(rotation);
+}
+
+void Enemy::LeaveMove(Vector3& pos) {
+	pos += kLeaveSpeed_;
+}
+
+void Enemy::LeaveRotate(Vector3& rotation) {
+	rotation.y += Deg2Rad(1);
 }
