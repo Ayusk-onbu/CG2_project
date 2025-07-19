@@ -24,6 +24,8 @@ private:
 	void LeaveMove(Vector3& pos);
 	void LeaveRotate(Vector3& rotation);
 private:
+	static void (Enemy::*pFuncTable[])(Vector3& pos, Vector3& rotation);
+private:
 	D3D12System* d3d12_;
 
 	ModelObject model_;

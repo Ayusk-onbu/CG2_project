@@ -18,14 +18,16 @@ void Enemy::Update() {
 	Vector3 pos = worldTransform_.get_.Translation();
 	Vector3 rotation = worldTransform_.get_.Rotation();
 	
-	switch (phase_) {
+	/*switch (phase_) {
 	case Phase::Approach:
 		ApproachUpdate(pos,rotation);
 		break;
 	case Phase::Leave:
 		LeaveUpdate(pos,rotation);
 		break;
-	}
+	}*/
+	//(this->*pFunc)(pos,rotation);
+	(this->*pFuncTable[static_cast<size_t>(phase_)])(pos, rotation);
 
 	ImGui::Begin("Player");
 
@@ -49,6 +51,11 @@ void Enemy::Draw(TheOrderCommand& command, PSO& pso, DirectionLight& light, Text
 	model_.Draw(command, pso, light, tex);
 }
 
+void (Enemy::*Enemy::pFuncTable[])(Vector3& pos, Vector3& rotation) = {
+	&Enemy::ApproachUpdate,
+	&Enemy::LeaveUpdate
+};
+
 void Enemy::ApproachUpdate(Vector3& pos, Vector3& rotation) {
 	ApproachMove(pos);
 	ApproachRotate(rotation);
@@ -57,6 +64,7 @@ void Enemy::ApproachUpdate(Vector3& pos, Vector3& rotation) {
 void Enemy::ApproachMove(Vector3& pos) {
 	pos.z -= kMoveSpeed_;
 	if (pos.z < 0.0f) {
+		//pFunc = &Enemy::LeaveUpdate;
 		phase_ = Phase::Leave;
 	}
 }
