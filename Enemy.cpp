@@ -4,6 +4,13 @@
 #include "MathUtils.h"
 #include <algorithm>
 
+Enemy::Enemy() {
+	state_ = new EnemyStateApproach();
+}
+Enemy::~Enemy() {
+	delete state_;
+}
+
 void Enemy::Initialize(D3D12System& d3d12, ModelObject& model, CameraBase* camera, const Vector3& pos) {
 	d3d12_ = &d3d12;
 	model_ = model;
@@ -27,7 +34,8 @@ void Enemy::Update() {
 		break;
 	}*/
 	//(this->*pFunc)(pos,rotation);
-	(this->*pFuncTable[static_cast<size_t>(phase_)])(pos, rotation);
+	//(this->*pFuncTable[static_cast<size_t>(phase_)])(pos, rotation);
+	state_->UpDate(this, &pos, &rotation);
 
 	ImGui::Begin("Player");
 
@@ -51,37 +59,42 @@ void Enemy::Draw(TheOrderCommand& command, PSO& pso, DirectionLight& light, Text
 	model_.Draw(command, pso, light, tex);
 }
 
-void (Enemy::*Enemy::pFuncTable[])(Vector3& pos, Vector3& rotation) = {
-	&Enemy::ApproachUpdate,
-	&Enemy::LeaveUpdate
-};
-
-void Enemy::ApproachUpdate(Vector3& pos, Vector3& rotation) {
-	ApproachMove(pos);
-	ApproachRotate(rotation);
+void Enemy::ChangeState(EnemyState*state) {
+	delete state_;
+	state_ = state;
 }
 
-void Enemy::ApproachMove(Vector3& pos) {
-	pos.z -= kMoveSpeed_;
-	if (pos.z < 0.0f) {
-		//pFunc = &Enemy::LeaveUpdate;
-		phase_ = Phase::Leave;
-	}
-}
-
-void Enemy::ApproachRotate(Vector3& rotation) {
-	
-}
-
-void Enemy::LeaveUpdate(Vector3& pos, Vector3& rotation) {
-	LeaveMove(pos);
-	LeaveRotate(rotation);
-}
-
-void Enemy::LeaveMove(Vector3& pos) {
-	pos += kLeaveSpeed_;
-}
-
-void Enemy::LeaveRotate(Vector3& rotation) {
-	rotation.y += Deg2Rad(1);
-}
+//void (Enemy::*Enemy::pFuncTable[])(Vector3& pos, Vector3& rotation) = {
+//	&Enemy::ApproachUpdate,
+//	&Enemy::LeaveUpdate
+//};
+//
+//void Enemy::ApproachUpdate(Vector3& pos, Vector3& rotation) {
+//	ApproachMove(pos);
+//	ApproachRotate(rotation);
+//}
+//
+//void Enemy::ApproachMove(Vector3& pos) {
+//	pos.z -= kMoveSpeed_;
+//	if (pos.z < 0.0f) {
+//		//pFunc = &Enemy::LeaveUpdate;
+//		phase_ = Phase::Leave;
+//	}
+//}
+//
+//void Enemy::ApproachRotate(Vector3& rotation) {
+//	
+//}
+//
+//void Enemy::LeaveUpdate(Vector3& pos, Vector3& rotation) {
+//	LeaveMove(pos);
+//	LeaveRotate(rotation);
+//}
+//
+//void Enemy::LeaveMove(Vector3& pos) {
+//	pos += kLeaveSpeed_;
+//}
+//
+//void Enemy::LeaveRotate(Vector3& rotation) {
+//	rotation.y += Deg2Rad(1);
+//}
