@@ -9,6 +9,9 @@ Enemy::Enemy() {
 }
 Enemy::~Enemy() {
 	delete state_;
+	for (EnemyBullet* bullet : bullets_) {
+		delete bullet;
+	}
 }
 
 void Enemy::Initialize(D3D12System& d3d12, ModelObject& model, CameraBase* camera, const Vector3& pos) {
@@ -21,7 +24,21 @@ void Enemy::Initialize(D3D12System& d3d12, ModelObject& model, CameraBase* camer
 	worldTransform_.set_.Rotation({ 0.0f,Deg2Rad(180),0.0 });
 }
 
+void Enemy::GetBullet(ModelObject* model, Texture* texture) {
+	bulletModel_ = model;
+	bulletTex_ = texture;
+}
+
 void Enemy::Update() {
+
+	bullets_.remove_if([](EnemyBullet* bullet) {
+		if (bullet->IsDead()) {
+			delete bullet;
+			return true;
+		}
+		return false;
+	});
+
 	Vector3 pos = worldTransform_.get_.Translation();
 	Vector3 rotation = worldTransform_.get_.Rotation();
 	
@@ -36,6 +53,10 @@ void Enemy::Update() {
 	//(this->*pFunc)(pos,rotation);
 	//(this->*pFuncTable[static_cast<size_t>(phase_)])(pos, rotation);
 	state_->UpDate(this, &pos, &rotation);
+	Fire();
+	for (EnemyBullet* bullet : bullets_) {
+		bullet->Update();
+	}
 
 	ImGui::Begin("Player");
 
@@ -57,11 +78,29 @@ void Enemy::Draw(TheOrderCommand& command, PSO& pso, DirectionLight& light, Text
 	worldTransform_.LocalToWorld();
 	model_.SetWVPData(camera_->DrawCamera(worldTransform_.mat_), worldTransform_.mat_, Matrix4x4::Make::Identity());
 	model_.Draw(command, pso, light, tex);
+	for (EnemyBullet* bullet : bullets_) {
+		bullet->Draw(*camera_, command, pso, light, *bulletTex_);
+	}
 }
 
 void Enemy::ChangeState(EnemyState*state) {
 	delete state_;
 	state_ = state;
+}
+
+void Enemy::Fire() {
+	if (--fireTimer_ <= 0.0f) {
+		return;
+	}
+	Vector3 velocity;
+	const float kBulletSpeed = 0.75f;
+	velocity = { 0.0f,0.0f,kBulletSpeed };
+	velocity = TransformNormal(velocity, worldTransform_.mat_);
+
+	EnemyBullet* newBullet = new EnemyBullet();
+	newBullet->Initialize(*d3d12_, bulletModel_, worldTransform_.get_.Translation(), velocity);
+	bullets_.push_back(newBullet);
+	fireTimer_ = kFireTime_;
 }
 
 //void (Enemy::*Enemy::pFuncTable[])(Vector3& pos, Vector3& rotation) = {

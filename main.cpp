@@ -222,6 +222,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	ModelObject enemyModel;
 	enemyModel.Initialize(d3d12, "enemy41-F.obj");
 
+	ModelObject enemyBulletModel;
+	enemyBulletModel.Initialize(d3d12, "enemyBullet.obj");
+
 	Texture lineTex;
 	//lineTex.Initialize(d3d12, srv, "resources/GridLine.png", 1);
 	lineTex.Initialize(d3d12, srv, "resources/GridLine.png", 1);
@@ -234,6 +237,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 	Texture enemyTex;
 	enemyTex.Initialize(d3d12, srv, enemyModel.GetFilePath(), 4);
+
+	Texture enemyBulletTex;
+	enemyBulletTex.Initialize(d3d12, srv, enemyBulletModel.GetFilePath(), 5);
 
 #pragma region GridLine
 	const uint32_t lineX = 50;
@@ -270,6 +276,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 	Enemy enemy;
 	enemy.Initialize(d3d12, enemyModel, &cameraBase, {0.0f,0.0f,40.0f});
+	enemy.GetBullet(&enemyBulletModel, &enemyBulletTex);
 
 	//ウィンドウのｘボタンが押されるまでループ
 	while (msg.message != WM_QUIT) {

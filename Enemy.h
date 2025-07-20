@@ -5,6 +5,23 @@
 #include "CameraBase.h"
 #include "EnemyState.h"
 
+class EnemyBullet {
+public:
+	void Initialize(D3D12System& d3d12, ModelObject* model, const Vector3& position, const Vector3& velocity);
+	void Update();
+	void Draw(CameraBase& camera,
+		TheOrderCommand& command, PSO& pso, DirectionLight& light, Texture& tex);
+
+	bool IsDead()const { return isDead_; }
+private:
+	ModelObject model_;
+	WorldTransform worldTransform_;
+	Vector3 velocity_;
+
+	static const int32_t kLifeTime = 60 * 5;
+	int32_t deathTimer_ = kLifeTime;
+	bool isDead_ = false;
+};
 
 class Enemy
 {
@@ -17,9 +34,11 @@ public:
 	~Enemy();
 
 	void Initialize(D3D12System& d3d12, ModelObject& model, CameraBase* camera,const Vector3&pos);
+	void GetBullet(ModelObject* model, Texture* texture);
 	void Update();
 	void Draw(TheOrderCommand& command, PSO& pso, DirectionLight& light, Texture& tex);
 	void ChangeState(EnemyState* state);
+	void Fire();
 private:
 	/*void ApproachUpdate(Vector3& pos, Vector3& rotation);
 	void ApproachMove(Vector3& pos);
@@ -37,6 +56,12 @@ private:
 	ModelObject model_;
 	CameraBase* camera_;
 	WorldTransform worldTransform_;
+
+	std::list<EnemyBullet*>bullets_;
+	ModelObject* bulletModel_;
+	Texture* bulletTex_;
+	const float kFireTime_ = 60.0f;
+	float fireTimer_ = kFireTime_;
 
 	//Phase phase_ = Phase::Approach;
 	//const float kMoveSpeed_ = 0.1f;
