@@ -6,6 +6,8 @@
 #include "EnemyState.h"
 #include "TimedCall.h"
 
+class Player;
+
 class EnemyBullet {
 public:
 	void Initialize(D3D12System& d3d12, ModelObject* model, const Vector3& position, const Vector3& velocity);
@@ -41,6 +43,7 @@ public:
 	void ChangeState(EnemyState* state);
 	void Fire();
 	void FireReset();
+	void SetTarget(const Player& player);
 private:
 	/*void ApproachUpdate(Vector3& pos, Vector3& rotation);
 	void ApproachMove(Vector3& pos);
@@ -62,7 +65,8 @@ private:
 	std::list<EnemyBullet*>bullets_;
 	ModelObject* bulletModel_;
 	Texture* bulletTex_;
-	const float kFireTime_ = 60.0f;
+	const Player* player_;
+	const float kFireTime_ = 10.0f;
 	//float fireTimer_ = kFireTime_;
 	std::list<TimedCall*>timedCalls_;
 	//Phase phase_ = Phase::Approach;

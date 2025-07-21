@@ -277,6 +277,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	Enemy enemy;
 	enemy.Initialize(d3d12, enemyModel, &cameraBase, {0.0f,0.0f,40.0f});
 	enemy.GetBullet(&enemyBulletModel, &enemyBulletTex);
+	enemy.SetTarget(player);
 
 	//ウィンドウのｘボタンが押されるまでループ
 	while (msg.message != WM_QUIT) {

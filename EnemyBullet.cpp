@@ -16,7 +16,7 @@ void EnemyBullet::Update() {
 	Vector3 rotation = worldTransform_.get_.Rotation();
 
 	translation += velocity_;
-	rotation.y += Deg2Rad(90);
+	rotation.y += Deg2Rad(0);
 
 	worldTransform_.set_.Translation(translation);
 	worldTransform_.set_.Rotation(rotation);

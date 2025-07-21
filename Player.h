@@ -32,6 +32,8 @@ public:
 	void GetBullet(ModelObject* model,Texture*texture);
 	void Update();
 	void Draw(TheOrderCommand& command, PSO& pso, DirectionLight& light, Texture& tex);
+
+	const Vector3 GetWorldPos()const;
 private:
 	void Move(Vector3& pos);
 	void Rotate(Vector3& rotation);

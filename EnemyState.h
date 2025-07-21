@@ -17,6 +17,7 @@ public:
 	bool IsShot() { return true; }
 private:
 	const float kMoveSpeed_ = 0.1f;
+	bool initialize_ = false;
 };
 
 class EnemyStateLeave

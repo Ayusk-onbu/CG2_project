@@ -2,6 +2,7 @@
 #include "InputManager.h"
 #include "ImGuiManager.h"
 #include "MathUtils.h"
+#include "Player.h"
 #include <algorithm>
 
 Enemy::Enemy() {
@@ -64,9 +65,12 @@ void Enemy::Update() {
 	//(this->*pFunc)(pos,rotation);
 	//(this->*pFuncTable[static_cast<size_t>(phase_)])(pos, rotation);
 	state_->UpDate(this, &pos, &rotation);
-	if (state_->IsShot()) {
-		FireReset();
+	for (TimedCall* timedCall : timedCalls_) {
+		timedCall->UpDate();
 	}
+	/*if (state_->IsShot()) {
+		FireReset();
+	}*/
 	for (EnemyBullet* bullet : bullets_) {
 		bullet->Update();
 	}
@@ -107,8 +111,9 @@ void Enemy::Fire() {
 	}*/
 	Vector3 velocity;
 	const float kBulletSpeed = 0.75f;
-	velocity = { 0.0f,0.0f,kBulletSpeed };
-	velocity = TransformNormal(velocity, worldTransform_.mat_);
+	Vector3 pos = {worldTransform_.mat_.m[3][0],worldTransform_.mat_.m[3][1], worldTransform_.mat_.m[3][2]};
+	velocity = Normalize(player_->GetWorldPos() - pos) * kBulletSpeed;
+	//velocity = TransformNormal(velocity, worldTransform_.mat_);
 
 	EnemyBullet* newBullet = new EnemyBullet();
 	newBullet->Initialize(*d3d12_, bulletModel_, worldTransform_.get_.Translation(), velocity);
@@ -117,6 +122,9 @@ void Enemy::Fire() {
 }
 
 void Enemy::FireReset() {
+	if (!state_->IsShot()) {
+		return;
+	}
 	// 弾を発射する
 	Fire();
 
@@ -124,6 +132,10 @@ void Enemy::FireReset() {
 	timedCalls_.push_back(
 		new TimedCall(std::bind(&Enemy::FireReset, this), static_cast<uint32_t>(kFireTime_))
 	);
+}
+
+void Enemy::SetTarget(const Player& player) {
+	player_ = &player;
 }
 
 //void (Enemy::*Enemy::pFuncTable[])(Vector3& pos, Vector3& rotation) = {
