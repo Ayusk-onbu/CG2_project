@@ -15,11 +15,17 @@ public:
 	void Draw(CameraBase& camera,
 		TheOrderCommand& command, PSO& pso, DirectionLight& light, Texture& tex);
 
+	void Homing();
+
+	void SetTarget(const Player& player);
 	bool IsDead()const { return isDead_; }
 private:
 	ModelObject model_;
 	WorldTransform worldTransform_;
 	Vector3 velocity_;
+	const Player* player_;
+
+	float bulletSpeed_;
 
 	static const int32_t kLifeTime = 60 * 5;
 	int32_t deathTimer_ = kLifeTime;

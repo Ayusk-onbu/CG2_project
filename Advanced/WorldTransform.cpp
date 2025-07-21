@@ -46,3 +46,7 @@ void WorldTransform::LocalToWorld() {
 	isDirty_ = false;
 }
 
+const Vector3 WorldTransform::GetWorldPos()const {
+	return { mat_.m[3][0] ,mat_.m[3][1] ,mat_.m[3][2] };
+}
+

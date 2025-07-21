@@ -20,6 +20,7 @@ public:
 public:
 	void Initialize();
 	void LocalToWorld();
+	const Vector3 GetWorldPos()const;
 public:
 	Get get_{this};
 	Set set_{this};

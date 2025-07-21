@@ -112,11 +112,12 @@ void Enemy::Fire() {
 	Vector3 velocity;
 	const float kBulletSpeed = 0.75f;
 	Vector3 pos = {worldTransform_.mat_.m[3][0],worldTransform_.mat_.m[3][1], worldTransform_.mat_.m[3][2]};
-	velocity = Normalize(player_->GetWorldPos() - pos) * kBulletSpeed;
+	velocity = Normalize(player_->GetWorldTransform().GetWorldPos() - pos) * kBulletSpeed;
 	//velocity = TransformNormal(velocity, worldTransform_.mat_);
 
 	EnemyBullet* newBullet = new EnemyBullet();
 	newBullet->Initialize(*d3d12_, bulletModel_, worldTransform_.get_.Translation(), velocity);
+	newBullet->SetTarget(*player_);
 	bullets_.push_back(newBullet);
 	//fireTimer_ = kFireTime_;
 }

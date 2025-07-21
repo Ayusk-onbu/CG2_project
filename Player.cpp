@@ -76,9 +76,9 @@ void Player::Draw(TheOrderCommand& command, PSO& pso, DirectionLight& light, Tex
 	}
 }
 
-const Vector3 Player::GetWorldPos()const {
-	return { worldTransform_.mat_.m[3][0] ,worldTransform_.mat_.m[3][1] ,worldTransform_.mat_.m[3][2] };
-}
+//const Vector3 Player::GetWorldPos()const {
+//	return { worldTransform_.mat_.m[3][0] ,worldTransform_.mat_.m[3][1] ,worldTransform_.mat_.m[3][2] };
+//}
 
 void Player::Move(Vector3& pos) {
 	if (InputManager::GetKey().PressKey(DIK_LEFT)) {
