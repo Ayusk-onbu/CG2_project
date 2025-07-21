@@ -17,7 +17,7 @@ void Player::Initialize(D3D12System& d3d12, std::unique_ptr<ModelObject>model,Ca
 	worldTransform_.Initialize();
 }
 
-void Player::GetBullet(ModelObject* model, Texture* texture) {
+void Player::SetBullet(ModelObject* model, Texture* texture) {
 	bulletModel_ = model;
 	bulletTex_ = texture;
 }
@@ -74,6 +74,10 @@ void Player::Draw(TheOrderCommand& command, PSO& pso, DirectionLight& light, Tex
 			bullet->Draw(*camera_, command, pso, light, *bulletTex_);
 		}
 	}
+}
+
+void Player::OnCollision() {
+
 }
 
 //const Vector3 Player::GetWorldPos()const {

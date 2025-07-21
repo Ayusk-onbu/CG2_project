@@ -26,9 +26,10 @@ void Enemy::Initialize(D3D12System& d3d12, ModelObject& model, CameraBase* camer
 	worldTransform_.Initialize();
 	worldTransform_.set_.Translation(pos);
 	worldTransform_.set_.Rotation({ 0.0f,Deg2Rad(180),0.0 });
+	worldTransform_.LocalToWorld();
 }
 
-void Enemy::GetBullet(ModelObject* model, Texture* texture) {
+void Enemy::SetBullet(ModelObject* model, Texture* texture) {
 	bulletModel_ = model;
 	bulletTex_ = texture;
 }
@@ -100,6 +101,10 @@ void Enemy::Draw(TheOrderCommand& command, PSO& pso, DirectionLight& light, Text
 	}
 }
 
+void Enemy::OnCollision() {
+
+}
+
 void Enemy::ChangeState(EnemyState*state) {
 	delete state_;
 	state_ = state;
@@ -109,7 +114,7 @@ void Enemy::Fire() {
 	/*if (--fireTimer_ <= 0.0f) {
 		return;
 	}*/
-	Vector3 velocity;
+	Vector3 velocity{};
 	const float kBulletSpeed = 0.75f;
 	Vector3 pos = {worldTransform_.mat_.m[3][0],worldTransform_.mat_.m[3][1], worldTransform_.mat_.m[3][2]};
 	velocity = Normalize(player_->GetWorldTransform().GetWorldPos() - pos) * kBulletSpeed;

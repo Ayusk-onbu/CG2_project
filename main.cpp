@@ -272,11 +272,11 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 	Player player;
 	player.Initialize(d3d12,move(playerModel),&cameraBase);
-	player.GetBullet(&bulletModel, &bulletTex);
+	player.SetBullet(&bulletModel, &bulletTex);
 
 	Enemy enemy;
 	enemy.Initialize(d3d12, enemyModel, &cameraBase, {0.0f,0.0f,40.0f});
-	enemy.GetBullet(&enemyBulletModel, &enemyBulletTex);
+	enemy.SetBullet(&enemyBulletModel, &enemyBulletTex);
 	enemy.SetTarget(player);
 
 	//ウィンドウのｘボタンが押されるまでループ
@@ -347,6 +347,52 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 			player.Update();
 			enemy.Update();
+
+			//   当たり判定
+			Vector3 posA, posB;
+
+			const std::list<PlayerBullet*>& playerBullets = player.GetBullets();
+			const std::list<EnemyBullet*>& enemyBullets = enemy.GetBullets();
+
+#pragma region 自キャラと敵の弾
+			posA = player.GetWorldTransform().GetWorldPos();
+
+			for (EnemyBullet* bullet : enemyBullets) {
+				posB = bullet->GetWorldTransform().GetWorldPos();
+				float length = Length(posA-posB);
+				if (length <= 1.0f) {
+					player.OnCollision();
+					bullet->OnCollision();
+				}
+			}
+#pragma endregion
+
+#pragma region 自分の弾と敵キャラ
+			posA = enemy.GetWorldTransform().GetWorldPos();
+
+			for (PlayerBullet* bullet : playerBullets) {
+				posB = bullet->GetWorldTransform().GetWorldPos();
+				float length = Length(posA - posB);
+				if (length <= 1.0f) {
+					enemy.OnCollision();
+					bullet->OnCollision();
+				}
+			}
+#pragma endregion
+
+#pragma region 自分の弾と敵の弾
+			for (PlayerBullet* playerBullet : playerBullets) {
+				posA = playerBullet->GetWorldTransform().GetWorldPos();
+				for (EnemyBullet* enemyBullet : enemyBullets) {
+					posB = enemyBullet->GetWorldTransform().GetWorldPos();
+					float length = Length(posA - posB);
+					if (length <= 1.0f) {
+						playerBullet->OnCollision();
+						enemyBullet->OnCollision();
+					}
+				}
+			}
+#pragma endregion
 
 			//   ここまでゲームの処理↑↑↑↑
 			//   ここからゲームの描画↓↓↓↓

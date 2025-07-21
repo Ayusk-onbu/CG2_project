@@ -16,9 +16,10 @@ public:
 		TheOrderCommand& command, PSO& pso, DirectionLight& light, Texture& tex);
 
 	void Homing();
-
+	void OnCollision();
 	void SetTarget(const Player& player);
 	bool IsDead()const { return isDead_; }
+	const WorldTransform& GetWorldTransform()const { return worldTransform_; }
 private:
 	ModelObject model_;
 	WorldTransform worldTransform_;
@@ -43,13 +44,18 @@ public:
 	~Enemy();
 
 	void Initialize(D3D12System& d3d12, ModelObject& model, CameraBase* camera,const Vector3&pos);
-	void GetBullet(ModelObject* model, Texture* texture);
+	void SetBullet(ModelObject* model, Texture* texture);
 	void Update();
 	void Draw(TheOrderCommand& command, PSO& pso, DirectionLight& light, Texture& tex);
 	void ChangeState(EnemyState* state);
 	void Fire();
 	void FireReset();
 	void SetTarget(const Player& player);
+	const WorldTransform& GetWorldTransform()const { return worldTransform_; }
+
+	void OnCollision();
+
+	const std::list<EnemyBullet*>& GetBullets()const { return bullets_; }
 private:
 	/*void ApproachUpdate(Vector3& pos, Vector3& rotation);
 	void ApproachMove(Vector3& pos);

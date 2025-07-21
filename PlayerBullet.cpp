@@ -32,3 +32,7 @@ void PlayerBullet::Draw(CameraBase& camera,
 	model_.SetWVPData(camera.DrawCamera(worldTransform_.mat_), worldTransform_.mat_, Matrix4x4::Make::Identity());
 	model_.Draw(command,pso,light,tex);
 }
+
+void PlayerBullet::OnCollision() {
+	isDead_ = true;
+}

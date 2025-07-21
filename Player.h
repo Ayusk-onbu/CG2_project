@@ -11,8 +11,9 @@ public:
 	void Update();
 	void Draw(CameraBase& camera,
 		TheOrderCommand& command, PSO& pso, DirectionLight& light, Texture& tex);
-
+	void OnCollision();
 	bool IsDead()const { return isDead_; }
+	const WorldTransform& GetWorldTransform()const { return worldTransform_; }
 private:
 	ModelObject model_;
 	WorldTransform worldTransform_;
@@ -29,11 +30,13 @@ public:
 	~Player();
 public:
 	void Initialize(D3D12System& d3d12, std::unique_ptr<ModelObject>model, CameraBase* camera);
-	void GetBullet(ModelObject* model,Texture*texture);
+	void SetBullet(ModelObject* model,Texture*texture);
 	void Update();
 	void Draw(TheOrderCommand& command, PSO& pso, DirectionLight& light, Texture& tex);
+	void OnCollision();
 
 	const WorldTransform& GetWorldTransform()const { return worldTransform_; }
+	const std::list<PlayerBullet*>& GetBullets()const { return bullets_; }
 	//const Vector3 GetWorldPos()const;
 private:
 	void Move(Vector3& pos);

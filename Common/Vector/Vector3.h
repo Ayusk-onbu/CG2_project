@@ -12,6 +12,9 @@ Vector3 operator-(const Vector3& v1, const Vector3& v2);
 Vector3 operator*(const Vector3& v1, const float& other);
 Vector3 operator*(const float& other, const Vector3& v1);
 
+Vector3 operator/(const Vector3& v1, const float& other);
+Vector3 operator/(const float& other, const Vector3& v1);
+
 //加算
 Vector3 Add(const Vector3& v1, const Vector3& v2);
 //減算

@@ -22,7 +22,7 @@ void EnemyBullet::Initialize(D3D12System& d3d12, ModelObject* model, const Vecto
 	float velocityXZ = Length({ velocity_.x,0.0f,velocity_.z });
 	rotation.x = std::atan2(-velocity_.y, velocityXZ);
 	worldTransform_.set_.Rotation(rotation);
-
+	worldTransform_.LocalToWorld();
 	bulletSpeed_ = 0.1f;
 }
 
@@ -51,6 +51,10 @@ void EnemyBullet::Draw(CameraBase& camera,
 	worldTransform_.LocalToWorld();
 	model_.SetWVPData(camera.DrawCamera(worldTransform_.mat_), worldTransform_.mat_, Matrix4x4::Make::Identity());
 	model_.Draw(command, pso, light, tex);
+}
+
+void EnemyBullet::OnCollision() {
+	isDead_ = true;
 }
 
 void EnemyBullet::Homing() {
