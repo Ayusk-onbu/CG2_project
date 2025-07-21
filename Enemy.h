@@ -3,12 +3,15 @@
 #include "ModelObject.h"
 #include "Texture.h"
 #include "CameraBase.h"
+#include "Collider.h"
 #include "EnemyState.h"
 #include "TimedCall.h"
 
 class Player;
 
-class EnemyBullet {
+class EnemyBullet 
+	: public Collider
+{
 public:
 	void Initialize(D3D12System& d3d12, ModelObject* model, const Vector3& position, const Vector3& velocity);
 	void Update();
@@ -16,7 +19,8 @@ public:
 		TheOrderCommand& command, PSO& pso, DirectionLight& light, Texture& tex);
 
 	void Homing();
-	void OnCollision();
+	void OnCollision()override;
+	const Vector3 GetWorldPosition()override { return worldTransform_.GetWorldPos(); }
 	void SetTarget(const Player& player);
 	bool IsDead()const { return isDead_; }
 	const WorldTransform& GetWorldTransform()const { return worldTransform_; }
@@ -34,6 +38,7 @@ private:
 };
 
 class Enemy
+	: public Collider
 {
 public:
 	/*enum class Phase {
@@ -53,8 +58,8 @@ public:
 	void SetTarget(const Player& player);
 	const WorldTransform& GetWorldTransform()const { return worldTransform_; }
 
-	void OnCollision();
-
+	void OnCollision()override;
+	const Vector3 GetWorldPosition()override { return worldTransform_.GetWorldPos(); }
 	const std::list<EnemyBullet*>& GetBullets()const { return bullets_; }
 private:
 	/*void ApproachUpdate(Vector3& pos, Vector3& rotation);

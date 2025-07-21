@@ -3,17 +3,21 @@
 #include "ModelObject.h"
 #include "Texture.h"
 #include "CameraBase.h"
+#include "Collider.h"
 
 
-class PlayerBullet {
+class PlayerBullet
+	: public Collider
+{
 public:
 	void Initialize(D3D12System& d3d12, ModelObject* model, const Vector3& position,const Vector3& velocity);
 	void Update();
 	void Draw(CameraBase& camera,
 		TheOrderCommand& command, PSO& pso, DirectionLight& light, Texture& tex);
-	void OnCollision();
+	void OnCollision()override;
+	const Vector3 GetWorldPosition()override { return worldTransform_.GetWorldPos(); }
 	bool IsDead()const { return isDead_; }
-	const WorldTransform& GetWorldTransform()const { return worldTransform_; }
+	const WorldTransform GetWorldTransform()const { return worldTransform_; }
 private:
 	ModelObject model_;
 	WorldTransform worldTransform_;
@@ -25,6 +29,7 @@ private:
 };
 
 class Player
+	: public Collider
 {
 public:
 	~Player();
@@ -33,9 +38,9 @@ public:
 	void SetBullet(ModelObject* model,Texture*texture);
 	void Update();
 	void Draw(TheOrderCommand& command, PSO& pso, DirectionLight& light, Texture& tex);
-	void OnCollision();
-
+	void OnCollision()override;
 	const WorldTransform& GetWorldTransform()const { return worldTransform_; }
+	const Vector3 GetWorldPosition()override { return worldTransform_.GetWorldPos(); }
 	const std::list<PlayerBullet*>& GetBullets()const { return bullets_; }
 	//const Vector3 GetWorldPos()const;
 private:

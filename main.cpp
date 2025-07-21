@@ -67,6 +67,8 @@ struct D3D12ResourceLeakChecker {
 	}
 };
 
+void CheckCollisionPair(Collider* colliderA, Collider* colliderB);
+
 // windowsアプリでのエントリーポイント（main関数）
 int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	D3D12ResourceLeakChecker leakCheck;
@@ -349,47 +351,25 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			enemy.Update();
 
 			//   当たり判定
-			Vector3 posA, posB;
-
 			const std::list<PlayerBullet*>& playerBullets = player.GetBullets();
 			const std::list<EnemyBullet*>& enemyBullets = enemy.GetBullets();
 
 #pragma region 自キャラと敵の弾
-			posA = player.GetWorldTransform().GetWorldPos();
-
 			for (EnemyBullet* bullet : enemyBullets) {
-				posB = bullet->GetWorldTransform().GetWorldPos();
-				float length = Length(posA-posB);
-				if (length <= 1.0f) {
-					player.OnCollision();
-					bullet->OnCollision();
-				}
+				CheckCollisionPair(&player, bullet);
 			}
 #pragma endregion
 
 #pragma region 自分の弾と敵キャラ
-			posA = enemy.GetWorldTransform().GetWorldPos();
-
 			for (PlayerBullet* bullet : playerBullets) {
-				posB = bullet->GetWorldTransform().GetWorldPos();
-				float length = Length(posA - posB);
-				if (length <= 1.0f) {
-					enemy.OnCollision();
-					bullet->OnCollision();
-				}
+				CheckCollisionPair(&enemy, bullet);
 			}
 #pragma endregion
 
 #pragma region 自分の弾と敵の弾
 			for (PlayerBullet* playerBullet : playerBullets) {
-				posA = playerBullet->GetWorldTransform().GetWorldPos();
 				for (EnemyBullet* enemyBullet : enemyBullets) {
-					posB = enemyBullet->GetWorldTransform().GetWorldPos();
-					float length = Length(posA - posB);
-					if (length <= 1.0f) {
-						playerBullet->OnCollision();
-						enemyBullet->OnCollision();
-					}
+					CheckCollisionPair(playerBullet, enemyBullet);
 				}
 			}
 #pragma endregion
@@ -481,4 +461,14 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	//COMの初期化を解除
 	CoUninitialize();
 	return 0;
+}
+
+void CheckCollisionPair(Collider* colliderA, Collider* colliderB) {
+	Vector3 posA = colliderA->GetWorldPosition();
+	Vector3 posB = colliderB->GetWorldPosition();
+	float length = Length(posA - posB);
+	if (colliderA->GetRadius() + colliderB->GetRadius() >= length) {
+		colliderA->OnCollision();
+		colliderB->OnCollision();
+	}
 }
