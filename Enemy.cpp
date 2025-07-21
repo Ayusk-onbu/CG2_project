@@ -12,6 +12,9 @@ Enemy::~Enemy() {
 	for (EnemyBullet* bullet : bullets_) {
 		delete bullet;
 	}
+	for (TimedCall* timedCall : timedCalls_) {
+		delete timedCall;
+	}
 }
 
 void Enemy::Initialize(D3D12System& d3d12, ModelObject& model, CameraBase* camera, const Vector3& pos) {
@@ -39,6 +42,14 @@ void Enemy::Update() {
 		return false;
 	});
 
+	timedCalls_.remove_if([](TimedCall* timedCall) {
+		if (timedCall->IsFinished()) {
+			delete timedCall;
+			return true;
+		}
+		return false;
+	});
+
 	Vector3 pos = worldTransform_.get_.Translation();
 	Vector3 rotation = worldTransform_.get_.Rotation();
 	
@@ -53,7 +64,9 @@ void Enemy::Update() {
 	//(this->*pFunc)(pos,rotation);
 	//(this->*pFuncTable[static_cast<size_t>(phase_)])(pos, rotation);
 	state_->UpDate(this, &pos, &rotation);
-	Fire();
+	if (state_->IsShot()) {
+		FireReset();
+	}
 	for (EnemyBullet* bullet : bullets_) {
 		bullet->Update();
 	}
@@ -89,9 +102,9 @@ void Enemy::ChangeState(EnemyState*state) {
 }
 
 void Enemy::Fire() {
-	if (--fireTimer_ <= 0.0f) {
+	/*if (--fireTimer_ <= 0.0f) {
 		return;
-	}
+	}*/
 	Vector3 velocity;
 	const float kBulletSpeed = 0.75f;
 	velocity = { 0.0f,0.0f,kBulletSpeed };
@@ -100,7 +113,17 @@ void Enemy::Fire() {
 	EnemyBullet* newBullet = new EnemyBullet();
 	newBullet->Initialize(*d3d12_, bulletModel_, worldTransform_.get_.Translation(), velocity);
 	bullets_.push_back(newBullet);
-	fireTimer_ = kFireTime_;
+	//fireTimer_ = kFireTime_;
+}
+
+void Enemy::FireReset() {
+	// 弾を発射する
+	Fire();
+
+	// 発射タイマーをセットする
+	timedCalls_.push_back(
+		new TimedCall(std::bind(&Enemy::FireReset, this), static_cast<uint32_t>(kFireTime_))
+	);
 }
 
 //void (Enemy::*Enemy::pFuncTable[])(Vector3& pos, Vector3& rotation) = {

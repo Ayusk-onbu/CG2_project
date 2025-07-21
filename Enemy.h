@@ -4,6 +4,7 @@
 #include "Texture.h"
 #include "CameraBase.h"
 #include "EnemyState.h"
+#include "TimedCall.h"
 
 class EnemyBullet {
 public:
@@ -39,6 +40,7 @@ public:
 	void Draw(TheOrderCommand& command, PSO& pso, DirectionLight& light, Texture& tex);
 	void ChangeState(EnemyState* state);
 	void Fire();
+	void FireReset();
 private:
 	/*void ApproachUpdate(Vector3& pos, Vector3& rotation);
 	void ApproachMove(Vector3& pos);
@@ -61,8 +63,8 @@ private:
 	ModelObject* bulletModel_;
 	Texture* bulletTex_;
 	const float kFireTime_ = 60.0f;
-	float fireTimer_ = kFireTime_;
-
+	//float fireTimer_ = kFireTime_;
+	std::list<TimedCall*>timedCalls_;
 	//Phase phase_ = Phase::Approach;
 	//const float kMoveSpeed_ = 0.1f;
 	//const Vector3 kLeaveSpeed_ = {-0.05f,0.05f,0.1f};
