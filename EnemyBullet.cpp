@@ -8,7 +8,18 @@ void EnemyBullet::Initialize(D3D12System& d3d12, ModelObject* model, const Vecto
 	model_.Initialize(d3d12, model->GetModelData());
 	worldTransform_.Initialize();
 	worldTransform_.set_.Translation(position);
+	worldTransform_.set_.Scale({0.5f,0.5f,3.0f});
 	velocity_ = velocity;
+	/*Vector3 rotation = worldTransform_.get_.Rotation();
+	rotation.y = std::atan2(velocity_.x, velocity_.z);
+	Vector3 velocityZ = Matrix4x4::Transform(velocity_, Matrix4x4::Make::RotateY(-rotation.y));
+	rotation.x = std::atan2(-velocity_.y, velocityZ.z);
+	worldTransform_.set_.Rotation(rotation);*/
+	Vector3 rotation = worldTransform_.get_.Rotation();
+	rotation.y = std::atan2(velocity_.x, velocity_.z);
+	float velocityXZ = Length({ velocity_.x,0.0f,velocity_.z });
+	rotation.x = std::atan2(-velocity_.y, velocityXZ);
+	worldTransform_.set_.Rotation(rotation);
 }
 
 void EnemyBullet::Update() {
