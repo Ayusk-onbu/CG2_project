@@ -24,6 +24,9 @@ void EnemyBullet::Initialize(D3D12System& d3d12, ModelObject* model, const Vecto
 	worldTransform_.set_.Rotation(rotation);
 	worldTransform_.LocalToWorld();
 	bulletSpeed_ = 0.1f;
+
+	SetMyType(0b1 << 1);
+	SetYourType(~(0b1 << 1));
 }
 
 void EnemyBullet::Update() {

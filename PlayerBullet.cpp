@@ -10,6 +10,9 @@ void PlayerBullet::Initialize(D3D12System& d3d12, ModelObject*model,const Vector
 	worldTransform_.set_.Translation(position);
 	worldTransform_.set_.Scale({ 0.5f,0.5f,0.5f });
 	velocity_ = velocity;
+
+	SetMyType(0b1);
+	SetYourType(~0b1);
 }
 
 void PlayerBullet::Update() {

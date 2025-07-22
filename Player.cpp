@@ -15,6 +15,9 @@ void Player::Initialize(D3D12System& d3d12, std::unique_ptr<ModelObject>model,Ca
 	model_ = move(model);// 所有権の以降
 	camera_ = camera;
 	worldTransform_.Initialize();
+
+	SetMyType(0b1);
+	SetYourType(~0b1);
 }
 
 void Player::SetBullet(ModelObject* model, Texture* texture) {

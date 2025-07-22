@@ -27,6 +27,9 @@ void Enemy::Initialize(D3D12System& d3d12, ModelObject& model, CameraBase* camer
 	worldTransform_.set_.Translation(pos);
 	worldTransform_.set_.Rotation({ 0.0f,Deg2Rad(180),0.0 });
 	worldTransform_.LocalToWorld();
+
+	SetMyType(0b1 << 1);
+	SetYourType(~(0b1 << 1));
 }
 
 void Enemy::SetBullet(ModelObject* model, Texture* texture) {

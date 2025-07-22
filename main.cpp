@@ -353,26 +353,29 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			//   当たり判定
 			const std::list<PlayerBullet*>& playerBullets = player.GetBullets();
 			const std::list<EnemyBullet*>& enemyBullets = enemy.GetBullets();
+			std::list<Collider*>colliders_;
+			colliders_.push_back(&player);
+			colliders_.push_back(&enemy);
 
-#pragma region 自キャラと敵の弾
-			for (EnemyBullet* bullet : enemyBullets) {
-				CheckCollisionPair(&player, bullet);
-			}
-#pragma endregion
-
-#pragma region 自分の弾と敵キャラ
 			for (PlayerBullet* bullet : playerBullets) {
-				CheckCollisionPair(&enemy, bullet);
+				colliders_.push_back(bullet);
 			}
-#pragma endregion
+			for (EnemyBullet* bullet : enemyBullets) {
+				colliders_.push_back(bullet);
+			}
 
-#pragma region 自分の弾と敵の弾
-			for (PlayerBullet* playerBullet : playerBullets) {
-				for (EnemyBullet* enemyBullet : enemyBullets) {
-					CheckCollisionPair(playerBullet, enemyBullet);
+			std::list<Collider*>::iterator itrA = colliders_.begin();
+			for (;itrA != colliders_.end();++itrA) {
+				Collider* colliderA = *itrA;
+
+				std::list<Collider*>::iterator itrB = itrA;
+				itrB++;
+				for (;itrB != colliders_.end();++itrB) {
+					Collider* colliderB = *itrB;
+
+					CheckCollisionPair(colliderA, colliderB);
 				}
 			}
-#pragma endregion
 
 			//   ここまでゲームの処理↑↑↑↑
 			//   ここからゲームの描画↓↓↓↓
@@ -464,6 +467,11 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 }
 
 void CheckCollisionPair(Collider* colliderA, Collider* colliderB) {
+	if ((colliderA->GetMyType() & colliderB->GetYourType()) == 0 ||
+		(colliderB->GetMyType() & colliderA->GetYourType()) == 0) {
+		return;
+	}
+
 	Vector3 posA = colliderA->GetWorldPosition();
 	Vector3 posB = colliderB->GetWorldPosition();
 	float length = Length(posA - posB);
