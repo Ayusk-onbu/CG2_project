@@ -38,6 +38,7 @@
 
 #include "Player.h"
 #include "Enemy.h"
+#include "CollisionManager.h"
 
 //GameEnd
 
@@ -66,8 +67,8 @@ struct D3D12ResourceLeakChecker {
 		//リソースリークチェック==================-↑↑↑
 	}
 };
-
-void CheckCollisionPair(Collider* colliderA, Collider* colliderB);
+//
+//void CheckCollisionPair(Collider* colliderA, Collider* colliderB);
 
 // windowsアプリでのエントリーポイント（main関数）
 int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
@@ -281,6 +282,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	enemy.SetBullet(&enemyBulletModel, &enemyBulletTex);
 	enemy.SetTarget(player);
 
+	std::unique_ptr<CollisionManager> collisionManager = std::make_unique<CollisionManager>();
+
 	//ウィンドウのｘボタンが押されるまでループ
 	while (msg.message != WM_QUIT) {
 		
@@ -351,31 +354,20 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			enemy.Update();
 
 			//   当たり判定
+			collisionManager->Begin();
+
 			const std::list<PlayerBullet*>& playerBullets = player.GetBullets();
 			const std::list<EnemyBullet*>& enemyBullets = enemy.GetBullets();
-			std::list<Collider*>colliders_;
-			colliders_.push_back(&player);
-			colliders_.push_back(&enemy);
+			collisionManager->SetColliders(&player);
+			collisionManager->SetColliders(&enemy);
 
 			for (PlayerBullet* bullet : playerBullets) {
-				colliders_.push_back(bullet);
+				collisionManager->SetColliders(bullet);
 			}
 			for (EnemyBullet* bullet : enemyBullets) {
-				colliders_.push_back(bullet);
+				collisionManager->SetColliders(bullet);
 			}
-
-			std::list<Collider*>::iterator itrA = colliders_.begin();
-			for (;itrA != colliders_.end();++itrA) {
-				Collider* colliderA = *itrA;
-
-				std::list<Collider*>::iterator itrB = itrA;
-				itrB++;
-				for (;itrB != colliders_.end();++itrB) {
-					Collider* colliderB = *itrB;
-
-					CheckCollisionPair(colliderA, colliderB);
-				}
-			}
+			collisionManager->CheckAllCollisions();
 
 			//   ここまでゲームの処理↑↑↑↑
 			//   ここからゲームの描画↓↓↓↓
@@ -466,17 +458,17 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	return 0;
 }
 
-void CheckCollisionPair(Collider* colliderA, Collider* colliderB) {
-	if ((colliderA->GetMyType() & colliderB->GetYourType()) == 0 ||
-		(colliderB->GetMyType() & colliderA->GetYourType()) == 0) {
-		return;
-	}
-
-	Vector3 posA = colliderA->GetWorldPosition();
-	Vector3 posB = colliderB->GetWorldPosition();
-	float length = Length(posA - posB);
-	if (colliderA->GetRadius() + colliderB->GetRadius() >= length) {
-		colliderA->OnCollision();
-		colliderB->OnCollision();
-	}
-}
+//void checkcollisionpair(collider* collidera, collider* colliderb) {
+//	if ((collidera->getmytype() & colliderb->getyourtype()) == 0 ||
+//		(colliderb->getmytype() & collidera->getyourtype()) == 0) {
+//		return;
+//	}
+//
+//	vector3 posa = collidera->getworldposition();
+//	vector3 posb = colliderb->getworldposition();
+//	float length = length(posa - posb);
+//	if (collidera->getradius() + colliderb->getradius() >= length) {
+//		collidera->oncollision();
+//		colliderb->oncollision();
+//	}
+//}

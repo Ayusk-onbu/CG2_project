@@ -96,6 +96,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="Advanced\Transform.cpp" />
     <ClCompile Include="Advanced\WorldTransform.cpp" />
     <ClCompile Include="Collider.cpp" />
+    <ClCompile Include="CollisionManager.cpp" />
     <ClCompile Include="Common\Functions\Trigonometric.cpp" />
     <ClCompile Include="Common\MathUtils\MathUtils.cpp" />
     <ClCompile Include="Common\Matrix\Matrix4x4.cpp" />
@@ -189,6 +190,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="Advanced\VertexData.h" />
     <ClInclude Include="Advanced\WorldTransform.h" />
     <ClInclude Include="Collider.h" />
+    <ClInclude Include="CollisionManager.h" />
     <ClInclude Include="Common\Functions\Trigonometric.h" />
     <ClInclude Include="Common\MathUtils\MathUtils.h" />
     <ClInclude Include="Common\Matrix\Matrix3x3.h" />
