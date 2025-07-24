@@ -22,7 +22,7 @@ void CameraBase::Initialize() {
 
 	projection_.fovY = 0.45f;
 	projection_.nearClip = 0.1f;
-	projection_.farClip = 100.0f;
+	projection_.farClip = 500.0f;
 	projection_.aspectRatio = 1280.0f / 720.0f;
 }
 
@@ -57,6 +57,12 @@ void CameraBase::UpDate() {
 	ImGui::Begin("CameraBase");
 	ImGuiManager::CreateImGui("translation", camera_.translation_, -5.0f, 5.0f);
 	ImGuiManager::CreateImGui("rotation", camera_.rotation_, -180.0f, 180.0f);
+	ImGuiManager::CreateImGui("scale", camera_.scale_, 0.0f, 10.0f);
+	ImGuiManager::CreateImGui("projection.fovY", projection_.fovY, 0.0f, 3.14f);
+	ImGuiManager::CreateImGui("projection.aspectRatio", projection_.aspectRatio, 0.1f, 10.0f);
+	ImGuiManager::CreateImGui("projection.nearClip", projection_.nearClip, 0.01f, 10.0f);
+	ImGuiManager::CreateImGui("projection.farClip", projection_.farClip, 0.1f, 1000.0f);
+	ImGuiManager::CreateImGui("radius", radius_, 0.0f, 100.0f);
 	ImGuiManager::CreateImGui("phi", phi_, -180.0f, 180.0f);
 	ImGuiManager::CreateImGui("theta", theta_, -180.0f, 180.0f);
 	ImGuiManager::CreateImGui("xAxis", xAxis_, -1.0f, 1.0f);

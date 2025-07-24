@@ -39,6 +39,8 @@
 #include "Player.h"
 #include "Enemy.h"
 #include "CollisionManager.h"
+#include "SkyDome.h"
+#include "Ground.h"
 
 //GameEnd
 
@@ -228,6 +230,12 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	ModelObject enemyBulletModel;
 	enemyBulletModel.Initialize(d3d12, "enemyBullet.obj");
 
+	ModelObject skyDomeModel;
+	skyDomeModel.Initialize(d3d12, "ulthimaSky.obj");
+
+	ModelObject groundModel;
+	groundModel.Initialize(d3d12, "ground.obj");
+
 	Texture lineTex;
 	//lineTex.Initialize(d3d12, srv, "resources/GridLine.png", 1);
 	lineTex.Initialize(d3d12, srv, "resources/GridLine.png", 1);
@@ -243,6 +251,12 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 	Texture enemyBulletTex;
 	enemyBulletTex.Initialize(d3d12, srv, enemyBulletModel.GetFilePath(), 5);
+
+	Texture skyDomeTex;
+	skyDomeTex.Initialize(d3d12, srv, skyDomeModel.GetFilePath(), 6);
+
+	Texture groundTex;
+	groundTex.Initialize(d3d12, srv, groundModel.GetFilePath(), 7);
 
 #pragma region GridLine
 	const uint32_t lineX = 50;
@@ -281,6 +295,12 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	enemy.Initialize(d3d12, enemyModel, &cameraBase, {0.0f,0.0f,40.0f});
 	enemy.SetBullet(&enemyBulletModel, &enemyBulletTex);
 	enemy.SetTarget(player);
+
+	std::unique_ptr<SkyDome>skyDome = std::make_unique<SkyDome>();
+	skyDome->Initialize(&skyDomeModel, &cameraBase);
+
+	std::unique_ptr<Ground>ground = std::make_unique<Ground>();
+	ground->Initialize(&groundModel, &cameraBase);
 
 	std::unique_ptr<CollisionManager> collisionManager = std::make_unique<CollisionManager>();
 
@@ -352,6 +372,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 			player.Update();
 			enemy.Update();
+			skyDome->Update();
+			ground->Update();
 
 			//   当たり判定
 			collisionManager->Begin();
@@ -405,6 +427,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 				lineZ_[i].Draw(command, psoLine, light, lineTex);
 			}
 #pragma endregion
+			skyDome->Draw(command, pso, light, skyDomeTex);	
+			ground->Draw(command, pso, light, groundTex);
 			player.Draw(command,pso,light,playerTex);
 			enemy.Draw(command,pso,light,enemyTex);
 

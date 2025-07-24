@@ -123,6 +123,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="externals\imgui\imgui_tables.cpp" />
     <ClCompile Include="externals\imgui\imgui_widgets.cpp" />
     <ClCompile Include="Fngine.cpp" />
+    <ClCompile Include="Ground.cpp" />
     <ClCompile Include="Input\InputManager.cpp" />
     <ClCompile Include="Input\Key.cpp" />
     <ClCompile Include="Input\Mouse.cpp" />
@@ -158,6 +159,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="Scene\GameScene.cpp" />
     <ClCompile Include="Scene\Scene.cpp" />
     <ClCompile Include="Scene\SceneDirector.cpp" />
+    <ClCompile Include="SkyDome.cpp" />
     <ClCompile Include="TimedCall.cpp" />
     <ClCompile Include="UsefulTool\Camera\CameraBase.cpp" />
     <ClCompile Include="UsefulTool\Camera\DebugCamera.cpp" />
@@ -221,6 +223,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="externals\imgui\imstb_textedit.h" />
     <ClInclude Include="externals\imgui\imstb_truetype.h" />
     <ClInclude Include="Fngine.h" />
+    <ClInclude Include="Ground.h" />
     <ClInclude Include="Input\InputManager.h" />
     <ClInclude Include="Input\Key.h" />
     <ClInclude Include="Input\Mouse.h" />
@@ -255,6 +258,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="Scene\GameScene.h" />
     <ClInclude Include="Scene\Scene.h" />
     <ClInclude Include="Scene\SceneDirector.h" />
+    <ClInclude Include="SkyDome.h" />
     <ClInclude Include="TimedCall.h" />
     <ClInclude Include="UsefulTool\Camera\CameraBase.h" />
     <ClInclude Include="UsefulTool\Camera\DebugCamera.h" />
