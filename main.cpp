@@ -41,6 +41,7 @@
 #include "CollisionManager.h"
 #include "SkyDome.h"
 #include "Ground.h"
+#include "RailCameraController.h"
 
 //GameEnd
 
@@ -280,6 +281,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 	CameraBase cameraBase;
 	cameraBase.Initialize();
+	RailCameraController railCameraController;
+	railCameraController.Initialize(&cameraBase);
 	//Audio audio;
 	//audio.SoundPlayWave(MediaAudioDecoder::DecodeAudioFile(L"resources/maou_bgm_fantasy02.mp3"));
 	//music.GetBGM().LoadWAVE("resources/loop101204.wav");
@@ -290,6 +293,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	Player player;
 	player.Initialize(d3d12,move(playerModel),&cameraBase);
 	player.SetBullet(&bulletModel, &bulletTex);
+	player.SetParentMat(cameraBase.worldMat_);
 
 	Enemy enemy;
 	enemy.Initialize(d3d12, enemyModel, &cameraBase, {0.0f,0.0f,40.0f});
@@ -318,6 +322,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			Chronos::Update();
 			input.Update();
 			cameraBase.UpDate();
+			railCameraController.Update();
 #pragma region OffScreenRendering
 			/*ResourceBarrier barrierO = {};
 			barrierO.SetBarrier(command.GetList().GetList().Get(), osr.GetResource().Get(),

@@ -135,7 +135,7 @@ public:
 	/// <param name="m1"></param>
 	/// <param name="m2"></param>
 	/// <returns></returns>
-	static Matrix4x4 Multiply(const Matrix4x4& m1, const Matrix4x4 m2);
+	static Matrix4x4 Multiply(const Matrix4x4& m1, const Matrix4x4& m2);
 #pragma endregion
 
 #pragma region 逆行列の作成(Inverse)

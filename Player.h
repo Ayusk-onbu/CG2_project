@@ -42,6 +42,7 @@ public:
 	const WorldTransform& GetWorldTransform()const { return worldTransform_; }
 	const Vector3 GetWorldPosition()override { return worldTransform_.GetWorldPos(); }
 	const std::list<PlayerBullet*>& GetBullets()const { return bullets_; }
+	void SetParentMat(const Matrix4x4& mat) { parentMat_ = &mat; }
 	//const Vector3 GetWorldPos()const;
 private:
 	void Move(Vector3& pos);
@@ -53,6 +54,7 @@ private:
 	std::unique_ptr<ModelObject>model_;
 	CameraBase* camera_;
 	WorldTransform worldTransform_;
+	const Matrix4x4* parentMat_;
 
 	std::list<PlayerBullet*> bullets_;
 	ModelObject* bulletModel_ = nullptr;

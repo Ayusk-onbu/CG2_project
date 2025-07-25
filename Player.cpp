@@ -15,6 +15,7 @@ void Player::Initialize(D3D12System& d3d12, std::unique_ptr<ModelObject>model,Ca
 	model_ = move(model);// 所有権の以降
 	camera_ = camera;
 	worldTransform_.Initialize();
+	worldTransform_.set_.Translation({ 0.0f, 0.0f, camera_->GetRadius()});
 
 	SetMyType(0b1);
 	SetYourType(~0b1);
@@ -70,6 +71,7 @@ void Player::Update() {
 
 void Player::Draw(TheOrderCommand& command, PSO& pso, DirectionLight& light, Texture& tex) {
 	worldTransform_.LocalToWorld();
+	worldTransform_.mat_ = Matrix4x4::Multiply(worldTransform_.mat_, *parentMat_);
 	model_->SetWVPData(camera_->DrawCamera(worldTransform_.mat_), worldTransform_.mat_,Matrix4x4::Make::Identity());
 	model_->Draw(command,pso,light,tex);
 	for (PlayerBullet* bullet : bullets_) {
@@ -125,7 +127,7 @@ void Player::Attack() {
 		velocity = TransformNormal(velocity, worldTransform_.mat_);
 
 		PlayerBullet* newBullet = new PlayerBullet();
-		newBullet->Initialize(*d3d12_, bulletModel_, worldTransform_.get_.Translation(),velocity);
+		newBullet->Initialize(*d3d12_, bulletModel_, { worldTransform_.GetWorldPos().x,worldTransform_.GetWorldPos().y + 0.5f,worldTransform_.GetWorldPos().z }, velocity);
 		bullets_.push_back(newBullet);
 	}
 }

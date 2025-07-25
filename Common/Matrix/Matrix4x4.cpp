@@ -151,7 +151,7 @@ Matrix4x4 Matrix4x4::Make::LookAt(const Vector3& eye, const Vector3& target, con
 	return ret;
 }
 
-	Matrix4x4 Matrix4x4::Multiply(const Matrix4x4& m1, const Matrix4x4 m2) {
+	Matrix4x4 Matrix4x4::Multiply(const Matrix4x4& m1, const Matrix4x4& m2) {
 		float a11 = m1.m[0][0], a12 = m1.m[0][1], a13 = m1.m[0][2], a14 = m1.m[0][3],
 			a21 = m1.m[1][0], a22 = m1.m[1][1], a23 = m1.m[1][2], a24 = m1.m[1][3],
 			a31 = m1.m[2][0], a32 = m1.m[2][1], a33 = m1.m[2][2], a34 = m1.m[2][3],

@@ -29,6 +29,7 @@ public:
 
 	Matrix4x4 DrawCamera(const Matrix4x4& world);
 
+	const float& GetRadius() const { return radius_; }
 	void SetTargetPos(Vector3& target);
 private:
 	Vector3 CalculateRight();
@@ -37,6 +38,7 @@ private:
 public:
 
 	Vector3 targetPos_;
+	Matrix4x4 worldMat_;
 
 private:
 	float theta_;

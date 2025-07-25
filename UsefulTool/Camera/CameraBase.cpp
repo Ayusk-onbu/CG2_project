@@ -83,6 +83,7 @@ void CameraBase::UpDate() {
 	camera_.translation_.z = targetPos_.z + radius_ * std::cos(theta) * std::sin(phi);
 	//viewProjectionMatrix_ = Matrix4x4::Inverse(Matrix4x4::Make::Affine(camera_.scale_, camera_.rotation_, camera_.translation_));
 	viewProjectionMatrix_ = (Matrix4x4::Make::LookAt(camera_.translation_, targetPos_, { 0.0f,1.0f,0.0f },xAxis_,yAxis_,zAxis_));
+	worldMat_ = Matrix4x4::Inverse(viewProjectionMatrix_);
 	viewProjectionMatrix_ = Matrix4x4::Multiply(viewProjectionMatrix_, Matrix4x4::Make::PerspectiveFov(
 							projection_.fovY, projection_.aspectRatio, 
 							projection_.nearClip, projection_.farClip));
