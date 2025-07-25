@@ -39,6 +39,7 @@ public:
 
 	Vector3 targetPos_;
 	Matrix4x4 worldMat_;
+	Vector3 up_;
 
 private:
 	float theta_;

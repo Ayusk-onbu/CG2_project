@@ -4,6 +4,7 @@ struct Vector3 {
 	float x, y, z;
 
 	Vector3& operator+=(const Vector3& other);
+	Vector3 operator-()const;
 };
 
 Vector3 operator+(const Vector3& v1, const Vector3& v2);

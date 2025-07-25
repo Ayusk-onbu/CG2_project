@@ -7,7 +7,7 @@ void RailCameraController::Initialize(CameraBase* camera) {
 }
 
 void RailCameraController::Update() {
-	Move();
+	//Move();
 }
 
 void RailCameraController::Move() {

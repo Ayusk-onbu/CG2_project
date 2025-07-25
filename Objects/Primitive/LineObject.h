@@ -5,6 +5,7 @@ class LineObject
 {
 public:
 	void Initialize(D3D12System& d3d12, float width, float height);
+	void Initialize(D3D12System& d3d12, const Vector3& start,const Vector3& end);
 
 	void Draw(TheOrderCommand& command, PSO& pso, DirectionLight& light, Texture& tex);
 
@@ -17,6 +18,7 @@ private:
 	void InitializeData();
 
 	void InitializeVertex(float width, float height);
+	void InitializeVertex(const Vector3& start, const Vector3& end);
 private:
 	ObjectBase object_;
 };

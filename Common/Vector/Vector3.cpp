@@ -8,6 +8,10 @@ Vector3& Vector3::operator+=(const Vector3& other) {
 	return *this;
 }
 
+Vector3 Vector3::operator-() const{
+	return Vector3(-x, -y, -z);
+}
+
 Vector3 operator+(const Vector3& v1, const Vector3& v2){
 	return{ v1.x + v2.x,v1.y + v2.y, v1.z + v2.z };
 }

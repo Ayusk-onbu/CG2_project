@@ -33,6 +33,7 @@
 #include "Chronos.h"
 #include "RandomUtils.h"
 #include "SceneDirector.h"
+#include "MathUtils.h"
 
 //GameStart
 
@@ -274,6 +275,32 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		lineZ_[i].Initialize(d3d12, 50.0f, 0.0f);
 	}
 #pragma endregion
+
+	std::vector<Vector3>controlPoints_;
+	controlPoints_ = {
+		{0.0f,0.0f,0.0f},
+		{10.0f,10.0f,0.0f},
+		{10.0f,15.0f,0.0f},
+		{20.0f,15.0f,0.0f},
+		{20.0f,0.0f,0.0f},
+		{30.0f,0.0f,0.0f}
+	};
+	// 線分で描画する用の頂点リスト
+	std::vector<Vector3>pointsDrawing;
+	// 線分の数
+	const size_t segmentCount = 100;
+	// 線分の数+1個分の頂点座標を計算
+	for (size_t i = 0;i < segmentCount + 1;++i) {
+		float t = 1.0f / segmentCount * i;
+		Vector3 pos = CatmullRomPosition(controlPoints_,t);
+		// 描画用頂点リストに追加
+		pointsDrawing.push_back(pos);
+	}
+	LineObject catmullRomLine[segmentCount];
+	for (size_t i = 0;i < segmentCount;++i) {
+		catmullRomLine[i].Initialize(d3d12, pointsDrawing[i], pointsDrawing[i + 1]);
+	}
+
 	//   ここまでモデル系の処理
 	MSG msg{};
 
@@ -432,6 +459,13 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 				lineZ_[i].Draw(command, psoLine, light, lineTex);
 			}
 #pragma endregion
+			//   CatmullRom曲線の描画
+			for (size_t i = 0;i < segmentCount;++i) {
+				Matrix4x4 world = Matrix4x4::Make::Affine({ 1.0f,1.0f,1.0f }, { 0.0f,0.0f,0.0f }, { 0.0f,0.0f,0.0f });
+				catmullRomLine[i].SetWVPData(cameraBase.DrawCamera(world), world, world);
+				catmullRomLine[i].SetColor({ 1.0f,0.0f,0.0f,1.0f });
+				catmullRomLine[i].Draw(command, psoLine, light, lineTex);
+			}
 			skyDome->Draw(command, pso, light, skyDomeTex);	
 			ground->Draw(command, pso, light, groundTex);
 			player.Draw(command,pso,light,playerTex);

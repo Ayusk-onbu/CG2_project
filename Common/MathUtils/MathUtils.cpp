@@ -1,6 +1,7 @@
 #include "MathUtils.h"
 #include <algorithm>
 #include <cmath>
+#include <cassert>
 
 Vector3 TransformNormal(Vector3& v, Matrix4x4& m) {
 	Vector3 ret{
@@ -51,4 +52,59 @@ Vector3 Slerp(const Vector3& v1, const Vector3& v2, float t) {
 	float length = Lerp(length1, length2, t);
 
 	return length * normaLerpV;
+}
+
+Vector3 CatmullRomInterpolation(const Vector3& p0, const Vector3& p1, const Vector3& p2, const Vector3& p3, float t) {
+	const float s = 0.5f;
+	float t2 = t * t;
+	float t3 = t2 * t;
+
+	Vector3 e3 = -p0 + 3.0f * p1 - 3.0f * p2 + p3;
+	Vector3 e2 = 2.0f * p0 - 5.0f * p1 + 4.0f * p2 - p3;
+	Vector3 e1 = -p0 + p2;
+	Vector3 e0 = 2.0f * p1;
+
+	return s * (e3 * t3 + e2 * t2 + e1 * t + e0);
+}
+
+Vector3 CatmullRomPosition(const std::vector<Vector3>& points, float t) {
+	assert(points.size() >= 4 && "制御点は4点以上必要です");
+
+	// 区間数は制御点の数-1
+	size_t division = points.size() - 1;
+	// 1区間の長さ（全体を1.0とした割合）
+	float areaWidth = 1.0f / division;
+
+	// 区間番号
+	size_t index = static_cast<size_t>(t / areaWidth);
+	// 区間番号が上限を超えないように収める
+	index = std::min(index,division - 1);
+
+	// 区間内の始点を0.0f、終点を1.0fとしたときの現在位置
+	float t_2 = t - areaWidth * index;
+	// 下限(0.0f)と上限(1.0f)の範囲に収める
+	t_2 = std::clamp(t_2, 0.0f, 1.0f);
+
+	// 4点分のインデックス
+	size_t index0 = index - 1;
+	size_t index1 = index;
+	size_t index2 = index + 1;
+	size_t index3 = index + 2;
+
+	// 先頭もしくは最後の場合の処理
+	if (index == 0) {
+		index0 = index1;
+	}
+	if (index3 >= points.size()) {
+		index3 = index2;
+	}
+
+	// 4点の座標
+	const Vector3& p0 = points[index0];
+	const Vector3& p1 = points[index1];
+	const Vector3& p2 = points[index2];
+	const Vector3& p3 = points[index3];
+
+	// 4点を指定してCatmull-Rom補間
+	return CatmullRomInterpolation(p0, p1, p2, p3, t_2);
 }

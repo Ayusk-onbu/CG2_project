@@ -24,6 +24,8 @@ void CameraBase::Initialize() {
 	projection_.nearClip = 0.1f;
 	projection_.farClip = 500.0f;
 	projection_.aspectRatio = 1280.0f / 720.0f;
+
+	up_ = { 0.0f,1.0f,0.0f };
 }
 
 void CameraBase::UpDate() {
@@ -68,6 +70,7 @@ void CameraBase::UpDate() {
 	ImGuiManager::CreateImGui("xAxis", xAxis_, -1.0f, 1.0f);
 	ImGuiManager::CreateImGui("yAxis", yAxis_, -1.0f, 1.0f);
 	ImGuiManager::CreateImGui("zAxis", zAxis_, -1.0f, 1.0f);
+	ImGuiManager::CreateImGui("up", up_, -1.0f, 1.0f);
 	ImGuiManager::CreateImGui("Target.translation", targetPos_, -5.0f, 5.0f);
 	ImGui::End();
 	float theta = 0;
@@ -82,7 +85,7 @@ void CameraBase::UpDate() {
 	camera_.translation_.y = targetPos_.y + radius_ * std::sin(theta);
 	camera_.translation_.z = targetPos_.z + radius_ * std::cos(theta) * std::sin(phi);
 	//viewProjectionMatrix_ = Matrix4x4::Inverse(Matrix4x4::Make::Affine(camera_.scale_, camera_.rotation_, camera_.translation_));
-	viewProjectionMatrix_ = (Matrix4x4::Make::LookAt(camera_.translation_, targetPos_, { 0.0f,1.0f,0.0f },xAxis_,yAxis_,zAxis_));
+	viewProjectionMatrix_ = (Matrix4x4::Make::LookAt(camera_.translation_, targetPos_, up_,xAxis_,yAxis_,zAxis_));
 	worldMat_ = Matrix4x4::Inverse(viewProjectionMatrix_);
 	viewProjectionMatrix_ = Matrix4x4::Multiply(viewProjectionMatrix_, Matrix4x4::Make::PerspectiveFov(
 							projection_.fovY, projection_.aspectRatio, 
