@@ -81,7 +81,7 @@ Vector3 CatmullRomPosition(const std::vector<Vector3>& points, float t) {
 	index = std::min(index,division - 1);
 
 	// 区間内の始点を0.0f、終点を1.0fとしたときの現在位置
-	float t_2 = t - areaWidth * index;
+	float t_2 = (t - areaWidth * index)/areaWidth;
 	// 下限(0.0f)と上限(1.0f)の範囲に収める
 	t_2 = std::clamp(t_2, 0.0f, 1.0f);
 

@@ -31,6 +31,8 @@ public:
 
 	const float& GetRadius() const { return radius_; }
 	void SetTargetPos(Vector3& target);
+	void SetTheta(const float& theta) { theta_ = theta; }
+	void SetPhi(const float& phi) { phi_ = phi; }
 private:
 	Vector3 CalculateRight();
 	Vector3 CalculateUp();

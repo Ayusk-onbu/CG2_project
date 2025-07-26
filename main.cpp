@@ -291,7 +291,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	const size_t segmentCount = 100;
 	// 線分の数+1個分の頂点座標を計算
 	for (size_t i = 0;i < segmentCount + 1;++i) {
-		float t = 1.0f / segmentCount * i;
+		//float t = 1.0f / segmentCount * i;
+		float t = static_cast<float>(i) / segmentCount;
 		Vector3 pos = CatmullRomPosition(controlPoints_,t);
 		// 描画用頂点リストに追加
 		pointsDrawing.push_back(pos);
@@ -310,6 +311,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	cameraBase.Initialize();
 	RailCameraController railCameraController;
 	railCameraController.Initialize(&cameraBase);
+	railCameraController.SetRailPoints(controlPoints_);
 	//Audio audio;
 	//audio.SoundPlayWave(MediaAudioDecoder::DecodeAudioFile(L"resources/maou_bgm_fantasy02.mp3"));
 	//music.GetBGM().LoadWAVE("resources/loop101204.wav");
