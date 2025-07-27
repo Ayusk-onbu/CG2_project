@@ -50,6 +50,7 @@ public:
 
 	void Initialize(D3D12System& d3d12, ModelObject& model, CameraBase* camera,const Vector3&pos);
 	void SetBullet(ModelObject* model, Texture* texture);
+	void SetMovePattern(uint32_t pattern) { movePattern_ = pattern; }
 	void Update();
 	void Draw(TheOrderCommand& command, PSO& pso, DirectionLight& light, Texture& tex);
 	void ChangeState(EnemyState* state);
@@ -62,6 +63,7 @@ public:
 
 	void OnCollision()override;
 	const Vector3 GetWorldPosition()override { return worldTransform_.GetWorldPos(); }
+	uint32_t GetMovePattern()const { return (movePattern_); }
 	//const std::list<EnemyBullet*>& GetBullets()const { return bullets_; }
 private:
 	/*void ApproachUpdate(Vector3& pos, Vector3& rotation);
@@ -81,6 +83,7 @@ private:
 	CameraBase* camera_;
 	WorldTransform worldTransform_;
 	bool isDead_ = false;
+	uint32_t movePattern_ = 0;
 
 	std::list<EnemyBullet*>* gameSceneBullets_;
 	//std::list<EnemyBullet*>bullets_;

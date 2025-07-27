@@ -13,6 +13,15 @@ void EnemyStateApproach::UpDate(Enemy* enemy, Vector3* pos, Vector3* rotation) {
 }
 
 void EnemyStateLeave::UpDate(Enemy* enemy, Vector3* pos, Vector3* rotation) {
-	*pos += kLeaveSpeed_;
-	rotation->y += Deg2Rad(1);
+	switch (enemy->GetMovePattern()) {
+	case 0:
+		*pos += kLeaveSpeed_;
+		rotation->y += Deg2Rad(1);
+		break;
+	case 1:
+		*pos += {-kLeaveSpeed_.x, kLeaveSpeed_.y, kLeaveSpeed_.z};
+		rotation->y += Deg2Rad(-1);
+		break;
+	}
+	
 }

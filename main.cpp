@@ -74,7 +74,7 @@ struct D3D12ResourceLeakChecker {
 //
 //void CheckCollisionPair(Collider* colliderA, Collider* colliderB);
 
-void PopEnemy(std::list<Enemy*>& enemies_, D3D12System& d3d12, CameraBase* camera, ModelObject& enemyModel, Texture& enemyTex, ModelObject& enemyBulletModel, Texture& enemyBulletTex,std::list<EnemyBullet*>& enemyBullets_, const Vector3& pos,const Player&player);
+void PopEnemy(std::list<Enemy*>& enemies_, D3D12System& d3d12, CameraBase* camera, ModelObject& enemyModel, Texture& enemyTex, ModelObject& enemyBulletModel, Texture& enemyBulletTex,std::list<EnemyBullet*>& enemyBullets_, const Vector3& pos,const Player&player, uint32_t movePattern);
 
 void LoadEnemyPopData(std::stringstream& command, std::string filepath);
 
@@ -337,12 +337,12 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	std::list<Enemy*> enemies_;
 	std::list<EnemyBullet*>enemyBullets_;
 
-	Enemy* enemy = new Enemy();
+	/*Enemy* enemy = new Enemy();
 	enemy->Initialize(d3d12, enemyModel, &cameraBase, {10.0f,0.0f,40.0f});
 	enemy->SetBullet(&enemyBulletModel, &enemyBulletTex);
 	enemy->SetTarget(player);
 	enemy->SetEnemyBullets(enemyBullets_);
-	enemies_.push_back(enemy);
+	enemies_.push_back(enemy);*/
 	// 敵の発生コマンド
 	std::stringstream enemyPopCommand;
 	bool ePopFlag = false;
@@ -585,10 +585,11 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	return 0;
 }
 
-void PopEnemy(std::list<Enemy*>& enemies_, D3D12System& d3d12, CameraBase* camera, ModelObject& enemyModel, Texture& enemyTex, ModelObject& enemyBulletModel, Texture& enemyBulletTex, std::list<EnemyBullet*>& enemyBullets_, const Vector3& pos, const Player& player) {
+void PopEnemy(std::list<Enemy*>& enemies_, D3D12System& d3d12, CameraBase* camera, ModelObject& enemyModel, Texture& enemyTex, ModelObject& enemyBulletModel, Texture& enemyBulletTex, std::list<EnemyBullet*>& enemyBullets_, const Vector3& pos, const Player& player,uint32_t movePattern) {
 	// 敵を生成
 	Enemy* enemy = new Enemy();
 	enemy->Initialize(d3d12, enemyModel, camera, pos);
+	enemy->SetMovePattern(movePattern);
 	enemy->SetBullet(&enemyBulletModel, &enemyBulletTex);
 	enemy->SetTarget(player);
 	enemy->SetEnemyBullets(enemyBullets_);
@@ -642,9 +643,12 @@ void UpdateEnemyPopCommand(std::stringstream& command, std::list<Enemy*>& enemie
 			// z座標
 			getline(line_Stream, word, ',');
 			float z = static_cast<float>(std::atof(word.c_str()));
+			// movePattern
+			getline(line_Stream, word, ',');
+			uint32_t movePattern = static_cast<uint32_t>(std::atoi(word.c_str()));
 			// 生成
 			Vector3 pos = { x,y,z };
-			PopEnemy(enemies_, d3d12, camera, enemyModel, enemyTex, enemyBulletModel,enemyBulletTex,enemyBullets_, pos, player);
+			PopEnemy(enemies_, d3d12, camera, enemyModel, enemyTex, enemyBulletModel,enemyBulletTex,enemyBullets_, pos, player,movePattern);
 		}
 		// WAIT
 		else if (word.find("WAIT") == 0) {
