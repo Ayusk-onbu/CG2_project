@@ -57,10 +57,12 @@ public:
 	void FireReset();
 	void SetTarget(const Player& player);
 	const WorldTransform& GetWorldTransform()const { return worldTransform_; }
+	void SetEnemyBullets(std::list<EnemyBullet*>& bullets) { gameSceneBullets_ = &bullets; }
+	bool IsDead()const { return isDead_; }
 
 	void OnCollision()override;
 	const Vector3 GetWorldPosition()override { return worldTransform_.GetWorldPos(); }
-	const std::list<EnemyBullet*>& GetBullets()const { return bullets_; }
+	//const std::list<EnemyBullet*>& GetBullets()const { return bullets_; }
 private:
 	/*void ApproachUpdate(Vector3& pos, Vector3& rotation);
 	void ApproachMove(Vector3& pos);
@@ -78,8 +80,10 @@ private:
 	ModelObject model_;
 	CameraBase* camera_;
 	WorldTransform worldTransform_;
+	bool isDead_ = false;
 
-	std::list<EnemyBullet*>bullets_;
+	std::list<EnemyBullet*>* gameSceneBullets_;
+	//std::list<EnemyBullet*>bullets_;
 	ModelObject* bulletModel_;
 	Texture* bulletTex_;
 	const Player* player_;

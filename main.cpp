@@ -74,6 +74,12 @@ struct D3D12ResourceLeakChecker {
 //
 //void CheckCollisionPair(Collider* colliderA, Collider* colliderB);
 
+void PopEnemy(std::list<Enemy*>& enemies_, D3D12System& d3d12, CameraBase* camera, ModelObject& enemyModel, Texture& enemyTex, ModelObject& enemyBulletModel, Texture& enemyBulletTex,std::list<EnemyBullet*>& enemyBullets_, const Vector3& pos,const Player&player);
+
+void LoadEnemyPopData(std::stringstream& command, std::string filepath);
+
+void UpdateEnemyPopCommand(std::stringstream& command, std::list<Enemy*>& enemies_, D3D12System& d3d12, CameraBase* camera, ModelObject& enemyModel, Texture& enemyTex, ModelObject& enemyBulletModel, Texture& enemyBulletTex, std::list<EnemyBullet*>& enemyBullets_, const Player& player,bool& waitFlag,float& waitTimer);
+
 // windowsアプリでのエントリーポイント（main関数）
 int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	D3D12ResourceLeakChecker leakCheck;
@@ -278,12 +284,16 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 	std::vector<Vector3>controlPoints_;
 	controlPoints_ = {
-		{0.0f,0.0f,0.0f},
-		{10.0f,10.0f,0.0f},
-		{10.0f,15.0f,0.0f},
-		{20.0f,15.0f,0.0f},
-		{20.0f,0.0f,0.0f},
-		{30.0f,0.0f,0.0f}
+	{0.0f, 0.0f,   0.0f},
+	{0.0f, 0.0f,   5.0f},
+	{0.0f, 0.0f,  10.0f},
+	{0.0f, 0.0f,  15.0f},
+	{0.0f, 0.0f,  20.0f},
+	{0.0f, 0.0f,  25.0f},
+	{0.0f, 0.0f,  30.0f},
+	{0.0f, 0.0f,  35.0f},
+	{0.0f, 0.0f,  40.0f},
+	{0.0f, 0.0f,  45.0f}
 	};
 	// 線分で描画する用の頂点リスト
 	std::vector<Vector3>pointsDrawing;
@@ -324,10 +334,27 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	player.SetBullet(&bulletModel, &bulletTex);
 	player.SetParentMat(cameraBase.worldMat_);
 
-	Enemy enemy;
-	enemy.Initialize(d3d12, enemyModel, &cameraBase, {0.0f,0.0f,40.0f});
-	enemy.SetBullet(&enemyBulletModel, &enemyBulletTex);
-	enemy.SetTarget(player);
+	std::list<Enemy*> enemies_;
+	std::list<EnemyBullet*>enemyBullets_;
+
+	Enemy* enemy = new Enemy();
+	enemy->Initialize(d3d12, enemyModel, &cameraBase, {10.0f,0.0f,40.0f});
+	enemy->SetBullet(&enemyBulletModel, &enemyBulletTex);
+	enemy->SetTarget(player);
+	enemy->SetEnemyBullets(enemyBullets_);
+	enemies_.push_back(enemy);
+	// 敵の発生コマンド
+	std::stringstream enemyPopCommand;
+	bool ePopFlag = false;
+	float waitTimer = 0.0f;
+
+	// ファイルを開く
+	std::ifstream file;
+	file.open("enemyPop.csv");
+	assert(file.is_open());
+	// ファイルの内容を文字列ストリームにコピー
+	enemyPopCommand << file.rdbuf();
+
 
 	std::unique_ptr<SkyDome>skyDome = std::make_unique<SkyDome>();
 	skyDome->Initialize(&skyDomeModel, &cameraBase);
@@ -404,8 +431,32 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 			//   ここからゲームの処理↓↓↓↓
 
+			enemies_.remove_if([](Enemy* enemy) {
+				if (enemy->IsDead()) {
+					delete enemy;
+					return true;
+				}
+				return false;
+			});
+
+			enemyBullets_.remove_if([](EnemyBullet* bullet) {
+				if (bullet->IsDead()) {
+					delete bullet;
+					return true;
+				}
+				return false;
+			});
+
 			player.Update();
-			enemy.Update();
+
+			UpdateEnemyPopCommand(enemyPopCommand, enemies_, d3d12, &cameraBase, enemyModel, enemyTex, enemyBulletModel,enemyBulletTex,enemyBullets_, player, ePopFlag, waitTimer);
+
+			for (Enemy* enemy : enemies_) {
+				enemy->Update();
+			}
+			for (EnemyBullet* bullet : enemyBullets_) {
+				bullet->Update();
+			}
 			skyDome->Update();
 			ground->Update();
 
@@ -413,14 +464,14 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			collisionManager->Begin();
 
 			const std::list<PlayerBullet*>& playerBullets = player.GetBullets();
-			const std::list<EnemyBullet*>& enemyBullets = enemy.GetBullets();
 			collisionManager->SetColliders(&player);
-			collisionManager->SetColliders(&enemy);
-
+			for (Enemy* enemy : enemies_) {
+				collisionManager->SetColliders(enemy);
+			}
 			for (PlayerBullet* bullet : playerBullets) {
 				collisionManager->SetColliders(bullet);
 			}
-			for (EnemyBullet* bullet : enemyBullets) {
+			for (EnemyBullet* bullet : enemyBullets_) {
 				collisionManager->SetColliders(bullet);
 			}
 			collisionManager->CheckAllCollisions();
@@ -428,38 +479,38 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			//   ここまでゲームの処理↑↑↑↑
 			//   ここからゲームの描画↓↓↓↓
 #pragma region GridLine
-			for (uint32_t i = 0;i < lineX;++i) {
-				Matrix4x4 world = Matrix4x4::Make::Affine({ 1.0f,1.0f,1.0f }, { 0.0f,0.0f,0.0f }, { 0.0f,0.0f,(i * 1.0f) - 25.0f });
-				line[i].SetWVPData(cameraBase.DrawCamera(world), world, world);
-				int offset = static_cast<int>(i - lineXCenter);
-				if (offset == 0) {
-					line[i].SetColor({ 1.0f,0.0f,0.0f,1.0f });
-				}
-				else if (std::abs(offset) % 10 == 0) {
-					line[i].SetColor({ 0.25f,0.0f,0.0f,1.0f });
-				}
-				else {
-					//line[i].SetColor({ 0.0f,0.0f,0.0f,1.0f });
-					line[i].SetColor({ 0.5f,0.5f,0.5f,1.0f });
-				}
-				line[i].Draw(command, psoLine, light, lineTex);
-			}
-			for (uint32_t i = 0;i < lineZ;++i) {
-				Matrix4x4 world = Matrix4x4::Make::Affine({ 1.0f,1.0f,1.0f }, { 0.0f,Deg2Rad(90),0.0f }, { (i * 1.0f) - 25.0f,0.0f,0.0f });
-				lineZ_[i].SetWVPData(cameraBase.DrawCamera(world), world, world);
-				int offset = static_cast<int>(i - lineZCenter);
-				if (offset == 0) {
-					lineZ_[i].SetColor({ 0.0f,1.0f,0.0f,1.0f });
-				}
-				else if (std::abs(offset) % 10 == 0) {
-					lineZ_[i].SetColor({ 0.0f,0.25f,0.0f,1.0f });
-				}
-				else {
-					//lineZ_[i].SetColor({ 0.0f,0.0f,0.0f,1.0f });
-					lineZ_[i].SetColor({ 0.5f,0.5f,0.5f,1.0f });
-				}
-				lineZ_[i].Draw(command, psoLine, light, lineTex);
-			}
+			//for (uint32_t i = 0;i < lineX;++i) {
+			//	Matrix4x4 world = Matrix4x4::Make::Affine({ 1.0f,1.0f,1.0f }, { 0.0f,0.0f,0.0f }, { 0.0f,0.0f,(i * 1.0f) - 25.0f });
+			//	line[i].SetWVPData(cameraBase.DrawCamera(world), world, world);
+			//	int offset = static_cast<int>(i - lineXCenter);
+			//	if (offset == 0) {
+			//		line[i].SetColor({ 1.0f,0.0f,0.0f,1.0f });
+			//	}
+			//	else if (std::abs(offset) % 10 == 0) {
+			//		line[i].SetColor({ 0.25f,0.0f,0.0f,1.0f });
+			//	}
+			//	else {
+			//		//line[i].SetColor({ 0.0f,0.0f,0.0f,1.0f });
+			//		line[i].SetColor({ 0.5f,0.5f,0.5f,1.0f });
+			//	}
+			//	line[i].Draw(command, psoLine, light, lineTex);
+			//}
+			//for (uint32_t i = 0;i < lineZ;++i) {
+			//	Matrix4x4 world = Matrix4x4::Make::Affine({ 1.0f,1.0f,1.0f }, { 0.0f,Deg2Rad(90),0.0f }, { (i * 1.0f) - 25.0f,0.0f,0.0f });
+			//	lineZ_[i].SetWVPData(cameraBase.DrawCamera(world), world, world);
+			//	int offset = static_cast<int>(i - lineZCenter);
+			//	if (offset == 0) {
+			//		lineZ_[i].SetColor({ 0.0f,1.0f,0.0f,1.0f });
+			//	}
+			//	else if (std::abs(offset) % 10 == 0) {
+			//		lineZ_[i].SetColor({ 0.0f,0.25f,0.0f,1.0f });
+			//	}
+			//	else {
+			//		//lineZ_[i].SetColor({ 0.0f,0.0f,0.0f,1.0f });
+			//		lineZ_[i].SetColor({ 0.5f,0.5f,0.5f,1.0f });
+			//	}
+			//	lineZ_[i].Draw(command, psoLine, light, lineTex);
+			//}
 #pragma endregion
 			//   CatmullRom曲線の描画
 			for (size_t i = 0;i < segmentCount;++i) {
@@ -471,7 +522,12 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			skyDome->Draw(command, pso, light, skyDomeTex);	
 			ground->Draw(command, pso, light, groundTex);
 			player.Draw(command,pso,light,playerTex);
-			enemy.Draw(command,pso,light,enemyTex);
+			for (Enemy* enemy : enemies_) {
+				enemy->Draw(command, pso, light, enemyTex);
+			}
+			for (EnemyBullet* bullet : enemyBullets_) {
+				bullet->Draw(cameraBase, command, pso, light, enemyBulletTex);
+			}
 
 			//   ここまで描画関係処理↑↑↑↑
 			//描画
@@ -511,6 +567,12 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 	//解放処理
 	tachyonSync.GetCGPU().UnLoad();
+	for (Enemy* enemy : enemies_) {
+		delete enemy;
+	}
+	for (EnemyBullet* bullet : enemyBullets_) {
+		delete bullet;
+	}
 	//music.UnLoad();
 
 #ifdef _DEBUG
@@ -521,6 +583,83 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	//COMの初期化を解除
 	CoUninitialize();
 	return 0;
+}
+
+void PopEnemy(std::list<Enemy*>& enemies_, D3D12System& d3d12, CameraBase* camera, ModelObject& enemyModel, Texture& enemyTex, ModelObject& enemyBulletModel, Texture& enemyBulletTex, std::list<EnemyBullet*>& enemyBullets_, const Vector3& pos, const Player& player) {
+	// 敵を生成
+	Enemy* enemy = new Enemy();
+	enemy->Initialize(d3d12, enemyModel, camera, pos);
+	enemy->SetBullet(&enemyBulletModel, &enemyBulletTex);
+	enemy->SetTarget(player);
+	enemy->SetEnemyBullets(enemyBullets_);
+	enemies_.push_back(enemy);
+}
+
+void LoadEnemyPopData(std::stringstream& command, std::string filepath) {
+	// ファイルを開く
+	std::ifstream file;
+	file.open(filepath);
+	assert(file.is_open());
+	// ファイルの内容を文字列にストリームにコピー
+	command << file.rdbuf();
+	// ファイルを閉じる
+	file.close();
+}
+
+void UpdateEnemyPopCommand(std::stringstream& command, std::list<Enemy*>& enemies_, D3D12System& d3d12, CameraBase* camera, ModelObject& enemyModel, Texture& enemyTex, ModelObject& enemyBulletModel, Texture& enemyBulletTex, std::list<EnemyBullet*>& enemyBullets_, const Player& player, bool& waitFlag, float& waitTimer) {
+	// 待機処理
+	if (waitFlag) {
+		waitTimer--;
+		if (waitTimer <= 0) {
+			waitFlag = false;
+		}
+		return;
+	}
+
+	// 1行分の文字列を入れる変数
+	std::string line;
+
+	// コマンド実行ループ
+	while (getline(command, line)) {
+		// 1行分の文字列をストリームに変換して解析しやすくする
+		std::istringstream line_Stream(line);
+
+		std::string word;
+		// ,区切りで行の先頭文字を取得
+		getline(line_Stream, word, ',');
+		if (word.find("//") == 0) {
+			// コメント行は飛ばす
+			continue;
+		}
+		// POPコマンド
+		if (word.find("POP") == 0) {
+			// x座標
+			getline(line_Stream, word, ',');
+			float x = static_cast<float>(std::atof(word.c_str()));
+			// y座標
+			getline(line_Stream, word, ',');
+			float y = static_cast<float>(std::atof(word.c_str()));
+			// z座標
+			getline(line_Stream, word, ',');
+			float z = static_cast<float>(std::atof(word.c_str()));
+			// 生成
+			Vector3 pos = { x,y,z };
+			PopEnemy(enemies_, d3d12, camera, enemyModel, enemyTex, enemyBulletModel,enemyBulletTex,enemyBullets_, pos, player);
+		}
+		// WAIT
+		else if (word.find("WAIT") == 0) {
+			getline(line_Stream, word, ',');
+
+			// 待ち時間
+			int32_t waitTime = std::atoi(word.c_str());
+
+			// 待機時間
+			waitFlag = true;
+			waitTimer = static_cast<float>(waitTime);
+
+			break;
+		}
+	}
 }
 
 //void checkcollisionpair(collider* collidera, collider* colliderb) {

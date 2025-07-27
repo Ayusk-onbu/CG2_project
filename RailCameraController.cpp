@@ -15,6 +15,9 @@ void RailCameraController::Update() {
 }
 
 void RailCameraController::Move() {
+	if (timer_ > time_) {
+		return;
+	}
 	Vector3 targetPos = camera_->targetPos_;
 	float t = static_cast<float>(timer_) / static_cast<float>(time_);
 	t = std::clamp(t, 0.0f, 1.0f); // tを0から1の範囲に制限

@@ -10,9 +10,6 @@ Enemy::Enemy() {
 }
 Enemy::~Enemy() {
 	delete state_;
-	for (EnemyBullet* bullet : bullets_) {
-		delete bullet;
-	}
 	for (TimedCall* timedCall : timedCalls_) {
 		delete timedCall;
 	}
@@ -38,14 +35,6 @@ void Enemy::SetBullet(ModelObject* model, Texture* texture) {
 }
 
 void Enemy::Update() {
-
-	bullets_.remove_if([](EnemyBullet* bullet) {
-		if (bullet->IsDead()) {
-			delete bullet;
-			return true;
-		}
-		return false;
-	});
 
 	timedCalls_.remove_if([](TimedCall* timedCall) {
 		if (timedCall->IsFinished()) {
@@ -75,9 +64,6 @@ void Enemy::Update() {
 	/*if (state_->IsShot()) {
 		FireReset();
 	}*/
-	for (EnemyBullet* bullet : bullets_) {
-		bullet->Update();
-	}
 
 	ImGui::Begin("Player");
 
@@ -99,13 +85,10 @@ void Enemy::Draw(TheOrderCommand& command, PSO& pso, DirectionLight& light, Text
 	worldTransform_.LocalToWorld();
 	model_.SetWVPData(camera_->DrawCamera(worldTransform_.mat_), worldTransform_.mat_, Matrix4x4::Make::Identity());
 	model_.Draw(command, pso, light, tex);
-	for (EnemyBullet* bullet : bullets_) {
-		bullet->Draw(*camera_, command, pso, light, *bulletTex_);
-	}
 }
 
 void Enemy::OnCollision() {
-
+	isDead_ = true;
 }
 
 void Enemy::ChangeState(EnemyState*state) {
@@ -126,7 +109,7 @@ void Enemy::Fire() {
 	EnemyBullet* newBullet = new EnemyBullet();
 	newBullet->Initialize(*d3d12_, bulletModel_, worldTransform_.get_.Translation(), velocity);
 	newBullet->SetTarget(*player_);
-	bullets_.push_back(newBullet);
+	gameSceneBullets_->push_back(newBullet);
 	//fireTimer_ = kFireTime_;
 }
 
