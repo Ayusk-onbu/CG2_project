@@ -79,6 +79,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)Music;$(ProjectDir)Input;$(ProjectDir)Common;$(ProjectDir)Common\Vector;$(ProjectDir)Common\Matrix;$(ProjectDir)Common\MathUtils;$(ProjectDir)Advanced;$(ProjectDir)Common\Functions;$(ProjectDir)Core;$(ProjectDir)Core\Command;$(ProjectDir)Core\DebugTeam;$(ProjectDir)ResourceView;$(ProjectDir)ResourceView\PipelineStateObject;$(ProjectDir)Objects;$(ProjectDir)Objects\Model;$(ProjectDir)Objects\Primitive;$(ProjectDir)UsefulTool\Time;$(ProjectDir)UsefulTool\Camera;$(ProjectDir)UsefulTool\Light;$(ProjectDir)UsefulTool\OSR;$(ProjectDir)UsefulTool\Easing;$(ProjectDir)UsefulTool\GridLine;$(ProjectDir)Scene;$(ProjectDir)UsefulTool\Random</AdditionalIncludeDirectories>
+      <Optimization>MinSpace</Optimization>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -123,6 +124,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="externals\imgui\imgui_tables.cpp" />
     <ClCompile Include="externals\imgui\imgui_widgets.cpp" />
     <ClCompile Include="Fngine.cpp" />
+    <ClCompile Include="GamePad.cpp" />
     <ClCompile Include="Ground.cpp" />
     <ClCompile Include="Input\InputManager.cpp" />
     <ClCompile Include="Input\Key.cpp" />
@@ -224,6 +226,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="externals\imgui\imstb_textedit.h" />
     <ClInclude Include="externals\imgui\imstb_truetype.h" />
     <ClInclude Include="Fngine.h" />
+    <ClInclude Include="GamePad.h" />
     <ClInclude Include="Ground.h" />
     <ClInclude Include="Input\InputManager.h" />
     <ClInclude Include="Input\Key.h" />

@@ -16,7 +16,8 @@ void Player::Initialize(D3D12System& d3d12, std::unique_ptr<ModelObject>model,Ca
 	camera_ = camera;
 	worldTransform_.Initialize();
 	worldTransform_.set_.Translation({ 0.0f, 0.0f, camera_->GetRadius()});
-
+	worldTransform3DReticle_.Initialize();
+	worldTransform3DReticle_.set_.Rotation({ 0.0f, Deg2Rad(180), 0.0f });
 	SetMyType(0b1);
 	SetYourType(~0b1);
 }
@@ -42,14 +43,16 @@ void Player::Update() {
 	
 	Move(pos);
 	Rotate(rotation);
+	ReticleUpdate();
 	Attack();
+
 
 	for (PlayerBullet* bullet:bullets_) {
 		if (bullet) {
 			bullet->Update();
 		}
 	}
-
+#ifdef _DEBUG
 	ImGui::Begin("Player");
 
 	ImGui::Text("SRT");
@@ -61,6 +64,7 @@ void Player::Update() {
 	}
 	
 	ImGui::End();
+#endif // DEBUG
 
 	pos.x = std::clamp(pos.x, -kMoveLimitX_.x, kMoveLimitX_.x);
 	pos.y = std::clamp(pos.y, -kMoveLimitX_.y, kMoveLimitX_.y);
@@ -79,6 +83,20 @@ void Player::Draw(TheOrderCommand& command, PSO& pso, DirectionLight& light, Tex
 			bullet->Draw(*camera_, command, pso, light, *bulletTex_);
 		}
 	}
+	Matrix4x4 drawSpriteMat = camera_->DrawCamera(worldTransform3DReticle_.mat_);
+	Vector4 worldPos = { drawSpriteMat.m[3][0],drawSpriteMat.m[3][1] ,drawSpriteMat.m[3][2],1.0f };
+	Vector4 clip = Matrix4x4::Transform(camera_->GetViewProjectionMatrix(),worldPos);
+	clip.x /= clip.w;
+	clip.y /= clip.w;
+	clip.z /= clip.w;
+	float screenX = (clip.x * 0.5f + 0.0f) * 128.0f;
+	float screenY = (clip.y * 0.5f + 0.0f) * 72.0f;
+	drawSpriteMat.m[3][0] = screenX;
+	drawSpriteMat.m[3][1] = screenY;
+	drawSpriteMat.m[3][2] = clip.z;
+
+	sprite2DReticle_->SetWVPData(drawSpriteMat, drawSpriteMat, Matrix4x4::Make::Identity());
+	sprite2DReticle_->Draw(command, pso, light, *sprite2DReticleTex_);
 }
 
 void Player::OnCollision() {
@@ -90,6 +108,12 @@ void Player::OnCollision() {
 //}
 
 void Player::Move(Vector3& pos) {
+	SHORT lx = InputManager::GetGamePad(0).GetLeftStickX();
+	SHORT ly = InputManager::GetGamePad(0).GetLeftStickY();
+
+	pos.x += static_cast<float>(lx) / 32767.0f * kMoveSpeed_;
+	pos.y += static_cast<float>(ly) / 32767.0f * kMoveSpeed_;
+
 	if (InputManager::GetKey().PressKey(DIK_LEFT)) {
 		pos.x -= kMoveSpeed_;
 	}
@@ -120,14 +144,47 @@ void Player::Rotate(Vector3& rotation) {
 }
 
 void Player::Attack() {
-	if (InputManager::GetKey().PressedKey(DIK_SPACE)) {
+	if (!InputManager::GetGamePad(0).IsConnected()) {
+		return;
+	}
+	// Rボタンで攻撃
+	if (InputManager::GetGamePad(0).IsPressed(XINPUT_GAMEPAD_RIGHT_SHOULDER)) {
 		const float kBulletSpeed = 1.0f;
 		Vector3 velocity(0.0f, 0.0f, kBulletSpeed);
 
-		velocity = TransformNormal(velocity, worldTransform_.mat_);
-
+		//velocity = TransformNormal(velocity, worldTransform_.mat_);
+		velocity = worldTransform3DReticle_.GetWorldPos() - worldTransform_.GetWorldPos();
+		velocity = Normalize(velocity) * kBulletSpeed;
 		PlayerBullet* newBullet = new PlayerBullet();
 		newBullet->Initialize(*d3d12_, bulletModel_, { worldTransform_.GetWorldPos().x,worldTransform_.GetWorldPos().y + 0.5f,worldTransform_.GetWorldPos().z }, velocity);
 		bullets_.push_back(newBullet);
 	}
+
+	if (InputManager::GetKey().PressedKey(DIK_SPACE)) {
+		const float kBulletSpeed = 1.0f;
+		Vector3 velocity(0.0f, 0.0f, kBulletSpeed);
+
+		//velocity = TransformNormal(velocity, worldTransform_.mat_);
+		velocity = worldTransform3DReticle_.GetWorldPos() - worldTransform_.GetWorldPos();
+		velocity = Normalize(velocity) * kBulletSpeed;
+		PlayerBullet* newBullet = new PlayerBullet();
+		newBullet->Initialize(*d3d12_, bulletModel_, { worldTransform_.GetWorldPos().x,worldTransform_.GetWorldPos().y + 0.5f,worldTransform_.GetWorldPos().z }, velocity);
+		bullets_.push_back(newBullet);
+	}
+}
+
+void Player::ReticleUpdate() {
+	// 自機から3Dレティクルへの距離
+	const float kDistancePlayerTo3DReticle = 50.0f;
+	// 自機から3Dレティクルへのオフセット(Z+向き)
+	Vector3 offset = { 0.0f,0.0f,1.0f };
+	// 自機からワールド行列の回転を反映
+	//offset = Matrix4x4::Transform(offset,worldTransform_.mat_);
+	// ベクトルの長さを整える
+	offset = Normalize(offset) * kDistancePlayerTo3DReticle;
+	// 3Dレティクルの座標を設定
+	worldTransform3DReticle_.set_.Translation(worldTransform_.GetWorldPos() + offset);
+	worldTransform3DReticle_.LocalToWorld();
+
+	
 }

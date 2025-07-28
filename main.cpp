@@ -244,6 +244,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	ModelObject groundModel;
 	groundModel.Initialize(d3d12, "ground.obj");
 
+	SpriteObject playerReticleSprite;
+	playerReticleSprite.Initialize(d3d12,4.0f, 4.0f);
+
 	Texture lineTex;
 	//lineTex.Initialize(d3d12, srv, "resources/GridLine.png", 1);
 	lineTex.Initialize(d3d12, srv, "resources/GridLine.png", 1);
@@ -265,6 +268,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 	Texture groundTex;
 	groundTex.Initialize(d3d12, srv, groundModel.GetFilePath(), 7);
+
+	Texture playerReticleTex;
+	playerReticleTex.Initialize(d3d12, srv, "resources/Reticle.png", 8);
 
 #pragma region GridLine
 	const uint32_t lineX = 50;
@@ -332,6 +338,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	Player player;
 	player.Initialize(d3d12,move(playerModel),&cameraBase);
 	player.SetBullet(&bulletModel, &bulletTex);
+	player.Set2DReticle(&playerReticleSprite, &playerReticleTex);
 	player.SetParentMat(cameraBase.worldMat_);
 
 	std::list<Enemy*> enemies_;
@@ -520,7 +527,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 				catmullRomLine[i].Draw(command, psoLine, light, lineTex);
 			}
 			skyDome->Draw(command, pso, light, skyDomeTex);	
-			ground->Draw(command, pso, light, groundTex);
+			//ground->Draw(command, pso, light, groundTex);
 			player.Draw(command,pso,light,playerTex);
 			for (Enemy* enemy : enemies_) {
 				enemy->Draw(command, pso, light, enemyTex);

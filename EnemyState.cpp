@@ -3,7 +3,7 @@
 
 void EnemyStateApproach::UpDate(Enemy* enemy, Vector3* pos, Vector3* rotation) {
 	if (!initialize_) {
-		enemy->FireReset();
+		//enemy->FireReset();
 		initialize_ = true;
 	}
 	pos->z -= kMoveSpeed_;

@@ -64,7 +64,7 @@ void Enemy::Update() {
 	/*if (state_->IsShot()) {
 		FireReset();
 	}*/
-
+#ifdef _DEBUG
 	ImGui::Begin("Player");
 
 	ImGui::Text("SRT");
@@ -76,6 +76,7 @@ void Enemy::Update() {
 	}
 
 	ImGui::End();
+#endif // DEBUG
 
 	worldTransform_.set_.Translation(pos);
 	worldTransform_.set_.Rotation(rotation);

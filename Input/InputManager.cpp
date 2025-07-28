@@ -3,6 +3,7 @@
 
 Key InputManager::key_;
 Mouse InputManager::mouse_;
+GamePad InputManager::gamePad_[4]; // 最大4つのゲームパッドをサポート
 
 void InputManager::Initialize(WNDCLASS& wc, HWND hwnd) {
 
@@ -15,9 +16,13 @@ void InputManager::Initialize(WNDCLASS& wc, HWND hwnd) {
 #pragma endregion
 	key_.Initialize(directInput, hwnd);
 	mouse_.Initialize(directInput, hwnd);
+#pragma endregion
 }
 
 void InputManager::Update() {
 	key_.Update();
 	mouse_.Update();
+	for (int i = 0; i < 4; ++i) {
+		gamePad_[i].Update();
+	}
 }

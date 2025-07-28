@@ -4,7 +4,7 @@
 #include "Texture.h"
 #include "CameraBase.h"
 #include "Collider.h"
-
+#include "SpriteObject.h"
 
 class PlayerBullet
 	: public Collider
@@ -36,7 +36,9 @@ public:
 public:
 	void Initialize(D3D12System& d3d12, std::unique_ptr<ModelObject>model, CameraBase* camera);
 	void SetBullet(ModelObject* model,Texture*texture);
+	void Set2DReticle(SpriteObject* sprite, Texture* texture) { sprite2DReticle_ = sprite; sprite2DReticleTex_ = texture; }
 	void Update();
+	void ReticleUpdate();
 	void Draw(TheOrderCommand& command, PSO& pso, DirectionLight& light, Texture& tex);
 	void OnCollision()override;
 	const WorldTransform& GetWorldTransform()const { return worldTransform_; }
@@ -55,6 +57,13 @@ private:
 	CameraBase* camera_;
 	WorldTransform worldTransform_;
 	const Matrix4x4* parentMat_;
+
+	// 3Dレティクル
+	WorldTransform worldTransform3DReticle_;
+
+	// 2Dレティクル
+	SpriteObject* sprite2DReticle_ = nullptr;
+	Texture* sprite2DReticleTex_ = nullptr;
 
 	std::list<PlayerBullet*> bullets_;
 	ModelObject* bulletModel_ = nullptr;

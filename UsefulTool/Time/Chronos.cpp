@@ -19,7 +19,9 @@ void Chronos::Update() {
 		frameCount_ = 0;
 		lastTime_ = currentTime_;
 	}
+#ifdef _DEBUG
 	ImGui::Begin("FPS");
 	ImGui::Text("FPS: %lld", fps_);
 	ImGui::End();
+#endif // DEBUG
 }

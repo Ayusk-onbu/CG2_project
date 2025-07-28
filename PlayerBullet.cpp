@@ -28,9 +28,11 @@ void PlayerBullet::Update() {
 
 void PlayerBullet::Draw(CameraBase& camera,
 	TheOrderCommand& command, PSO& pso, DirectionLight& light, Texture& tex) {
+#ifdef _DEBUG
 	ImGui::Begin("Bullet");
 	ImGuiManager::CreateImGui("Translation", worldTransform_.get_.Translation(), -50, 50);
 	ImGui::End();
+#endif // DEBUG
 	worldTransform_.LocalToWorld();
 	model_.SetWVPData(camera.DrawCamera(worldTransform_.mat_), worldTransform_.mat_, Matrix4x4::Make::Identity());
 	model_.Draw(command,pso,light,tex);

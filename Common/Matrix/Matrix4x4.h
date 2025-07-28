@@ -1,6 +1,7 @@
 #pragma once
 #include "Trigonometric.h"
 #include "Vector3.h"
+#include "Vector4.h"
 
 class Matrix4x4 {
 public:
@@ -148,7 +149,10 @@ public:
 #pragma endregion
 
 	static Vector3 Transform(const Vector3& v, const Matrix4x4& m);
+	static Vector4 Transform(const Matrix4x4& m, const Vector4& v);
 
 public:
 	Matrix4x4 operator+=(const Matrix4x4 M);
 };
+
+Matrix4x4 operator*(const Matrix4x4& m1, const Matrix4x4& m2);

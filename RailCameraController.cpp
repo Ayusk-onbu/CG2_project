@@ -37,14 +37,14 @@ void RailCameraController::Move() {
 	theta = std::clamp(theta, -89.0f, 89.0f); // θを-89から89の範囲に制限
 	phi = Rad2Deg(phi) + 180; // ラジアンから度に変換
 	//phi = std::fmod(phi + 360.0f, 360.0f); // φを0から360の範囲に制限
-
+#ifdef _DEBUG
 	ImGui::Begin("RailCameraController");
 	ImGuiManager::CreateImGui("Target Position", targetPos, -100.0f, 100.0f);
 	ImGuiManager::CreateImGui("Theta", theta, -89.0f, 89.0f);
 	ImGuiManager::CreateImGui("Phi", phi, 0.0f, 360.0f);
 	ImGuiManager::CreateImGui("forward", forward, -100.0f, 100.0f);
 	ImGui::End();
-
+#endif// DEBUG
 	camera_->targetPos_ = targetPos;
 	camera_->SetTheta(-theta); // ラジアンから度に変換
 	camera_->SetPhi(phi); // ラジアンから度に変換
