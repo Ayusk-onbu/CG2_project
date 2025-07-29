@@ -8,6 +8,9 @@ Player::~Player() {
 	for (PlayerBullet* bullet : bullets_) {
 		delete bullet;
 	}
+	for (PlayerBulletHoming* bulletHoming : bulletsHoming_) {
+		delete bulletHoming;
+	}
 }
 
 void Player::Initialize(D3D12System& d3d12, std::unique_ptr<ModelObject>model,CameraBase* camera) {
@@ -36,6 +39,13 @@ void Player::Update() {
 		}
 		return false;
 	});
+	bulletsHoming_.remove_if([](PlayerBulletHoming* bulletHoming) {
+		if (bulletHoming->IsDead()) {
+			delete bulletHoming;
+			return true;
+		}
+		return false;
+		});
 	Vector3 pos = worldTransform_.get_.Translation();
 	Vector3 rotation = {worldTransform_.get_.Rotation().x,worldTransform_.get_.Rotation().y,0.0f};
 	//worldTransform_.set_.Rotation({0.0f,worldTransform_.get_.Rotation().y + 0.01f,0.0f});
@@ -54,6 +64,11 @@ void Player::Update() {
 	for (PlayerBullet* bullet:bullets_) {
 		if (bullet) {
 			bullet->Update();
+		}
+	}
+	for (PlayerBulletHoming* bulletHoming : bulletsHoming_) {
+		if (bulletHoming) {
+			bulletHoming->Update();
 		}
 	}
 #ifdef _DEBUG
@@ -85,6 +100,11 @@ void Player::Draw(TheOrderCommand& command, PSO& pso, DirectionLight& light, Tex
 	for (PlayerBullet* bullet : bullets_) {
 		if (bullet) {
 			bullet->Draw(*camera_, command, pso, light, *bulletTex_);
+		}
+	}
+	for (PlayerBulletHoming* bulletHoming : bulletsHoming_) {
+		if (bulletHoming) {
+			bulletHoming->Draw(*camera_, command, pso, light, *bulletTex_);
 		}
 	}
 	Matrix4x4 drawSpriteMat = camera_->DrawCamera(worldTransform3DReticle_.mat_);
@@ -184,12 +204,23 @@ void Player::Attack() {
 		/*velocity = worldTransform3DReticle_.GetWorldPos() - worldTransform_.GetWorldPos();*/
 		velocity = targetPos_ - worldTransform_.GetWorldPos();
 		velocity = Normalize(velocity) * kBulletSpeed;
-		PlayerBullet* newBullet = new PlayerBullet();
-		newBullet->Initialize(*d3d12_, bulletModel_, { worldTransform_.GetWorldPos().x,worldTransform_.GetWorldPos().y,worldTransform_.GetWorldPos().z }, velocity);
-		bullets_.push_back(newBullet);
+		if (!isLockOn_) {
+			PlayerBullet* newBullet = new PlayerBullet();
+			newBullet->Initialize(*d3d12_, bulletModel_, { worldTransform_.GetWorldPos().x,worldTransform_.GetWorldPos().y,worldTransform_.GetWorldPos().z }, velocity);
+			bullets_.push_back(newBullet);
+		}
+		else {
+			PlayerBulletHoming* newBullet = new PlayerBulletHoming();
+			newBullet->Initialize(*d3d12_, bulletModel_, { worldTransform_.GetWorldPos().x,worldTransform_.GetWorldPos().y,worldTransform_.GetWorldPos().z }, velocity);
+			newBullet->SetTarget(*targetEnemy_);
+			bulletsHoming_.push_back(newBullet);
+		}
+	
 	}
 }
-
+void Player::SetTarget(const Enemy& enemy) {
+	targetEnemy_ = &enemy;
+}
 void Player::ReticleUpdate() {
 	// 自機から3Dレティクルへの距離
 	const float kDistancePlayerTo3DReticle = 50.0f;

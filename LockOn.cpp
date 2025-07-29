@@ -43,11 +43,14 @@ void LockOn::Update(Player* player,std::list<Enemy*>& enemies, CameraBase& camer
 
 	targetEnemy_ = nullptr;
 	player->targetPos_ = player->GetWorldPosition3DReticle();
+	player->isLockOn_ = false; // ロックオン中ではない
 	if (!targets.empty()) {
 		// 距離で昇順にソート
 		targets.sort();
 		// 最も近い敵をロックオン
 		targetEnemy_ = targets.front().second;
+		player->SetTarget(*targetEnemy_);
+		player->isLockOn_ = true; // ロックオン中にする
 		// ロックオン中の敵のワールド座標を取得
 		Vector3 targetPos = targetEnemy_->GetWorldPosition();
 		player->targetPos_ = targetPos;

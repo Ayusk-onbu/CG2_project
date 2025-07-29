@@ -18,5 +18,6 @@ private:
 	Texture* texture_ = nullptr;
 	// ロックオン中の敵
 	Enemy* targetEnemy_ = nullptr; // 現在ロックオン中の敵
+
 };
 

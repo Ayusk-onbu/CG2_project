@@ -458,7 +458,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 				return false;
 			});
 
-			player.Update();
+			
 
 			UpdateEnemyPopCommand(enemyPopCommand, enemies_, d3d12, &cameraBase, enemyModel, enemyTex, enemyBulletModel,enemyBulletTex,enemyBullets_, player, ePopFlag, waitTimer);
 
@@ -468,7 +468,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			for (EnemyBullet* bullet : enemyBullets_) {
 				bullet->Update();
 			}
-
+			player.Update();
 			lockOn.Update(&player, enemies_, cameraBase);
 
 			skyDome->Update();
@@ -478,11 +478,15 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			collisionManager->Begin();
 
 			const std::list<PlayerBullet*>& playerBullets = player.GetBullets();
+			const std::list<PlayerBulletHoming*>& playerBulletsHoming = player.GetBulletsHoming();
 			collisionManager->SetColliders(&player);
 			for (Enemy* enemy : enemies_) {
 				collisionManager->SetColliders(enemy);
 			}
 			for (PlayerBullet* bullet : playerBullets) {
+				collisionManager->SetColliders(bullet);
+			}
+			for (PlayerBulletHoming* bullet : playerBulletsHoming) {
 				collisionManager->SetColliders(bullet);
 			}
 			for (EnemyBullet* bullet : enemyBullets_) {

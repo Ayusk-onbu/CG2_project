@@ -6,6 +6,8 @@
 #include "Collider.h"
 #include "SpriteObject.h"
 
+class Enemy;
+
 class PlayerBullet
 	: public Collider
 {
@@ -22,6 +24,31 @@ private:
 	ModelObject model_;
 	WorldTransform worldTransform_;
 	Vector3 velocity_;
+
+	static const int32_t kLifeTime = 60 * 5;
+	int32_t deathTimer_ = kLifeTime;
+	bool isDead_ = false;
+};
+
+class PlayerBulletHoming 
+	: public Collider
+{
+public:
+	void Initialize(D3D12System& d3d12, ModelObject* model, const Vector3& position, const Vector3& velocity);
+	void Update();
+	void Draw(CameraBase& camera,
+		TheOrderCommand& command, PSO& pso, DirectionLight& light, Texture& tex);
+	void Homing();
+	void OnCollision()override;
+	void SetTarget(const Enemy& player);
+	const Vector3 GetWorldPosition()override { return worldTransform_.GetWorldPos(); }
+	bool IsDead()const { return isDead_; }
+	const WorldTransform GetWorldTransform()const { return worldTransform_; }
+private:
+	ModelObject model_;
+	WorldTransform worldTransform_;
+	Vector3 velocity_;
+	const Enemy* targetEnemy_ = nullptr; // ホーミング対象の敵
 
 	static const int32_t kLifeTime = 60 * 5;
 	int32_t deathTimer_ = kLifeTime;
@@ -45,8 +72,10 @@ public:
 	const Vector3 GetWorldPosition()override { return worldTransform_.GetWorldPos(); }
 	const Vector3 GetWorldPosition3DReticle()const { return worldTransform3DReticle_.GetWorldPos(); }
 	const std::list<PlayerBullet*>& GetBullets() { return bullets_; }
+	const std::list<PlayerBulletHoming*>& GetBulletsHoming() { return bulletsHoming_; }
 	Vector2 Get2DReticlePos()const { return pos2DReticle_; }
 	void SetParentMat(const Matrix4x4& mat) { parentMat_ = &mat; }
+	void SetTarget(const Enemy& player);
 	//const Vector3 GetWorldPos()const;
 private:
 	void Move(Vector3& pos);
@@ -61,7 +90,7 @@ private:
 	CameraBase* camera_;
 	WorldTransform worldTransform_;
 	const Matrix4x4* parentMat_;
-
+	const Enemy* targetEnemy_ = nullptr;
 	// 3Dレティクル
 	WorldTransform worldTransform3DReticle_;
 	
@@ -72,6 +101,7 @@ private:
 	Vector2 pos2DReticle_;
 
 	std::list<PlayerBullet*> bullets_;
+	std::list<PlayerBulletHoming*> bulletsHoming_;
 	ModelObject* bulletModel_ = nullptr;
 	Texture* bulletTex_ = nullptr;
 
@@ -80,5 +110,6 @@ private:
 	const float kRotSpeed_ = 1.0f;//Deg
 public:
 	Vector3 targetPos_;
+	bool isLockOn_ = false; // ロックオン中かどうか
 };
 

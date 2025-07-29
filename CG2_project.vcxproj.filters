@@ -336,6 +336,9 @@
     <ClCompile Include="Common\Vector\Vector2.cpp">
       <Filter>Common\Vector</Filter>
     </ClCompile>
+    <ClCompile Include="PlayerBulletHoming.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Object3d.VS.hlsl" />
