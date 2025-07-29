@@ -120,6 +120,15 @@ void Player::Move(Vector3& pos) {
 	pos.x += static_cast<float>(lx) / 32767.0f * kMoveSpeed_;
 	pos.y += static_cast<float>(ly) / 32767.0f * kMoveSpeed_;
 
+	if (InputManager::GetMouse().IsButtonRelease(1)) {
+		if (pos.z >= 1.0f) {
+			pos.z = 0.0f;
+		}
+		else {
+			pos.z = 50.0f;
+		}
+	}
+
 	if (InputManager::GetKey().PressKey(DIK_LEFT)) {
 		pos.x -= kMoveSpeed_;
 	}
@@ -174,7 +183,7 @@ void Player::Attack() {
 		velocity = worldTransform3DReticle_.GetWorldPos() - worldTransform_.GetWorldPos();
 		velocity = Normalize(velocity) * kBulletSpeed;
 		PlayerBullet* newBullet = new PlayerBullet();
-		newBullet->Initialize(*d3d12_, bulletModel_, { worldTransform_.GetWorldPos().x,worldTransform_.GetWorldPos().y + 0.5f,worldTransform_.GetWorldPos().z }, velocity);
+		newBullet->Initialize(*d3d12_, bulletModel_, { worldTransform_.GetWorldPos().x,worldTransform_.GetWorldPos().y,worldTransform_.GetWorldPos().z }, velocity);
 		bullets_.push_back(newBullet);
 	}
 }
