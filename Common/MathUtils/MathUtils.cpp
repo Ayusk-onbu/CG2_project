@@ -108,3 +108,9 @@ Vector3 CatmullRomPosition(const std::vector<Vector3>& points, float t) {
 	// 4点を指定してCatmull-Rom補間
 	return CatmullRomInterpolation(p0, p1, p2, p3, t_2);
 }
+
+#pragma region Distance
+float Distance(const Vector2& a, const Vector2& b) {
+	return sqrtf((a.x - b.x) * (a.x - b.x) + (a.y - b.y) * (a.y - b.y));
+}
+#pragma endregion

@@ -101,6 +101,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="Common\Functions\Trigonometric.cpp" />
     <ClCompile Include="Common\MathUtils\MathUtils.cpp" />
     <ClCompile Include="Common\Matrix\Matrix4x4.cpp" />
+    <ClCompile Include="Common\Vector\Vector2.cpp" />
     <ClCompile Include="Common\Vector\Vector3.cpp" />
     <ClCompile Include="Core\Command\CommandList.cpp" />
     <ClCompile Include="Core\Command\CommandQueue.cpp" />
@@ -129,6 +130,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="Input\InputManager.cpp" />
     <ClCompile Include="Input\Key.cpp" />
     <ClCompile Include="Input\Mouse.cpp" />
+    <ClCompile Include="LockOn.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Music\Audio.cpp" />
     <ClCompile Include="Music\BGM.cpp" />
@@ -231,6 +233,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="Input\InputManager.h" />
     <ClInclude Include="Input\Key.h" />
     <ClInclude Include="Input\Mouse.h" />
+    <ClInclude Include="LockOn.h" />
     <ClInclude Include="Music\Audio.h" />
     <ClInclude Include="Music\BGM.h" />
     <ClInclude Include="Music\Music.h" />

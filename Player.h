@@ -43,7 +43,9 @@ public:
 	void OnCollision()override;
 	const WorldTransform& GetWorldTransform()const { return worldTransform_; }
 	const Vector3 GetWorldPosition()override { return worldTransform_.GetWorldPos(); }
-	const std::list<PlayerBullet*>& GetBullets()const { return bullets_; }
+	const Vector3 GetWorldPosition3DReticle()const { return worldTransform3DReticle_.GetWorldPos(); }
+	const std::list<PlayerBullet*>& GetBullets() { return bullets_; }
+	Vector2 Get2DReticlePos()const { return pos2DReticle_; }
 	void SetParentMat(const Matrix4x4& mat) { parentMat_ = &mat; }
 	//const Vector3 GetWorldPos()const;
 private:
@@ -62,6 +64,7 @@ private:
 
 	// 3Dレティクル
 	WorldTransform worldTransform3DReticle_;
+	
 
 	// 2Dレティクル
 	SpriteObject* sprite2DReticle_ = nullptr;
@@ -75,5 +78,7 @@ private:
 	const float kMoveSpeed_ = 0.1f;
 	const Vector2 kMoveLimitX_ = { 15.0f,8.5f };
 	const float kRotSpeed_ = 1.0f;//Deg
+public:
+	Vector3 targetPos_;
 };
 

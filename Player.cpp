@@ -36,7 +36,6 @@ void Player::Update() {
 		}
 		return false;
 	});
-
 	Vector3 pos = worldTransform_.get_.Translation();
 	Vector3 rotation = {worldTransform_.get_.Rotation().x,worldTransform_.get_.Rotation().y,0.0f};
 	//worldTransform_.set_.Rotation({0.0f,worldTransform_.get_.Rotation().y + 0.01f,0.0f});
@@ -88,21 +87,23 @@ void Player::Draw(TheOrderCommand& command, PSO& pso, DirectionLight& light, Tex
 			bullet->Draw(*camera_, command, pso, light, *bulletTex_);
 		}
 	}
-	//Matrix4x4 drawSpriteMat = camera_->DrawCamera(worldTransform3DReticle_.mat_);
-	//Vector4 worldPos = { drawSpriteMat.m[3][0],drawSpriteMat.m[3][1] ,drawSpriteMat.m[3][2],1.0f };
-	//Vector4 clip = Matrix4x4::Transform(camera_->GetViewProjectionMatrix(),worldPos);
-	//clip.x /= clip.w;
-	//clip.y /= clip.w;
-	//clip.z /= clip.w;
-	//float screenX = (clip.x * 0.5f + 0.0f) * 128.0f;
-	//float screenY = (clip.y * 0.5f + 0.0f) * 72.0f;
-	//drawSpriteMat.m[3][0] = screenX;
-	//drawSpriteMat.m[3][1] = screenY;
-	//drawSpriteMat.m[3][2] = clip.z;
+	Matrix4x4 drawSpriteMat = camera_->DrawCamera(worldTransform3DReticle_.mat_);
+	Vector4 worldPos = { drawSpriteMat.m[3][0],drawSpriteMat.m[3][1] ,drawSpriteMat.m[3][2],1.0f };
+	Vector4 clip = Matrix4x4::Transform(camera_->GetViewProjectionMatrix(),worldPos);
+	clip.x /= clip.w;
+	clip.y /= clip.w;
+	clip.z /= clip.w;
+	float screenX = (clip.x * 0.5f + 0.0f) * 128.0f;
+	float screenY = (clip.y * 0.5f + 0.0f) * 72.0f;
+	drawSpriteMat.m[3][0] = screenX;
+	drawSpriteMat.m[3][1] = screenY;
+	drawSpriteMat.m[3][2] = clip.z;
+	pos2DReticle_.x = drawSpriteMat.m[3][0];
+	pos2DReticle_.y = drawSpriteMat.m[3][1];
 
-	sprite2DReticle_->SetWVPData(camera_->DrawCamera(worldTransform3DReticle_.mat_), worldTransform3DReticle_.mat_, Matrix4x4::Make::Identity());
+	//sprite2DReticle_->SetWVPData(camera_->DrawCamera(worldTransform3DReticle_.mat_), worldTransform3DReticle_.mat_, Matrix4x4::Make::Identity());
 	//sprite2DReticle_->SetWVPData(drawSpriteMat, worldTransform3DReticle_.mat_, Matrix4x4::Make::Identity());
-	sprite2DReticle_->Draw(command, pso, light, *sprite2DReticleTex_);
+	//sprite2DReticle_->Draw(command, pso, light, *sprite2DReticleTex_);
 }
 
 void Player::OnCollision() {
@@ -180,7 +181,8 @@ void Player::Attack() {
 		Vector3 velocity(0.0f, 0.0f, kBulletSpeed);
 
 		//velocity = TransformNormal(velocity, worldTransform_.mat_);
-		velocity = worldTransform3DReticle_.GetWorldPos() - worldTransform_.GetWorldPos();
+		/*velocity = worldTransform3DReticle_.GetWorldPos() - worldTransform_.GetWorldPos();*/
+		velocity = targetPos_ - worldTransform_.GetWorldPos();
 		velocity = Normalize(velocity) * kBulletSpeed;
 		PlayerBullet* newBullet = new PlayerBullet();
 		newBullet->Initialize(*d3d12_, bulletModel_, { worldTransform_.GetWorldPos().x,worldTransform_.GetWorldPos().y,worldTransform_.GetWorldPos().z }, velocity);
@@ -189,27 +191,6 @@ void Player::Attack() {
 }
 
 void Player::ReticleUpdate() {
-	//// 自機から3Dレティクルへの距離
-	//const float kDistancePlayerTo3DReticle = 50.0f;
-	//// 自機から3Dレティクルへのオフセット(Z+向き)
-	//Vector3 offset = { 0.0f,0.0f,1.0f };
-	//// 自機からワールド行列の回転を反映
-	////offset = Matrix4x4::Transform(offset,worldTransform_.mat_);
-	//// ベクトルの長さを整える
-	//offset = Normalize(offset) * kDistancePlayerTo3DReticle;
-	//// 3Dレティクルの座標を設定
-	//worldTransform3DReticle_.set_.Translation(worldTransform_.GetWorldPos() + offset);
-	//worldTransform3DReticle_.LocalToWorld();
-	
-	Vector3 reticlePos = worldTransform3DReticle_.GetWorldPos();
-	SHORT lx = InputManager::GetGamePad(0).GetRightStickX();
-	SHORT ly = InputManager::GetGamePad(0).GetRightStickY();
-
-	reticlePos.x += static_cast<float>(lx) / 32767.0f * kMoveSpeed_  *2.5f;
-	reticlePos.y += static_cast<float>(ly) / 32767.0f * kMoveSpeed_  *2.5f;
-	reticlePos.z = worldTransform_.GetWorldPos().z;
-
-
 	// 自機から3Dレティクルへの距離
 	const float kDistancePlayerTo3DReticle = 50.0f;
 	// 自機から3Dレティクルへのオフセット(Z+向き)
@@ -219,8 +200,29 @@ void Player::ReticleUpdate() {
 	// ベクトルの長さを整える
 	offset = Normalize(offset) * kDistancePlayerTo3DReticle;
 	// 3Dレティクルの座標を設定
-	worldTransform3DReticle_.set_.Translation(reticlePos + offset);
+	worldTransform3DReticle_.set_.Translation(worldTransform_.GetWorldPos() + offset);
 	worldTransform3DReticle_.LocalToWorld();
+	
+	//Vector3 reticlePos = worldTransform3DReticle_.GetWorldPos();
+	//SHORT lx = InputManager::GetGamePad(0).GetRightStickX();
+	//SHORT ly = InputManager::GetGamePad(0).GetRightStickY();
+
+	//reticlePos.x += static_cast<float>(lx) / 32767.0f * kMoveSpeed_  *2.5f;
+	//reticlePos.y += static_cast<float>(ly) / 32767.0f * kMoveSpeed_  *2.5f;
+	//reticlePos.z = worldTransform_.GetWorldPos().z;
+
+
+	//// 自機から3Dレティクルへの距離
+	//const float kDistancePlayerTo3DReticle = 50.0f;
+	//// 自機から3Dレティクルへのオフセット(Z+向き)
+	//Vector3 offset = { 0.0f,0.0f,1.0f };
+	//// 自機からワールド行列の回転を反映
+	////offset = Matrix4x4::Transform(offset,worldTransform_.mat_);
+	//// ベクトルの長さを整える
+	//offset = Normalize(offset) * kDistancePlayerTo3DReticle;
+	//// 3Dレティクルの座標を設定
+	//worldTransform3DReticle_.set_.Translation(reticlePos + offset);
+	//worldTransform3DReticle_.LocalToWorld();
 }
 
 void Player::GetCursor() {

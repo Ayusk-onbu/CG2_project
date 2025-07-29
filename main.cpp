@@ -43,6 +43,7 @@
 #include "SkyDome.h"
 #include "Ground.h"
 #include "RailCameraController.h"
+#include "LockOn.h"
 
 //GameEnd
 
@@ -344,6 +345,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	std::list<Enemy*> enemies_;
 	std::list<EnemyBullet*>enemyBullets_;
 
+	LockOn lockOn;
+	lockOn.Initialize(playerReticleSprite, playerReticleTex);
+
 	/*Enemy* enemy = new Enemy();
 	enemy->Initialize(d3d12, enemyModel, &cameraBase, {10.0f,0.0f,40.0f});
 	enemy->SetBullet(&enemyBulletModel, &enemyBulletTex);
@@ -464,6 +468,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			for (EnemyBullet* bullet : enemyBullets_) {
 				bullet->Update();
 			}
+
+			lockOn.Update(&player, enemies_, cameraBase);
+
 			skyDome->Update();
 			ground->Update();
 
@@ -535,6 +542,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			for (EnemyBullet* bullet : enemyBullets_) {
 				bullet->Draw(cameraBase, command, pso, light, enemyBulletTex);
 			}
+
+			lockOn.Draw(command, pso, light);
 
 			//   ここまで描画関係処理↑↑↑↑
 			//描画
