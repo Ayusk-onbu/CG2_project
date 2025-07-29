@@ -50,6 +50,8 @@ private:
 	void Move(Vector3& pos);
 	void Rotate(Vector3& rotation);
 	void Attack();
+
+	void GetCursor();
 private:
 	D3D12System* d3d12_;
 
@@ -64,6 +66,7 @@ private:
 	// 2Dレティクル
 	SpriteObject* sprite2DReticle_ = nullptr;
 	Texture* sprite2DReticleTex_ = nullptr;
+	Vector2 pos2DReticle_;
 
 	std::list<PlayerBullet*> bullets_;
 	ModelObject* bulletModel_ = nullptr;

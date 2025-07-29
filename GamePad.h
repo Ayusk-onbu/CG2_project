@@ -15,6 +15,11 @@ public:
     SHORT GetLeftStickX() const;
     SHORT GetLeftStickY() const;
 
+    BYTE GetRightTrigger() const;  // 右トリガーの値
+	SHORT GetRightStickX() const; // 右スティックのX軸
+	SHORT GetRightStickY() const; // 右スティックのY軸
+	
+
 private:
     int controllerIndex_;
     XINPUT_STATE state_;

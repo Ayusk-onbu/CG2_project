@@ -34,3 +34,13 @@ SHORT GamePad::GetLeftStickX() const {
 SHORT GamePad::GetLeftStickY() const {
     return isConnected_ ? state_.Gamepad.sThumbLY : 0;
 }
+
+SHORT GamePad::GetRightStickX() const {
+    return isConnected_ ? state_.Gamepad.sThumbRX : 0;
+}
+SHORT GamePad::GetRightStickY() const {
+    return isConnected_ ? state_.Gamepad.sThumbRY : 0;
+}
+BYTE GamePad::GetRightTrigger() const {
+    return isConnected_ ? state_.Gamepad.bRightTrigger : 0;
+}
