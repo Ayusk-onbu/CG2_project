@@ -76,6 +76,7 @@ public:
 	Vector2 Get2DReticlePos()const { return pos2DReticle_; }
 	void SetParentMat(const Matrix4x4& mat) { parentMat_ = &mat; }
 	void SetTarget(const Enemy& player);
+	void SetTargetEnemies(const std::list<Enemy*>& enemies) { targetEnemies_ = &enemies; }
 	//const Vector3 GetWorldPos()const;
 private:
 	void Move(Vector3& pos);
@@ -91,6 +92,7 @@ private:
 	WorldTransform worldTransform_;
 	const Matrix4x4* parentMat_;
 	const Enemy* targetEnemy_ = nullptr;
+	const std::list<Enemy*>* targetEnemies_; // ロックオン可能な敵のリスト
 	// 3Dレティクル
 	WorldTransform worldTransform3DReticle_;
 	

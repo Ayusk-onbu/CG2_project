@@ -346,7 +346,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	std::list<EnemyBullet*>enemyBullets_;
 
 	LockOn lockOn;
-	lockOn.Initialize(playerReticleSprite, playerReticleTex);
+	lockOn.Initialize(&d3d12,playerReticleSprite, playerReticleTex);
 
 	/*Enemy* enemy = new Enemy();
 	enemy->Initialize(d3d12, enemyModel, &cameraBase, {10.0f,0.0f,40.0f});

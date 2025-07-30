@@ -210,10 +210,12 @@ void Player::Attack() {
 			bullets_.push_back(newBullet);
 		}
 		else {
-			PlayerBulletHoming* newBullet = new PlayerBulletHoming();
-			newBullet->Initialize(*d3d12_, bulletModel_, { worldTransform_.GetWorldPos().x,worldTransform_.GetWorldPos().y,worldTransform_.GetWorldPos().z }, velocity);
-			newBullet->SetTarget(*targetEnemy_);
-			bulletsHoming_.push_back(newBullet);
+			for (Enemy* enemy : *targetEnemies_) {
+				PlayerBulletHoming* newBullet = new PlayerBulletHoming();
+				newBullet->Initialize(*d3d12_, bulletModel_, { worldTransform_.GetWorldPos().x,worldTransform_.GetWorldPos().y,worldTransform_.GetWorldPos().z }, velocity);
+				newBullet->SetTarget(*enemy);
+				bulletsHoming_.push_back(newBullet);
+			}
 		}
 	
 	}
