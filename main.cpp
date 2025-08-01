@@ -228,7 +228,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	//   ここからモデル系の処理
 
 	std::unique_ptr<ModelObject> playerModel = std::make_unique<ModelObject>();
-	playerModel->Initialize(d3d12, "F-14.obj");
+	playerModel->Initialize(d3d12, "Hello.obj");
 
 	ModelObject bulletModel;
 	bulletModel.Initialize(d3d12, "bullet.obj");
@@ -268,7 +268,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	skyDomeTex.Initialize(d3d12, srv, skyDomeModel.GetFilePath(), 6);
 
 	Texture groundTex;
-	groundTex.Initialize(d3d12, srv, groundModel.GetFilePath(), 7);
+	groundTex.Initialize(d3d12, srv, "resources/Legends_Ground.png", 7);
 
 	Texture playerReticleTex;
 	playerReticleTex.Initialize(d3d12, srv, "resources/Reticle.png", 8);
@@ -538,7 +538,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 				catmullRomLine[i].Draw(command, psoLine, light, lineTex);
 			}
 			skyDome->Draw(command, pso, light, skyDomeTex);	
-			//ground->Draw(command, pso, light, groundTex);
+			ground->Draw(command, pso, light, groundTex);
 			player.Draw(command,pso,light,playerTex);
 			for (Enemy* enemy : enemies_) {
 				enemy->Draw(command, pso, light, enemyTex);
