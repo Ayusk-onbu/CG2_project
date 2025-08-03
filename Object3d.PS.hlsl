@@ -36,21 +36,23 @@ PixelShaderOutPut main(VertexShaderOutput input)
     if (gMaterial.enableLighting != 0)
     {
         float cos = 1.0f;
-        switch (gDirectionalLight.shadowType)
-        {
-            case 0:
-                cos = 1.0f;
-                break;
-            case 1:
-                cos = saturate(dot(normalize(input.normal), -gDirectionalLight.direction));
-                break;
-            case 2:// Half
-                float NdotL = dot(normalize(input.normal), -gDirectionalLight.direction);
-                cos = pow(NdotL * 0.5f + 0.5f, 2.0f);
-                //output.color = float4(rgbColor, alpha);
-                //output.color = gMaterial.color * textureColor * gDirectionalLight.color * cos * gDirectionalLight.intensity;
-                break;
-        }
+        //switch (gDirectionalLight.shadowType)
+        //{
+        //    case 0:
+        //        cos = 1.0f;
+        //        break;
+        //    case 1:
+        //        cos = saturate(dot(normalize(input.normal), -gDirectionalLight.direction));
+        //        break;
+        //    case 2:// Half
+        //        float NdotL = dot(normalize(input.normal), -gDirectionalLight.direction);
+        //        cos = pow(NdotL * 0.5f + 0.5f, 2.0f);
+        //        //output.color = float4(rgbColor, alpha);
+        //        //output.color = gMaterial.color * textureColor * gDirectionalLight.color * cos * gDirectionalLight.intensity;
+        //        break;
+        //}
+        float NdotL = dot(normalize(input.normal), -gDirectionalLight.direction);
+        cos = pow(NdotL * 0.5f + 0.5f, 2.0f);
         output.color.rgb = gMaterial.color.rgb * textureColor.rgb * gDirectionalLight.color.rgb * cos * gDirectionalLight.intensity;
         output.color.a = gMaterial.color.a * textureColor.a;
     }else{

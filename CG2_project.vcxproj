@@ -96,7 +96,6 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="Advanced\AABB.cpp" />
     <ClCompile Include="Advanced\Transform.cpp" />
     <ClCompile Include="Advanced\WorldTransform.cpp" />
-    <ClCompile Include="Bunny.cpp" />
     <ClCompile Include="Collider.cpp" />
     <ClCompile Include="CollisionManager.cpp" />
     <ClCompile Include="Common\Functions\Trigonometric.cpp" />
@@ -124,17 +123,15 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="externals\imgui\imgui_widgets.cpp" />
     <ClCompile Include="Fngine.cpp" />
     <ClCompile Include="GamePad.cpp" />
+    <ClCompile Include="hallway.cpp" />
     <ClCompile Include="Input\InputManager.cpp" />
     <ClCompile Include="Input\Key.cpp" />
     <ClCompile Include="Input\Mouse.cpp" />
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="MultiMaterial.cpp" />
-    <ClCompile Include="MultiMesh.cpp" />
     <ClCompile Include="Music\Audio.cpp" />
     <ClCompile Include="Music\BGM.cpp" />
     <ClCompile Include="Music\Music.cpp" />
     <ClCompile Include="Music\SE.cpp" />
-    <ClCompile Include="OBJ.cpp" />
     <ClCompile Include="Objects\ModelManager.cpp" />
     <ClCompile Include="Objects\Model\ModelObject.cpp" />
     <ClCompile Include="Objects\ObjectBase.cpp" />
@@ -142,7 +139,6 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="Objects\Primitive\SphereObject.cpp" />
     <ClCompile Include="Objects\Primitive\SpriteObject.cpp" />
     <ClCompile Include="Objects\Primitive\TriangleObject.cpp" />
-    <ClCompile Include="PlaneObj.cpp" />
     <ClCompile Include="ResourceView\DepthStencil.cpp" />
     <ClCompile Include="ResourceView\DescriptorHeap.cpp" />
     <ClCompile Include="ResourceView\Fence.cpp" />
@@ -161,10 +157,6 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="Scene\GameScene.cpp" />
     <ClCompile Include="Scene\Scene.cpp" />
     <ClCompile Include="Scene\SceneDirector.cpp" />
-    <ClCompile Include="SphereObj.cpp" />
-    <ClCompile Include="Sprite.cpp" />
-    <ClCompile Include="Suzanne.cpp" />
-    <ClCompile Include="TeapotObj.cpp" />
     <ClCompile Include="TimedCall.cpp" />
     <ClCompile Include="UsefulTool\Camera\CameraBase.cpp" />
     <ClCompile Include="UsefulTool\Camera\DebugCamera.cpp" />
@@ -227,6 +219,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="externals\imgui\imstb_truetype.h" />
     <ClInclude Include="Fngine.h" />
     <ClInclude Include="GamePad.h" />
+    <ClInclude Include="hallway.h" />
     <ClInclude Include="Input\InputManager.h" />
     <ClInclude Include="Input\Key.h" />
     <ClInclude Include="Input\Mouse.h" />
@@ -234,7 +227,6 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="Music\BGM.h" />
     <ClInclude Include="Music\Music.h" />
     <ClInclude Include="Music\SE.h" />
-    <ClInclude Include="OBJ.h" />
     <ClInclude Include="Objects\ModelManager.h" />
     <ClInclude Include="Objects\Model\ModelData.h" />
     <ClInclude Include="Objects\Model\ModelObject.h" />
@@ -243,7 +235,6 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="Objects\Primitive\SphereObject.h" />
     <ClInclude Include="Objects\Primitive\SpriteObject.h" />
     <ClInclude Include="Objects\Primitive\TriangleObject.h" />
-    <ClInclude Include="PlaneObj.h" />
     <ClInclude Include="ResourceView\DepthStencil.h" />
     <ClInclude Include="ResourceView\DescriptorHeap.h" />
     <ClInclude Include="ResourceView\Fence.h" />
@@ -262,8 +253,6 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="Scene\GameScene.h" />
     <ClInclude Include="Scene\Scene.h" />
     <ClInclude Include="Scene\SceneDirector.h" />
-    <ClInclude Include="SphereObj.h" />
-    <ClInclude Include="Sprite.h" />
     <ClInclude Include="TimedCall.h" />
     <ClInclude Include="UsefulTool\Camera\CameraBase.h" />
     <ClInclude Include="UsefulTool\Camera\DebugCamera.h" />

@@ -37,9 +37,7 @@
 #include "WorldTransform.h"
 
 //GameStart
-#include "Sprite.h"
-#include "PlaneObj.h"
-#include "SphereObj.h"
+
 //GameEnd
 
 #include <algorithm>
@@ -216,23 +214,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	TimeRandom::Initialize();
 
 	//   ここからモデル系の処理
-	std::unique_ptr<SpriteObject> spriteModel = std::make_unique<SpriteObject>();
-	spriteModel->Initialize(d3d12,320.0f,180.0f);
-	std::unique_ptr<ModelObject> planeModel = std::make_unique<ModelObject>();
-	planeModel->Initialize(d3d12, "plane.obj");
-	std::unique_ptr<SphereObject> sphereModel = std::make_unique<SphereObject>();
-	sphereModel->Initialize(d3d12);
-	std::unique_ptr<ModelObject> teapotModel = std::make_unique<ModelObject>();
-	teapotModel->Initialize(d3d12, "teapot.obj","resources/evaluationTaskResources");
-	std::unique_ptr<ModelObject> bunnyModel = std::make_unique<ModelObject>();
-	bunnyModel->Initialize(d3d12, "bunny.obj", "resources/evaluationTaskResources");
-	//bunnyModel->Initialize(d3d12, "lod.obj");
-	std::unique_ptr<ModelObject> multiMeshModel = std::make_unique<ModelObject>();
-	multiMeshModel->Initialize(d3d12, "multiMesh.obj", "resources/evaluationTaskResources");
-	std::unique_ptr<ModelObject> multiMaterialModel = std::make_unique<ModelObject>();
-	multiMaterialModel->Initialize(d3d12, "multiMaterial.obj", "resources/evaluationTaskResources");
-	std::unique_ptr<ModelObject> suzanneModel = std::make_unique<ModelObject>();
-	suzanneModel->Initialize(d3d12, "suzanne.obj", "resources/evaluationTaskResources");
+	
+	ModelObject hallwayModel;
+	hallwayModel.Initialize(d3d12, "hallway.obj","resources/hallway");
 	
 	//   ここまでモデル系の処理
 
@@ -240,12 +224,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 	Texture lineTex;
 	lineTex.Initialize(d3d12, srv, "resources/GridLine.png", 1);
-	Texture uvCheckTex;
-	uvCheckTex.Initialize(d3d12, srv, "resources/uvChecker.png", 2);
-	Texture teapotTex;
-	teapotTex.Initialize(d3d12, srv, teapotModel->GetFilePath(), 3);
-	Texture bunnyTex;
-	bunnyTex.Initialize(d3d12, srv, bunnyModel->GetFilePath(), 4);
+	Texture  hallwayTex;
+	hallwayTex.Initialize(d3d12, srv, hallwayModel.GetFilePath(), 1);
 
 	//   ここまでTexture系の処理
 #pragma region GridLine
@@ -270,35 +250,20 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	MSG msg{};
 
 	//   基礎的な物の処理
-
-
 	CameraBase cameraBase;
 	cameraBase.Initialize();
 
 	//Audio audio;
 	//audio.SoundPlayWave(MediaAudioDecoder::DecodeAudioFile(L"resources/maou_bgm_fantasy02.mp3"));
-	music.GetBGM().LoadWAVE("resources/loop101204.wav");
-	music.GetBGM().SetPlayAudioBuf();
-
-	std::unique_ptr<Sprite>sprite = std::make_unique<Sprite>();
-	sprite->Initialize(*spriteModel, cameraBase);
-	std::unique_ptr<PlaneObj>plane = std::make_unique<PlaneObj>();
-	plane->Initialize(*planeModel, cameraBase);
-	std::unique_ptr<SphereObj> sphere = std::make_unique<SphereObj>();
-	sphere->Initialize(*sphereModel, cameraBase);
-	std::unique_ptr<Teapot> teapot = std::make_unique<Teapot>();
-	teapot->Initialize(*teapotModel, cameraBase);
-	std::unique_ptr<Bunny> bunny = std::make_unique<Bunny>();
-	bunny->Initialize(*bunnyModel, cameraBase);
-	std::unique_ptr<MultiMesh> multiMesh = std::make_unique<MultiMesh>();
-	multiMesh->Initialize(*multiMeshModel, cameraBase);
-	std::unique_ptr<MultiMaterial> multiMaterial = std::make_unique<MultiMaterial>();
-	multiMaterial->Initialize(*multiMaterialModel, cameraBase);
-	std::unique_ptr<Suzanne> suzanne = std::make_unique<Suzanne>();
-	suzanne->Initialize(*suzanneModel, cameraBase);
-
+	//music.GetBGM().LoadWAVE("resources/loop101204.wav");
+	//music.GetBGM().SetPlayAudioBuf();
 	//   基礎的な物の処理
 
+	//   ここからゲーム系の処理
+
+
+
+	//   ここまでゲーム系の処理
 
 	//ウィンドウのｘボタンが押されるまでループ
 	while (msg.message != WM_QUIT) {
@@ -366,28 +331,10 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 			//   ここからゲームの処理↓↓↓↓
 
-			sprite->Update();
-			plane->Update();
-			sphere->Update();
-			teapot->Update();
-			bunny->Update();
-			multiMesh->Update();
-			multiMaterial->Update();
-			suzanne->Update();
 
 			//   ここまでゲームの処理↑↑↑↑
 			
-			ImGui::Begin("DirectionLight");
-			ImGuiManager::CreateImGui("Light Direction", light.GetDirectionalLightData()->direction, -1.0f, 1.0f);
-			ImGuiManager::CreateImGui("Light Color", light.GetDirectionalLightData()->color, -1.0f, 1.0f);
-			ImGuiManager::CreateImGui("Light Intensity", light.GetDirectionalLightData()->intensity, 0.0f, 10.0f);
-			if (ImGui::Button("None")) { shadowType = 0; }
-			ImGui::SameLine();
-			if (ImGui::Button("Normal")) { shadowType = 1; }
-			ImGui::SameLine();
-			if (ImGui::Button("Half")) { shadowType = 2; }
-			ImGui::End();
-			light.SetType(shadowType);
+			
 			//   ここからゲームの描画↓↓↓↓
 #pragma region GridLine
 			for (uint32_t i = 0;i < lineX;++i) {
@@ -423,14 +370,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 				lineZ_[i].Draw(command, psoLine, light, lineTex);
 			}
 #pragma endregion
-			sprite->Draw(command, pso, light, uvCheckTex);
-			plane->Draw(command, pso, light, uvCheckTex);
-			sphere->Draw(command, pso, light, uvCheckTex);
-			teapot->Draw(command, pso, light, teapotTex);
-			bunny->Draw(command, pso, light, bunnyTex);
-			multiMesh->Draw(command, pso, light, uvCheckTex);
-			multiMaterial->Draw(command, pso, light, uvCheckTex);
-			suzanne->Draw(command, pso, light, lineTex);
+			
 
 			//   ここまで描画関係処理↑↑↑↑
 			//描画
