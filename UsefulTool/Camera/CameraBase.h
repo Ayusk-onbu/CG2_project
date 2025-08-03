@@ -28,6 +28,7 @@ public:
 	void UpDate();
 
 	Matrix4x4 DrawCamera(const Matrix4x4& world);
+	Matrix4x4 DrawUI(const Matrix4x4& world);
 
 	const float& GetRadius() const { return radius_; }
 	const Matrix4x4& GetViewProjectionMatrix() const { return viewProjectionMatrix_; }

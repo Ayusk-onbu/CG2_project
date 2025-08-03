@@ -99,6 +99,13 @@ Matrix4x4 CameraBase::DrawCamera(const Matrix4x4& world) {
 	return WVP;
 }
 
+Matrix4x4 CameraBase::DrawUI(const Matrix4x4& world) {
+	Matrix4x4 viewMat = Matrix4x4::Make::Identity();
+	Matrix4x4 projectionMat = Matrix4x4::Make::OrthoGraphic(0.0f, 0.0f, 1280.0f, 720.0f, 0.0f, 100.0f);
+	Matrix4x4 WVP = world * viewMat * projectionMat;
+	return WVP;
+}
+
 Vector3 CameraBase::CalculateRight() {
 	return Normalize(CrossProduct({ 0.0f,1.0f,0.0f }, Normalize(Subtract(targetPos_, camera_.translation_))));
 }

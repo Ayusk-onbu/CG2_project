@@ -34,17 +34,12 @@
 #include "RandomUtils.h"
 #include "SceneDirector.h"
 #include "MathUtils.h"
+#include "WorldTransform.h"
 
 //GameStart
-
-#include "Player.h"
-#include "Enemy.h"
-#include "CollisionManager.h"
-#include "SkyDome.h"
-#include "Ground.h"
-#include "RailCameraController.h"
-#include "LockOn.h"
-
+#include "Sprite.h"
+#include "PlaneObj.h"
+#include "SphereObj.h"
 //GameEnd
 
 #include <algorithm>
@@ -74,12 +69,6 @@ struct D3D12ResourceLeakChecker {
 };
 //
 //void CheckCollisionPair(Collider* colliderA, Collider* colliderB);
-
-void PopEnemy(std::list<Enemy*>& enemies_, D3D12System& d3d12, CameraBase* camera, ModelObject& enemyModel, Texture& enemyTex, ModelObject& enemyBulletModel, Texture& enemyBulletTex,std::list<EnemyBullet*>& enemyBullets_, const Vector3& pos,const Player&player, uint32_t movePattern);
-
-void LoadEnemyPopData(std::stringstream& command, std::string filepath);
-
-void UpdateEnemyPopCommand(std::stringstream& command, std::list<Enemy*>& enemies_, D3D12System& d3d12, CameraBase* camera, ModelObject& enemyModel, Texture& enemyTex, ModelObject& enemyBulletModel, Texture& enemyBulletTex, std::list<EnemyBullet*>& enemyBullets_, const Player& player,bool& waitFlag,float& waitTimer);
 
 // windowsアプリでのエントリーポイント（main関数）
 int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
@@ -214,65 +203,51 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	ImGuiManager::SetImGui(window.GetHwnd(), d3d12.GetDevice().Get(), srv.GetDescriptorHeap().GetHeap().Get());
 #pragma region XAudio2初期化
 #pragma endregion
-	//Music music;
-	//music.Initialize();
+	Music music;
+	music.Initialize();
 #pragma region 入力情報の初期化
 #pragma endregion
 	input.Initialize(window.GetWindowClass(), window.GetHwnd());
-
 	DirectionLight light;
 	light.Initialize(d3d12);
+	int shadowType = 2; // デフォルトのシャドウタイプ
+	
 #pragma endregion
 	TimeRandom::Initialize();
 
 	//   ここからモデル系の処理
+	std::unique_ptr<SpriteObject> spriteModel = std::make_unique<SpriteObject>();
+	spriteModel->Initialize(d3d12,320.0f,180.0f);
+	std::unique_ptr<ModelObject> planeModel = std::make_unique<ModelObject>();
+	planeModel->Initialize(d3d12, "plane.obj");
+	std::unique_ptr<SphereObject> sphereModel = std::make_unique<SphereObject>();
+	sphereModel->Initialize(d3d12);
+	std::unique_ptr<ModelObject> teapotModel = std::make_unique<ModelObject>();
+	teapotModel->Initialize(d3d12, "teapot.obj","resources/evaluationTaskResources");
+	std::unique_ptr<ModelObject> bunnyModel = std::make_unique<ModelObject>();
+	bunnyModel->Initialize(d3d12, "bunny.obj", "resources/evaluationTaskResources");
+	//bunnyModel->Initialize(d3d12, "lod.obj");
+	std::unique_ptr<ModelObject> multiMeshModel = std::make_unique<ModelObject>();
+	multiMeshModel->Initialize(d3d12, "multiMesh.obj", "resources/evaluationTaskResources");
+	std::unique_ptr<ModelObject> multiMaterialModel = std::make_unique<ModelObject>();
+	multiMaterialModel->Initialize(d3d12, "multiMaterial.obj", "resources/evaluationTaskResources");
+	std::unique_ptr<ModelObject> suzanneModel = std::make_unique<ModelObject>();
+	suzanneModel->Initialize(d3d12, "suzanne.obj", "resources/evaluationTaskResources");
+	
+	//   ここまでモデル系の処理
 
-	std::unique_ptr<ModelObject> playerModel = std::make_unique<ModelObject>();
-	playerModel->Initialize(d3d12, "Hello.obj");
-
-	ModelObject bulletModel;
-	bulletModel.Initialize(d3d12, "bullet.obj");
-
-	ModelObject enemyModel;
-	enemyModel.Initialize(d3d12, "enemy41-F.obj");
-
-	ModelObject enemyBulletModel;
-	enemyBulletModel.Initialize(d3d12, "enemyBullet.obj");
-
-	ModelObject skyDomeModel;
-	skyDomeModel.Initialize(d3d12, "ulthimaSky.obj");
-
-	ModelObject groundModel;
-	groundModel.Initialize(d3d12, "ground.obj");
-
-	SpriteObject playerReticleSprite;
-	playerReticleSprite.Initialize(d3d12,4.0f, 4.0f);
+	//   ここからTexture系の処理
 
 	Texture lineTex;
-	//lineTex.Initialize(d3d12, srv, "resources/GridLine.png", 1);
 	lineTex.Initialize(d3d12, srv, "resources/GridLine.png", 1);
+	Texture uvCheckTex;
+	uvCheckTex.Initialize(d3d12, srv, "resources/uvChecker.png", 2);
+	Texture teapotTex;
+	teapotTex.Initialize(d3d12, srv, teapotModel->GetFilePath(), 3);
+	Texture bunnyTex;
+	bunnyTex.Initialize(d3d12, srv, bunnyModel->GetFilePath(), 4);
 
-	Texture playerTex;
-	playerTex.Initialize(d3d12, srv, playerModel->GetFilePath(),2);
-
-	Texture bulletTex;
-	bulletTex.Initialize(d3d12, srv, bulletModel.GetFilePath(), 3);
-
-	Texture enemyTex;
-	enemyTex.Initialize(d3d12, srv, enemyModel.GetFilePath(), 4);
-
-	Texture enemyBulletTex;
-	enemyBulletTex.Initialize(d3d12, srv, enemyBulletModel.GetFilePath(), 5);
-
-	Texture skyDomeTex;
-	skyDomeTex.Initialize(d3d12, srv, skyDomeModel.GetFilePath(), 6);
-
-	Texture groundTex;
-	groundTex.Initialize(d3d12, srv, "resources/Legends_Ground.png", 7);
-
-	Texture playerReticleTex;
-	playerReticleTex.Initialize(d3d12, srv, "resources/Reticle.png", 8);
-
+	//   ここまでTexture系の処理
 #pragma region GridLine
 	const uint32_t lineX = 50;
 	const uint32_t lineXCenter = lineX / 2;
@@ -289,91 +264,41 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	}
 #pragma endregion
 
-	std::vector<Vector3>controlPoints_;
-	controlPoints_ = {
-	{0.0f, 0.0f,   0.0f},
-	{0.0f, 0.0f,   5.0f},
-	{0.0f, 0.0f,  10.0f},
-	{0.0f, 0.0f,  15.0f},
-	{0.0f, 0.0f,  20.0f},
-	{0.0f, 0.0f,  25.0f},
-	{0.0f, 0.0f,  30.0f},
-	{0.0f, 0.0f,  35.0f},
-	{0.0f, 0.0f,  40.0f},
-	{0.0f, 0.0f,  45.0f}
-	};
-	// 線分で描画する用の頂点リスト
-	std::vector<Vector3>pointsDrawing;
-	// 線分の数
-	const size_t segmentCount = 100;
-	// 線分の数+1個分の頂点座標を計算
-	for (size_t i = 0;i < segmentCount + 1;++i) {
-		//float t = 1.0f / segmentCount * i;
-		float t = static_cast<float>(i) / segmentCount;
-		Vector3 pos = CatmullRomPosition(controlPoints_,t);
-		// 描画用頂点リストに追加
-		pointsDrawing.push_back(pos);
-	}
-	LineObject catmullRomLine[segmentCount];
-	for (size_t i = 0;i < segmentCount;++i) {
-		catmullRomLine[i].Initialize(d3d12, pointsDrawing[i], pointsDrawing[i + 1]);
-	}
+	
 
-	//   ここまでモデル系の処理
+	
 	MSG msg{};
 
 	//   基礎的な物の処理
 
+
 	CameraBase cameraBase;
 	cameraBase.Initialize();
-	RailCameraController railCameraController;
-	railCameraController.Initialize(&cameraBase);
-	railCameraController.SetRailPoints(controlPoints_);
+
 	//Audio audio;
 	//audio.SoundPlayWave(MediaAudioDecoder::DecodeAudioFile(L"resources/maou_bgm_fantasy02.mp3"));
-	//music.GetBGM().LoadWAVE("resources/loop101204.wav");
-	//music.GetBGM().SetPlayAudioBuf();
+	music.GetBGM().LoadWAVE("resources/loop101204.wav");
+	music.GetBGM().SetPlayAudioBuf();
+
+	std::unique_ptr<Sprite>sprite = std::make_unique<Sprite>();
+	sprite->Initialize(*spriteModel, cameraBase);
+	std::unique_ptr<PlaneObj>plane = std::make_unique<PlaneObj>();
+	plane->Initialize(*planeModel, cameraBase);
+	std::unique_ptr<SphereObj> sphere = std::make_unique<SphereObj>();
+	sphere->Initialize(*sphereModel, cameraBase);
+	std::unique_ptr<Teapot> teapot = std::make_unique<Teapot>();
+	teapot->Initialize(*teapotModel, cameraBase);
+	std::unique_ptr<Bunny> bunny = std::make_unique<Bunny>();
+	bunny->Initialize(*bunnyModel, cameraBase);
+	std::unique_ptr<MultiMesh> multiMesh = std::make_unique<MultiMesh>();
+	multiMesh->Initialize(*multiMeshModel, cameraBase);
+	std::unique_ptr<MultiMaterial> multiMaterial = std::make_unique<MultiMaterial>();
+	multiMaterial->Initialize(*multiMaterialModel, cameraBase);
+	std::unique_ptr<Suzanne> suzanne = std::make_unique<Suzanne>();
+	suzanne->Initialize(*suzanneModel, cameraBase);
 
 	//   基礎的な物の処理
 
-	Player player;
-	player.Initialize(d3d12,move(playerModel),&cameraBase);
-	player.SetBullet(&bulletModel, &bulletTex);
-	player.Set2DReticle(&playerReticleSprite, &playerReticleTex);
-	player.SetParentMat(cameraBase.worldMat_);
-
-	std::list<Enemy*> enemies_;
-	std::list<EnemyBullet*>enemyBullets_;
-
-	LockOn lockOn;
-	lockOn.Initialize(&d3d12,playerReticleSprite, playerReticleTex);
-
-	/*Enemy* enemy = new Enemy();
-	enemy->Initialize(d3d12, enemyModel, &cameraBase, {10.0f,0.0f,40.0f});
-	enemy->SetBullet(&enemyBulletModel, &enemyBulletTex);
-	enemy->SetTarget(player);
-	enemy->SetEnemyBullets(enemyBullets_);
-	enemies_.push_back(enemy);*/
-	// 敵の発生コマンド
-	std::stringstream enemyPopCommand;
-	bool ePopFlag = false;
-	float waitTimer = 0.0f;
-
-	// ファイルを開く
-	std::ifstream file;
-	file.open("enemyPop.csv");
-	assert(file.is_open());
-	// ファイルの内容を文字列ストリームにコピー
-	enemyPopCommand << file.rdbuf();
-
-
-	std::unique_ptr<SkyDome>skyDome = std::make_unique<SkyDome>();
-	skyDome->Initialize(&skyDomeModel, &cameraBase);
-
-	std::unique_ptr<Ground>ground = std::make_unique<Ground>();
-	ground->Initialize(&groundModel, &cameraBase);
-
-	std::unique_ptr<CollisionManager> collisionManager = std::make_unique<CollisionManager>();
 
 	//ウィンドウのｘボタンが押されるまでループ
 	while (msg.message != WM_QUIT) {
@@ -389,7 +314,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			Chronos::Update();
 			input.Update();
 			cameraBase.UpDate();
-			railCameraController.Update();
 #pragma region OffScreenRendering
 			/*ResourceBarrier barrierO = {};
 			barrierO.SetBarrier(command.GetList().GetList().Get(), osr.GetResource().Get(),
@@ -442,112 +366,71 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 			//   ここからゲームの処理↓↓↓↓
 
-			enemies_.remove_if([](Enemy* enemy) {
-				if (enemy->IsDead()) {
-					delete enemy;
-					return true;
-				}
-				return false;
-			});
-
-			enemyBullets_.remove_if([](EnemyBullet* bullet) {
-				if (bullet->IsDead()) {
-					delete bullet;
-					return true;
-				}
-				return false;
-			});
-
-			
-
-			UpdateEnemyPopCommand(enemyPopCommand, enemies_, d3d12, &cameraBase, enemyModel, enemyTex, enemyBulletModel,enemyBulletTex,enemyBullets_, player, ePopFlag, waitTimer);
-
-			for (Enemy* enemy : enemies_) {
-				enemy->Update();
-			}
-			for (EnemyBullet* bullet : enemyBullets_) {
-				bullet->Update();
-			}
-			player.Update();
-			lockOn.Update(&player, enemies_, cameraBase);
-
-			skyDome->Update();
-			ground->Update();
-
-			//   当たり判定
-			collisionManager->Begin();
-
-			const std::list<PlayerBullet*>& playerBullets = player.GetBullets();
-			const std::list<PlayerBulletHoming*>& playerBulletsHoming = player.GetBulletsHoming();
-			collisionManager->SetColliders(&player);
-			for (Enemy* enemy : enemies_) {
-				collisionManager->SetColliders(enemy);
-			}
-			for (PlayerBullet* bullet : playerBullets) {
-				collisionManager->SetColliders(bullet);
-			}
-			for (PlayerBulletHoming* bullet : playerBulletsHoming) {
-				collisionManager->SetColliders(bullet);
-			}
-			for (EnemyBullet* bullet : enemyBullets_) {
-				collisionManager->SetColliders(bullet);
-			}
-			collisionManager->CheckAllCollisions();
+			sprite->Update();
+			plane->Update();
+			sphere->Update();
+			teapot->Update();
+			bunny->Update();
+			multiMesh->Update();
+			multiMaterial->Update();
+			suzanne->Update();
 
 			//   ここまでゲームの処理↑↑↑↑
+			
+			ImGui::Begin("DirectionLight");
+			ImGuiManager::CreateImGui("Light Direction", light.GetDirectionalLightData()->direction, -1.0f, 1.0f);
+			ImGuiManager::CreateImGui("Light Color", light.GetDirectionalLightData()->color, -1.0f, 1.0f);
+			ImGuiManager::CreateImGui("Light Intensity", light.GetDirectionalLightData()->intensity, 0.0f, 10.0f);
+			if (ImGui::Button("None")) { shadowType = 0; }
+			ImGui::SameLine();
+			if (ImGui::Button("Normal")) { shadowType = 1; }
+			ImGui::SameLine();
+			if (ImGui::Button("Half")) { shadowType = 2; }
+			ImGui::End();
+			light.SetType(shadowType);
 			//   ここからゲームの描画↓↓↓↓
 #pragma region GridLine
-			//for (uint32_t i = 0;i < lineX;++i) {
-			//	Matrix4x4 world = Matrix4x4::Make::Affine({ 1.0f,1.0f,1.0f }, { 0.0f,0.0f,0.0f }, { 0.0f,0.0f,(i * 1.0f) - 25.0f });
-			//	line[i].SetWVPData(cameraBase.DrawCamera(world), world, world);
-			//	int offset = static_cast<int>(i - lineXCenter);
-			//	if (offset == 0) {
-			//		line[i].SetColor({ 1.0f,0.0f,0.0f,1.0f });
-			//	}
-			//	else if (std::abs(offset) % 10 == 0) {
-			//		line[i].SetColor({ 0.25f,0.0f,0.0f,1.0f });
-			//	}
-			//	else {
-			//		//line[i].SetColor({ 0.0f,0.0f,0.0f,1.0f });
-			//		line[i].SetColor({ 0.5f,0.5f,0.5f,1.0f });
-			//	}
-			//	line[i].Draw(command, psoLine, light, lineTex);
-			//}
-			//for (uint32_t i = 0;i < lineZ;++i) {
-			//	Matrix4x4 world = Matrix4x4::Make::Affine({ 1.0f,1.0f,1.0f }, { 0.0f,Deg2Rad(90),0.0f }, { (i * 1.0f) - 25.0f,0.0f,0.0f });
-			//	lineZ_[i].SetWVPData(cameraBase.DrawCamera(world), world, world);
-			//	int offset = static_cast<int>(i - lineZCenter);
-			//	if (offset == 0) {
-			//		lineZ_[i].SetColor({ 0.0f,1.0f,0.0f,1.0f });
-			//	}
-			//	else if (std::abs(offset) % 10 == 0) {
-			//		lineZ_[i].SetColor({ 0.0f,0.25f,0.0f,1.0f });
-			//	}
-			//	else {
-			//		//lineZ_[i].SetColor({ 0.0f,0.0f,0.0f,1.0f });
-			//		lineZ_[i].SetColor({ 0.5f,0.5f,0.5f,1.0f });
-			//	}
-			//	lineZ_[i].Draw(command, psoLine, light, lineTex);
-			//}
+			for (uint32_t i = 0;i < lineX;++i) {
+				Matrix4x4 world = Matrix4x4::Make::Affine({ 1.0f,1.0f,1.0f }, { 0.0f,0.0f,0.0f }, { 0.0f,0.0f,(i * 1.0f) - 25.0f });
+				line[i].SetWVPData(cameraBase.DrawCamera(world), world, world);
+				int offset = static_cast<int>(i - lineXCenter);
+				if (offset == 0) {
+					line[i].SetColor({ 1.0f,0.0f,0.0f,1.0f });
+				}
+				else if (std::abs(offset) % 10 == 0) {
+					line[i].SetColor({ 0.25f,0.0f,0.0f,1.0f });
+				}
+				else {
+					//line[i].SetColor({ 0.0f,0.0f,0.0f,1.0f });
+					line[i].SetColor({ 0.5f,0.5f,0.5f,1.0f });
+				}
+				line[i].Draw(command, psoLine, light, lineTex);
+			}
+			for (uint32_t i = 0;i < lineZ;++i) {
+				Matrix4x4 world = Matrix4x4::Make::Affine({ 1.0f,1.0f,1.0f }, { 0.0f,Deg2Rad(90),0.0f }, { (i * 1.0f) - 25.0f,0.0f,0.0f });
+				lineZ_[i].SetWVPData(cameraBase.DrawCamera(world), world, world);
+				int offset = static_cast<int>(i - lineZCenter);
+				if (offset == 0) {
+					lineZ_[i].SetColor({ 0.0f,1.0f,0.0f,1.0f });
+				}
+				else if (std::abs(offset) % 10 == 0) {
+					lineZ_[i].SetColor({ 0.0f,0.25f,0.0f,1.0f });
+				}
+				else {
+					//lineZ_[i].SetColor({ 0.0f,0.0f,0.0f,1.0f });
+					lineZ_[i].SetColor({ 0.5f,0.5f,0.5f,1.0f });
+				}
+				lineZ_[i].Draw(command, psoLine, light, lineTex);
+			}
 #pragma endregion
-			//   CatmullRom曲線の描画
-			for (size_t i = 0;i < segmentCount;++i) {
-				Matrix4x4 world = Matrix4x4::Make::Affine({ 1.0f,1.0f,1.0f }, { 0.0f,0.0f,0.0f }, { 0.0f,0.0f,0.0f });
-				catmullRomLine[i].SetWVPData(cameraBase.DrawCamera(world), world, world);
-				catmullRomLine[i].SetColor({ 1.0f,0.0f,0.0f,1.0f });
-				catmullRomLine[i].Draw(command, psoLine, light, lineTex);
-			}
-			skyDome->Draw(command, pso, light, skyDomeTex);	
-			ground->Draw(command, pso, light, groundTex);
-			player.Draw(command,pso,light,playerTex);
-			for (Enemy* enemy : enemies_) {
-				enemy->Draw(command, pso, light, enemyTex);
-			}
-			for (EnemyBullet* bullet : enemyBullets_) {
-				bullet->Draw(cameraBase, command, pso, light, enemyBulletTex);
-			}
-
-			lockOn.Draw(command, pso, light);
+			sprite->Draw(command, pso, light, uvCheckTex);
+			plane->Draw(command, pso, light, uvCheckTex);
+			sphere->Draw(command, pso, light, uvCheckTex);
+			teapot->Draw(command, pso, light, teapotTex);
+			bunny->Draw(command, pso, light, bunnyTex);
+			multiMesh->Draw(command, pso, light, uvCheckTex);
+			multiMaterial->Draw(command, pso, light, uvCheckTex);
+			suzanne->Draw(command, pso, light, lineTex);
 
 			//   ここまで描画関係処理↑↑↑↑
 			//描画
@@ -587,13 +470,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 	//解放処理
 	tachyonSync.GetCGPU().UnLoad();
-	for (Enemy* enemy : enemies_) {
-		delete enemy;
-	}
-	for (EnemyBullet* bullet : enemyBullets_) {
-		delete bullet;
-	}
-	//music.UnLoad();
+	music.UnLoad();
 
 #ifdef _DEBUG
 	//debugController->Release();
@@ -604,99 +481,3 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	CoUninitialize();
 	return 0;
 }
-
-void PopEnemy(std::list<Enemy*>& enemies_, D3D12System& d3d12, CameraBase* camera, ModelObject& enemyModel, Texture& enemyTex, ModelObject& enemyBulletModel, Texture& enemyBulletTex, std::list<EnemyBullet*>& enemyBullets_, const Vector3& pos, const Player& player,uint32_t movePattern) {
-	// 敵を生成
-	Enemy* enemy = new Enemy();
-	enemy->Initialize(d3d12, enemyModel, camera, pos);
-	enemy->SetMovePattern(movePattern);
-	enemy->SetBullet(&enemyBulletModel, &enemyBulletTex);
-	enemy->SetTarget(player);
-	enemy->SetEnemyBullets(enemyBullets_);
-	enemies_.push_back(enemy);
-}
-
-void LoadEnemyPopData(std::stringstream& command, std::string filepath) {
-	// ファイルを開く
-	std::ifstream file;
-	file.open(filepath);
-	assert(file.is_open());
-	// ファイルの内容を文字列にストリームにコピー
-	command << file.rdbuf();
-	// ファイルを閉じる
-	file.close();
-}
-
-void UpdateEnemyPopCommand(std::stringstream& command, std::list<Enemy*>& enemies_, D3D12System& d3d12, CameraBase* camera, ModelObject& enemyModel, Texture& enemyTex, ModelObject& enemyBulletModel, Texture& enemyBulletTex, std::list<EnemyBullet*>& enemyBullets_, const Player& player, bool& waitFlag, float& waitTimer) {
-	// 待機処理
-	if (waitFlag) {
-		waitTimer--;
-		if (waitTimer <= 0) {
-			waitFlag = false;
-		}
-		return;
-	}
-
-	// 1行分の文字列を入れる変数
-	std::string line;
-
-	// コマンド実行ループ
-	while (getline(command, line)) {
-		// 1行分の文字列をストリームに変換して解析しやすくする
-		std::istringstream line_Stream(line);
-
-		std::string word;
-		// ,区切りで行の先頭文字を取得
-		getline(line_Stream, word, ',');
-		if (word.find("//") == 0) {
-			// コメント行は飛ばす
-			continue;
-		}
-		// POPコマンド
-		if (word.find("POP") == 0) {
-			// x座標
-			getline(line_Stream, word, ',');
-			float x = static_cast<float>(std::atof(word.c_str()));
-			// y座標
-			getline(line_Stream, word, ',');
-			float y = static_cast<float>(std::atof(word.c_str()));
-			// z座標
-			getline(line_Stream, word, ',');
-			float z = static_cast<float>(std::atof(word.c_str()));
-			// movePattern
-			getline(line_Stream, word, ',');
-			uint32_t movePattern = static_cast<uint32_t>(std::atoi(word.c_str()));
-			// 生成
-			Vector3 pos = { x,y,z };
-			PopEnemy(enemies_, d3d12, camera, enemyModel, enemyTex, enemyBulletModel,enemyBulletTex,enemyBullets_, pos, player,movePattern);
-		}
-		// WAIT
-		else if (word.find("WAIT") == 0) {
-			getline(line_Stream, word, ',');
-
-			// 待ち時間
-			int32_t waitTime = std::atoi(word.c_str());
-
-			// 待機時間
-			waitFlag = true;
-			waitTimer = static_cast<float>(waitTime);
-
-			break;
-		}
-	}
-}
-
-//void checkcollisionpair(collider* collidera, collider* colliderb) {
-//	if ((collidera->getmytype() & colliderb->getyourtype()) == 0 ||
-//		(colliderb->getmytype() & collidera->getyourtype()) == 0) {
-//		return;
-//	}
-//
-//	vector3 posa = collidera->getworldposition();
-//	vector3 posb = colliderb->getworldposition();
-//	float length = length(posa - posb);
-//	if (collidera->getradius() + colliderb->getradius() >= length) {
-//		collidera->oncollision();
-//		colliderb->oncollision();
-//	}
-//}

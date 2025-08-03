@@ -54,22 +54,22 @@ void SpriteObject::InitializeData() {
 
 void SpriteObject::InitializeVertex(float width, float height) {
 	//1枚目の三角形
-	/*object_.vertexData_[0].position = { 0.0f,height,0.0f,1.0f };
+	object_.vertexData_[0].position = { 0.0f,height,0.0f,1.0f };
 	object_.vertexData_[0].texcoord = { 0.0f,1.0f };
 	object_.vertexData_[1].position = { 0.0f,0.0f,0.0f,1.0f };
 	object_.vertexData_[1].texcoord = { 0.0f,0.0f };
 	object_.vertexData_[2].position = { width,height,0.0f,1.0f };
 	object_.vertexData_[2].texcoord = { 1.0f,1.0f };
 	object_.vertexData_[3].position = { width, 0.0f, 0.0f, 1.0f };
-	object_.vertexData_[3].texcoord = { 1.0f, 0.0f };*/
-	object_.vertexData_[0].position = { width/-2.0f,height/2.0f,0.0f,1.0f };
+	object_.vertexData_[3].texcoord = { 1.0f, 0.0f };
+	/*object_.vertexData_[0].position = { width/-2.0f,height/2.0f,0.0f,1.0f };
 	object_.vertexData_[0].texcoord = { 0.0f,1.0f };
 	object_.vertexData_[1].position = { width / -2.0f,height / -2.0f,0.0f,1.0f };
 	object_.vertexData_[1].texcoord = { 0.0f,0.0f };
 	object_.vertexData_[2].position = { width / 2.0f,height / 2.0f,0.0f,1.0f };
 	object_.vertexData_[2].texcoord = { 1.0f,1.0f };
 	object_.vertexData_[3].position = { width / 2.0f,height / -2.0f, 0.0f, 1.0f };
-	object_.vertexData_[3].texcoord = { 1.0f, 0.0f };
+	object_.vertexData_[3].texcoord = { 1.0f, 0.0f };*/
 
 	object_.indexResource_->Map(0, nullptr, reinterpret_cast<void**>(&object_.indexData_));
 	object_.indexData_[0] = 0;object_.indexData_[1] = 1;object_.indexData_[2] = 2;

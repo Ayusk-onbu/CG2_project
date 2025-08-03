@@ -29,7 +29,7 @@ void ModelObject::SetWVPData(Matrix4x4 WVP, Matrix4x4 world, Matrix4x4 uv) {
 	object_.materialData_->uvTransform = uv;
 }
 
-void ModelObject::SetColor(Vector4& color) {
+void ModelObject::SetColor(const Vector4& color) {
 	object_.materialData_->color = color;
 }
 
@@ -132,14 +132,33 @@ ModelData ModelObject::LoadObjFile(const std::string& filename, const std::strin
 				{
 					std::istringstream v(vdefs[faceVertex]);
 					uint32_t elementIndices[3] = {};
-					for (int element = 0; element < 3; ++element)
+					/*for (int element = 0; element < 3; ++element)
 					{
 						std::string index;
 						std::getline(v, index, '/');
 						elementIndices[element] = std::stoi(index);
+					}*/
+					for (int element = 0; element < 3; ++element) {
+						std::string index;
+						if (!std::getline(v, index, '/')) {
+							elementIndices[element] = 0; // デフォルト値 or エラー処理
+						}
+						else if (index.empty()) {
+							elementIndices[element] = 0; // デフォルト値 or エラー処理
+						}
+						else {
+							elementIndices[element] = std::stoi(index);
+						}
 					}
 					Vector4 position = positions[elementIndices[0] - 1];
-					Vector2 texcoord = texcoords[elementIndices[1] - 1];
+					//Vector2 texcoord = texcoords[elementIndices[1] - 1];
+					Vector2 texcoord;
+					if (elementIndices[1] > 0 && elementIndices[1] <= texcoords.size()) {
+						texcoord = texcoords[elementIndices[1] - 1];
+					}
+					else {
+						texcoord = { 0.0f, 0.0f }; // デフォルトUV
+					}
 					Vector3 normal = normals[elementIndices[2] - 1];
 					triangle[faceVertex] = { position, texcoord, normal };
 				}

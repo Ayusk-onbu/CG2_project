@@ -31,9 +31,9 @@ void OffScreenRendering::Initialize(D3D12System& d3d12, SRV& srv, float width, f
 
 	D3D12_CLEAR_VALUE clearValue{};
 	clearValue.Format = renderingDesc.Format;
-	clearValue.Color[0] = 0.0f;
-	clearValue.Color[1] = 0.0f;
-	clearValue.Color[2] = 0.0f;
+	clearValue.Color[0] = 0.15f;
+	clearValue.Color[1] = 0.25f;
+	clearValue.Color[2] = 0.5f;
 	clearValue.Color[3] = 1.0f;
 
 	//   利用するHeapの設定
@@ -74,7 +74,7 @@ void OffScreenRendering::Initialize(D3D12System& d3d12, SRV& srv, float width, f
 void OffScreenRendering::Begin(TheOrderCommand& command) {
 	
 	// レンダーターゲットをクリアする色 (例: 青)
-	FLOAT clearColor[] = { 1.0f,0.25f,0.5f,1.0f }; // R, G, B, A
+	FLOAT clearColor[] = { 0.15f,0.25f,0.5f,1.0f }; // R, G, B, A
 
 	// コマンドリストにレンダーターゲットを設定
 	// 深度ステンシルバッファを使用する場合は、DSVハンドルもここに渡す

@@ -18,6 +18,7 @@ struct DirectionalLight
     float32_t4 color; // ライトの色
     float32_t3 direction; // ライトの向き
     float32_t intensity; // 輝度
+    int32_t shadowType; // シャドウの種類
 };
 ConstantBuffer<DirectionalLight> gDirectionalLight : register(b1);
 
@@ -34,14 +35,24 @@ PixelShaderOutPut main(VertexShaderOutput input)
     float32_t4 textureColor = gTexture.Sample(gSampler, transformUV.xy);
     if (gMaterial.enableLighting != 0)
     {
-        float NdotL = dot(normalize(input.normal), -gDirectionalLight.direction);
-        //float cos = saturate(dot(normalize(input.normal), -gDirectionalLight.direction));
-        float cos = pow(NdotL * 0.5f + 0.5f, 2.0f);
-        // Light is RGB only!! Alpha dont blend with light.
+        float cos = 1.0f;
+        switch (gDirectionalLight.shadowType)
+        {
+            case 0:
+                cos = 1.0f;
+                break;
+            case 1:
+                cos = saturate(dot(normalize(input.normal), -gDirectionalLight.direction));
+                break;
+            case 2:// Half
+                float NdotL = dot(normalize(input.normal), -gDirectionalLight.direction);
+                cos = pow(NdotL * 0.5f + 0.5f, 2.0f);
+                //output.color = float4(rgbColor, alpha);
+                //output.color = gMaterial.color * textureColor * gDirectionalLight.color * cos * gDirectionalLight.intensity;
+                break;
+        }
         output.color.rgb = gMaterial.color.rgb * textureColor.rgb * gDirectionalLight.color.rgb * cos * gDirectionalLight.intensity;
         output.color.a = gMaterial.color.a * textureColor.a;
-        //output.color = float4(rgbColor, alpha);
-        //output.color = gMaterial.color * textureColor * gDirectionalLight.color * cos * gDirectionalLight.intensity;
     }else{
         output.color = gMaterial.color * textureColor;
     }

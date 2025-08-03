@@ -11,7 +11,7 @@ public:
 	void Draw(TheOrderCommand& command, PSO& pso, DirectionLight& light, D3D12_GPU_DESCRIPTOR_HANDLE& tex);
 
 	void SetWVPData(Matrix4x4 WVP, Matrix4x4 world, Matrix4x4 uv);
-	void SetColor(Vector4& color);
+	void SetColor(const Vector4& color);
 
 	void SetObject(ObjectBase& object) { object_ = object; }
 	void SetModelData(ModelData& modelData) { modelData_ = modelData; }
@@ -31,4 +31,3 @@ private:
 	ObjectBase object_;
 	ModelData modelData_;
 };
-
