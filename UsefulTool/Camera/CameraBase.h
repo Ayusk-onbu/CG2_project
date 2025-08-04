@@ -32,7 +32,7 @@ public:
 
 	const float& GetRadius() const { return radius_; }
 	const Matrix4x4& GetViewProjectionMatrix() const { return viewProjectionMatrix_; }
-	void SetTargetPos(Vector3& target);
+	void SetTargetPos(const Vector3& target);
 	void SetTheta(const float& theta) { theta_ = theta; }
 	void SetPhi(const float& phi) { phi_ = phi; }
 private:

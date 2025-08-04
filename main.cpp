@@ -37,7 +37,10 @@
 #include "WorldTransform.h"
 
 //GameStart
-
+#include "Player.h"
+#include "Enemy.h"
+#include "hallway.h"
+#include "CollisionManager.h"
 //GameEnd
 
 #include <algorithm>
@@ -65,8 +68,11 @@ struct D3D12ResourceLeakChecker {
 		//リソースリークチェック==================-↑↑↑
 	}
 };
-//
-//void CheckCollisionPair(Collider* colliderA, Collider* colliderB);
+
+//   決まり事
+//   1. 長さはメートル(m)
+//   2. 重さはキログラム(kg)
+//   3. 時間は秒(s)
 
 // windowsアプリでのエントリーポイント（main関数）
 int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
@@ -217,6 +223,10 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	
 	ModelObject hallwayModel;
 	hallwayModel.Initialize(d3d12, "hallway.obj","resources/hallway");
+	ModelObject playerModel;
+	playerModel.Initialize(d3d12, "PlayerWWW.obj");
+	ModelObject enemyModel;
+	enemyModel.Initialize(d3d12, "enemyWWW.obj");
 	
 	//   ここまでモデル系の処理
 
@@ -225,7 +235,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	Texture lineTex;
 	lineTex.Initialize(d3d12, srv, "resources/GridLine.png", 1);
 	Texture  hallwayTex;
-	hallwayTex.Initialize(d3d12, srv, hallwayModel.GetFilePath(), 1);
+	hallwayTex.Initialize(d3d12, srv, "resources/hallway/hallway.png", 2);
 
 	//   ここまでTexture系の処理
 #pragma region GridLine
@@ -252,6 +262,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	//   基礎的な物の処理
 	CameraBase cameraBase;
 	cameraBase.Initialize();
+	cameraBase.SetTargetPos({0.0f,10.0f,0.0f});
 
 	//Audio audio;
 	//audio.SoundPlayWave(MediaAudioDecoder::DecodeAudioFile(L"resources/maou_bgm_fantasy02.mp3"));
@@ -261,7 +272,14 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 	//   ここからゲーム系の処理
 
+	Player player;
+	Enemy enemy;
+	Hallway hallway;
 
+	player.Initialize(&playerModel, &cameraBase,enemy);
+	enemy.Initialize(&enemyModel, &cameraBase);
+	hallway.Initialize(&hallwayModel, &cameraBase);
+	CollisionManager collisionManager;
 
 	//   ここまでゲーム系の処理
 
@@ -331,6 +349,16 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 			//   ここからゲームの処理↓↓↓↓
 
+			player.Update();
+			enemy.Update(player);
+			hallway.Update();
+
+			collisionManager.Begin();
+			//プレイヤーと敵の衝突判定
+			collisionManager.SetColliders(&player);
+			collisionManager.SetColliders(&enemy);
+
+			collisionManager.CheckAllCollisions();
 
 			//   ここまでゲームの処理↑↑↑↑
 			
@@ -370,7 +398,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 				lineZ_[i].Draw(command, psoLine, light, lineTex);
 			}
 #pragma endregion
-			
+			player.Draw(command, pso, light, lineTex);
+			enemy.Draw(command, pso, light, lineTex);
+			hallway.Draw(command, pso, light, hallwayTex);
 
 			//   ここまで描画関係処理↑↑↑↑
 			//描画

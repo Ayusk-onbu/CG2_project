@@ -115,6 +115,6 @@ Vector3 CameraBase::CalculateUp() {
 	return Normalize(CrossProduct(forward, right));
 }
 
-void CameraBase::SetTargetPos(Vector3& target) {
+void CameraBase::SetTargetPos(const Vector3& target) {
 	targetPos_ = target;
 }

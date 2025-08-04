@@ -114,6 +114,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="Core\OmnisTechOracle.cpp" />
     <ClCompile Include="Core\TachyonSync.cpp" />
     <ClCompile Include="Core\Window.cpp" />
+    <ClCompile Include="Enemy.cpp" />
     <ClCompile Include="externals\imgui\imgui.cpp" />
     <ClCompile Include="externals\imgui\imgui_demo.cpp" />
     <ClCompile Include="externals\imgui\imgui_draw.cpp" />
@@ -139,6 +140,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="Objects\Primitive\SphereObject.cpp" />
     <ClCompile Include="Objects\Primitive\SpriteObject.cpp" />
     <ClCompile Include="Objects\Primitive\TriangleObject.cpp" />
+    <ClCompile Include="Player.cpp" />
     <ClCompile Include="ResourceView\DepthStencil.cpp" />
     <ClCompile Include="ResourceView\DescriptorHeap.cpp" />
     <ClCompile Include="ResourceView\Fence.cpp" />
@@ -209,6 +211,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="Core\OmnisTechOracle.h" />
     <ClInclude Include="Core\TachyonSync.h" />
     <ClInclude Include="Core\Window.h" />
+    <ClInclude Include="Enemy.h" />
     <ClInclude Include="externals\imgui\imconfig.h" />
     <ClInclude Include="externals\imgui\imgui.h" />
     <ClInclude Include="externals\imgui\imgui_impl_dx12.h" />
@@ -235,6 +238,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="Objects\Primitive\SphereObject.h" />
     <ClInclude Include="Objects\Primitive\SpriteObject.h" />
     <ClInclude Include="Objects\Primitive\TriangleObject.h" />
+    <ClInclude Include="Player.h" />
     <ClInclude Include="ResourceView\DepthStencil.h" />
     <ClInclude Include="ResourceView\DescriptorHeap.h" />
     <ClInclude Include="ResourceView\Fence.h" />

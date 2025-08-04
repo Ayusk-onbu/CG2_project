@@ -6,12 +6,9 @@
 class SceneDirector
 {
 public:
-	/// <summary>
-	/// シーン切り替え
-	/// </summary>
-	void ChangeScene(std::unique_ptr<Scene> nextScene);
+	void ChangeScene(Scene& nextScene);
 	void Run();
 private:
-	std::unique_ptr<Scene> currentScene_;
+	Scene* currentScene_;
 };
 

@@ -6,6 +6,6 @@ void SceneDirector::Run() {
 	currentScene_->Draw();
 }
 
-void SceneDirector::ChangeScene(std::unique_ptr<Scene> nextScene) {
-	currentScene_ = move(nextScene);
+void SceneDirector::ChangeScene(Scene& nextScene) {
+	currentScene_ = &nextScene;
 }
