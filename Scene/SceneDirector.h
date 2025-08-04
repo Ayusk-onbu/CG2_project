@@ -6,6 +6,7 @@
 class SceneDirector
 {
 public:
+	void Initialize(Scene& firstScene);
 	void ChangeScene(Scene& nextScene);
 	void Run();
 private:

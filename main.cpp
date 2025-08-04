@@ -37,10 +37,7 @@
 #include "WorldTransform.h"
 
 //GameStart
-#include "Player.h"
-#include "Enemy.h"
-#include "hallway.h"
-#include "CollisionManager.h"
+
 //GameEnd
 
 #include <algorithm>
@@ -221,21 +218,15 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 	//   ここからモデル系の処理
 	
-	ModelObject hallwayModel;
-	hallwayModel.Initialize(d3d12, "hallway.obj","resources/hallway");
-	ModelObject playerModel;
-	playerModel.Initialize(d3d12, "PlayerWWW.obj");
-	ModelObject enemyModel;
-	enemyModel.Initialize(d3d12, "enemyWWW.obj");
+	std::unique_ptr<SceneDirector> scene = std::make_unique<SceneDirector>();
+	scene->Initialize(*new GameScene());
 	
 	//   ここまでモデル系の処理
-
+	
 	//   ここからTexture系の処理
 
 	Texture lineTex;
 	lineTex.Initialize(d3d12, srv, "resources/GridLine.png", 1);
-	Texture  hallwayTex;
-	hallwayTex.Initialize(d3d12, srv, "resources/hallway/hallway.png", 2);
 
 	//   ここまでTexture系の処理
 #pragma region GridLine
@@ -272,14 +263,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 	//   ここからゲーム系の処理
 
-	Player player;
-	Enemy enemy;
-	Hallway hallway;
+	WorldTransform wT;
 
-	player.Initialize(&playerModel, &cameraBase,enemy);
-	enemy.Initialize(&enemyModel, &cameraBase);
-	hallway.Initialize(&hallwayModel, &cameraBase);
-	CollisionManager collisionManager;
+	wT.Initialize();
 
 	//   ここまでゲーム系の処理
 
@@ -347,23 +333,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 ////////////////////////////////////////////////////////////
 		
 
-			//   ここからゲームの処理↓↓↓↓
-
-			player.Update();
-			enemy.Update(player);
-			hallway.Update();
-
-			collisionManager.Begin();
-			//プレイヤーと敵の衝突判定
-			collisionManager.SetColliders(&player);
-			collisionManager.SetColliders(&enemy);
-
-			collisionManager.CheckAllCollisions();
-
-			//   ここまでゲームの処理↑↑↑↑
-			
-			
-			//   ここからゲームの描画↓↓↓↓
+			scene->Run();
 #pragma region GridLine
 			for (uint32_t i = 0;i < lineX;++i) {
 				Matrix4x4 world = Matrix4x4::Make::Affine({ 1.0f,1.0f,1.0f }, { 0.0f,0.0f,0.0f }, { 0.0f,0.0f,(i * 1.0f) - 25.0f });
@@ -398,9 +368,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 				lineZ_[i].Draw(command, psoLine, light, lineTex);
 			}
 #pragma endregion
-			player.Draw(command, pso, light, lineTex);
-			enemy.Draw(command, pso, light, lineTex);
-			hallway.Draw(command, pso, light, hallwayTex);
+			
+		
 
 			//   ここまで描画関係処理↑↑↑↑
 			//描画
