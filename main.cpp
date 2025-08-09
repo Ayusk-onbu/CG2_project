@@ -263,9 +263,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 	//   ここからゲーム系の処理
 
-	WorldTransform wT;
-
-	wT.Initialize();
 
 	//   ここまでゲーム系の処理
 
