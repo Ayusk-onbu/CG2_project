@@ -3,7 +3,7 @@
 #include "Vector3.h"
 #include "Matrix4x4.h"
 
-struct Camera {
+struct CameraInfo {
 	// Scale
 	Vector3 scale_;
 	// x,y,z軸周りのローカル回転角
@@ -22,7 +22,6 @@ struct Projection {
 
 class CameraBase
 {
-
 public:
 	void Initialize();
 	void UpDate();
@@ -35,7 +34,7 @@ public:
 	void SetTargetPos(const Vector3& target);
 	void SetTheta(const float& theta) { theta_ = theta; }
 	void SetPhi(const float& phi) { phi_ = phi; }
-private:
+protected:
 	Vector3 CalculateRight();
 	Vector3 CalculateUp();
 
@@ -45,7 +44,7 @@ public:
 	Matrix4x4 worldMat_;
 	Vector3 up_;
 
-private:
+protected:
 	float theta_;
 	float phi_;
 	float radius_;
@@ -54,8 +53,7 @@ private:
 	Vector3 yAxis_;
 	Vector3 zAxis_;
 
-	Camera camera_;
+	CameraInfo camera_;
 	Projection projection_;
 	Matrix4x4 viewProjectionMatrix_;
 };
-

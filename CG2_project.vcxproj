@@ -96,6 +96,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="Advanced\AABB.cpp" />
     <ClCompile Include="Advanced\Transform.cpp" />
     <ClCompile Include="Advanced\WorldTransform.cpp" />
+    <ClCompile Include="BossPhase.cpp" />
     <ClCompile Include="Collider.cpp" />
     <ClCompile Include="CollisionManager.cpp" />
     <ClCompile Include="Common\Functions\Trigonometric.cpp" />
@@ -122,17 +123,21 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="externals\imgui\imgui_impl_win32.cpp" />
     <ClCompile Include="externals\imgui\imgui_tables.cpp" />
     <ClCompile Include="externals\imgui\imgui_widgets.cpp" />
+    <ClCompile Include="FailedClear.cpp" />
     <ClCompile Include="Fngine.cpp" />
     <ClCompile Include="GamePad.cpp" />
+    <ClCompile Include="Ground.cpp" />
     <ClCompile Include="hallway.cpp" />
     <ClCompile Include="Input\InputManager.cpp" />
     <ClCompile Include="Input\Key.cpp" />
     <ClCompile Include="Input\Mouse.cpp" />
+    <ClCompile Include="LS.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Music\Audio.cpp" />
     <ClCompile Include="Music\BGM.cpp" />
     <ClCompile Include="Music\Music.cpp" />
     <ClCompile Include="Music\SE.cpp" />
+    <ClCompile Include="Nazo.cpp" />
     <ClCompile Include="Objects\ModelManager.cpp" />
     <ClCompile Include="Objects\Model\ModelObject.cpp" />
     <ClCompile Include="Objects\ObjectBase.cpp" />
@@ -140,7 +145,15 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="Objects\Primitive\SphereObject.cpp" />
     <ClCompile Include="Objects\Primitive\SpriteObject.cpp" />
     <ClCompile Include="Objects\Primitive\TriangleObject.cpp" />
+    <ClCompile Include="Phase.cpp" />
     <ClCompile Include="Player.cpp" />
+    <ClCompile Include="PlayerAttack.cpp" />
+    <ClCompile Include="PlayerStateRolling.cpp" />
+    <ClCompile Include="PlayerStateStop.cpp" />
+    <ClCompile Include="PlayerStateWalk.cpp" />
+    <ClCompile Include="PlayerStats.cpp" />
+    <ClCompile Include="Pot.cpp" />
+    <ClCompile Include="PuzzlePhase.cpp" />
     <ClCompile Include="ResourceView\DepthStencil.cpp" />
     <ClCompile Include="ResourceView\DescriptorHeap.cpp" />
     <ClCompile Include="ResourceView\Fence.cpp" />
@@ -156,11 +169,16 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="ResourceView\ShaderResourceView.cpp" />
     <ClCompile Include="ResourceView\SwapChain.cpp" />
     <ClCompile Include="ResourceView\Texture.cpp" />
+    <ClCompile Include="RestPhase.cpp" />
     <ClCompile Include="Scene\GameScene.cpp" />
     <ClCompile Include="Scene\Scene.cpp" />
     <ClCompile Include="Scene\SceneDirector.cpp" />
+    <ClCompile Include="T.cpp" />
     <ClCompile Include="TimedCall.cpp" />
+    <ClCompile Include="Title.cpp" />
+    <ClCompile Include="TitlePhase.cpp" />
     <ClCompile Include="TitleScene.cpp" />
+    <ClCompile Include="UsefulTool\Camera\Camera.cpp" />
     <ClCompile Include="UsefulTool\Camera\CameraBase.cpp" />
     <ClCompile Include="UsefulTool\Camera\DebugCamera.cpp" />
     <ClCompile Include="UsefulTool\Easing\Easing.cpp" />
@@ -169,6 +187,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="UsefulTool\OSR\OffScreenRendering.cpp" />
     <ClCompile Include="UsefulTool\Random\RandomUtils.cpp" />
     <ClCompile Include="UsefulTool\Time\Chronos.cpp" />
+    <ClCompile Include="Wall.cpp" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Object3d.PS.hlsl">
@@ -191,6 +210,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="Advanced\TransformationMatrix.h" />
     <ClInclude Include="Advanced\VertexData.h" />
     <ClInclude Include="Advanced\WorldTransform.h" />
+    <ClInclude Include="Cameras.h" />
     <ClInclude Include="Collider.h" />
     <ClInclude Include="CollisionManager.h" />
     <ClInclude Include="Common\Functions\Trigonometric.h" />
@@ -221,16 +241,20 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="externals\imgui\imstb_rectpack.h" />
     <ClInclude Include="externals\imgui\imstb_textedit.h" />
     <ClInclude Include="externals\imgui\imstb_truetype.h" />
+    <ClInclude Include="FailedClear.h" />
     <ClInclude Include="Fngine.h" />
     <ClInclude Include="GamePad.h" />
+    <ClInclude Include="Ground.h" />
     <ClInclude Include="hallway.h" />
     <ClInclude Include="Input\InputManager.h" />
     <ClInclude Include="Input\Key.h" />
     <ClInclude Include="Input\Mouse.h" />
+    <ClInclude Include="LS.h" />
     <ClInclude Include="Music\Audio.h" />
     <ClInclude Include="Music\BGM.h" />
     <ClInclude Include="Music\Music.h" />
     <ClInclude Include="Music\SE.h" />
+    <ClInclude Include="Nazo.h" />
     <ClInclude Include="Objects\ModelManager.h" />
     <ClInclude Include="Objects\Model\ModelData.h" />
     <ClInclude Include="Objects\Model\ModelObject.h" />
@@ -239,7 +263,11 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="Objects\Primitive\SphereObject.h" />
     <ClInclude Include="Objects\Primitive\SpriteObject.h" />
     <ClInclude Include="Objects\Primitive\TriangleObject.h" />
+    <ClInclude Include="Phase.h" />
     <ClInclude Include="Player.h" />
+    <ClInclude Include="PlayerStates.h" />
+    <ClInclude Include="PlayerStats.h" />
+    <ClInclude Include="Pot.h" />
     <ClInclude Include="ResourceView\DepthStencil.h" />
     <ClInclude Include="ResourceView\DescriptorHeap.h" />
     <ClInclude Include="ResourceView\Fence.h" />
@@ -258,8 +286,11 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="Scene\GameScene.h" />
     <ClInclude Include="Scene\Scene.h" />
     <ClInclude Include="Scene\SceneDirector.h" />
+    <ClInclude Include="T.h" />
     <ClInclude Include="TimedCall.h" />
+    <ClInclude Include="Title.h" />
     <ClInclude Include="TitleScene.h" />
+    <ClInclude Include="UsefulTool\Camera\Camera.h" />
     <ClInclude Include="UsefulTool\Camera\CameraBase.h" />
     <ClInclude Include="UsefulTool\Camera\DebugCamera.h" />
     <ClInclude Include="UsefulTool\Easing\Easing.h" />
@@ -268,6 +299,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="UsefulTool\OSR\OffScreenRendering.h" />
     <ClInclude Include="UsefulTool\Random\RandomUtils.h" />
     <ClInclude Include="UsefulTool\Time\Chronos.h" />
+    <ClInclude Include="Wall.h" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="externals\imgui\LICENSE.txt" />

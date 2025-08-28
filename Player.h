@@ -5,22 +5,47 @@
 #include "CameraBase.h"
 #include "Enemy.h"
 
+#include "PlayerStats.h"
+#include "PlayerStates.h"
+
 class Player
 	:public Collider
 {
 public:
-	void Initialize(ModelObject* model, CameraBase* camera,Enemy&enemy);
+	Player() = default;
+	~Player() {
+		if (state_) {
+			delete state_;
+		}
+	}
+
+	Player(const Player&) = delete;
+	Player& operator=(const Player&) = delete;
+public:
+	void Initialize(ModelObject* model, CameraBase* camera);
+	void Initialize();
 	void Update();
 	void Draw(TheOrderCommand& command, PSO& pso, DirectionLight& light, Texture& tex);
 
 public:
 	void OnCollision()override;
+	void ChangeState(PlayerState* state);
+public:
+	WorldTransform& GetWorldTransform() { return worldTransform_; }
 	const Vector3 GetWorldPosition()override;
 	const Vector3 GetWorldPosition() const;
-	const bool IsJump()const;
+	PlayerStats& GetStats() { return stats_; }
+	float GetDirection() const { return direction_; }
+	bool IsAlive() const { return isAlive_; }
+public:
+	void SetEnemy(Enemy* enemy) { enemy_ = enemy; }
+	void SetDirection(const float& direction) { direction_ = direction; }
+	bool IsCollisionActive() const { return isCollisionActive_; }
+	void SetCollisionActive(bool active) { isCollisionActive_ = active; }
+	void SetColor(const Vector4& color) { model_->SetColor(color); }
+	void SetIsAlive(bool alive) { isAlive_ = alive; }
+	void SetIsRolling(bool rolling) { isRolling_ = rolling; }
 private:
-	void Move(Vector3& pos);
-	void Jump(Vector3& pos);
 
 private:
 	ModelObject* model_;
@@ -30,12 +55,12 @@ private:
 	WorldTransform worldTransform_;
 	WorldTransform uvTransform_;
 
-	// Jump
-	float jumpCount_ = 0;
-	float jumpMaxCount_ = 0.275f; // Maximum number of jumps allowed
-	uint32_t jumpState_ = 0; // 0: not jumping, 1: jumping, 2: falling
-	bool isJump_ = false;
-	uint32_t hp_ = 0;
-	uint32_t maxHp_ = 100;
+	PlayerState* state_ = nullptr;
+	PlayerStats stats_;
+	bool isAlive_ = true;
+	bool isRolling_ = false; // Is the player rolling
+
+	float direction_ = 0.0f;
+	bool isCollisionActive_ = true; // Flag to check if collision is active
 };
 

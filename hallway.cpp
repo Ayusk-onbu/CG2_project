@@ -11,6 +11,9 @@ void Hallway::Initialize(ModelObject* model, CameraBase* camera) {
 
 void Hallway::Update() {
 	Vector3 position = worldTransform_.get_.Translation();
+	Vector3 uvPos = uvTransform_.get_.Translation();
+	uvPos.x += 0.1f;
+	uvTransform_.set_.Translation(uvPos);
 
 	worldTransform_.set_.Translation(position);
 }

@@ -14,7 +14,7 @@ void SwapChain::Initialize(Window window) {
 	SetUseBufferCount(2);
 	//モニタにうつしたら、中身を破棄
 	swapChainDesc_.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;
-
+	
 }
 
 void SwapChain::SetWidth(LONG width) {

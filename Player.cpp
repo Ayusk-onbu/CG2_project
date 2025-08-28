@@ -3,88 +3,81 @@
 #include "ImGuiManager.h"
 #include "MathUtils.h"
 
-void Player::Initialize(ModelObject* model, CameraBase* camera,Enemy&enemy) {
+void Player::Initialize(ModelObject* model, CameraBase* camera) {
 	model_ = model;
 	camera_ = camera;
 	worldTransform_.Initialize();
-	worldTransform_.set_.Translation({ 0.0f, 2.0f, 0.0f });
+	worldTransform_.set_.Translation({ 0.0f, 1.0f, 0.0f });
 	worldTransform_.set_.Scale({ 1.0f, 1.0f, 1.0f });
+	worldTransform_.set_.Rotation({ 0.0f,Deg2Rad(90),0.0f});
 	worldTransform_.LocalToWorld();
 	uvTransform_.Initialize();
-	hp_ = maxHp_ = 100;
-	enemy_ = &enemy;
+	//enemy_ = &enemy;
+	
+	state_ = new PlayerStateStop();
+	state_->GetPlayer(*this);
+
+	stats_.Initialize();
+
+	SetMyType(0b1 << 1);
+	SetYourType(0b1 << 0);
+}
+
+void Player::Initialize() {
+	worldTransform_.Initialize();
+	worldTransform_.set_.Translation({ 0.0f, 1.0f, 0.0f });
+	worldTransform_.set_.Scale({ 1.0f, 1.0f, 1.0f });
+	worldTransform_.set_.Rotation({ 0.0f, Deg2Rad(90), 0.0f });
+	worldTransform_.LocalToWorld();
+	uvTransform_.Initialize();
+	//enemy_ = &enemy;
+
+	state_ = new PlayerStateStop();
+	state_->GetPlayer(*this);
+
+	stats_.Initialize();
 
 	SetMyType(0b1 << 1);
 	SetYourType(0b1 << 0);
 }
 
 void Player::Update() {
-	Vector3 position = worldTransform_.get_.Translation();
-	Vector3 scale = worldTransform_.get_.Scale();
-
-	Move(position);
-#ifdef _DEBUG
-	ImGui::Begin("Player");
-	ImGui::Text("Position: (%.2f, %.2f, %.2f)", position.x, position.y, position.z);
-	ImGui::Text("HP: %d", hp_);
-	ImGui::Text("enemyDirection: %f", enemy_->GetDirection());
-	ImGui::End();
-#endif//DEBUG
-	worldTransform_.set_.Translation(position);
-	worldTransform_.set_.Scale(scale);
-}
-
-void Player::Move(Vector3& pos) {
-	if (InputManager::GetKey().PressKey(DIK_A)) {
-		pos.x -= 0.1f;
+	if (stats_.GetHp() <= 0.0f) {
+		isAlive_ = false;
 	}
-	if (InputManager::GetKey().PressKey(DIK_D)) {
-		pos.x += 0.1f;
+	else {
+		state_->Update();
 	}
-	Jump(pos);
-}
-
-void Player::Jump(Vector3& pos) {
-	if (InputManager::GetKey().PressKey(DIK_SPACE)) {
-		if (!IsJump()) {
-			isJump_ = true;
-			jumpState_ = 1;
-		}
+	if (isAlive_) {
+		model_->SetColor({ 1.0f,1.0f,1.0f,1.0f });
 	}
-	
-	switch (jumpState_) {
-	case 0:
-		jumpCount_ = 0.0f; // Reset jump count when starting a jump
-		break;
-	case 1:
-		jumpCount_ += 0.01f;
-		pos = Lerp(Vector3(pos.x, 2.0f, pos.z), Vector3(pos.x, 8.0f, pos.z), jumpCount_ / jumpMaxCount_);
-		if (jumpCount_ >= jumpMaxCount_) {
-			jumpCount_ = 0.0f;
-			jumpState_ = 2;
-		}
-		break;
-	case 2:
-		jumpCount_ += 0.01f;
-		pos = Lerp(Vector3(pos.x, 8.0f, pos.z), Vector3(pos.x, 2.0f, pos.z), jumpCount_ / jumpMaxCount_);
-		if (jumpCount_ >= jumpMaxCount_) {
-			jumpCount_ = 0.0f;
-			jumpState_ = 0;
-			pos.y = 2.0f;
-			isJump_ = false; // Reset jump state
-		}
-		break;
+	else {
+		model_->SetColor({ 0.1f,0.1f,0.1f,1.0f });
 	}
-	
-	
+	/*if (isRolling_) {
+		ImGui::Begin("IsRolling");
+		ImGui::Text("TRUE");
+		ImGui::End();
+	}*/
 }
 
 void Player::OnCollision() {
-	hp_ -= 5;
 	Vector3 position = worldTransform_.get_.Translation();
-	float direction = enemy_->GetDirection().x;
-	position.x += 2.5f * direction; // Reset Y position on collision
+	if (!isRolling_) {
+		float direction = enemy_->GetDirection().x;
+		position.x += 2.5f * direction; // Reset Y position on collision
+		stats_.SetHp(stats_.GetHp() - 0.1f);
+	}
 	worldTransform_.set_.Translation(position); // Reset position on collision
+}
+
+void Player::ChangeState(PlayerState* state) {
+	if (state_) {
+		delete state_;
+	}
+	state_ = state;
+	state_->Initialize();
+	state_->GetPlayer(*this);
 }
 
 const Vector3 Player::GetWorldPosition() {
@@ -93,13 +86,6 @@ const Vector3 Player::GetWorldPosition() {
 
 const Vector3 Player::GetWorldPosition() const{
 	return worldTransform_.GetWorldPos();
-}
-
-const bool Player::IsJump()const {
-	if (isJump_) {
-		return true;
-	}
-	return false;
 }
 
 void Player::Draw(TheOrderCommand& command, PSO& pso, DirectionLight& light, Texture& tex) {

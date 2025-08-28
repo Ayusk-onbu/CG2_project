@@ -41,7 +41,7 @@ void DebugCamera::UpData() {
 	RotateYaw();
 	RotateRoll();
 
-	ImGui::Begin("Camera");
+	/*ImGui::Begin("Camera");
 	ImGui::Checkbox("IsPivot", &IsPivot_);
 	ImGuiManager::CreateImGui("scale", camera_.scale_, -1.0f, 1.0f);
 	ImGuiManager::CreateImGui("rotate", camera_.rotation_, -36.0f, 36.0f);
@@ -51,7 +51,7 @@ void DebugCamera::UpData() {
 	ImGuiManager::CreateImGui("nearClip", projection_.nearClip, 0.1f, 1.0f);
 
 	ImGuiManager::CreateImGui("sensitivity", sensitivity_, -1.0f, 1.0f);
-	ImGui::End();
+	ImGui::End();*/
 
 	if (IsPivot_) {
 		viewProjectionMatrix_ = Matrix4x4::Inverse(Matrix4x4::Multiply(Matrix4x4::Multiply(Matrix4x4::Make::Scale(camera_.scale_),Matrix4x4::Make::Translate(camera_.translation_)), camera_.matRot_));

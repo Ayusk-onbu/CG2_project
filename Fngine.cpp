@@ -1,4 +1,24 @@
 #include "Fngine.h"
+#pragma comment(lib, "d3d12.lib")
+#pragma comment(lib,"dxgi.lib")
+#pragma comment(lib,"dxguid.lib")//0103 ReportLiveobject
+
+Fngine::Fngine() {
+
+}
+
+Fngine::~Fngine() {
+	ImGuiManager::Shutdown();
+
+	//解放処理
+	tachyonSync_.GetCGPU().UnLoad();
+	music_.UnLoad();
+
+#ifdef _DEBUG
+	//debugController->Release();
+#endif // _DEBUG
+	CloseWindow(window_.GetHwnd());
+}
 
 void Fngine::Initialize() {
 	//COMの初期化
@@ -32,7 +52,7 @@ void Fngine::Initialize() {
 	}
 	swapChain_.Initialize(window_);
 	dxgi_.AssignTaskToEngineer(command_.GetQueue().GetQueue().Get(), window_,swapChain_);
-
+	swapChain_.MakeResource();
 	srv_.InitializeHeap(d3d12_);
 	rtv_.Initialize(&d3d12_,swapChain_);
 	dsv_.InitializeHeap(d3d12_);
@@ -53,8 +73,8 @@ void Fngine::Initialize() {
 	scissorRect_.bottom = window_.GetWindowRect().bottom;
 
 	music_.Initialize();
-	input_.Initialize(window_.GetWindowClass(), window_.GetHwnd());
 
+	InputManager::Initialize(window_.GetWindowClass(), window_.GetHwnd());
 	ImGuiManager::SetImGui(window_.GetHwnd(), d3d12_.GetDevice().Get(), srv_.GetDescriptorHeap().GetHeap().Get());
 
 	light_.Initialize(d3d12_);
@@ -69,9 +89,62 @@ void Fngine::EndOSRFrame() {
 }
 
 void Fngine::BeginFrame() {
+	UINT backBufferIndex = swapChain_.GetSwapChain()->GetCurrentBackBufferIndex();
 
+	ResourceBarrier barrier = {};
+	barrier.SetBarrier(command_.GetList().GetList().Get(), swapChain_.GetResource(backBufferIndex).Get(),
+		D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET);
+
+	//描画先のRTVを設定する
+	//command_.GetList().GetList()->OMSetRenderTargets(1, &rtv.GetHandle(backBufferIndex), false, nullptr);
+	//描画先のRTVとDSVを設定する
+	D3D12_CPU_DESCRIPTOR_HANDLE dsvHandle = dsv_.GetHeap().GetHeap()->GetCPUDescriptorHandleForHeapStart();
+	command_.GetList().GetList()->OMSetRenderTargets(1, &rtv_.GetHandle(backBufferIndex), false, &dsvHandle);
+	//指定した色で画面全体をクリアする
+	float clearColor[] = { 0.1f,0.25f,0.5f,1.0f };//RGBAの設定
+	command_.GetList().GetList()->ClearDepthStencilView(dsvHandle, D3D12_CLEAR_FLAG_DEPTH, 1.0f, 0, 0, nullptr);//
+	command_.GetList().GetList()->ClearRenderTargetView(rtv_.GetHandle(backBufferIndex), clearColor, 0, nullptr);
+
+	ID3D12DescriptorHeap* descriptorHeaps[] = { srv_.GetDescriptorHeap().GetHeap().Get() };
+	command_.GetList().GetList()->SetDescriptorHeaps(1, descriptorHeaps);
+	/////////////////////////////////////////////////////////////////////////
+	//描画0200
+	command_.GetList().GetList()->RSSetViewports(1, &viewport_);
+	command_.GetList().GetList()->RSSetScissorRects(1, &scissorRect_);
 }
 
 void Fngine::EndFrame() {
+	ImGuiManager::EndFrame(command_.GetList().GetList());
+	//barrierO.SetTransition(command.GetList().GetList().Get(), D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_COMMON);
+	UINT backBufferIndex = swapChain_.GetSwapChain()->GetCurrentBackBufferIndex();
+	ResourceBarrier barrier = {};
+	//barrier.SetTransition(command_.GetList().GetList().Get(), D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT);
+	barrier.SetBarrier(command_.GetList().GetList().Get(), swapChain_.GetResource(backBufferIndex).Get(),
+		D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT);
+	//画面表示できるようにするために
+	//コマンドリストの内容を確定させる。全てのコマンドを積んでからCloseすること
+	HRESULT hr = {};
+	hr = command_.GetList().GetList()->Close();
+	assert(SUCCEEDED(hr));
 
+	////////////////////////////////////////////////////////////
+#pragma region 積んだコマンドをキックする
+	//GPUにコマンドリストの実行を行わさせる
+	ID3D12CommandList* commandLists[] = { command_.GetList().GetList().Get() };
+	command_.GetQueue().GetQueue()->ExecuteCommandLists(1, commandLists);
+
+
+	//GPUとOSに画面の交換を行うように通知する
+	swapChain_.GetSwapChain()->Present(1, 0);
+
+	tachyonSync_.GetCGPU().Update(command_.GetQueue().GetQueue().Get());
+
+
+	//次のフレーム用のコマンドリストを準備
+	hr = command_.GetList().GetAllocator()->Reset();
+	assert(SUCCEEDED(hr));
+	hr = command_.GetList().GetList()->Reset(command_.GetList().GetAllocator().Get(), nullptr);
+	assert(SUCCEEDED(hr));
+#pragma endregion
+	////////////////////////////////////////////////////////////
 }

@@ -17,6 +17,7 @@ public:
 	void OnCollision()override;
 	const Vector3 GetWorldPosition()override;
 	const Vector3 GetDirection() const { return direction_; }
+	bool IsAlive() const { return isAlive_; }
 private:
 	void Move(Vector3& pos, const Player& player);
 private:
@@ -26,6 +27,7 @@ private:
 	WorldTransform worldTransform_;
 	WorldTransform uvTransform_;
 
+	bool isAlive_ = true; // Is the enemy alive
 	float speed_ = 0.0f; // Speed of the enemy
 	Vector3 direction_;
 	float acceleration_ = 0.001f;

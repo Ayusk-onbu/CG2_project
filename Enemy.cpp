@@ -10,6 +10,7 @@ void Enemy::Initialize(ModelObject* model, CameraBase* camera) {
 	worldTransform_.set_.Translation({ 10.0f, 1.0f, 0.0f });
 	worldTransform_.set_.Scale({ 1.0f, 1.0f, 1.0f });
 	uvTransform_.Initialize();
+	isAlive_ = true;
 
 	SetMyType(0b1 << 0);
 	SetYourType(0b1 << 1);
