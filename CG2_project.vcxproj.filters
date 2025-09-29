@@ -91,6 +91,12 @@
     <Filter Include="Common\MathUtils">
       <UniqueIdentifier>{aea72bed-0efe-445c-8125-f51c82857f8e}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Physics">
+      <UniqueIdentifier>{9003a0f6-6401-4c14-9604-9b3155eeacd6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Physics\Collider">
+      <UniqueIdentifier>{2ad742c9-6ea5-4f58-a19f-ad4719c2451c}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -297,86 +303,20 @@
     <ClCompile Include="TimedCall.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="Collider.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="CollisionManager.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="GamePad.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
     <ClCompile Include="Common\Vector\Vector2.cpp">
       <Filter>Common\Vector</Filter>
-    </ClCompile>
-    <ClCompile Include="hallway.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="Player.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="Enemy.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="TitleScene.cpp">
-      <Filter>ソース ファイル</Filter>
     </ClCompile>
     <ClCompile Include="UsefulTool\Camera\Camera.cpp">
       <Filter>UsefulTool\Camera</Filter>
     </ClCompile>
-    <ClCompile Include="PlayerStats.cpp">
-      <Filter>ソース ファイル</Filter>
+    <ClCompile Include="Input\GamePad.cpp">
+      <Filter>Input</Filter>
     </ClCompile>
-    <ClCompile Include="PlayerStateWalk.cpp">
-      <Filter>ソース ファイル</Filter>
+    <ClCompile Include="Physics\Collider\Collider.cpp">
+      <Filter>Physics\Collider</Filter>
     </ClCompile>
-    <ClCompile Include="PlayerStateStop.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="Ground.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="PlayerAttack.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="PlayerStateRolling.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="Pot.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="Phase.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="PuzzlePhase.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="RestPhase.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="BossPhase.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="TitlePhase.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="Wall.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="Title.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="FailedClear.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="T.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="LS.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="Nazo.cpp">
-      <Filter>ソース ファイル</Filter>
+    <ClCompile Include="Physics\Collider\CollisionManager.cpp">
+      <Filter>Physics\Collider</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -612,65 +552,20 @@
     <ClInclude Include="TimedCall.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="Collider.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="CollisionManager.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="GamePad.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="hallway.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="Player.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="Enemy.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="TitleScene.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
     <ClInclude Include="UsefulTool\Camera\Camera.h">
       <Filter>UsefulTool\Camera</Filter>
     </ClInclude>
     <ClInclude Include="Cameras.h">
       <Filter>UsefulTool\Camera</Filter>
     </ClInclude>
-    <ClInclude Include="PlayerStates.h">
-      <Filter>ヘッダー ファイル</Filter>
+    <ClInclude Include="Input\GamePad.h">
+      <Filter>Input</Filter>
     </ClInclude>
-    <ClInclude Include="PlayerStats.h">
-      <Filter>ヘッダー ファイル</Filter>
+    <ClInclude Include="Physics\Collider\Collider.h">
+      <Filter>Physics\Collider</Filter>
     </ClInclude>
-    <ClInclude Include="Ground.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="Pot.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="Phase.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="Wall.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="Title.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="FailedClear.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="T.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="LS.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="Nazo.h">
-      <Filter>ヘッダー ファイル</Filter>
+    <ClInclude Include="Physics\Collider\CollisionManager.h">
+      <Filter>Physics\Collider</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

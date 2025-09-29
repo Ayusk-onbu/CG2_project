@@ -37,9 +37,6 @@
 #include "InputManager.h"
 #include "Mouse.h"
 #include "Music.h"
-//#include "CameraBase.h"
-//#include "DebugCamera.h"
-
 
 #include "externals/DirectXTex/DirectXTex.h"
 
