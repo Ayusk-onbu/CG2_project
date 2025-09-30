@@ -2,6 +2,7 @@
 #include "Fngine.h"
 #include "Scene.h"
 #include "Cameras.h"
+#include "WorldTransform.h"
 
 class GameScene 
 	:public Scene
@@ -17,7 +18,7 @@ public:
 	
 public:
 	
-public:// ゲームにまつわる関数
+public:
 	
 private:
 	// カメラ
@@ -26,6 +27,10 @@ private:
 	std::unique_ptr<Camera>mainCamera_;
 	// 一人称視点
 	std::unique_ptr<Camera>fpsCamera_;
+private:
+	std::vector<std::unique_ptr<WorldTransform>> worldTransform_;
+	std::vector<std::unique_ptr<SpriteObject>> sprite_;
+	std::unique_ptr<Texture>texture_;
 };
 
 

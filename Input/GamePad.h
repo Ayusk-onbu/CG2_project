@@ -6,7 +6,7 @@ class GamePad {
 public:
     GamePad(int index = 0);  // コントローラー番号（0〜3）
     ~GamePad() = default;
-
+public:
     void Update();                 // 入力情報を更新
     bool IsConnected() const;     // 接続状態
     bool IsPressed(WORD button);  // ボタン入力判定（A/B/Xなど）
