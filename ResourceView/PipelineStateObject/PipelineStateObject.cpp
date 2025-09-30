@@ -107,7 +107,6 @@ Microsoft::WRL::ComPtr < IDxcBlob> PipelineStateObject::CompileShader(
 void PipelineStateObject::MargeDesc() {
 	graphicsPipelineStateDesc_.pRootSignature = rootSignature_.GetRS().Get();//RootSignature
 	graphicsPipelineStateDesc_.InputLayout = inputLayoutDesc_.GetDesc();//InputLayout
-	graphicsPipelineStateDesc_.BlendState = blendState_.GetDesc();//BlendState
 	graphicsPipelineStateDesc_.RasterizerState = rasterizer_.GetDesc();//RasterizerState
 	graphicsPipelineStateDesc_.VS = { vertexShaderBlob_->GetBufferPointer(),
 	vertexShaderBlob_->GetBufferSize() };// VertexShader
@@ -132,9 +131,69 @@ void PipelineStateObject::SetDesc(D3D12System& d3d12, PSOTYPE type) {
 	//DepthStencil
 	graphicsPipelineStateDesc_.DepthStencilState = depthStencil_.GetDesc();
 	graphicsPipelineStateDesc_.DSVFormat = DXGI_FORMAT_D24_UNORM_S8_UINT;
+
+	// ---  --------------- ------------ ------ //
+	//  BlendState                              //
+	//  -------- -------- -------  -- --------- //
+	blendState_.SetBlendMode(BLENDMODE::AlphaBlend);//BlendStateの設定
+	graphicsPipelineStateDesc_.BlendState = blendState_.GetDesc();//BlendState
+
 	//実際に生成
 	HRESULT hr;
 	hr = d3d12.GetDevice()->CreateGraphicsPipelineState(&graphicsPipelineStateDesc_,
 		IID_PPV_ARGS(&graphicsPipelineState_));
 	assert(SUCCEEDED(hr));
+
+	blendState_.SetBlendMode(BLENDMODE::Additive);//BlendStateの設定
+	graphicsPipelineStateDesc_.BlendState = blendState_.GetDesc();//BlendState
+
+	//実際に生成
+	hr = d3d12.GetDevice()->CreateGraphicsPipelineState(&graphicsPipelineStateDesc_,
+		IID_PPV_ARGS(&graphicsPipelineState_Add));
+	assert(SUCCEEDED(hr));
+
+	blendState_.SetBlendMode(BLENDMODE::Subtractive);//BlendStateの設定
+	graphicsPipelineStateDesc_.BlendState = blendState_.GetDesc();//BlendState
+
+	//実際に生成
+	hr = d3d12.GetDevice()->CreateGraphicsPipelineState(&graphicsPipelineStateDesc_,
+		IID_PPV_ARGS(&graphicsPipelineState_Sub));
+	assert(SUCCEEDED(hr));
+
+	blendState_.SetBlendMode(BLENDMODE::ScreenBlend);//BlendStateの設定
+	graphicsPipelineStateDesc_.BlendState = blendState_.GetDesc();//BlendState
+
+	//実際に生成
+	hr = d3d12.GetDevice()->CreateGraphicsPipelineState(&graphicsPipelineStateDesc_,
+		IID_PPV_ARGS(&graphicsPipelineState_Scr));
+	assert(SUCCEEDED(hr));
+
+	blendState_.SetBlendMode(BLENDMODE::Multiplicative);//BlendStateの設定
+	graphicsPipelineStateDesc_.BlendState = blendState_.GetDesc();//BlendState
+
+	//実際に生成
+	hr = d3d12.GetDevice()->CreateGraphicsPipelineState(&graphicsPipelineStateDesc_,
+		IID_PPV_ARGS(&graphicsPipelineState_Mul));
+	assert(SUCCEEDED(hr));
+}
+
+Microsoft::WRL::ComPtr <ID3D12PipelineState>& PipelineStateObject::GetGPS() {
+	if (blendMode_ == BLENDMODE::AlphaBlend) {
+		return graphicsPipelineState_;
+	}
+	else if (blendMode_ == BLENDMODE::Additive) {
+		return graphicsPipelineState_Add;
+	}
+	else if (blendMode_ == BLENDMODE::Subtractive) {
+		return graphicsPipelineState_Sub;
+	}
+	else if (blendMode_ == BLENDMODE::Multiplicative) {
+		return graphicsPipelineState_Mul;
+	}
+	else if (blendMode_ == BLENDMODE::ScreenBlend) {
+		return graphicsPipelineState_Scr;
+	}
+	else {
+		return graphicsPipelineState_;
+	}
 }

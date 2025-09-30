@@ -31,6 +31,10 @@ private:
 	std::vector<std::unique_ptr<WorldTransform>> worldTransform_;
 	std::vector<std::unique_ptr<SpriteObject>> sprite_;
 	std::unique_ptr<Texture>texture_;
+	Vector4 color_{ 1.0f,1.0f,1.0f,1.0f };
+
+	std::unique_ptr<ModelObject> fenceObj_;
+	std::unique_ptr<WorldTransform> worldFence_;
 };
 
 

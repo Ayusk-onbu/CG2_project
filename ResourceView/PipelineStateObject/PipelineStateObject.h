@@ -41,11 +41,11 @@ public:
 	RootSignature GetRootSignature() { return rootSignature_; }
 	InputLayout GetInputLayout() { return inputLayoutDesc_; }
 	BlendState GetBlendState() { return blendState_; }
-	void SetBlendState(BLENDMODE blendMode) { blendState_.SetBlendMode(blendMode); }
+	void SetBlendState(BLENDMODE blendMode) { blendMode_ = blendMode; }
 	RasterizerState  GetRasterizer() { return rasterizer_; }
 	Microsoft::WRL::ComPtr<IDxcBlob>& GetVSB() { return vertexShaderBlob_; }
 	Microsoft::WRL::ComPtr<IDxcBlob>& GetPSB() { return pixelShaderBlob_; }
-	Microsoft::WRL::ComPtr <ID3D12PipelineState>& GetGPS() {return graphicsPipelineState_;}
+	Microsoft::WRL::ComPtr <ID3D12PipelineState>& GetGPS();
 
 private:
 	static DXC dxc_;
@@ -58,8 +58,15 @@ private:
 
 	DepthStencil depthStencil_;
 
+	// ブレンドモード
+	BLENDMODE blendMode_ = BLENDMODE::AlphaBlend;
+
 	D3D12_GRAPHICS_PIPELINE_STATE_DESC graphicsPipelineStateDesc_ = {};
 	Microsoft::WRL::ComPtr <ID3D12PipelineState> graphicsPipelineState_ = nullptr;
+	Microsoft::WRL::ComPtr <ID3D12PipelineState> graphicsPipelineState_Add = nullptr;
+	Microsoft::WRL::ComPtr <ID3D12PipelineState> graphicsPipelineState_Sub = nullptr;
+	Microsoft::WRL::ComPtr <ID3D12PipelineState> graphicsPipelineState_Mul = nullptr;
+	Microsoft::WRL::ComPtr <ID3D12PipelineState> graphicsPipelineState_Scr = nullptr;
 };
 
 using PSO = PipelineStateObject;

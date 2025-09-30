@@ -15,6 +15,7 @@ enum class BLENDMODE {
 	Additive,
 	Multiplicative,
 	Subtractive,
+	ScreenBlend,
 };
 
 class BlendState
