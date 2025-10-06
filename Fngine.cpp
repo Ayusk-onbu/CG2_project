@@ -8,7 +8,7 @@ Fngine::Fngine() {
 }
 
 Fngine::~Fngine() {
-	ImGuiManager::Shutdown();
+	ImGuiManager::GetInstance()->Shutdown();
 
 	//解放処理
 	tachyonSync_.GetCGPU().UnLoad();
@@ -75,7 +75,7 @@ void Fngine::Initialize() {
 	music_.Initialize();
 
 	InputManager::Initialize(window_.GetWindowClass(), window_.GetHwnd());
-	ImGuiManager::SetImGui(window_.GetHwnd(), d3d12_.GetDevice().Get(), srv_.GetDescriptorHeap().GetHeap().Get());
+	ImGuiManager::GetInstance()->SetImGui(window_.GetHwnd(), d3d12_.GetDevice().Get(), srv_.GetDescriptorHeap().GetHeap().Get());
 
 	light_.Initialize(d3d12_);
 }
@@ -114,7 +114,7 @@ void Fngine::BeginFrame() {
 }
 
 void Fngine::EndFrame() {
-	ImGuiManager::EndFrame(command_.GetList().GetList());
+	ImGuiManager::GetInstance()->EndFrame(command_.GetList().GetList());
 	//barrierO.SetTransition(command.GetList().GetList().Get(), D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_COMMON);
 	UINT backBufferIndex = swapChain_.GetSwapChain()->GetCurrentBackBufferIndex();
 	ResourceBarrier barrier = {};

@@ -43,17 +43,17 @@ void GameScene::Initialize() {
 void GameScene::Update(){
 	useCamera_->UpDate();
 	Vector3 pos = worldTransform_[0]->get_.Translation();
-	ImGui::Begin("sprite");
+	/*ImGui::Begin("sprite");
 	ImGuiManager::CreateImGui("translat",pos, -20.0f, 20.0f);
 	ImGui::ColorEdit4("color", &color_.x);
-	ImGui::End();
+	ImGui::End();*/
 	worldTransform_[0]->set_.Translation(pos);
 	sprite_[0]->SetColor(color_);
 
 	Vector3 fencePos = worldFence_->get_.Translation();
-	ImGui::Begin("fence");
+	/*ImGui::Begin("fence");
 	ImGuiManager::CreateImGui("fenceTranslat", fencePos, -20.0f, 20.0f);
-	ImGui::End();
+	ImGui::End();*/
 	worldFence_->set_.Translation(fencePos);
 	fenceObj_->SetColor(color_);
 

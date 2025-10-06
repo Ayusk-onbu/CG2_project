@@ -11,52 +11,66 @@
 class Mouse
 {
 public:
-#pragma region 初期化(Initialize)
 	/// <summary>
 	/// マウスの初期化
 	/// </summary>
 	/// <param name="directInput"></param>
 	/// <param name="hwnd"></param>
 	void Initialize(Microsoft::WRL::ComPtr<IDirectInput8> directInput, HWND hwnd);
-#pragma endregion
-#pragma region 更新(Update)
+
 	/// <summary>
 	/// マウスの更新
 	/// </summary>
 	void Update();
-#pragma endregion
 private:
-#pragma region デバイスの接続確認(IsAcquire)
+
 	/// <summary>
 	/// デバイスが適切に取得されているか
 	/// </summary>
 	/// <returns></returns>
 	void IsAcquire();
-#pragma endregion
-#pragma region マウス情報のコピー(GetAllMouse)
+	
 	/// <summary>
 	/// マウスの情報を取得
-	/// 	/// </summary>
-	/// 	/// <returns></returns>
+	/// </summary>
+	/// <returns></returns>
 	void CopyAllMouse(DIMOUSESTATE2* mouse) { mouse = &mouseState_; }
-#pragma endregion
 public:
+	/// <summary>
+	/// マウスのポジションを取得
+	/// </summary>
+	/// <param name="pos"></param>
 	void GetPosition(Vector2& pos);
 
+	/// <summary>
+	/// ホイールした量を取得
+	/// </summary>
+	/// <returns></returns>
 	float GetWheel();
-	
-	// AIおすすめ
 	
 	/// <summary>
 	/// ０なら左クリック １なら右クリック 2なら真ん中クリック
 	/// </summary>
 	bool IsButtonPress(int buttonIndex);
+
 	/// <summary>
 	/// ０なら左クリック １なら右クリック 2なら真ん中クリック
 	/// </summary>
 	bool IsButtonRelease(int buttonIndex);
+
+	/// <summary>
+	/// マウスの動いた量を取得
+	/// </summary>
+	/// <returns></returns>
 	Vector2 getDelta();
+
+	/// <summary>
+	/// 何かボタンを押しているときにドラッグ量を取得
+	/// </summary>
+	/// <param name="buttonIndex"></param>
+	/// <returns></returns>
 	bool isDragging(int buttonIndex);
+
 	//bool isDoubleClick(int buttonIndex);
 	//bool isHovering(Rect area);
 	//bool isSwipe(Vector2 direction);

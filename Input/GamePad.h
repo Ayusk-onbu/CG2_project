@@ -11,11 +11,11 @@ public:
     bool IsConnected() const;     // 接続状態
     bool IsPressed(WORD button);  // ボタン入力判定（A/B/Xなど）
 
-    BYTE GetLeftTrigger() const;
-    SHORT GetLeftStickX() const;
-    SHORT GetLeftStickY() const;
+    BYTE GetLeftTrigger() const;  // 左トリガーの値
+    SHORT GetLeftStickX() const;  // 左スティックのX軸
+    SHORT GetLeftStickY() const;  // 左スティックのY軸
 
-    BYTE GetRightTrigger() const;  // 右トリガーの値
+    BYTE GetRightTrigger() const; // 右トリガーの値
 	SHORT GetRightStickX() const; // 右スティックのX軸
 	SHORT GetRightStickY() const; // 右スティックのY軸
 	

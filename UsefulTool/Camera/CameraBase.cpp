@@ -57,7 +57,7 @@ void CameraBase::UpDate() {
 		phi_ -= (InputManager::GetMouse().getDelta().x * 0.1f);
 	}
 #ifdef _DEBUG
-	ImGui::Begin("CameraBase");
+	/*ImGui::Begin("CameraBase");
 	ImGuiManager::CreateImGui("translation", camera_.translation_, -5.0f, 5.0f);
 	ImGuiManager::CreateImGui("rotation", camera_.rotation_, -180.0f, 180.0f);
 	ImGuiManager::CreateImGui("scale", camera_.scale_, 0.0f, 10.0f);
@@ -73,7 +73,7 @@ void CameraBase::UpDate() {
 	ImGuiManager::CreateImGui("zAxis", zAxis_, -1.0f, 1.0f);
 	ImGuiManager::CreateImGui("up", up_, -1.0f, 1.0f);
 	ImGuiManager::CreateImGui("Target.translation", targetPos_, -5.0f, 5.0f);
-	ImGui::End();
+	ImGui::End();*/
 #endif//DEBUG
 	float theta = 0;
 	theta_ = std::clamp(theta_, -89.0f, 89.0f); // X軸回転は-90度から90度まで

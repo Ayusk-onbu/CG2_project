@@ -13,45 +13,53 @@ extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hwnd, UINT msg
 #include "Vector4.h"
 #include "Vector3.h"
 #include "Vector2.h"
+
 #include <string>
+#include <vector>
+#include <functional>
 
 class ImGuiManager
 {
 public:
-	static void SetImGui(HWND hwnd, Microsoft::WRL::ComPtr<ID3D12Device> device, Microsoft::WRL::ComPtr <ID3D12DescriptorHeap> srvDescriptorHeap);
-
-	static void BeginFrame();
-
-	static void EndFrame(Microsoft::WRL::ComPtr <ID3D12GraphicsCommandList> commandList);
-
-	static void Shutdown();
-
-	static void CreateImGui(const char* label, Vector4& value, float min, float max) {
-		ImGui::SliderFloat4(label, &value.x, min, max);
+	static ImGuiManager* GetInstance() {
+		static ImGuiManager instance;
+		return &instance;
 	}
+public:
+	void SetImGui(HWND hwnd, Microsoft::WRL::ComPtr<ID3D12Device> device, Microsoft::WRL::ComPtr <ID3D12DescriptorHeap> srvDescriptorHeap);
 
-	static void CreateImGui(const char* label, Vector3& value, float min, float max) {
-		ImGui::SliderFloat3(label, &value.x, min, max);
-	}
+	void BeginFrame();
 
-	static void CreateImGui(const char* label, Vector2& value, float min, float max) {
-		ImGui::SliderFloat2(label, &value.x, min, max);
-	}
+	void EndFrame(Microsoft::WRL::ComPtr <ID3D12GraphicsCommandList> commandList);
 
-	static void CreateImGui(const char* label, float& value, float min, float max) {
-		ImGui::SliderFloat(label, &value, min, max);
-	}
+	void Shutdown();
 
-	static void CreateImGui(const char* label, Matrix4x4& value, float min, float max) {
-		ImGui::Text(label); // ラベルを表示
+	void DrawAll();
+public:
 
-		for (int i = 0; i < 4; ++i) {
-			ImGui::SliderFloat4(
-				(std::string(label) + " [" + std::to_string(i) + "]").c_str(),
-				&value.m[i][0], min, max
-			);
-		}
-	}
+	//---- [ Vector4 ] ----
+	void DrawSlider(const char* label, Vector4& value, float min, float max);
+	void DrawDrag(const char* label, Vector4& value );
+
+	//---- [ Vector3 ] ----
+	void DrawSlider(const char* label, Vector3& value, float min, float max);
+	void DrawDrag(const char* label, Vector3& value);
+
+	//---- [ Vector2 ] ----
+	void DrawSlider(const char* label, Vector2& value, float min, float max);
+	void DrawDrag(const char* label, Vector2& value);
+
+	//---- [ float ] ----
+	void DrawSlider(const char* label, float& value, float min, float max);
+	void DrawDrag(const char* label, float& value);
+
+	//---- [ Matrix4x4 ] ----
+	void DrawSlider(const char* label, Matrix4x4& value, float min, float max);
+	void DrawDrag(const char* label, Matrix4x4& value);
 	
+private:
+	std::vector<std::function<void()>> imGuiFunctions_{};
+
+	bool isDebugImGuiView_ = true;
 };
 

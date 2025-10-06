@@ -64,9 +64,9 @@ void DebugCamera::UpData() {
 
 Matrix4x4 DebugCamera::DrawCamera(const Matrix4x4& world) {
 	Matrix4x4 WVP = Matrix4x4::Multiply(world, viewProjectionMatrix_);
-	ImGui::Begin("WVP");
-	ImGuiManager::CreateImGui("WVP", WVP, -1.0f, 10.0f);
-	ImGui::End();
+	//ImGui::Begin("WVP");
+	//ImGuiManager::CreateImGui("WVP", WVP, -1.0f, 10.0f);
+	//ImGui::End();
 	return WVP;
 }
 
@@ -109,7 +109,7 @@ Matrix4x4 DebugCamera::DrawMirrorCamera(const Matrix4x4& world, Vector3 mirrorPo
 	mirrorViewProjectionMatrix = Matrix4x4::Multiply(mirrorViewProjectionMatrix, Matrix4x4::Make::PerspectiveFov(projection_.fovY, projection_.aspectRatio, projection_.nearClip, projection_.farClip));
 
 	Matrix4x4 WVP = Matrix4x4::Multiply(world, mirrorViewProjectionMatrix);
-	ImGui::Begin("MirrorWVP");
+	/*ImGui::Begin("MirrorWVP");
 	ImGuiManager::CreateImGui("WVP", WVP, -1.0f, 10.0f);
 	ImGui::End();
 	ImGui::Begin("MirrorCamera");
@@ -117,7 +117,7 @@ Matrix4x4 DebugCamera::DrawMirrorCamera(const Matrix4x4& world, Vector3 mirrorPo
 	ImGuiManager::CreateImGui("rotate", rotate, -1.0f, 1.0f);
 	ImGuiManager::CreateImGui("matRotate", mirrorMatRot, -360.0f, 360.0f);
 	ImGuiManager::CreateImGui("translate", pos, -100.0f, 100.0f);
-	ImGui::End();
+	ImGui::End();*/
 	return WVP;
 }
 

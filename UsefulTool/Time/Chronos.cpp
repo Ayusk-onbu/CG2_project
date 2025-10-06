@@ -20,8 +20,8 @@ void Chronos::Update() {
 		lastTime_ = currentTime_;
 	}
 #ifdef _DEBUG
-	ImGui::Begin("FPS");
+	/*ImGui::Begin("FPS");
 	ImGui::Text("FPS: %lld", fps_);
-	ImGui::End();
+	ImGui::End();*/
 #endif // DEBUG
 }

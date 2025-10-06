@@ -62,7 +62,6 @@ private:
 
 	int32_t kClienWidth_ = 1280;
 	int32_t kClienHeight_ = 720;
-	
 
 private:
 

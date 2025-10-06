@@ -16,7 +16,11 @@ void SceneDirector::Run() {
 	currentScene_->Draw();
 }
 
-void SceneDirector::ChangeScene(Scene& nextScene) {
-	currentScene_ = &nextScene;
+void SceneDirector::RequestChangeScene(Scene* newScene) {
+	if (currentScene_) {
+		delete currentScene_;
+	}
+	currentScene_ = newScene;
 	currentScene_->Initialize();
+	currentScene_->GetSceneDirector(this);
 }

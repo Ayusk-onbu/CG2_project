@@ -68,7 +68,7 @@
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <TreatWarningAsError>true</TreatWarningAsError>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
-      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)Music;$(ProjectDir)Input;$(ProjectDir)Common;$(ProjectDir)Common\Vector;$(ProjectDir)Common\Matrix;$(ProjectDir)Common\MathUtils;$(ProjectDir)Advanced;$(ProjectDir)Common\Functions;$(ProjectDir)Core;$(ProjectDir)Core\Command;$(ProjectDir)Core\DebugTeam;$(ProjectDir)ResourceView;$(ProjectDir)ResourceView\PipelineStateObject;$(ProjectDir)Objects;$(ProjectDir)Objects\Model;$(ProjectDir)Objects\Primitive;$(ProjectDir)UsefulTool\Time;$(ProjectDir)UsefulTool\Camera;$(ProjectDir)UsefulTool\Light;$(ProjectDir)UsefulTool\OSR;$(ProjectDir)UsefulTool\Easing;$(ProjectDir)UsefulTool\GridLine;$(ProjectDir)Scene;$(ProjectDir)UsefulTool\Random;$(ProjectDir)Phisycs;$(ProjectDir)Physics\Collider</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)Music;$(ProjectDir)Input;$(ProjectDir)Common;$(ProjectDir)Common\Vector;$(ProjectDir)Common\Matrix;$(ProjectDir)Common\MathUtils;$(ProjectDir)Advanced;$(ProjectDir)Common\Functions;$(ProjectDir)Core;$(ProjectDir)Core\Command;$(ProjectDir)Core\DebugTeam;$(ProjectDir)ResourceView;$(ProjectDir)ResourceView\PipelineStateObject;$(ProjectDir)Objects;$(ProjectDir)Objects\Model;$(ProjectDir)Objects\Primitive;$(ProjectDir)UsefulTool\Time;$(ProjectDir)UsefulTool\Camera;$(ProjectDir)UsefulTool\Light;$(ProjectDir)UsefulTool\OSR;$(ProjectDir)UsefulTool\Easing;$(ProjectDir)UsefulTool\GridLine;$(ProjectDir)Scene;$(ProjectDir)UsefulTool\Random;$(ProjectDir)Phisycs;$(ProjectDir)Physics\Collider;$(ProjectDir)Scene\Game;$(ProjectDir)Scene\Test</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -92,7 +92,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
       <AdditionalOptions>/utf-8 %(AdditionalOptions)</AdditionalOptions>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
-      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)Music;$(ProjectDir)Input;$(ProjectDir)Common;$(ProjectDir)Common\Vector;$(ProjectDir)Common\Matrix;$(ProjectDir)Common\MathUtils;$(ProjectDir)Advanced;$(ProjectDir)Common\Functions;$(ProjectDir)Core;$(ProjectDir)Core\Command;$(ProjectDir)Core\DebugTeam;$(ProjectDir)ResourceView;$(ProjectDir)ResourceView\PipelineStateObject;$(ProjectDir)Objects;$(ProjectDir)Objects\Model;$(ProjectDir)Objects\Primitive;$(ProjectDir)UsefulTool\Time;$(ProjectDir)UsefulTool\Camera;$(ProjectDir)UsefulTool\Light;$(ProjectDir)UsefulTool\OSR;$(ProjectDir)UsefulTool\Easing;$(ProjectDir)UsefulTool\GridLine;$(ProjectDir)Scene;$(ProjectDir)UsefulTool\Random;$(ProjectDir)Phisycs;$(ProjectDir)Physics\Collider</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)Music;$(ProjectDir)Input;$(ProjectDir)Common;$(ProjectDir)Common\Vector;$(ProjectDir)Common\Matrix;$(ProjectDir)Common\MathUtils;$(ProjectDir)Advanced;$(ProjectDir)Common\Functions;$(ProjectDir)Core;$(ProjectDir)Core\Command;$(ProjectDir)Core\DebugTeam;$(ProjectDir)ResourceView;$(ProjectDir)ResourceView\PipelineStateObject;$(ProjectDir)Objects;$(ProjectDir)Objects\Model;$(ProjectDir)Objects\Primitive;$(ProjectDir)UsefulTool\Time;$(ProjectDir)UsefulTool\Camera;$(ProjectDir)UsefulTool\Light;$(ProjectDir)UsefulTool\OSR;$(ProjectDir)UsefulTool\Easing;$(ProjectDir)UsefulTool\GridLine;$(ProjectDir)Scene;$(ProjectDir)UsefulTool\Random;$(ProjectDir)Phisycs;$(ProjectDir)Physics\Collider;$(ProjectDir)Scene\Game;$(ProjectDir)Scene\Test</AdditionalIncludeDirectories>
       <Optimization>MinSpace</Optimization>
     </ClCompile>
     <Link>
@@ -118,7 +118,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
       <AdditionalOptions>/utf-8 %(AdditionalOptions)</AdditionalOptions>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
-      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)Music;$(ProjectDir)Input;$(ProjectDir)Common;$(ProjectDir)Common\Vector;$(ProjectDir)Common\Matrix;$(ProjectDir)Common\MathUtils;$(ProjectDir)Advanced;$(ProjectDir)Common\Functions;$(ProjectDir)Core;$(ProjectDir)Core\Command;$(ProjectDir)Core\DebugTeam;$(ProjectDir)ResourceView;$(ProjectDir)ResourceView\PipelineStateObject;$(ProjectDir)Objects;$(ProjectDir)Objects\Model;$(ProjectDir)Objects\Primitive;$(ProjectDir)UsefulTool\Time;$(ProjectDir)UsefulTool\Camera;$(ProjectDir)UsefulTool\Light;$(ProjectDir)UsefulTool\OSR;$(ProjectDir)UsefulTool\Easing;$(ProjectDir)UsefulTool\GridLine;$(ProjectDir)Scene;$(ProjectDir)UsefulTool\Random;$(ProjectDir)Phisycs;$(ProjectDir)Physics\Collider</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)Music;$(ProjectDir)Input;$(ProjectDir)Common;$(ProjectDir)Common\Vector;$(ProjectDir)Common\Matrix;$(ProjectDir)Common\MathUtils;$(ProjectDir)Advanced;$(ProjectDir)Common\Functions;$(ProjectDir)Core;$(ProjectDir)Core\Command;$(ProjectDir)Core\DebugTeam;$(ProjectDir)ResourceView;$(ProjectDir)ResourceView\PipelineStateObject;$(ProjectDir)Objects;$(ProjectDir)Objects\Model;$(ProjectDir)Objects\Primitive;$(ProjectDir)UsefulTool\Time;$(ProjectDir)UsefulTool\Camera;$(ProjectDir)UsefulTool\Light;$(ProjectDir)UsefulTool\OSR;$(ProjectDir)UsefulTool\Easing;$(ProjectDir)UsefulTool\GridLine;$(ProjectDir)Scene;$(ProjectDir)UsefulTool\Random;$(ProjectDir)Phisycs;$(ProjectDir)Physics\Collider;$(ProjectDir)Scene\Game;$(ProjectDir)Scene\Test</AdditionalIncludeDirectories>
       <Optimization>Disabled</Optimization>
       <WholeProgramOptimization>false</WholeProgramOptimization>
     </ClCompile>
@@ -195,9 +195,10 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="ResourceView\ShaderResourceView.cpp" />
     <ClCompile Include="ResourceView\SwapChain.cpp" />
     <ClCompile Include="ResourceView\Texture.cpp" />
-    <ClCompile Include="Scene\GameScene.cpp" />
+    <ClCompile Include="Scene\Game\GameScene.cpp" />
     <ClCompile Include="Scene\Scene.cpp" />
     <ClCompile Include="Scene\SceneDirector.cpp" />
+    <ClCompile Include="Scene\Test\TestScene.cpp" />
     <ClCompile Include="TimedCall.cpp" />
     <ClCompile Include="UsefulTool\Camera\Camera.cpp" />
     <ClCompile Include="UsefulTool\Camera\CameraBase.cpp" />
@@ -296,9 +297,10 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="ResourceView\ShaderResourceView.h" />
     <ClInclude Include="ResourceView\SwapChain.h" />
     <ClInclude Include="ResourceView\Texture.h" />
-    <ClInclude Include="Scene\GameScene.h" />
+    <ClInclude Include="Scene\Game\GameScene.h" />
     <ClInclude Include="Scene\Scene.h" />
     <ClInclude Include="Scene\SceneDirector.h" />
+    <ClInclude Include="Scene\Test\TestScene.h" />
     <ClInclude Include="TimedCall.h" />
     <ClInclude Include="UsefulTool\Camera\Camera.h" />
     <ClInclude Include="UsefulTool\Camera\CameraBase.h" />

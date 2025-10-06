@@ -37,7 +37,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 	std::unique_ptr<SceneDirector> scene = std::make_unique<SceneDirector>();
 	scene->SetUpFngine(*fngine);
-	scene->Initialize(*new GameScene());
+	scene->Initialize(*new TestScene());
 	
 	
 	MSG msg{};
@@ -54,7 +54,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			DispatchMessage(&msg);
 		}
 		else {
-			ImGuiManager::BeginFrame();
+			ImGuiManager::GetInstance()->BeginFrame();
 			Chronos::Update();
 			InputManager::Update();
 #pragma region OffScreenRendering
@@ -79,6 +79,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 #pragma endregion
 			fngine->BeginFrame();
 			scene->Run();
+			ImGuiManager::GetInstance()->DrawAll();
 			fngine->EndFrame();
 		}
 		
