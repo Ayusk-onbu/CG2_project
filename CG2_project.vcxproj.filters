@@ -13,9 +13,6 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
-    <Filter Include="imgui">
-      <UniqueIdentifier>{b07034c3-2d41-439e-91e5-ac7d068b16f2}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Music">
       <UniqueIdentifier>{2e84dc7b-27fa-4082-bfa6-83fb3fb98629}</UniqueIdentifier>
     </Filter>
@@ -91,17 +88,26 @@
     <Filter Include="Common\MathUtils">
       <UniqueIdentifier>{aea72bed-0efe-445c-8125-f51c82857f8e}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Physics">
-      <UniqueIdentifier>{9003a0f6-6401-4c14-9604-9b3155eeacd6}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Physics\Collider">
-      <UniqueIdentifier>{2ad742c9-6ea5-4f58-a19f-ad4719c2451c}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Scene\Game">
       <UniqueIdentifier>{fe2676b2-1af0-4f21-a76c-d0ee4cf382cb}</UniqueIdentifier>
     </Filter>
     <Filter Include="Scene\Test">
       <UniqueIdentifier>{e7b1a162-2a8a-4854-a534-5ca769ebfc54}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="externals">
+      <UniqueIdentifier>{c4a53c12-aa5b-4e71-88ae-08ac1f091082}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="externals\imgui">
+      <UniqueIdentifier>{b07034c3-2d41-439e-91e5-ac7d068b16f2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Common\MathUtils\Physics">
+      <UniqueIdentifier>{9003a0f6-6401-4c14-9604-9b3155eeacd6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Common\MathUtils\Physics\Collider">
+      <UniqueIdentifier>{2ad742c9-6ea5-4f58-a19f-ad4719c2451c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Common\MathUtils\Quaternion">
+      <UniqueIdentifier>{1037bff7-057e-4af4-89ab-ab1ffad7a90c}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -109,25 +115,25 @@
       <Filter>ソース ファイル</Filter>
     </ClCompile>
     <ClCompile Include="externals\imgui\imgui.cpp">
-      <Filter>imgui</Filter>
+      <Filter>externals\imgui</Filter>
     </ClCompile>
     <ClCompile Include="externals\imgui\imgui_demo.cpp">
-      <Filter>imgui</Filter>
+      <Filter>externals\imgui</Filter>
     </ClCompile>
     <ClCompile Include="externals\imgui\imgui_draw.cpp">
-      <Filter>imgui</Filter>
+      <Filter>externals\imgui</Filter>
     </ClCompile>
     <ClCompile Include="externals\imgui\imgui_impl_dx12.cpp">
-      <Filter>imgui</Filter>
+      <Filter>externals\imgui</Filter>
     </ClCompile>
     <ClCompile Include="externals\imgui\imgui_impl_win32.cpp">
-      <Filter>imgui</Filter>
+      <Filter>externals\imgui</Filter>
     </ClCompile>
     <ClCompile Include="externals\imgui\imgui_tables.cpp">
-      <Filter>imgui</Filter>
+      <Filter>externals\imgui</Filter>
     </ClCompile>
     <ClCompile Include="externals\imgui\imgui_widgets.cpp">
-      <Filter>imgui</Filter>
+      <Filter>externals\imgui</Filter>
     </ClCompile>
     <ClCompile Include="Music\Audio.cpp">
       <Filter>Music</Filter>
@@ -315,17 +321,20 @@
     <ClCompile Include="Input\GamePad.cpp">
       <Filter>Input</Filter>
     </ClCompile>
-    <ClCompile Include="Physics\Collider\Collider.cpp">
-      <Filter>Physics\Collider</Filter>
-    </ClCompile>
-    <ClCompile Include="Physics\Collider\CollisionManager.cpp">
-      <Filter>Physics\Collider</Filter>
-    </ClCompile>
     <ClCompile Include="Scene\Game\GameScene.cpp">
       <Filter>Scene\Game</Filter>
     </ClCompile>
     <ClCompile Include="Scene\Test\TestScene.cpp">
       <Filter>Scene\Test</Filter>
+    </ClCompile>
+    <ClCompile Include="Common\MathUtils\Physics\Collider\Collider.cpp">
+      <Filter>Common\MathUtils\Physics\Collider</Filter>
+    </ClCompile>
+    <ClCompile Include="Common\MathUtils\Physics\Collider\CollisionManager.cpp">
+      <Filter>Common\MathUtils\Physics\Collider</Filter>
+    </ClCompile>
+    <ClCompile Include="Common\MathUtils\Quaternion\Quaternion.cpp">
+      <Filter>Common\MathUtils\Quaternion</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -334,28 +343,28 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="externals\imgui\imconfig.h">
-      <Filter>imgui</Filter>
+      <Filter>externals\imgui</Filter>
     </ClInclude>
     <ClInclude Include="externals\imgui\imgui.h">
-      <Filter>imgui</Filter>
+      <Filter>externals\imgui</Filter>
     </ClInclude>
     <ClInclude Include="externals\imgui\imgui_impl_dx12.h">
-      <Filter>imgui</Filter>
+      <Filter>externals\imgui</Filter>
     </ClInclude>
     <ClInclude Include="externals\imgui\imgui_impl_win32.h">
-      <Filter>imgui</Filter>
+      <Filter>externals\imgui</Filter>
     </ClInclude>
     <ClInclude Include="externals\imgui\imgui_internal.h">
-      <Filter>imgui</Filter>
+      <Filter>externals\imgui</Filter>
     </ClInclude>
     <ClInclude Include="externals\imgui\imstb_rectpack.h">
-      <Filter>imgui</Filter>
+      <Filter>externals\imgui</Filter>
     </ClInclude>
     <ClInclude Include="externals\imgui\imstb_textedit.h">
-      <Filter>imgui</Filter>
+      <Filter>externals\imgui</Filter>
     </ClInclude>
     <ClInclude Include="externals\imgui\imstb_truetype.h">
-      <Filter>imgui</Filter>
+      <Filter>externals\imgui</Filter>
     </ClInclude>
     <ClInclude Include="Fngine.h">
       <Filter>ヘッダー ファイル</Filter>
@@ -567,22 +576,25 @@
     <ClInclude Include="Input\GamePad.h">
       <Filter>Input</Filter>
     </ClInclude>
-    <ClInclude Include="Physics\Collider\Collider.h">
-      <Filter>Physics\Collider</Filter>
-    </ClInclude>
-    <ClInclude Include="Physics\Collider\CollisionManager.h">
-      <Filter>Physics\Collider</Filter>
-    </ClInclude>
     <ClInclude Include="Scene\Game\GameScene.h">
       <Filter>Scene\Game</Filter>
     </ClInclude>
     <ClInclude Include="Scene\Test\TestScene.h">
       <Filter>Scene\Test</Filter>
     </ClInclude>
+    <ClInclude Include="Common\MathUtils\Physics\Collider\Collider.h">
+      <Filter>Common\MathUtils\Physics\Collider</Filter>
+    </ClInclude>
+    <ClInclude Include="Common\MathUtils\Physics\Collider\CollisionManager.h">
+      <Filter>Common\MathUtils\Physics\Collider</Filter>
+    </ClInclude>
+    <ClInclude Include="Common\MathUtils\Quaternion\Quaternion.h">
+      <Filter>Common\MathUtils\Quaternion</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Text Include="externals\imgui\LICENSE.txt">
-      <Filter>imgui</Filter>
+      <Filter>externals\imgui</Filter>
     </Text>
   </ItemGroup>
   <ItemGroup>

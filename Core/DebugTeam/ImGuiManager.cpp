@@ -65,6 +65,14 @@ void ImGuiManager::DrawAll() {
 #endif // _DEBUG
 }
 
+// ---- [ Text ] ----
+
+void ImGuiManager::Text(const char* text) {
+	imGuiFunctions_.push_back([=]() {
+		ImGui::Text(text);
+	});
+}
+
 // ---- [ Vector4 ] ----
 
 void ImGuiManager::DrawSlider(const char* label, Vector4& value, float min, float max) {

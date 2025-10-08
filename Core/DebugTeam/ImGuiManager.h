@@ -37,6 +37,8 @@ public:
 	void DrawAll();
 public:
 
+	void Text(const char* text);
+
 	//---- [ Vector4 ] ----
 	void DrawSlider(const char* label, Vector4& value, float min, float max);
 	void DrawDrag(const char* label, Vector4& value );
