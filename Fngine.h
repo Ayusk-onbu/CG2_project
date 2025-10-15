@@ -23,12 +23,6 @@
 #include "PipelineStateObject.h"
 #include "OffScreenRendering.h"
 
-#include "SpriteObject.h"
-#include "ModelObject.h"
-#include "TriangleObject.h"
-#include "SphereObject.h"
-#include "LineObject.h"
-
 #include "DirectionLight.h"
 
 #include "ImGuiManager.h"

@@ -36,7 +36,7 @@ public:
 
 	void DrawAll();
 public:
-
+	//---- [ Usuful ]
 	void Text(const char* text);
 
 	//---- [ Vector4 ] ----
@@ -62,6 +62,6 @@ public:
 private:
 	std::vector<std::function<void()>> imGuiFunctions_{};
 
-	bool isDebugImGuiView_ = true;
+	bool isDebugImGuiView_ = false;
 };
 

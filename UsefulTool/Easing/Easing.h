@@ -67,6 +67,7 @@ enum Material {
 };
 
 void Easing(Vector2* Pos, float startPosX, float startPosY, float endPosX, float endPosY, float* nowFrame, float endFrame, float* t, float magNum, int material);
+void Easing(Vector3& Pos, const Vector3& startPos, const Vector3& endPos, float nowFrame, float endFrame, float magNum, int material);
 
 //ｔとかの初期化関数
 void EasingInitialize(float* t, float* NowFrame, Vector2* startPos, Vector2* Ini_startPos);

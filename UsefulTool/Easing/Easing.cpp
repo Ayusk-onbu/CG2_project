@@ -408,6 +408,142 @@ void Easing(Vector2* Pos, float startPosX, float startPosY, float endPosX, float
 	*nowFrame += 1;
 }
 
+void Easing(Vector3& Pos, const Vector3& startPos, const Vector3& endPos, float nowFrame, float endFrame, float magNum, int material){
+
+	float x = nowFrame / endFrame;
+
+	if (material == materialNone) {
+		x = x;
+	}
+
+	if (material == materialInSine) {
+		x = InSine(x);
+	}
+
+	if (material == materialOutSine) {
+		x = OutSine(x);
+	}
+
+	if (material == materialInOutSine) {
+		x = InOutSine(x);
+	}
+
+	if (material == materialInQuad) {
+		x = InQuad(x);
+	}
+
+	if (material == materialOutQuad) {
+		x = OutQuad(x);
+	}
+
+	if (material == materialInOutQuad) {
+		x = InOutQuad(x);
+	}
+
+	if (material == materialInCubic) {
+		x = InCubic(x);
+	}
+
+	if (material == materialOutCubic) {
+		x = OutCubic(x);
+	}
+
+	if (material == materialInOutCubic) {
+		x = InOutCubic(x);
+	}
+
+	if (material == materialInQuart) {
+		x = InQuart(x);
+	}
+
+	if (material == materialOutQuart) {
+		x = OutQuart(x);
+	}
+
+	if (material == materialInOutQuart) {
+		x = InOutQuart(x);
+	}
+
+	if (material == materialInQuint) {
+		x = InQuint(x);
+	}
+
+	if (material == materialOutQuint) {
+		x = OutQuint(x);
+	}
+
+	if (material == materialInOutQuint) {
+		x = InOutQuint(x);
+	}
+
+	if (material == materialInExpo) {
+		x = InExpo(x);
+	}
+
+	if (material == materialOutExpo) {
+		x = OutExpo(x);
+	}
+
+	if (material == materialInOutExpo) {
+		x = InOutExpo(x);
+	}
+
+	if (material == materialInCirc) {
+		x = InCirc(x);
+	}
+
+	if (material == materialOutCirc) {
+		x = OutCirc(x);
+	}
+
+	if (material == materialInOutCirc) {
+		x = InOutCirc(x);
+	}
+
+	if (material == materialInBack) {
+		x = InBack(x);
+	}
+
+	if (material == materialOutBack) {
+		x = OutBack(x);
+	}
+
+	if (material == materialInOutBack) {
+		x = InOutBack(x);
+	}
+
+	if (material == materialInElastic) {
+		x = InElastic(x);
+	}
+
+	if (material == materialOutElastic) {
+		x = OutElastic(x);
+	}
+
+	if (material == materialInOutElastic) {
+		x = InOutElastic(x);
+	}
+
+	if (material == materialInBounce) {
+		x = InBounce(x);
+	}
+
+	if (material == materialOutBounce) {
+		x = OutBounce(x);
+	}
+
+	if (material == materialInOutBounce) {
+		x = InOutBounce(x);
+	}
+
+	x = powf(x, magNum);
+
+	Pos.x = float(startPos.x * (1 - x) + endPos.x * x);
+	Pos.y = float(startPos.y * (1 - x) + endPos.y * x);
+	Pos.z = float(startPos.z * (1 - x) + endPos.z * x);
+
+}
+
 //ｔとかの初期化関数
 void EasingInitialize(float* t, float* NowFrame, Vector2* startPos, Vector2* Ini_startPos) {
 

@@ -2,16 +2,17 @@
 #include "Log.h"
 
 
-void Texture::Initialize(D3D12System d3d12, SRV& srv, const std::string& filePath,int num) {
+void Texture::Initialize(D3D12System& d3d12, SRV& srv, const std::string& filePath,int num) {
 	mipImages_ = LoadTexture(filePath);
 	const DirectX::TexMetadata metaData_ = mipImages_.GetMetadata();
-	textureResource_ = CreateTextureResource(d3d12.GetDevice().Get(), metaData_);
-	UploadTextureData(textureResource_.Get(), mipImages_);
+	textureResource_ = std::move(CreateTextureResource(d3d12.GetDevice().Get(), metaData_));
+	textureResource_->SetName(L"TextureResource");
+	UploadTextureData(textureResource_, mipImages_);
 
 	SetDesc(metaData_.format, D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING, D3D12_SRV_DIMENSION_TEXTURE2D, UINT(metaData_.mipLevels));
 	textureSrvHandleCPU_ = srv.GetCPUDescriptorHandle();
 	textureSrvHandleGPU_ = srv.GetGPUDescriptorHandle();
-	d3d12.GetDevice()->CreateShaderResourceView(textureResource_.Get(), &srvDesc_, textureSrvHandleCPU_);
+	d3d12.GetDevice().Get()->CreateShaderResourceView(textureResource_.Get(), &srvDesc_, textureSrvHandleCPU_);
 }
 
 void Texture::SetDesc(DXGI_FORMAT fmt, UINT mapping, D3D12_SRV_DIMENSION dimension, UINT mipLevel) {
@@ -36,7 +37,7 @@ DirectX::ScratchImage Texture::LoadTexture(const std::string& filePath) {
 }
 
 // 2,DirectX12のテクスチャリソースを作成する
-Microsoft::WRL::ComPtr < ID3D12Resource> Texture::CreateTextureResource(ID3D12Device* device, const DirectX::TexMetadata& metadata) {
+Microsoft::WRL::ComPtr<ID3D12Resource> Texture::CreateTextureResource(ID3D12Device* device, const DirectX::TexMetadata& metadata) {
 	// 1,metadataをもとにResourceの設定
 	D3D12_RESOURCE_DESC resourceDesc = {};
 	resourceDesc.Width = UINT(metadata.width);//テクスチャの幅
@@ -52,19 +53,19 @@ Microsoft::WRL::ComPtr < ID3D12Resource> Texture::CreateTextureResource(ID3D12De
 	heapProperties.CPUPageProperty = D3D12_CPU_PAGE_PROPERTY_WRITE_BACK;//WriteBackポリシーでアクセス可能
 	heapProperties.MemoryPoolPreference = D3D12_MEMORY_POOL_L0;//プロセッサの近くに配置
 	// 3,Resourceを生成する
-	Microsoft::WRL::ComPtr < ID3D12Resource> resource = nullptr;
+	Microsoft::WRL::ComPtr<ID3D12Resource> resource = nullptr;
 	HRESULT hr = device->CreateCommittedResource(
 		&heapProperties,
 		D3D12_HEAP_FLAG_NONE,
 		&resourceDesc,
 		D3D12_RESOURCE_STATE_GENERIC_READ,
 		nullptr,
-		IID_PPV_ARGS(&resource));
+		IID_PPV_ARGS(resource.GetAddressOf()));
 	assert(SUCCEEDED(hr));
 	return resource;
 }
 
-void Texture::UploadTextureData(Microsoft::WRL::ComPtr <ID3D12Resource> texture, const DirectX::ScratchImage& mipImages) {
+void Texture::UploadTextureData(Microsoft::WRL::ComPtr < ID3D12Resource>& texture, const DirectX::ScratchImage& mipImages) {
 	//Meta情報を取得
 	const DirectX::TexMetadata& metadata = mipImages.GetMetadata();
 	//全MipMapに対して

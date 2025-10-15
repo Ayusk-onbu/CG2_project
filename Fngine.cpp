@@ -1,4 +1,5 @@
 #include "Fngine.h"
+#include "TextureManager.h"
 #pragma comment(lib, "d3d12.lib")
 #pragma comment(lib,"dxgi.lib")
 #pragma comment(lib,"dxguid.lib")//0103 ReportLiveobject
@@ -76,6 +77,7 @@ void Fngine::Initialize() {
 
 	InputManager::Initialize(window_.GetWindowClass(), window_.GetHwnd());
 	ImGuiManager::GetInstance()->SetImGui(window_.GetHwnd(), d3d12_.GetDevice().Get(), srv_.GetDescriptorHeap().GetHeap().Get());
+	TextureManager::GetInstance()->Initialize(*this);
 
 	light_.Initialize(d3d12_);
 }

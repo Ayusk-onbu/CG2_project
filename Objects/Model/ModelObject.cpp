@@ -1,63 +1,72 @@
 #include "ModelObject.h"
 #include <sstream>
 
-void ModelObject::Initialize(D3D12System d3d12, const std::string& filename, const std::string& directoryPath) {
-	InitializeResource(d3d12, filename, directoryPath);
+//==========-+-==========
+// Initialize Function
+//==========-+-==========
+
+void ModelObject::Initialize(Fngine* fngine) {
+	if (fngine) {
+		SetFngine(fngine);
+	}
+	else {
+		assert(0 && "Fngineのポインタがnullptrです");
+	}
 	InitializeData();
+	worldTransform_.Initialize();
 }
 
-void ModelObject::Initialize(D3D12System d3d12, ModelData& modelData) {
+void ModelObject::Initialize(D3D12System& d3d12, const std::string& filename, const std::string& directoryPath) {
+	InitializeResource(d3d12, filename, directoryPath);
+	InitializeData();
+	vertexResource_->SetName(L"vertexResource");
+	wvpResource_->SetName(L"wvpResource");
+	materialResource_->SetName(L"materialResource");
+
+	worldTransform_.Initialize();
+	uvTransform_.Initialize();
+}
+
+void ModelObject::Initialize(D3D12System& d3d12, ModelData& modelData) {
 	InitializeResource(d3d12,modelData);
 	InitializeData();
 }
 
+//==========-+-==========
+// Draw Function
+//==========-+-==========
+
+void ModelObject::Draw() {
+	fngine_->GetCommand().GetList().GetList()->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+	DrawBase();
+	fngine_->GetCommand().GetList().GetList()->DrawInstanced(UINT(modelData_.vertices.size()), 1, 0, 0);
+}
+
 void ModelObject::Draw(TheOrderCommand& command, PSO& pso, DirectionLight& light, Texture& tex) {
 	command.GetList().GetList()->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-	object_.DrawBase(command, pso, light, tex);
+	DrawBase(command, pso, light, tex);
 	command.GetList().GetList()->DrawInstanced(UINT(modelData_.vertices.size()), 1, 0, 0);
 }
 
 void ModelObject::Draw(TheOrderCommand& command, PSO& pso, DirectionLight& light, D3D12_GPU_DESCRIPTOR_HANDLE& tex) {
 	command.GetList().GetList()->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-	object_.DrawBase(command, pso, light, tex);
+	DrawBase(command, pso, light, tex);
 	command.GetList().GetList()->DrawInstanced(UINT(modelData_.vertices.size()), 1, 0, 0);
 }
 
-void ModelObject::SetWVPData(Matrix4x4 WVP, Matrix4x4 world, Matrix4x4 uv) {
-	object_.wvpData_->WVP = WVP;
-	object_.wvpData_->World = world;
-	object_.materialData_->uvTransform = uv;
+//==========-+-==========
+// Other Function
+//==========-+-==========
+
+void ModelObject::SetWVPData(Matrix4x4 WVP) {
+	wvpData_->WVP = WVP;
+	wvpData_->World = worldTransform_.mat_;
+	materialData_->uvTransform = uvTransform_.mat_;
 }
 
-void ModelObject::SetColor(const Vector4& color) {
-	object_.materialData_->color = color;
-}
-
-// ----------------------------------------------------- [ PRIVATE ] -------------------------------------------------- //
-void ModelObject::InitializeResource(D3D12System d3d12, const std::string& filename, const std::string& directoryPath) {
-	modelData_ = LoadObjFile(filename, directoryPath);
-	object_.vertexResource_ = CreateBufferResource(d3d12.GetDevice().Get(), sizeof(VertexData) * modelData_.vertices.size());
-	object_.materialResource_ = CreateBufferResource(d3d12.GetDevice().Get(), sizeof(Material));
-	object_.wvpResource_ = CreateBufferResource(d3d12.GetDevice().Get(), sizeof(TransformationMatrix));
-}
-
-void ModelObject::InitializeResource(D3D12System d3d12, ModelData& modelData) {
-	modelData_ = modelData;
-	object_.vertexResource_ = CreateBufferResource(d3d12.GetDevice().Get(), sizeof(VertexData) * modelData_.vertices.size());
-	object_.materialResource_ = CreateBufferResource(d3d12.GetDevice().Get(), sizeof(Material));
-	object_.wvpResource_ = CreateBufferResource(d3d12.GetDevice().Get(), sizeof(TransformationMatrix));
-}
-
-void ModelObject::InitializeData() {
-	object_.InitializeMD(Vector4(1.0f, 1.0f, 1.0f, 1.0f), true);
-	object_.InitializeWVPD();
-
-	object_.vertexBufferView_.BufferLocation = object_.vertexResource_->GetGPUVirtualAddress();
-	object_.vertexBufferView_.SizeInBytes = UINT(sizeof(VertexData) * modelData_.vertices.size());
-	object_.vertexBufferView_.StrideInBytes = sizeof(VertexData);
-
-	object_.vertexResource_->Map(0, nullptr, reinterpret_cast<void**>(&object_.vertexData_));
-	std::memcpy(object_.vertexData_, modelData_.vertices.data(), sizeof(VertexData) * modelData_.vertices.size());
+void ModelObject::LocalToWorld() {
+	worldTransform_.LocalToWorld();
+	uvTransform_.LocalToWorld();
 }
 
 ModelData ModelObject::LoadObjFile(const std::string& filename, const std::string& directoryPath) {
@@ -187,6 +196,32 @@ ModelData ModelObject::LoadObjFile(const std::string& filename, const std::strin
 	return modelData;
 }
 
+// ----------------------------------------------------- [ PRIVATE ] -------------------------------------------------- //
+void ModelObject::InitializeResource(D3D12System& d3d12, const std::string& filename, const std::string& directoryPath) {
+	modelData_ = LoadObjFile(filename, directoryPath);
+	vertexResource_ = CreateBufferResource(d3d12.GetDevice().Get(), sizeof(VertexData) * modelData_.vertices.size());
+	materialResource_ = CreateBufferResource(d3d12.GetDevice().Get(), sizeof(Material));
+	wvpResource_ = CreateBufferResource(d3d12.GetDevice().Get(), sizeof(TransformationMatrix));
+}
+
+void ModelObject::InitializeResource(D3D12System& d3d12, ModelData& modelData) {
+	modelData_ = modelData;
+	vertexResource_ = CreateBufferResource(d3d12.GetDevice().Get(), sizeof(VertexData) * modelData_.vertices.size());
+	materialResource_ = CreateBufferResource(d3d12.GetDevice().Get(), sizeof(Material));
+	wvpResource_ = CreateBufferResource(d3d12.GetDevice().Get(), sizeof(TransformationMatrix));
+}
+
+void ModelObject::InitializeData() {
+	InitializeMD(Vector4(1.0f, 1.0f, 1.0f, 1.0f), true);
+	InitializeWVPD();
+
+	vertexBufferView_.BufferLocation = vertexResource_->GetGPUVirtualAddress();
+	vertexBufferView_.SizeInBytes = UINT(sizeof(VertexData) * modelData_.vertices.size());
+	vertexBufferView_.StrideInBytes = sizeof(VertexData);
+
+	vertexResource_->Map(0, nullptr, reinterpret_cast<void**>(&vertexData_));
+	std::memcpy(vertexData_, modelData_.vertices.data(), sizeof(VertexData) * modelData_.vertices.size());
+}
 
 MaterialData ModelObject::LoadMaterialTemplateFile(const std::string& directoryPath, const std::string& filename) {
 	// 1, 中で必要となる変数の宣言

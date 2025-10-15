@@ -55,6 +55,9 @@ void ImGuiManager::DrawAll() {
 	for (auto& func : imGuiFunctions_) {
 		func();
 	}
+
+
+
 	ImGui::End();
 
 	imGuiFunctions_.clear();

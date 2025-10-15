@@ -1,20 +1,25 @@
 #pragma once
-#include "ObjectBase.h"
+#include "ModelObject.h"
 #include <unordered_map>
+
 
 //class ModelManager
 //{
 //public:
-//	void LoadObjFiles(const std::vector<std::string>& filenames, const std::string& directoryPath = "resources");
+//	static ModelManager* GetInstance() {
+//		static ModelManager instance;
+//		return &instance;
+//	}
+//public:
+//	void Initialize(Fngine* fngine);
+//	int LoadObj(const std::string& filename, const std::string& directoryPath = "resources");
+//	void DrawModel(ModelID modelId);
 //private:
-//	ModelData LoadObjFile(const std::string& filename, const std::string& directoryPath);
-//
-//	MaterialData LoadMaterialTemplateFile(const std::string& directoryPath, const std::string& filename);
-//
-//	std::string HashModelData(const ModelData& model);
-//private:
-//	std::unordered_map<std::string, int>pathToIndex_;
-//	std::vector<ModelData>modelData_;
-//	std::unordered_map<std::string, int>modelHashToIndex;
+//	// 図鑑的な存在
+//	std::vector<std::unordered_map<ModelID, std::unique_ptr<ModelObject>>>models_;
+//	// 出力するのはこっち
+//	std::vector<std::unique_ptr<ModelObject>>drawModels_;
+//	uint32_t modelCount_;
+//	Fngine* pFngine_;
 //};
 

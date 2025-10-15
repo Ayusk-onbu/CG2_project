@@ -3,6 +3,7 @@
 #include "Scene.h"
 #include "Cameras.h"
 #include "WorldTransform.h"
+#include "Player3D.h"
 
 class GameScene 
 	:public Scene
@@ -21,20 +22,9 @@ public:
 public:
 	
 private:
-	// カメラ
-	CameraBase* useCamera_;
-	// 第三者視点
-	std::unique_ptr<Camera>mainCamera_;
-	// 一人称視点
-	std::unique_ptr<Camera>fpsCamera_;
-private:
-	std::vector<std::unique_ptr<WorldTransform>> worldTransform_;
-	std::vector<std::unique_ptr<SpriteObject>> sprite_;
-	std::unique_ptr<Texture>texture_;
-	Vector4 color_{ 1.0f,1.0f,1.0f,1.0f };
 
-	std::unique_ptr<ModelObject> fenceObj_;
-	std::unique_ptr<WorldTransform> worldFence_;
+private:
+	std::unique_ptr<Player3D>player_ = std::make_unique<Player3D>();
 };
 
 

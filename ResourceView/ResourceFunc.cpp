@@ -29,7 +29,7 @@ Microsoft::WRL::ComPtr<ID3D12Resource> CreateBufferResource(ID3D12Device* device
 		&resourceDesc,
 		D3D12_RESOURCE_STATE_GENERIC_READ,
 		nullptr,
-		IID_PPV_ARGS(&buffer)
+		IID_PPV_ARGS(buffer.GetAddressOf())
 	);
 	assert(SUCCEEDED(hr));
 	return buffer;

@@ -2,6 +2,8 @@
 #include "Scene.h"
 #include "Collider.h"
 #include "Quaternion.h"
+#include "Player3D.h"
+#include "Cameras.h"
 
 class TestScene
 	: public Scene
@@ -17,17 +19,11 @@ public:
 	void Draw() override;
 
 private:
-	Vector4 test_;
-	Vector4 test2_;
-	Matrix4x4 testM_;
+	// カメラ
+	Camera* useCamera_;
+	// 第三者視点
+	std::unique_ptr<Camera>mainCamera_;
 
 	
-	Quaternion rotation_;
-	Quaternion rotation2_;
-	Vector4 re1_;
-	Vector4 re2_;
-	Vector4 re3_;
-	Vector4 re4_;
-	Vector4 re5_;
 };
 

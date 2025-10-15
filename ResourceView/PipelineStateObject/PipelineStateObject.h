@@ -48,7 +48,7 @@ public:
 	Microsoft::WRL::ComPtr <ID3D12PipelineState>& GetGPS();
 
 private:
-	static DXC dxc_;
+	DXC dxc_;
 	RootSignature rootSignature_;
 	InputLayout inputLayoutDesc_;
 	BlendState blendState_;

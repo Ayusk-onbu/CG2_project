@@ -23,6 +23,7 @@ Vector3 Add(const Vector3& v1, const Vector3& v2);
 Vector3 Subtract(const Vector3& v1, const Vector3& v2);
 //スカラー倍
 Vector3 Multiply(float scaler, const Vector3& v);
+Vector3 Multiply(const Vector3& v, const Vector3& v2);
 //内積
 float Dot(const Vector3& v1, const Vector3& v2);
 //長さ

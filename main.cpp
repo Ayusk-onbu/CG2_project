@@ -1,6 +1,4 @@
 #include "Fngine.h"
-#include "CameraBase.h"
-#include "DebugCamera.h"
 #include "Chronos.h"
 #include "RandomUtils.h"
 #include "SceneDirector.h"
@@ -37,7 +35,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 	std::unique_ptr<SceneDirector> scene = std::make_unique<SceneDirector>();
 	scene->SetUpFngine(*fngine);
-	scene->Initialize(*new TestScene());
+	scene->Initialize(*new GameScene());
 	
 	
 	MSG msg{};
@@ -84,6 +82,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		}
 		
 	}
+	TextureManager::GetInstance()->ReleaseInstance();
 	//COMの初期化を解除
 	CoUninitialize();
 	return 0;

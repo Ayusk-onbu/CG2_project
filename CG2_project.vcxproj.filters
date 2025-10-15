@@ -109,6 +109,18 @@
     <Filter Include="Common\MathUtils\Quaternion">
       <UniqueIdentifier>{1037bff7-057e-4af4-89ab-ab1ffad7a90c}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Game3D">
+      <UniqueIdentifier>{e548cda0-0067-4976-b77f-bbf7b4b50906}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Game3D\Player3D">
+      <UniqueIdentifier>{4988ef74-887c-48f5-9b07-3b85332df5cf}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ResourceView\Texture">
+      <UniqueIdentifier>{477affca-a908-48c9-b2b6-caa9c537efe4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="UsefulTool\Camera\CameraController">
+      <UniqueIdentifier>{032ec473-759f-4fba-9dfa-f953dab45e65}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -258,15 +270,6 @@
     <ClCompile Include="ResourceView\ResourceFunc.cpp">
       <Filter>ResourceView</Filter>
     </ClCompile>
-    <ClCompile Include="ResourceView\Texture.cpp">
-      <Filter>ResourceView</Filter>
-    </ClCompile>
-    <ClCompile Include="UsefulTool\Camera\CameraBase.cpp">
-      <Filter>UsefulTool\Camera</Filter>
-    </ClCompile>
-    <ClCompile Include="UsefulTool\Camera\DebugCamera.cpp">
-      <Filter>UsefulTool\Camera</Filter>
-    </ClCompile>
     <ClCompile Include="UsefulTool\Light\DirectionLight.cpp">
       <Filter>UsefulTool\Light</Filter>
     </ClCompile>
@@ -335,6 +338,27 @@
     </ClCompile>
     <ClCompile Include="Common\MathUtils\Quaternion\Quaternion.cpp">
       <Filter>Common\MathUtils\Quaternion</Filter>
+    </ClCompile>
+    <ClCompile Include="Game3D\Player3D\Player3D.cpp">
+      <Filter>Game3D\Player3D</Filter>
+    </ClCompile>
+    <ClCompile Include="ResourceView\Texture\Texture.cpp">
+      <Filter>ResourceView\Texture</Filter>
+    </ClCompile>
+    <ClCompile Include="ResourceView\Texture\TextureManager.cpp">
+      <Filter>ResourceView\Texture</Filter>
+    </ClCompile>
+    <ClCompile Include="UsefulTool\Camera\CameraController\CameraController.cpp">
+      <Filter>UsefulTool\Camera\CameraController</Filter>
+    </ClCompile>
+    <ClCompile Include="UsefulTool\Camera\CameraSystem.cpp">
+      <Filter>UsefulTool\Camera</Filter>
+    </ClCompile>
+    <ClCompile Include="DenugCameraController.cpp">
+      <Filter>UsefulTool\Camera\CameraController</Filter>
+    </ClCompile>
+    <ClCompile Include="UsefulTool\Camera\CameraController\NormalCameraController.cpp">
+      <Filter>UsefulTool\Camera\CameraController</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -516,15 +540,6 @@
     <ClInclude Include="ResourceView\ResourceFunc.h">
       <Filter>ResourceView</Filter>
     </ClInclude>
-    <ClInclude Include="ResourceView\Texture.h">
-      <Filter>ResourceView</Filter>
-    </ClInclude>
-    <ClInclude Include="UsefulTool\Camera\CameraBase.h">
-      <Filter>UsefulTool\Camera</Filter>
-    </ClInclude>
-    <ClInclude Include="UsefulTool\Camera\DebugCamera.h">
-      <Filter>UsefulTool\Camera</Filter>
-    </ClInclude>
     <ClInclude Include="UsefulTool\Light\DirectionLight.h">
       <Filter>UsefulTool\Light</Filter>
     </ClInclude>
@@ -590,6 +605,21 @@
     </ClInclude>
     <ClInclude Include="Common\MathUtils\Quaternion\Quaternion.h">
       <Filter>Common\MathUtils\Quaternion</Filter>
+    </ClInclude>
+    <ClInclude Include="Game3D\Player3D\Player3D.h">
+      <Filter>Game3D\Player3D</Filter>
+    </ClInclude>
+    <ClInclude Include="ResourceView\Texture\Texture.h">
+      <Filter>ResourceView\Texture</Filter>
+    </ClInclude>
+    <ClInclude Include="ResourceView\Texture\TextureManager.h">
+      <Filter>ResourceView\Texture</Filter>
+    </ClInclude>
+    <ClInclude Include="UsefulTool\Camera\CameraController\CameraController.h">
+      <Filter>UsefulTool\Camera\CameraController</Filter>
+    </ClInclude>
+    <ClInclude Include="UsefulTool\Camera\CameraSystem.h">
+      <Filter>UsefulTool\Camera</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

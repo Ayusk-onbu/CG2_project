@@ -55,6 +55,13 @@ Vector3 Subtract(const Vector3& v1, const Vector3& v2) {
 	ret.z = v1.z - v2.z;
 	return ret;
 }
+Vector3 Multiply(const Vector3& v, const Vector3& v2) {
+	Vector3 ret;
+	ret.x = v.x * v2.x;
+	ret.y = v.y * v2.y;
+	ret.z = v.z * v2.z;
+	return ret;
+}
 //スカラー倍
 Vector3 Multiply(float scaler, const Vector3& v) {
 	Vector3 ret;

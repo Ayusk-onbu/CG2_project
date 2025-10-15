@@ -8,6 +8,7 @@ void SceneDirector::Initialize(Scene& firstScene) {
 	currentScene_ = &firstScene;
 	currentScene_->FngineSetUp(*p_fngine_);
 	currentScene_->Initialize();
+	currentScene_->GetSceneDirector(this);
 }
 
 void SceneDirector::Run() {
@@ -21,6 +22,7 @@ void SceneDirector::RequestChangeScene(Scene* newScene) {
 		delete currentScene_;
 	}
 	currentScene_ = newScene;
+	currentScene_->FngineSetUp(*p_fngine_);
 	currentScene_->Initialize();
 	currentScene_->GetSceneDirector(this);
 }
