@@ -25,10 +25,10 @@ void PipelineStateObject::InitializeDescs(D3D12System& d3d12, PSOTYPE type) {
 }
 
 void PipelineStateObject::Compile() {
-	vertexShaderBlob_ = CompileShader(L"Object3D.VS.hlsl",
+	vertexShaderBlob_ = CompileShader(L"resources/shaders/Object3D.VS.hlsl",
 		L"vs_6_0", dxc_.GetUtils().Get(), dxc_.GetCompiler().Get(), dxc_.GetIncludeHandle().Get());
 	assert(vertexShaderBlob_ != nullptr);
-	pixelShaderBlob_ = CompileShader(L"Object3D.PS.hlsl",
+	pixelShaderBlob_ = CompileShader(L"resources/shaders/Object3D.PS.hlsl",
 		L"ps_6_0", dxc_.GetUtils().Get(), dxc_.GetCompiler().Get(), dxc_.GetIncludeHandle().Get());
 	assert(pixelShaderBlob_ != nullptr);
 }
