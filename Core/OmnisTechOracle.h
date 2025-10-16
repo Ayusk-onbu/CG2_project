@@ -7,7 +7,7 @@ class OmnisTechOracle
 {
 public:
 	void Oracle(DXGI& dxgi);
-	Microsoft::WRL::ComPtr <IDXGIAdapter4> GetAdapter() {return useAdapter_;};
+	Microsoft::WRL::ComPtr <IDXGIAdapter4>& GetAdapter() {return useAdapter_;};
 private:
 	Microsoft::WRL::ComPtr <IDXGIAdapter4> useAdapter_;
 };

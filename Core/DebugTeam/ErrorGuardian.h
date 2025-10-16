@@ -12,7 +12,7 @@ public:
 
 	void SetDebugInterface();
 
-	void SetQueue(Microsoft::WRL::ComPtr <ID3D12Device> device);
+	void SetQueue(Microsoft::WRL::ComPtr <ID3D12Device>& device);
 
 private:
 	Microsoft::WRL::ComPtr <ID3D12Debug1> debugController_;

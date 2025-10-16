@@ -40,7 +40,7 @@ void ErrorGuardian::SetDebugInterface() {
 #endif 
 }
 
-void ErrorGuardian::SetQueue(Microsoft::WRL::ComPtr <ID3D12Device> device) {
+void ErrorGuardian::SetQueue(Microsoft::WRL::ComPtr <ID3D12Device>& device) {
 #ifdef _DEBUG
 	if (SUCCEEDED(device->QueryInterface(IID_PPV_ARGS(&infoQueue_)))) {
 		//やばいエラー時に止まる

@@ -19,7 +19,7 @@ void RenderTargetView::SetHandle() {
 	startHandle_ = descriptorHeap_.descriptorHeap_->GetCPUDescriptorHandleForHeapStart();
 }
 
-void RenderTargetView::MakeHandle(Microsoft::WRL::ComPtr <ID3D12Device> device,SwapChain& swapChain) {
+void RenderTargetView::MakeHandle(Microsoft::WRL::ComPtr <ID3D12Device>& device,SwapChain& swapChain) {
 	//まず1つ目を作る。一つ目は最初のところに作る。作る場所をこちらで指定してあげる必要がある
 	handles_[0] = startHandle_;
     device->CreateRenderTargetView(swapChain.GetResource(0).Get(), &desc_, handles_[0]);

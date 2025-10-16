@@ -13,7 +13,7 @@ public:
 	/// </summary>
 	void RecruitEngineer();
 
-	void AssignTaskToEngineer(Microsoft::WRL::ComPtr <ID3D12CommandQueue> commandQueue,const Window& window,SwapChain& swapChain);
+	void AssignTaskToEngineer(Microsoft::WRL::ComPtr <ID3D12CommandQueue>& commandQueue,const Window& window,SwapChain& swapChain);
 
 public:
 	Microsoft::WRL::ComPtr <IDXGIFactory7> dxgiFactory_;

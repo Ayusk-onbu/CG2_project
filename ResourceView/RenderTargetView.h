@@ -17,7 +17,7 @@ public:
 
 	void SetHandle();
 
-	void MakeHandle(Microsoft::WRL::ComPtr <ID3D12Device> device, SwapChain& swapChain);
+	void MakeHandle(Microsoft::WRL::ComPtr <ID3D12Device>& device, SwapChain& swapChain);
 
 	D3D12_CPU_DESCRIPTOR_HANDLE& GetHandle(int i) { return handles_[i]; }
 

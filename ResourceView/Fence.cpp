@@ -1,7 +1,7 @@
 #include "Fence.h"
 #include <cassert>
 
-void Fence::Initialize(Microsoft::WRL::ComPtr <ID3D12Device> device) {
+void Fence::Initialize(Microsoft::WRL::ComPtr <ID3D12Device>& device) {
 	HRESULT hr;
 	fence_ = nullptr;
 	value_ = 0;
@@ -12,12 +12,12 @@ void Fence::Initialize(Microsoft::WRL::ComPtr <ID3D12Device> device) {
 	assert(event_ != nullptr);
 }
 
-void Fence::Update(Microsoft::WRL::ComPtr <ID3D12CommandQueue> commandQueue) {
-	Signal(commandQueue.Get());
+void Fence::Update(Microsoft::WRL::ComPtr <ID3D12CommandQueue>& commandQueue) {
+	Signal(commandQueue);
 	Wait();
 }
 
-void Fence::Signal(Microsoft::WRL::ComPtr <ID3D12CommandQueue> commandQueue) {
+void Fence::Signal(Microsoft::WRL::ComPtr <ID3D12CommandQueue>& commandQueue) {
 	// 上限の更新
 	value_++;
 	// ゴールの位置の設定と、どの位進んだかを記録するための物を渡す

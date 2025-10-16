@@ -11,6 +11,7 @@ Fngine::Fngine() {
 Fngine::~Fngine() {
 	ImGuiManager::GetInstance()->Shutdown();
 
+	TextureManager::GetInstance()->ReleaseInstance();
 	//解放処理
 	tachyonSync_.GetCGPU().UnLoad();
 	music_.UnLoad();
@@ -34,7 +35,7 @@ void Fngine::Initialize() {
 	dxgi_.RecruitEngineer();
 	omnisTechOracle_.Oracle(dxgi_);
 	d3d12_.SelectLevel(omnisTechOracle_);
-	errorGuardian_.SetQueue(d3d12_.GetDevice().Get());
+	errorGuardian_.SetQueue(d3d12_.GetDevice());
 	command_.GetQueue().SetDescD();
 	HRESULT hr;
 	hr = d3d12_.GetDevice()->CreateCommandQueue(&command_.GetQueue().GetDesc(), IID_PPV_ARGS(&command_.GetQueue().GetQueue()));
@@ -52,14 +53,14 @@ void Fngine::Initialize() {
 		Log::ViewFile("CreateCommandList failed!!!\n");
 	}
 	swapChain_.Initialize(window_);
-	dxgi_.AssignTaskToEngineer(command_.GetQueue().GetQueue().Get(), window_,swapChain_);
+	dxgi_.AssignTaskToEngineer(command_.GetQueue().GetQueue(), window_,swapChain_);
 	swapChain_.MakeResource();
 	srv_.InitializeHeap(d3d12_);
 	rtv_.Initialize(&d3d12_,swapChain_);
 	dsv_.InitializeHeap(d3d12_);
 	dsv_.MakeResource(d3d12_, kClienWidth_, kClienHeight_);
 	d3d12_.GetDevice()->CreateDepthStencilView(dsv_.GetResource().Get(), &dsv_.GetDSVDesc(), dsv_.GetHeap().GetHeap()->GetCPUDescriptorHandleForHeapStart());
-	tachyonSync_.GetCGPU().Initialize(d3d12_.GetDevice().Get());
+	tachyonSync_.GetCGPU().Initialize(d3d12_.GetDevice());
 	pso_.Initialize(d3d12_, PSOTYPE::Normal);
 	osr_.Initialize(d3d12_,srv_, float(kClienWidth_), float(kClienHeight_));
 	viewport_.Width = static_cast<float>(window_.GetWindowRect().right);
@@ -139,7 +140,7 @@ void Fngine::EndFrame() {
 	//GPUとOSに画面の交換を行うように通知する
 	swapChain_.GetSwapChain()->Present(1, 0);
 
-	tachyonSync_.GetCGPU().Update(command_.GetQueue().GetQueue().Get());
+	tachyonSync_.GetCGPU().Update(command_.GetQueue().GetQueue());
 
 
 	//次のフレーム用のコマンドリストを準備

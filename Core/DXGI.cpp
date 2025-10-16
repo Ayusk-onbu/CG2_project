@@ -10,7 +10,7 @@ void DXGI::RecruitEngineer() {
 	assert(SUCCEEDED(hr));
 }
 
-void DXGI::AssignTaskToEngineer(Microsoft::WRL::ComPtr <ID3D12CommandQueue> commandQueue, const Window& window, SwapChain& swapChain) {
+void DXGI::AssignTaskToEngineer(Microsoft::WRL::ComPtr <ID3D12CommandQueue>& commandQueue, const Window& window, SwapChain& swapChain) {
 	//コマンドキュー、ウィンドウハンドル、設定を渡して生成する
 	HRESULT hr = dxgiFactory_->CreateSwapChainForHwnd(commandQueue.Get(), window.GetHwnd(), &swapChain.GetDesc(), nullptr, nullptr, reinterpret_cast<IDXGISwapChain1**>(swapChain.GetSwapChain().GetAddressOf()));
 	assert(SUCCEEDED(hr));

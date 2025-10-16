@@ -82,7 +82,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		}
 		
 	}
-	TextureManager::GetInstance()->ReleaseInstance();
+	
 	//COMの初期化を解除
 	CoUninitialize();
 	return 0;
