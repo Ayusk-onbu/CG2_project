@@ -1,6 +1,5 @@
 #pragma once
 #include "ModelObject.h"
-#include "Cameras.h"
 
 class Player3D
 {

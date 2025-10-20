@@ -5,6 +5,8 @@ class ModelObject
 	:public ObjectBase
 {
 public:
+	~ModelObject();
+public:
 	void Initialize(Fngine* fngine);
 	void Initialize(D3D12System& d3d12, const std::string& filename, const std::string& directoryPath = "resources");
 	void Initialize(D3D12System& d3d12, ModelData& modelData);

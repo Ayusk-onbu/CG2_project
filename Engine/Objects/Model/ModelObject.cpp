@@ -1,9 +1,16 @@
 #include "ModelObject.h"
 #include <sstream>
+#include "Log.h"
 
 //==========-+-==========
 // Initialize Function
 //==========-+-==========
+
+ModelObject::~ModelObject() {
+	/*if (vertexResource_)   vertexResource_.Reset();
+	if (materialResource_) materialResource_.Reset();
+	if (wvpResource_)      wvpResource_.Reset();*/
+}
 
 void ModelObject::Initialize(Fngine* fngine) {
 	if (fngine) {

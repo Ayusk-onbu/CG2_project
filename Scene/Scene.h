@@ -5,6 +5,8 @@ class SceneDirector;
 class Scene
 {
 public:
+	virtual ~Scene() = default;
+public:
 	virtual void Initialize() = 0;
 	virtual void Update() = 0;
 	virtual void Draw() = 0;

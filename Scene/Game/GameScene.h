@@ -1,7 +1,6 @@
 #pragma once
 #include "Fngine.h"
 #include "Scene.h"
-#include "Cameras.h"
 #include "WorldTransform.h"
 #include "Player3D.h"
 
@@ -10,7 +9,7 @@ class GameScene
 {
 public:
 	GameScene()=default;
-	~GameScene();
+	~GameScene()override;
 public:// Sceneにまつわる関数
 	void Initialize()override;
 	void Update()override;

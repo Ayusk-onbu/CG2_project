@@ -68,7 +68,7 @@
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <TreatWarningAsError>true</TreatWarningAsError>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
-      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)Music;$(ProjectDir)Input;$(ProjectDir)Common;$(ProjectDir)Common\Vector;$(ProjectDir)Common\Matrix;$(ProjectDir)Common\MathUtils;$(ProjectDir)Advanced;$(ProjectDir)Common\Functions;$(ProjectDir)Core;$(ProjectDir)Core\Command;$(ProjectDir)Core\DebugTeam;$(ProjectDir)ResourceView;$(ProjectDir)ResourceView\PipelineStateObject;$(ProjectDir)Objects;$(ProjectDir)Objects\Model;$(ProjectDir)Objects\Primitive;$(ProjectDir)UsefulTool\Time;$(ProjectDir)UsefulTool\Camera;$(ProjectDir)UsefulTool\Light;$(ProjectDir)UsefulTool\OSR;$(ProjectDir)UsefulTool\Easing;$(ProjectDir)UsefulTool\GridLine;$(ProjectDir)Scene;$(ProjectDir)UsefulTool\Random;$(ProjectDir)Common\MathUtils\Phisycs;$(ProjectDir)Common\MathUtils\Physics\Collider;$(ProjectDir)Scene\Game;$(ProjectDir)Scene\Test;$(ProjectDir)Common\MathUtils\Quaternion;$(ProjectDir)Game3D;$(ProjectDir)Game3D\Player3D;$(ProjectDir)ResourceView\Texture;$(ProjectDir)UsefulTool\Camera\CameraController</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)Engine\Music;$(ProjectDir)Engine\Input;$(ProjectDir)Common;$(ProjectDir)Common\Structure\Vector;$(ProjectDir)Common\Structure\Matrix;$(ProjectDir)Common\MathUtils;$(ProjectDir)Common\Structure\Advanced;$(ProjectDir)Common\Functions;$(ProjectDir)Engine\Core;$(ProjectDir)Engine\Core\Command;$(ProjectDir)Engine\Core\DebugTeam;$(ProjectDir)Engine\ResourceView;$(ProjectDir)Engine\ResourceView\PipelineStateObject;$(ProjectDir)Engine\Objects;$(ProjectDir)Engine\Objects\Model;$(ProjectDir)Engine\Objects\Primitive;$(ProjectDir)UsefulTool\Time;$(ProjectDir)UsefulTool\Camera;$(ProjectDir)UsefulTool\Light;$(ProjectDir)UsefulTool\OSR;$(ProjectDir)UsefulTool\Easing;$(ProjectDir)UsefulTool\GridLine;$(ProjectDir)Scene;$(ProjectDir)UsefulTool\Random;$(ProjectDir)Common\MathUtils\Phisycs;$(ProjectDir)Common\MathUtils\Physics\Collider;$(ProjectDir)Scene\Game;$(ProjectDir)Scene\Test;$(ProjectDir)Common\MathUtils\Quaternion;$(ProjectDir)Game3D;$(ProjectDir)Game3D\Player3D;$(ProjectDir)Engine\ResourceView\Texture;$(ProjectDir)UsefulTool\Camera\CameraController;$(ProjectDir)Engine;$(ProjectDir)Common\Structure</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -92,7 +92,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
       <AdditionalOptions>/utf-8 %(AdditionalOptions)</AdditionalOptions>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
-      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)Music;$(ProjectDir)Input;$(ProjectDir)Common;$(ProjectDir)Common\Vector;$(ProjectDir)Common\Matrix;$(ProjectDir)Common\MathUtils;$(ProjectDir)Advanced;$(ProjectDir)Common\Functions;$(ProjectDir)Core;$(ProjectDir)Core\Command;$(ProjectDir)Core\DebugTeam;$(ProjectDir)ResourceView;$(ProjectDir)ResourceView\PipelineStateObject;$(ProjectDir)Objects;$(ProjectDir)Objects\Model;$(ProjectDir)Objects\Primitive;$(ProjectDir)UsefulTool\Time;$(ProjectDir)UsefulTool\Camera;$(ProjectDir)UsefulTool\Light;$(ProjectDir)UsefulTool\OSR;$(ProjectDir)UsefulTool\Easing;$(ProjectDir)UsefulTool\GridLine;$(ProjectDir)Scene;$(ProjectDir)UsefulTool\Random;$(ProjectDir)Common\MathUtils\Phisycs;$(ProjectDir)Common\MathUtils\Physics\Collider;$(ProjectDir)Scene\Game;$(ProjectDir)Scene\Test;$(ProjectDir)Common\MathUtils\Quaternion;$(ProjectDir)Game3D;$(ProjectDir)Game3D\Player3D;$(ProjectDir)ResourceView\Texture;$(ProjectDir)UsefulTool\Camera\CameraController</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)Engine\Music;$(ProjectDir)Engine\Input;$(ProjectDir)Common;$(ProjectDir)Common\Structure\Vector;$(ProjectDir)Common\Structure\Matrix;$(ProjectDir)Common\MathUtils;$(ProjectDir)Common\Structure\Advanced;$(ProjectDir)Common\Functions;$(ProjectDir)Engine\Core;$(ProjectDir)Engine\Core\Command;$(ProjectDir)Engine\Core\DebugTeam;$(ProjectDir)Engine\ResourceView;$(ProjectDir)Engine\ResourceView\PipelineStateObject;$(ProjectDir)Engine\Objects;$(ProjectDir)Engine\Objects\Model;$(ProjectDir)Engine\Objects\Primitive;$(ProjectDir)UsefulTool\Time;$(ProjectDir)UsefulTool\Camera;$(ProjectDir)UsefulTool\Light;$(ProjectDir)UsefulTool\OSR;$(ProjectDir)UsefulTool\Easing;$(ProjectDir)UsefulTool\GridLine;$(ProjectDir)Scene;$(ProjectDir)UsefulTool\Random;$(ProjectDir)Common\MathUtils\Phisycs;$(ProjectDir)Common\MathUtils\Physics\Collider;$(ProjectDir)Scene\Game;$(ProjectDir)Scene\Test;$(ProjectDir)Common\MathUtils\Quaternion;$(ProjectDir)Game3D;$(ProjectDir)Game3D\Player3D;$(ProjectDir)Engine\ResourceView\Texture;$(ProjectDir)UsefulTool\Camera\CameraController;$(ProjectDir)Engine;$(ProjectDir)Common\Structure</AdditionalIncludeDirectories>
       <Optimization>MinSpace</Optimization>
     </ClCompile>
     <Link>
@@ -118,7 +118,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
       <AdditionalOptions>/utf-8 %(AdditionalOptions)</AdditionalOptions>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
-      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)Music;$(ProjectDir)Input;$(ProjectDir)Common;$(ProjectDir)Common\Vector;$(ProjectDir)Common\Matrix;$(ProjectDir)Common\MathUtils;$(ProjectDir)Advanced;$(ProjectDir)Common\Functions;$(ProjectDir)Core;$(ProjectDir)Core\Command;$(ProjectDir)Core\DebugTeam;$(ProjectDir)ResourceView;$(ProjectDir)ResourceView\PipelineStateObject;$(ProjectDir)Objects;$(ProjectDir)Objects\Model;$(ProjectDir)Objects\Primitive;$(ProjectDir)UsefulTool\Time;$(ProjectDir)UsefulTool\Camera;$(ProjectDir)UsefulTool\Light;$(ProjectDir)UsefulTool\OSR;$(ProjectDir)UsefulTool\Easing;$(ProjectDir)UsefulTool\GridLine;$(ProjectDir)Scene;$(ProjectDir)UsefulTool\Random;$(ProjectDir)Common\MathUtils\Phisycs;$(ProjectDir)Common\MathUtils\Physics\Collider;$(ProjectDir)Scene\Game;$(ProjectDir)Scene\Test;$(ProjectDir)Common\MathUtils\Quaternion;$(ProjectDir)Game3D;$(ProjectDir)Game3D\Player3D;$(ProjectDir)ResourceView\Texture;$(ProjectDir)UsefulTool\Camera\CameraController</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)Engine\Music;$(ProjectDir)Engine\Input;$(ProjectDir)Common;$(ProjectDir)Common\Structure\Vector;$(ProjectDir)Common\Structure\Matrix;$(ProjectDir)Common\MathUtils;$(ProjectDir)Common\Structure\Advanced;$(ProjectDir)Common\Functions;$(ProjectDir)Engine\Core;$(ProjectDir)Engine\Core\Command;$(ProjectDir)Engine\Core\DebugTeam;$(ProjectDir)Engine\ResourceView;$(ProjectDir)Engine\ResourceView\PipelineStateObject;$(ProjectDir)Engine\Objects;$(ProjectDir)Engine\Objects\Model;$(ProjectDir)Engine\Objects\Primitive;$(ProjectDir)UsefulTool\Time;$(ProjectDir)UsefulTool\Camera;$(ProjectDir)UsefulTool\Light;$(ProjectDir)UsefulTool\OSR;$(ProjectDir)UsefulTool\Easing;$(ProjectDir)UsefulTool\GridLine;$(ProjectDir)Scene;$(ProjectDir)UsefulTool\Random;$(ProjectDir)Common\MathUtils\Phisycs;$(ProjectDir)Common\MathUtils\Physics\Collider;$(ProjectDir)Scene\Game;$(ProjectDir)Scene\Test;$(ProjectDir)Common\MathUtils\Quaternion;$(ProjectDir)Game3D;$(ProjectDir)Game3D\Player3D;$(ProjectDir)Engine\ResourceView\Texture;$(ProjectDir)UsefulTool\Camera\CameraController;$(ProjectDir)Engine;$(ProjectDir)Common\Structure</AdditionalIncludeDirectories>
       <Optimization>Disabled</Optimization>
       <WholeProgramOptimization>false</WholeProgramOptimization>
     </ClCompile>
@@ -135,29 +135,60 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="Advanced\AABB.cpp" />
-    <ClCompile Include="Advanced\Transform.cpp" />
-    <ClCompile Include="Advanced\WorldTransform.cpp" />
     <ClCompile Include="Common\Functions\Trigonometric.cpp" />
     <ClCompile Include="Common\MathUtils\MathUtils.cpp" />
     <ClCompile Include="Common\MathUtils\Physics\Collider\Collider.cpp" />
     <ClCompile Include="Common\MathUtils\Physics\Collider\CollisionManager.cpp" />
     <ClCompile Include="Common\MathUtils\Quaternion\Quaternion.cpp" />
-    <ClCompile Include="Common\Matrix\Matrix4x4.cpp" />
-    <ClCompile Include="Common\Vector\Vector2.cpp" />
-    <ClCompile Include="Common\Vector\Vector3.cpp" />
-    <ClCompile Include="Core\Command\CommandList.cpp" />
-    <ClCompile Include="Core\Command\CommandQueue.cpp" />
-    <ClCompile Include="Core\Command\TheOrderCommand.cpp" />
-    <ClCompile Include="Core\D3D12System.cpp" />
-    <ClCompile Include="Core\DebugTeam\ErrorGuardian.cpp" />
-    <ClCompile Include="Core\DebugTeam\ImGuiManager.cpp" />
-    <ClCompile Include="Core\DebugTeam\Log.cpp" />
-    <ClCompile Include="Core\DXGI.cpp" />
-    <ClCompile Include="Core\OmnisTechOracle.cpp" />
-    <ClCompile Include="Core\TachyonSync.cpp" />
-    <ClCompile Include="Core\Window.cpp" />
-    <ClCompile Include="DenugCameraController.cpp" />
+    <ClCompile Include="Common\Structure\Advanced\AABB.cpp" />
+    <ClCompile Include="Common\Structure\Advanced\Transform.cpp" />
+    <ClCompile Include="Common\Structure\Advanced\WorldTransform.cpp" />
+    <ClCompile Include="Common\Structure\Matrix\Matrix4x4.cpp" />
+    <ClCompile Include="Common\Structure\Vector\Vector2.cpp" />
+    <ClCompile Include="Common\Structure\Vector\Vector3.cpp" />
+    <ClCompile Include="Engine\Core\Command\CommandList.cpp" />
+    <ClCompile Include="Engine\Core\Command\CommandQueue.cpp" />
+    <ClCompile Include="Engine\Core\Command\TheOrderCommand.cpp" />
+    <ClCompile Include="Engine\Core\D3D12System.cpp" />
+    <ClCompile Include="Engine\Core\DebugTeam\ErrorGuardian.cpp" />
+    <ClCompile Include="Engine\Core\DebugTeam\ImGuiManager.cpp" />
+    <ClCompile Include="Engine\Core\DebugTeam\Log.cpp" />
+    <ClCompile Include="Engine\Core\DXGI.cpp" />
+    <ClCompile Include="Engine\Core\OmnisTechOracle.cpp" />
+    <ClCompile Include="Engine\Core\TachyonSync.cpp" />
+    <ClCompile Include="Engine\Core\Window.cpp" />
+    <ClCompile Include="Engine\Fngine.cpp" />
+    <ClCompile Include="Engine\Input\GamePad.cpp" />
+    <ClCompile Include="Engine\Input\InputManager.cpp" />
+    <ClCompile Include="Engine\Input\Key.cpp" />
+    <ClCompile Include="Engine\Input\Mouse.cpp" />
+    <ClCompile Include="Engine\Music\Audio.cpp" />
+    <ClCompile Include="Engine\Music\BGM.cpp" />
+    <ClCompile Include="Engine\Music\Music.cpp" />
+    <ClCompile Include="Engine\Music\SE.cpp" />
+    <ClCompile Include="Engine\Objects\ModelManager.cpp" />
+    <ClCompile Include="Engine\Objects\Model\ModelObject.cpp" />
+    <ClCompile Include="Engine\Objects\ObjectBase.cpp" />
+    <ClCompile Include="Engine\Objects\Primitive\LineObject.cpp" />
+    <ClCompile Include="Engine\Objects\Primitive\SphereObject.cpp" />
+    <ClCompile Include="Engine\Objects\Primitive\SpriteObject.cpp" />
+    <ClCompile Include="Engine\Objects\Primitive\TriangleObject.cpp" />
+    <ClCompile Include="Engine\ResourceView\DepthStencil.cpp" />
+    <ClCompile Include="Engine\ResourceView\DescriptorHeap.cpp" />
+    <ClCompile Include="Engine\ResourceView\Fence.cpp" />
+    <ClCompile Include="Engine\ResourceView\PipelineStateObject\BlendState.cpp" />
+    <ClCompile Include="Engine\ResourceView\PipelineStateObject\DXC.cpp" />
+    <ClCompile Include="Engine\ResourceView\PipelineStateObject\InputLayout.cpp" />
+    <ClCompile Include="Engine\ResourceView\PipelineStateObject\PipelineStateObject.cpp" />
+    <ClCompile Include="Engine\ResourceView\PipelineStateObject\RasterizerState.cpp" />
+    <ClCompile Include="Engine\ResourceView\PipelineStateObject\RootSignature.cpp" />
+    <ClCompile Include="Engine\ResourceView\RenderTargetView.cpp" />
+    <ClCompile Include="Engine\ResourceView\ResourceBarrier.cpp" />
+    <ClCompile Include="Engine\ResourceView\ResourceFunc.cpp" />
+    <ClCompile Include="Engine\ResourceView\ShaderResourceView.cpp" />
+    <ClCompile Include="Engine\ResourceView\SwapChain.cpp" />
+    <ClCompile Include="Engine\ResourceView\Texture\Texture.cpp" />
+    <ClCompile Include="Engine\ResourceView\Texture\TextureManager.cpp" />
     <ClCompile Include="externals\imgui\imgui.cpp" />
     <ClCompile Include="externals\imgui\imgui_demo.cpp" />
     <ClCompile Include="externals\imgui\imgui_draw.cpp" />
@@ -165,47 +196,15 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="externals\imgui\imgui_impl_win32.cpp" />
     <ClCompile Include="externals\imgui\imgui_tables.cpp" />
     <ClCompile Include="externals\imgui\imgui_widgets.cpp" />
-    <ClCompile Include="Fngine.cpp" />
     <ClCompile Include="Game3D\Player3D\Player3D.cpp" />
-    <ClCompile Include="Input\GamePad.cpp" />
-    <ClCompile Include="Input\InputManager.cpp" />
-    <ClCompile Include="Input\Key.cpp" />
-    <ClCompile Include="Input\Mouse.cpp" />
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="Music\Audio.cpp" />
-    <ClCompile Include="Music\BGM.cpp" />
-    <ClCompile Include="Music\Music.cpp" />
-    <ClCompile Include="Music\SE.cpp" />
-    <ClCompile Include="Objects\ModelManager.cpp" />
-    <ClCompile Include="Objects\Model\ModelObject.cpp" />
-    <ClCompile Include="Objects\ObjectBase.cpp" />
-    <ClCompile Include="Objects\Primitive\LineObject.cpp" />
-    <ClCompile Include="Objects\Primitive\SphereObject.cpp" />
-    <ClCompile Include="Objects\Primitive\SpriteObject.cpp" />
-    <ClCompile Include="Objects\Primitive\TriangleObject.cpp" />
-    <ClCompile Include="ResourceView\DepthStencil.cpp" />
-    <ClCompile Include="ResourceView\DescriptorHeap.cpp" />
-    <ClCompile Include="ResourceView\Fence.cpp" />
-    <ClCompile Include="ResourceView\PipelineStateObject\BlendState.cpp" />
-    <ClCompile Include="ResourceView\PipelineStateObject\DXC.cpp" />
-    <ClCompile Include="ResourceView\PipelineStateObject\InputLayout.cpp" />
-    <ClCompile Include="ResourceView\PipelineStateObject\PipelineStateObject.cpp" />
-    <ClCompile Include="ResourceView\PipelineStateObject\RasterizerState.cpp" />
-    <ClCompile Include="ResourceView\PipelineStateObject\RootSignature.cpp" />
-    <ClCompile Include="ResourceView\RenderTargetView.cpp" />
-    <ClCompile Include="ResourceView\ResourceBarrier.cpp" />
-    <ClCompile Include="ResourceView\ResourceFunc.cpp" />
-    <ClCompile Include="ResourceView\ShaderResourceView.cpp" />
-    <ClCompile Include="ResourceView\SwapChain.cpp" />
-    <ClCompile Include="ResourceView\Texture\Texture.cpp" />
-    <ClCompile Include="ResourceView\Texture\TextureManager.cpp" />
     <ClCompile Include="Scene\Game\GameScene.cpp" />
     <ClCompile Include="Scene\Scene.cpp" />
     <ClCompile Include="Scene\SceneDirector.cpp" />
     <ClCompile Include="Scene\Test\TestScene.cpp" />
-    <ClCompile Include="TimedCall.cpp" />
     <ClCompile Include="UsefulTool\Camera\Camera.cpp" />
     <ClCompile Include="UsefulTool\Camera\CameraController\CameraController.cpp" />
+    <ClCompile Include="UsefulTool\Camera\CameraController\DenugCameraController.cpp" />
     <ClCompile Include="UsefulTool\Camera\CameraController\NormalCameraController.cpp" />
     <ClCompile Include="UsefulTool\Camera\CameraSystem.cpp" />
     <ClCompile Include="UsefulTool\Easing\Easing.cpp" />
@@ -216,35 +215,67 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="UsefulTool\Time\Chronos.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Advanced\AABB.h" />
-    <ClInclude Include="Advanced\Material.h" />
-    <ClInclude Include="Advanced\Transform.h" />
-    <ClInclude Include="Advanced\TransformationMatrix.h" />
-    <ClInclude Include="Advanced\VertexData.h" />
-    <ClInclude Include="Advanced\WorldTransform.h" />
-    <ClInclude Include="Cameras.h" />
     <ClInclude Include="Common\Functions\Trigonometric.h" />
     <ClInclude Include="Common\MathUtils\MathUtils.h" />
     <ClInclude Include="Common\MathUtils\Physics\Collider\Collider.h" />
     <ClInclude Include="Common\MathUtils\Physics\Collider\CollisionManager.h" />
     <ClInclude Include="Common\MathUtils\Quaternion\Quaternion.h" />
-    <ClInclude Include="Common\Matrix\Matrix3x3.h" />
-    <ClInclude Include="Common\Matrix\Matrix4x4.h" />
-    <ClInclude Include="Common\Structures.h" />
-    <ClInclude Include="Common\Vector\Vector2.h" />
-    <ClInclude Include="Common\Vector\Vector3.h" />
-    <ClInclude Include="Common\Vector\Vector4.h" />
-    <ClInclude Include="Core\Command\CommandList.h" />
-    <ClInclude Include="Core\Command\CommandQueue.h" />
-    <ClInclude Include="Core\Command\TheOrderCommand.h" />
-    <ClInclude Include="Core\D3D12System.h" />
-    <ClInclude Include="Core\DebugTeam\ErrorGuardian.h" />
-    <ClInclude Include="Core\DebugTeam\ImGuiManager.h" />
-    <ClInclude Include="Core\DebugTeam\Log.h" />
-    <ClInclude Include="Core\DXGI.h" />
-    <ClInclude Include="Core\OmnisTechOracle.h" />
-    <ClInclude Include="Core\TachyonSync.h" />
-    <ClInclude Include="Core\Window.h" />
+    <ClInclude Include="Common\Structure\Advanced\AABB.h" />
+    <ClInclude Include="Common\Structure\Advanced\Material.h" />
+    <ClInclude Include="Common\Structure\Advanced\Transform.h" />
+    <ClInclude Include="Common\Structure\Advanced\TransformationMatrix.h" />
+    <ClInclude Include="Common\Structure\Advanced\VertexData.h" />
+    <ClInclude Include="Common\Structure\Advanced\WorldTransform.h" />
+    <ClInclude Include="Common\Structure\Matrix\Matrix3x3.h" />
+    <ClInclude Include="Common\Structure\Matrix\Matrix4x4.h" />
+    <ClInclude Include="Common\Structure\Structures.h" />
+    <ClInclude Include="Common\Structure\Vector\Vector2.h" />
+    <ClInclude Include="Common\Structure\Vector\Vector3.h" />
+    <ClInclude Include="Common\Structure\Vector\Vector4.h" />
+    <ClInclude Include="Engine\Core\Command\CommandList.h" />
+    <ClInclude Include="Engine\Core\Command\CommandQueue.h" />
+    <ClInclude Include="Engine\Core\Command\TheOrderCommand.h" />
+    <ClInclude Include="Engine\Core\D3D12System.h" />
+    <ClInclude Include="Engine\Core\DebugTeam\ErrorGuardian.h" />
+    <ClInclude Include="Engine\Core\DebugTeam\ImGuiManager.h" />
+    <ClInclude Include="Engine\Core\DebugTeam\Log.h" />
+    <ClInclude Include="Engine\Core\DXGI.h" />
+    <ClInclude Include="Engine\Core\OmnisTechOracle.h" />
+    <ClInclude Include="Engine\Core\TachyonSync.h" />
+    <ClInclude Include="Engine\Core\Window.h" />
+    <ClInclude Include="Engine\Fngine.h" />
+    <ClInclude Include="Engine\Input\GamePad.h" />
+    <ClInclude Include="Engine\Input\InputManager.h" />
+    <ClInclude Include="Engine\Input\Key.h" />
+    <ClInclude Include="Engine\Input\Mouse.h" />
+    <ClInclude Include="Engine\Music\Audio.h" />
+    <ClInclude Include="Engine\Music\BGM.h" />
+    <ClInclude Include="Engine\Music\Music.h" />
+    <ClInclude Include="Engine\Music\SE.h" />
+    <ClInclude Include="Engine\Objects\ModelManager.h" />
+    <ClInclude Include="Engine\Objects\Model\ModelData.h" />
+    <ClInclude Include="Engine\Objects\Model\ModelObject.h" />
+    <ClInclude Include="Engine\Objects\ObjectBase.h" />
+    <ClInclude Include="Engine\Objects\Primitive\LineObject.h" />
+    <ClInclude Include="Engine\Objects\Primitive\SphereObject.h" />
+    <ClInclude Include="Engine\Objects\Primitive\SpriteObject.h" />
+    <ClInclude Include="Engine\Objects\Primitive\TriangleObject.h" />
+    <ClInclude Include="Engine\ResourceView\DepthStencil.h" />
+    <ClInclude Include="Engine\ResourceView\DescriptorHeap.h" />
+    <ClInclude Include="Engine\ResourceView\Fence.h" />
+    <ClInclude Include="Engine\ResourceView\PipelineStateObject\BlendState.h" />
+    <ClInclude Include="Engine\ResourceView\PipelineStateObject\DXC.h" />
+    <ClInclude Include="Engine\ResourceView\PipelineStateObject\InputLayout.h" />
+    <ClInclude Include="Engine\ResourceView\PipelineStateObject\PipelineStateObject.h" />
+    <ClInclude Include="Engine\ResourceView\PipelineStateObject\RasterizerState.h" />
+    <ClInclude Include="Engine\ResourceView\PipelineStateObject\RootSignature.h" />
+    <ClInclude Include="Engine\ResourceView\RenderTargetView.h" />
+    <ClInclude Include="Engine\ResourceView\ResourceBarrier.h" />
+    <ClInclude Include="Engine\ResourceView\ResourceFunc.h" />
+    <ClInclude Include="Engine\ResourceView\ShaderResourceView.h" />
+    <ClInclude Include="Engine\ResourceView\SwapChain.h" />
+    <ClInclude Include="Engine\ResourceView\Texture\Texture.h" />
+    <ClInclude Include="Engine\ResourceView\Texture\TextureManager.h" />
     <ClInclude Include="externals\imgui\imconfig.h" />
     <ClInclude Include="externals\imgui\imgui.h" />
     <ClInclude Include="externals\imgui\imgui_impl_dx12.h" />
@@ -253,45 +284,11 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="externals\imgui\imstb_rectpack.h" />
     <ClInclude Include="externals\imgui\imstb_textedit.h" />
     <ClInclude Include="externals\imgui\imstb_truetype.h" />
-    <ClInclude Include="Fngine.h" />
     <ClInclude Include="Game3D\Player3D\Player3D.h" />
-    <ClInclude Include="Input\GamePad.h" />
-    <ClInclude Include="Input\InputManager.h" />
-    <ClInclude Include="Input\Key.h" />
-    <ClInclude Include="Input\Mouse.h" />
-    <ClInclude Include="Music\Audio.h" />
-    <ClInclude Include="Music\BGM.h" />
-    <ClInclude Include="Music\Music.h" />
-    <ClInclude Include="Music\SE.h" />
-    <ClInclude Include="Objects\ModelManager.h" />
-    <ClInclude Include="Objects\Model\ModelData.h" />
-    <ClInclude Include="Objects\Model\ModelObject.h" />
-    <ClInclude Include="Objects\ObjectBase.h" />
-    <ClInclude Include="Objects\Primitive\LineObject.h" />
-    <ClInclude Include="Objects\Primitive\SphereObject.h" />
-    <ClInclude Include="Objects\Primitive\SpriteObject.h" />
-    <ClInclude Include="Objects\Primitive\TriangleObject.h" />
-    <ClInclude Include="ResourceView\DepthStencil.h" />
-    <ClInclude Include="ResourceView\DescriptorHeap.h" />
-    <ClInclude Include="ResourceView\Fence.h" />
-    <ClInclude Include="ResourceView\PipelineStateObject\BlendState.h" />
-    <ClInclude Include="ResourceView\PipelineStateObject\DXC.h" />
-    <ClInclude Include="ResourceView\PipelineStateObject\InputLayout.h" />
-    <ClInclude Include="ResourceView\PipelineStateObject\PipelineStateObject.h" />
-    <ClInclude Include="ResourceView\PipelineStateObject\RasterizerState.h" />
-    <ClInclude Include="ResourceView\PipelineStateObject\RootSignature.h" />
-    <ClInclude Include="ResourceView\RenderTargetView.h" />
-    <ClInclude Include="ResourceView\ResourceBarrier.h" />
-    <ClInclude Include="ResourceView\ResourceFunc.h" />
-    <ClInclude Include="ResourceView\ShaderResourceView.h" />
-    <ClInclude Include="ResourceView\SwapChain.h" />
-    <ClInclude Include="ResourceView\Texture\Texture.h" />
-    <ClInclude Include="ResourceView\Texture\TextureManager.h" />
     <ClInclude Include="Scene\Game\GameScene.h" />
     <ClInclude Include="Scene\Scene.h" />
     <ClInclude Include="Scene\SceneDirector.h" />
     <ClInclude Include="Scene\Test\TestScene.h" />
-    <ClInclude Include="TimedCall.h" />
     <ClInclude Include="UsefulTool\Camera\Camera.h" />
     <ClInclude Include="UsefulTool\Camera\CameraController\CameraController.h" />
     <ClInclude Include="UsefulTool\Camera\CameraSystem.h" />

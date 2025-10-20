@@ -4,6 +4,7 @@
 
 GameScene::~GameScene() {
 	
+	Log::ViewFile("Path GameScene ~");
 }
 
 void GameScene::Initialize() {

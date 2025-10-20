@@ -8,15 +8,11 @@
 
 void TestScene::Initialize() {
 	// Initialization code for the game scene
-	mainCamera_ = std::make_unique<Camera>();
-	mainCamera_->Initialize();
-	useCamera_ = &(*mainCamera_);
-
+	
 	
 }
 
 void TestScene::Update() {
-	useCamera_->Update();
 
 	if (InputManager::GetKey().PressKey(DIK_0)) {
 		hasRequestedNextScene_ = true;

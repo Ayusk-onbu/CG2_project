@@ -5,7 +5,7 @@ void Player3D::Initialize(Fngine* fngine)
 {
 	obj_ = std::make_unique<ModelObject>();
 	obj_->Initialize(fngine->GetD3D12System(),"axis.obj");
-	obj_->SetFngine(fngine);
+	obj_->SetFngine(fngine);//sdugasigdi
 	obj_->textureHandle_ = TextureManager::GetInstance()->LoadTexture("resources/uvChecker.png");
 	//han = TextureManager::GetInstance()->LoadTexture("resources/uvChecker.png");
 }
