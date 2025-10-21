@@ -23,7 +23,7 @@ public:
 private:
 
 private:
-	std::unique_ptr<Player3D>player_ = std::make_unique<Player3D>();
+
 };
 
 

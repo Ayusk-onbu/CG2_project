@@ -142,6 +142,7 @@ void Fngine::EndFrame() {
 
 	tachyonSync_.GetCGPU().Update(command_.GetQueue().GetQueue());
 
+	// ここにFPS固定するための処理を書く
 
 	//次のフレーム用のコマンドリストを準備
 	hr = command_.GetList().GetAllocator()->Reset();

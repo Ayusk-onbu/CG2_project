@@ -35,7 +35,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 	std::unique_ptr<SceneDirector> scene = std::make_unique<SceneDirector>();
 	scene->SetUpFngine(*fngine);
-	scene->Initialize(*new GameScene());
+	scene->Initialize(*new TestScene());
 	
 	
 	MSG msg{};

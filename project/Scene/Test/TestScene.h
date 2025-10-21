@@ -8,6 +8,9 @@ class TestScene
 	: public Scene
 {
 public:
+	TestScene() = default;
+	~TestScene() = default;
+public:
 
 	// =================================
 	// Override Functions
@@ -18,6 +21,6 @@ public:
 	void Draw() override;
 
 private:
-	
+	Player3D player_;
 };
 

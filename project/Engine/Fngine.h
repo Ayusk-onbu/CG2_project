@@ -22,16 +22,12 @@
 #include "Texture.h"
 #include "PipelineStateObject.h"
 #include "OffScreenRendering.h"
-
 #include "DirectionLight.h"
-
 #include "ImGuiManager.h"
 #include "Structures.h"
 #include "ResourceBarrier.h"
 #include "InputManager.h"
-#include "Mouse.h"
 #include "Music.h"
-
 #include "externals/DirectXTex/DirectXTex.h"
 
 #define pi float(3.14159265358979323846f)

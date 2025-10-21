@@ -8,8 +8,9 @@ public:
 	void Update();
 	void Draw();
 private:
+	void Move(Vector3& pos);
+private:
 	std::unique_ptr<ModelObject>obj_;
 	Vector3 move_ = { 0,0,0 };
-	int han;
 };
 

@@ -84,10 +84,14 @@ float Length(const Vector3& v) {
 }
 //正規化
 Vector3 Normalize(const Vector3& v) {
+	float length = Length(v);
+	if (length == 0.0f) {
+		return v;
+	}
 	Vector3 ret;
-	ret.x = v.x / Length(v);
-	ret.y = v.y / Length(v);
-	ret.z = v.z / Length(v);
+	ret.x = v.x / length;
+	ret.y = v.y / length;
+	ret.z = v.z / length;
 	return ret;
 }
 
