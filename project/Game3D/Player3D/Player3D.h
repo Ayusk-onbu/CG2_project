@@ -12,5 +12,7 @@ private:
 private:
 	std::unique_ptr<ModelObject>obj_;
 	Vector3 move_ = { 0,0,0 };
+	float speed_ = 1.0f;
+	float easeFrame_ = 0.0f;
 };
 

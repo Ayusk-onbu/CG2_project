@@ -1,4 +1,5 @@
 #include "ImGuiManager.h"
+#include "Chronos.h"
 #include <d3d12.h>
 #pragma comment(lib, "d3d12.lib")
 
@@ -56,7 +57,30 @@ void ImGuiManager::DrawAll() {
 		func();
 	}
 
+	if (ImGui::Button("FPS 30")) {
+		Chronos::GetInstance()->SetTargetFPS(30.0f);
+	}
+	if (ImGui::Button("FPS 60")) {
+		Chronos::GetInstance()->SetTargetFPS(60.0f);
+	}
+	if (ImGui::Button("FPS 80")) {
+		Chronos::GetInstance()->SetTargetFPS(80.0f);
+	}
+	if (ImGui::Button("FPS 120")) {
+		Chronos::GetInstance()->SetTargetFPS(120.0f);
+	}
+	if (ImGui::Button("IsFixed Change")) {
+		Chronos::GetInstance()->ChangeIsFixed();
+	}
+	if (Chronos::GetInstance()->GetIsFixed()) {
+		ImGui::Text("IsFixed :True");
+	}
+	else {
+		ImGui::Text("IsFixed :false");
+	}
 
+	ImGui::Text("FPS %f", static_cast<float>(Chronos::GetInstance()->GetFPS()));
+	ImGui::Text("FPS(ImGui) %f",ImGui::GetIO().Framerate);
 
 	ImGui::End();
 

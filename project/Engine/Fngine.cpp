@@ -1,5 +1,6 @@
 #include "Fngine.h"
 #include "TextureManager.h"
+#include "Chronos.h"
 #pragma comment(lib, "d3d12.lib")
 #pragma comment(lib,"dxgi.lib")
 #pragma comment(lib,"dxguid.lib")//0103 ReportLiveobject
@@ -79,6 +80,7 @@ void Fngine::Initialize() {
 	InputManager::Initialize(window_.GetWindowClass(), window_.GetHwnd());
 	ImGuiManager::GetInstance()->SetImGui(window_.GetHwnd(), d3d12_.GetDevice().Get(), srv_.GetDescriptorHeap().GetHeap().Get());
 	TextureManager::GetInstance()->Initialize(*this);
+	Chronos::GetInstance()->Initialize();
 
 	light_.Initialize(d3d12_);
 }
@@ -139,8 +141,8 @@ void Fngine::EndFrame() {
 
 	//GPUとOSに画面の交換を行うように通知する
 	swapChain_.GetSwapChain()->Present(1, 0);
-
 	tachyonSync_.GetCGPU().Update(command_.GetQueue().GetQueue());
+	Chronos::GetInstance()->Update();
 
 	// ここにFPS固定するための処理を書く
 

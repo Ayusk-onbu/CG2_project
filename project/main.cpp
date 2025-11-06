@@ -53,7 +53,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		}
 		else {
 			ImGuiManager::GetInstance()->BeginFrame();
-			Chronos::Update();
 			InputManager::Update();
 #pragma region OffScreenRendering
 			/*ResourceBarrier barrierO = {};

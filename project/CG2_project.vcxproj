@@ -220,6 +220,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="UsefulTool\Camera\CameraController\NormalCameraController.cpp" />
     <ClCompile Include="UsefulTool\Camera\CameraSystem.cpp" />
     <ClCompile Include="UsefulTool\Easing\Easing.cpp" />
+    <ClCompile Include="UsefulTool\Easing\EasingType.cpp" />
     <ClCompile Include="UsefulTool\GridLine\GridLine.cpp" />
     <ClCompile Include="UsefulTool\Light\DirectionLight.cpp" />
     <ClCompile Include="UsefulTool\OSR\OffScreenRendering.cpp" />
@@ -305,6 +306,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="UsefulTool\Camera\CameraController\CameraController.h" />
     <ClInclude Include="UsefulTool\Camera\CameraSystem.h" />
     <ClInclude Include="UsefulTool\Easing\Easing.h" />
+    <ClInclude Include="UsefulTool\Easing\EasingType.h" />
     <ClInclude Include="UsefulTool\GridLine\GridLine.h" />
     <ClInclude Include="UsefulTool\Light\DirectionLight.h" />
     <ClInclude Include="UsefulTool\OSR\OffScreenRendering.h" />

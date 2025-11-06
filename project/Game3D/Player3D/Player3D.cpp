@@ -14,17 +14,19 @@ void Player3D::Update()
 
 	Vector3 pos = obj_->worldTransform_.get_.Translation();
 	move_ = { 0.0f,0.0f,0.0f };
-
 	Move(pos);
+	Easing(pos, { pos.x,0.0f,pos.z }, {pos.x,1.0f,pos.z}, easeFrame_, 120.0f, EASINGTYPE::InSine);
+	
 
 	move_ = move_.z * CameraSystem::GetInstance()->GetActiveCamera()->zAxis_ + move_.x * CameraSystem::GetInstance()->GetActiveCamera()->xAxis_;
 	move_ = Normalize(move_);
 
 	//CameraSystem::GetInstance()->GetActiveCamera()->targetPos_ = obj_->worldTransform_.transform_.translation_;
-	pos += move_ * 5.0f;
+	pos += move_ * speed_;
 	obj_->worldTransform_.set_.Translation(pos);
 
 	ImGuiManager::GetInstance()->DrawDrag("PlayerPos", obj_->worldTransform_.get_.Translation());
+	easeFrame_ += 1.0f;
 }
 
 void Player3D::Draw()

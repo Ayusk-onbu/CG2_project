@@ -8,7 +8,7 @@ class GameScene
 	:public Scene
 {
 public:
-	GameScene()=default;
+	GameScene();
 	~GameScene()override;
 public:// Sceneにまつわる関数
 	void Initialize()override;
@@ -23,7 +23,7 @@ public:
 private:
 
 private:
-
+	std::unique_ptr<Player3D>player_;
 };
 
 

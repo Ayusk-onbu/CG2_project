@@ -28,6 +28,7 @@
 #include "ResourceBarrier.h"
 #include "InputManager.h"
 #include "Music.h"
+#include "Easing.h"
 #include "externals/DirectXTex/DirectXTex.h"
 
 #define pi float(3.14159265358979323846f)

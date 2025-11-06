@@ -5,6 +5,7 @@ class SceneDirector;
 class Scene
 {
 public:
+	Scene() = default;
 	virtual ~Scene() = default;
 public:
 	virtual void Initialize() = 0;

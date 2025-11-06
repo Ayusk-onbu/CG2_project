@@ -369,6 +369,9 @@
     <ClCompile Include="Common\Structure\Advanced\WorldTransform.cpp">
       <Filter>Common\Structure\Advanced</Filter>
     </ClCompile>
+    <ClCompile Include="UsefulTool\Easing\EasingType.cpp">
+      <Filter>UsefulTool\Easing</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="externals\imgui\imconfig.h">
@@ -619,6 +622,9 @@
     </ClInclude>
     <ClInclude Include="Common\Structure\Advanced\WorldTransform.h">
       <Filter>Common\Structure\Advanced</Filter>
+    </ClInclude>
+    <ClInclude Include="UsefulTool\Easing\EasingType.h">
+      <Filter>UsefulTool\Easing</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

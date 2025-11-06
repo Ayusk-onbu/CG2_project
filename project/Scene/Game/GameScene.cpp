@@ -2,24 +2,28 @@
 #include "ImGuiManager.h"
 #include "CameraSystem.h"
 
+GameScene::GameScene()
+	: player_(std::make_unique<Player3D>())
+{
+
+}
+
 GameScene::~GameScene() {
 	
 	Log::ViewFile("Path GameScene ~");
 }
 
 void GameScene::Initialize() {
-	CameraSystem::GetInstance()->MakeCamera("NormalCamera", CameraType::Normal);
-	CameraSystem::GetInstance()->MakeCamera("DebugCamera",CameraType::Debug);
-	CameraSystem::GetInstance()->SetActiveCamera("DebugCamera");
+	player_->Initialize(p_fngine_);
 
 }
 
 void GameScene::Update(){
-	
-	CameraSystem::GetInstance()->Update();
+	player_->Update();
 
 }
 
 void GameScene::Draw() {
 
+	player_->Draw();
 }
