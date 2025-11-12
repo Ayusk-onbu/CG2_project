@@ -133,6 +133,18 @@
     <Filter Include="Common\Structure\Advanced">
       <UniqueIdentifier>{b65f3c2e-68b8-428e-989d-0ef105d11d18}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Game3D\Player3D\PlayerState">
+      <UniqueIdentifier>{dd392997-87fb-4353-a4e7-d0a43b53ff03}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Game3D\Enemy">
+      <UniqueIdentifier>{c955f375-fa4e-46a7-9746-a8060ae65c76}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Game3D\Enemy\EnemyState">
+      <UniqueIdentifier>{18d78713-c94f-4916-9b57-c7fa9f8d7471}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Game3D\Bullet">
+      <UniqueIdentifier>{c5d09d8d-5964-470d-b187-39fdf1e9e843}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -371,6 +383,84 @@
     </ClCompile>
     <ClCompile Include="UsefulTool\Easing\EasingType.cpp">
       <Filter>UsefulTool\Easing</Filter>
+    </ClCompile>
+    <ClCompile Include="Game3D\Player3D\Player3DState\PlayerJumpState.cpp">
+      <Filter>Game3D\Player3D\PlayerState</Filter>
+    </ClCompile>
+    <ClCompile Include="Game3D\Player3D\Player3DState\PlayerState.cpp">
+      <Filter>Game3D\Player3D\PlayerState</Filter>
+    </ClCompile>
+    <ClCompile Include="Game3D\Player3D\Player3DState\PlayerStopState.cpp">
+      <Filter>Game3D\Player3D\PlayerState</Filter>
+    </ClCompile>
+    <ClCompile Include="Game3D\Player3D\Player3DState\PlayerWalkState.cpp">
+      <Filter>Game3D\Player3D\PlayerState</Filter>
+    </ClCompile>
+    <ClCompile Include="Game3D\Player3D\Player3DState\PlayerFallState.cpp">
+      <Filter>Game3D\Player3D\PlayerState</Filter>
+    </ClCompile>
+    <ClCompile Include="Game3D\Player3D\Player3DState\PlayerDoubleJumpState.cpp">
+      <Filter>Game3D\Player3D\PlayerState</Filter>
+    </ClCompile>
+    <ClCompile Include="Game3D\Player3D\Player3DState\PlayerDashState.cpp">
+      <Filter>Game3D\Player3D\PlayerState</Filter>
+    </ClCompile>
+    <ClCompile Include="Game3D\Player3D\Player3DState\PlayerAttackState.cpp">
+      <Filter>Game3D\Player3D\PlayerState</Filter>
+    </ClCompile>
+    <ClCompile Include="Game3D\Enemy\Enemy.cpp">
+      <Filter>Game3D\Enemy</Filter>
+    </ClCompile>
+    <ClCompile Include="Game3D\Enemy\EnemyState\BossDecisionState.cpp">
+      <Filter>Game3D\Enemy\EnemyState</Filter>
+    </ClCompile>
+    <ClCompile Include="Game3D\Enemy\EnemyState\BossChaseState.cpp">
+      <Filter>Game3D\Enemy\EnemyState</Filter>
+    </ClCompile>
+    <ClCompile Include="Game3D\Enemy\EnemyState\BossMeleeAttackState.cpp">
+      <Filter>Game3D\Enemy\EnemyState</Filter>
+    </ClCompile>
+    <ClCompile Include="Game3D\Enemy\EnemyState\BossHurtState.cpp">
+      <Filter>Game3D\Enemy\EnemyState</Filter>
+    </ClCompile>
+    <ClCompile Include="Game3D\Enemy\EnemyState\BossRangeAttackState.cpp">
+      <Filter>Game3D\Enemy\EnemyState</Filter>
+    </ClCompile>
+    <ClCompile Include="Game3D\Enemy\EnemyState\BossDeathState.cpp">
+      <Filter>Game3D\Enemy\EnemyState</Filter>
+    </ClCompile>
+    <ClCompile Include="Game3D\Enemy\BossBodyCollider.cpp">
+      <Filter>Game3D\Enemy</Filter>
+    </ClCompile>
+    <ClCompile Include="Game3D\Player3D\Player3DState\PlayerExhaustedState.cpp">
+      <Filter>Game3D\Player3D\PlayerState</Filter>
+    </ClCompile>
+    <ClCompile Include="Game3D\Player3D\PlayerBodyCollider.cpp">
+      <Filter>Game3D\Player3D</Filter>
+    </ClCompile>
+    <ClCompile Include="Game3D\Player3D\Player3DState\PlayerHurtState.cpp">
+      <Filter>Game3D\Player3D\PlayerState</Filter>
+    </ClCompile>
+    <ClCompile Include="Game3D\Player3D\Player3DState\PlayerDeathState.cpp">
+      <Filter>Game3D\Player3D\PlayerState</Filter>
+    </ClCompile>
+    <ClCompile Include="Game3D\Player3D\Player3DState\PlayerEvasionState.cpp">
+      <Filter>Game3D\Player3D\PlayerState</Filter>
+    </ClCompile>
+    <ClCompile Include="Game3D\Bullet\Bullet.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="Game3D\Bullet\BulletManager.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="Scene\Clear\ClearScene.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="Scene\GameOver\GameOver.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\Core\DebugTeam\D3D12ResourceLeakChecker.cpp">
+      <Filter>ソース ファイル</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -625,6 +715,36 @@
     </ClInclude>
     <ClInclude Include="UsefulTool\Easing\EasingType.h">
       <Filter>UsefulTool\Easing</Filter>
+    </ClInclude>
+    <ClInclude Include="Game3D\Player3D\Player3DState\PlayerState.h">
+      <Filter>Game3D\Player3D\PlayerState</Filter>
+    </ClInclude>
+    <ClInclude Include="Game3D\Enemy\Enemy.h">
+      <Filter>Game3D\Enemy</Filter>
+    </ClInclude>
+    <ClInclude Include="Game3D\Enemy\EnemyState\EnemyState.h">
+      <Filter>Game3D\Enemy\EnemyState</Filter>
+    </ClInclude>
+    <ClInclude Include="Game3D\Enemy\BossBodyCollider.h">
+      <Filter>Game3D\Enemy</Filter>
+    </ClInclude>
+    <ClInclude Include="Game3D\Player3D\PlayerBodyCollider.h">
+      <Filter>Game3D\Player3D</Filter>
+    </ClInclude>
+    <ClInclude Include="Game3D\Bullet\Bullet.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="Game3D\Bullet\BulletManager.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="Scene\Clear\ClearScene.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="Scene\GameOver\GameOver.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Core\DebugTeam\D3D12ResourceLeakChecker.h">
+      <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

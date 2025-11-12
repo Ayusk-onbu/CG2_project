@@ -18,4 +18,3 @@ private:
 	Microsoft::WRL::ComPtr <ID3D12Debug1> debugController_;
 	Microsoft::WRL::ComPtr <ID3D12InfoQueue> infoQueue_;
 };
-

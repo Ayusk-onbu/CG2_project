@@ -6,6 +6,8 @@ class Quaternion final
 public:
 	float x, y, z, w;
 public:
+	void Initialize();
+public:
 	/// <summary>
 	/// Quaternion同士の積
 	/// </summary>
@@ -79,6 +81,16 @@ public:
 	/// <param name="t"></param>
 	/// <returns></returns>
 	static Quaternion Slerp(const Quaternion& q0, const Quaternion& q1, float t);
+
+	/// <summary>
+	/// オイラー角(XYZ順)からクォータニオンを生成
+	/// </summary>
+	/// <param name="rotate">X, Y, Z軸の回転角度</param>
+	/// <returns></returns>
+	static Quaternion MakeRotateXYZ(const Vector3& rotate);
+private:
+	static bool NearlyEqual(float a, float b, float epsilon = 1e-5f);
+	static bool QuaternionAlmostEqual(const Quaternion& q0, const Quaternion& q1, float epsilon = 1e-5f);
 public:
 	Quaternion& operator*=(const Quaternion& r);
 };

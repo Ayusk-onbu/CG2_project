@@ -32,6 +32,10 @@ Vector3 operator*(const float& other, const Vector3& v1) {
 	return{ v1.x * other,v1.y * other, v1.z * other };
 }
 
+Vector3 operator*(const Vector3& v1, const Vector3& v2) {
+	return Multiply(v1, v2);
+}
+
 Vector3 operator/(const Vector3& v1, const float& other) {
 	return{ v1.x / other,v1.y / other, v1.z / other };
 }

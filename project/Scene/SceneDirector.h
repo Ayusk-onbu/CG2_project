@@ -2,6 +2,8 @@
 #include "Scene.h"
 #include "GameScene.h"
 #include "TestScene.h"
+#include "GameOver.h"
+#include "ClearScene.h"
 #include <memory>
 
 class SceneDirector

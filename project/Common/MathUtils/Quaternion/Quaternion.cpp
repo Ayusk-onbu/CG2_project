@@ -1,6 +1,13 @@
 #include "Quaternion.h"
 #include <cmath>
 
+void Quaternion::Initialize() {
+	x = 0.0f;
+	y = 0.0f;
+	z = 0.0f;
+	w = 1.0f;
+}
+
 Quaternion Quaternion::Multiply(const Quaternion& q, const Quaternion& r) {
 	Quaternion result;
 	result.w = q.w * r.w - q.x * r.x - q.y * r.y - q.z * r.z;
@@ -120,7 +127,10 @@ Matrix4x4 Quaternion::MakeRotateMatrix(const Quaternion& q) {
 }
 
 Quaternion Quaternion::Slerp(const Quaternion& q0, const Quaternion& q1, float t) {
-
+	// 完全一致なら即リターン
+	if (QuaternionAlmostEqual(q0, q1)) {
+		return q0;
+	}
 	Quaternion normQ0 = Normalize(q0);
 	Quaternion normQ1 = Normalize(q1);
 
@@ -137,6 +147,14 @@ Quaternion Quaternion::Slerp(const Quaternion& q0, const Quaternion& q1, float t
 
 	float theta = std::acos(dot);
 	float sinTheta = std::sin(theta);
+	if (std::abs(sinTheta) < 1e-6f) {
+		Quaternion result;
+		result.x = normQ0.x + t * (normQ1.x - normQ0.x);
+		result.y = normQ0.y + t * (normQ1.y - normQ0.y);
+		result.z = normQ0.z + t * (normQ1.z - normQ0.z);
+		result.w = normQ0.w + t * (normQ1.w - normQ0.w);
+		return Normalize(result);
+	}
 	float sinOne_theta = std::sin((1.0f - t) * theta) / sinTheta;
 	float sinT_theta = std::sin(t * theta) / sinTheta;
 
@@ -146,6 +164,36 @@ Quaternion Quaternion::Slerp(const Quaternion& q0, const Quaternion& q1, float t
 		normQ0.z * sinOne_theta + normQ1.z * sinT_theta,
 		normQ0.w * sinOne_theta + normQ1.w * sinT_theta
 	};
+}
+
+Quaternion Quaternion::MakeRotateXYZ(const Vector3& rotate) {
+	// 1. 各軸の回転クォータニオンを生成
+	// Y軸回転
+	Quaternion qY = MakeRotateAxisAngleQuaternion({ 0.0f, 1.0f, 0.0f }, Deg2Rad(rotate.y));
+	// X軸回転
+	Quaternion qX = MakeRotateAxisAngleQuaternion({ 1.0f, 0.0f, 0.0f }, Deg2Rad(rotate.x));
+	// Z軸回転
+	Quaternion qZ = MakeRotateAxisAngleQuaternion({ 0.0f, 0.0f, 1.0f }, Deg2Rad(rotate.z));
+
+	// 2. X, Y, Z の順で合成 (回転の適用順は Z * Y * X)
+	// クォータニオンの乗算は、適用したい回転の逆順で行う
+	// Q_total = Q_z * Q_y * Q_x
+
+	Quaternion result = Multiply(qZ, qY);
+	result = Multiply(result, qX);
+
+	return result;
+}
+
+bool Quaternion::NearlyEqual(float a, float b, float epsilon) {
+	return std::abs(a - b) < epsilon;
+}
+
+bool Quaternion::QuaternionAlmostEqual(const Quaternion& q0, const Quaternion& q1, float epsilon) {
+	return NearlyEqual(q0.x, q1.x, epsilon) &&
+		NearlyEqual(q0.y, q1.y, epsilon) &&
+		NearlyEqual(q0.z, q1.z, epsilon) &&
+		NearlyEqual(q0.w, q1.w, epsilon);
 }
 
 //=================================
@@ -158,5 +206,5 @@ Quaternion operator*(const Quaternion& q,const Quaternion& r) {
 
 Quaternion& Quaternion::operator*=(const Quaternion& r) {
 	*this = Multiply(*this, r);
-	return *this;
+	return *this;  
 }

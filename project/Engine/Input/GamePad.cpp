@@ -9,6 +9,7 @@ GamePad::GamePad(int index)
 }
 
 void GamePad::Update() {
+    memcpy(&prevState_, &state_, sizeof(XINPUT_STATE));
     ZeroMemory(&state_, sizeof(XINPUT_STATE));
     DWORD result = XInputGetState(controllerIndex_, &state_);
     isConnected_ = (result == ERROR_SUCCESS);
@@ -18,9 +19,15 @@ bool GamePad::IsConnected() const {
     return isConnected_;
 }
 
-bool GamePad::IsPressed(WORD button) {
+bool GamePad::IsPress(WORD button) {
     if (!isConnected_) return false;
     return (state_.Gamepad.wButtons & button) != 0;
+}
+
+bool GamePad::IsPressed(WORD button) {
+    if (!isConnected_) return false;
+    return ((state_.Gamepad.wButtons & button) != 0) &&
+        ((prevState_.Gamepad.wButtons & button) == 0);
 }
 
 BYTE GamePad::GetLeftTrigger() const {

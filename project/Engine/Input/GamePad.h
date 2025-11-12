@@ -9,7 +9,8 @@ public:
 public:
     void Update();                 // 入力情報を更新
     bool IsConnected() const;     // 接続状態
-    bool IsPressed(WORD button);  // ボタン入力判定（A/B/Xなど）
+    bool IsPress(WORD button);  // ボタン入力判定（A/B/Xなど）
+    bool IsPressed(WORD button);  // トリガー入力判定
 
     BYTE GetLeftTrigger() const;  // 左トリガーの値
     SHORT GetLeftStickX() const;  // 左スティックのX軸
@@ -23,5 +24,6 @@ public:
 private:
     int controllerIndex_;
     XINPUT_STATE state_;
+    XINPUT_STATE prevState_;
     bool isConnected_;
 };

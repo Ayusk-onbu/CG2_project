@@ -22,6 +22,10 @@ public:
 	static Key& GetKey() { return key_; }
 	static Mouse& GetMouse(){ return mouse_; }
 	static GamePad& GetGamePad(int index){return gamePad_[index];}
+public:
+	static bool IsJump();
+	static bool IsDash();
+	static bool IsAttack();
 private:
 	static Microsoft::WRL::ComPtr<IDirectInput8> directInput_;
 	static Key  key_;

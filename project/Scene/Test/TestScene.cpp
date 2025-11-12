@@ -22,7 +22,7 @@ void TestScene::Update() {
 
 	CameraSystem::GetInstance()->Update();
 	player_.Update();
-
+#ifdef _DEBUG
 	ImGui::Begin("BlendMode");
 	if (ImGui::Button("Alpha")) {
 		p_fngine_->GetPSO().SetBlendState(BLENDMODE::AlphaBlend);
@@ -40,6 +40,7 @@ void TestScene::Update() {
 		p_fngine_->GetPSO().SetBlendState(BLENDMODE::ScreenBlend);
 	}
 	ImGui::End();
+#endif // _DEBUG
 
 	if (hasRequestedNextScene_) {
 		p_sceneDirector_->RequestChangeScene(new GameScene());

@@ -31,3 +31,37 @@ void InputManager::Update() {
 		gamePad_[i].Update();
 	}
 }
+
+bool InputManager::IsJump() {
+	bool isJump = false;
+	if (GetKey().PressedKey(DIK_SPACE)) {
+		isJump = true;
+	}
+	if (GetGamePad(0).IsPressed(XINPUT_GAMEPAD_A)) {
+		isJump = true;
+	}
+
+	return isJump;
+}
+
+bool InputManager::IsDash() {
+	bool isDash = false;
+	if (GetKey().PressKey(DIK_LSHIFT)) {
+		isDash = true;
+	}
+	if (0) {
+
+	}
+	return isDash;
+}
+
+bool InputManager::IsAttack() {
+	bool isAttack = false;
+	if (GetKey().PressKey(DIK_J)) {
+		isAttack = true;
+	}
+	if (0) {
+
+	}
+	return isAttack;
+}

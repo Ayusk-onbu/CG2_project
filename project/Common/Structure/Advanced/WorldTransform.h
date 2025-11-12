@@ -1,4 +1,5 @@
 #pragma once
+#include "Quaternion.h"
 #include "Transform.h"
 #include "Matrix4x4.h"
 
@@ -10,22 +11,31 @@ public:
 		Vector3& Scale();
 		Vector3& Rotation();
 		Vector3& Translation();
+		Quaternion& Quaternion();
+		Vector3 ForwardVector();
 	};
 	struct Set {
 		WorldTransform* parent_;
 		void Scale(const Vector3& scale);
 		void Rotation(const Vector3& rotation);
 		void Translation(const Vector3& translation);
+		void Quaternion(const Quaternion& q) {
+			parent_->quaternion_ = q;
+			if (parent_->isDirty_ == false) {
+				parent_->isDirty_ = true;
+			}
+		};
 	};
 public:
 	void Initialize();
 	void LocalToWorld();
 	const Vector3 GetWorldPos()const;
 public:
-	Get get_{this};
-	Set set_{this};
+	Get get_{ this };
+	Set set_{ this };
 
 	Transform transform_;
 	Matrix4x4 mat_;
 	bool isDirty_;
+	Quaternion quaternion_;
 };
