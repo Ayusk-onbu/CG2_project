@@ -30,6 +30,7 @@ public:
 	void Initialize();
 	void LocalToWorld();
 	const Vector3 GetWorldPos()const;
+	void LookAtToVector(const Vector3& v);
 public:
 	Get get_{ this };
 	Set set_{ this };

@@ -88,6 +88,8 @@ public:
 	/// <param name="rotate">X, Y, Z軸の回転角度</param>
 	/// <returns></returns>
 	static Quaternion MakeRotateXYZ(const Vector3& rotate);
+
+	static Quaternion MakeFromBasis(const Vector3& newX, const Vector3& newY, const Vector3& newZ);
 private:
 	static bool NearlyEqual(float a, float b, float epsilon = 1e-5f);
 	static bool QuaternionAlmostEqual(const Quaternion& q0, const Quaternion& q1, float epsilon = 1e-5f);

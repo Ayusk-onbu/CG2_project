@@ -27,6 +27,7 @@
 #include "Structures.h"
 #include "ResourceBarrier.h"
 #include "InputManager.h"
+#include "RandomUtils.h"
 #include "Music.h"
 #include "Easing.h"
 #include "externals/DirectXTex/DirectXTex.h"
@@ -67,12 +68,14 @@ private:
 	SRV srv_;
 	RTV rtv_;
 	DSV dsv_;
+	// 複数のPSOを作らないといけないのでManagerを作成する
 	PSO pso_;
 	OffScreenRendering osr_;
 	D3D12_VIEWPORT viewport_;
 	D3D12_RECT scissorRect_;
 	SwapChain swapChain_;
 
+	//　将来的にGetInstanceで扱えるようにして方がいい
 	Music music_;
 
 	DirectionLight light_;

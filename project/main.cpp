@@ -1,7 +1,6 @@
 #include "Fngine.h"
 #include "D3D12ResourceLeakChecker.h"
 #include "Chronos.h"
-#include "RandomUtils.h"
 #include "SceneDirector.h"
 #include "MathUtils.h"
 #include "WorldTransform.h"
@@ -17,8 +16,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	D3D12ResourceLeakChecker leakCheck;
 	std::unique_ptr<Fngine> fngine = std::make_unique<Fngine>();
 	fngine->Initialize();
-
-	TimeRandom::Initialize();
 
 	std::unique_ptr<SceneDirector> scene = std::make_unique<SceneDirector>();
 	scene->SetUpFngine(*fngine);

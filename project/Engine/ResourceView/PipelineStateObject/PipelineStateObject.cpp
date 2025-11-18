@@ -14,7 +14,7 @@ void PipelineStateObject::InitializeDescs(D3D12System& d3d12, PSOTYPE type) {
 		
 	}
 	dxc_.Initialize();
-	rootSignature_.CreateRootSignature(d3d12, ROOTTYPE::Normal);
+	rootSignature_.CreateRootSignature(d3d12, ROOTTYPE::Structured);
 	inputLayoutDesc_.Initialize();
 	blendState_.Initialize(USECOLOR::All);
 	rasterizer_.SetDesc(D3D12_CULL_MODE_BACK, D3D12_FILL_MODE_SOLID);
@@ -25,10 +25,10 @@ void PipelineStateObject::InitializeDescs(D3D12System& d3d12, PSOTYPE type) {
 }
 
 void PipelineStateObject::Compile() {
-	vertexShaderBlob_ = CompileShader(L"resources/shaders/Object3D.VS.hlsl",
+	vertexShaderBlob_ = CompileShader(L"resources/shaders/Particle/Particle.VS.hlsl",
 		L"vs_6_0", dxc_.GetUtils().Get(), dxc_.GetCompiler().Get(), dxc_.GetIncludeHandle().Get());
 	assert(vertexShaderBlob_ != nullptr);
-	pixelShaderBlob_ = CompileShader(L"resources/shaders/Object3D.PS.hlsl",
+	pixelShaderBlob_ = CompileShader(L"resources/shaders/Particle/Particle.PS.hlsl",
 		L"ps_6_0", dxc_.GetUtils().Get(), dxc_.GetCompiler().Get(), dxc_.GetIncludeHandle().Get());
 	assert(pixelShaderBlob_ != nullptr);
 }
@@ -113,7 +113,7 @@ void PipelineStateObject::MargeDesc() {
 }
 
 void PipelineStateObject::SetDesc(D3D12System& d3d12, PSOTYPE type) {
-	//書きこむRYVの情報
+	//書きこむRTVの情報
 	graphicsPipelineStateDesc_.NumRenderTargets = 1;
 	graphicsPipelineStateDesc_.RTVFormats[0] = DXGI_FORMAT_R8G8B8A8_UNORM_SRGB;
 	//利用するトボロジ（形状）のタイプ。三角形

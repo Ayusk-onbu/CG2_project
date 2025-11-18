@@ -7,11 +7,17 @@
 // Override Functions
 // ================================
 
+TestScene::~TestScene() {
+	delete particle_;
+}
+
 void TestScene::Initialize() {
 	// Initialization code for the game scene
 	CameraSystem::GetInstance()->MakeCamera("DebugCamera", CameraType::Debug);
 	CameraSystem::GetInstance()->SetActiveCamera("DebugCamera");
-	player_.Initialize(p_fngine_);
+	//player_.Initialize(p_fngine_);
+	particle_ = new Particle(p_fngine_);
+	particle_->Initialize(10);
 }
 
 void TestScene::Update() {
@@ -19,9 +25,9 @@ void TestScene::Update() {
 	if (InputManager::GetKey().PressKey(DIK_0)) {
 		hasRequestedNextScene_ = true;
 	}
-
 	CameraSystem::GetInstance()->Update();
-	player_.Update();
+	particle_->Update();
+	//player_.Update();
 #ifdef _DEBUG
 	ImGui::Begin("BlendMode");
 	if (ImGui::Button("Alpha")) {
@@ -48,5 +54,6 @@ void TestScene::Update() {
 }
 
 void TestScene::Draw() {
-	player_.Draw();
+	//player_.Draw();
+	particle_->Draw();
 }
