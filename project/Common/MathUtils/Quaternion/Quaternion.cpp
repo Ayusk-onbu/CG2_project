@@ -196,6 +196,53 @@ bool Quaternion::QuaternionAlmostEqual(const Quaternion& q0, const Quaternion& q
 		NearlyEqual(q0.w, q1.w, epsilon);
 }
 
+Quaternion Quaternion::MakeFromBasis(const Vector3& newX, const Vector3& newY, const Vector3& newZ) {
+	// Step 1: 回転行列の要素を r_rc (row, column) で定義
+	// 列ベクトルとして (newX, newY, newZ) を配置
+	float r11 = newX.x, r12 = newY.x, r13 = newZ.x;
+	float r21 = newX.y, r22 = newY.y, r23 = newZ.y;
+	float r31 = newX.z, r32 = newY.z, r33 = newZ.z;
+
+	float T = r11 + r22 + r33; // トレースの計算
+	float S;
+	Quaternion q;
+
+	// Step 2: 最大成分による分岐計算
+	if (T > 0.0f) { // Case 1: w が最大
+		S = 2.0f * std::sqrt(T + 1.0f);
+		q.w = 0.25f * S;
+		q.x = (r32 - r23) / S;
+		q.y = (r13 - r31) / S;
+		q.z = (r21 - r12) / S;
+
+	}
+	else if (r11 > r22 && r11 > r33) { // Case 2: r11 が最大 (x が最大)
+		S = 2.0f * std::sqrt(1.0f + r11 - r22 - r33);
+		q.x = 0.25f * S;
+		q.w = (r32 - r23) / S;
+		q.y = (r12 + r21) / S;
+		q.z = (r13 + r31) / S;
+
+	}
+	else if (r22 > r33) { // Case 3: r22 が最大 (y が最大)
+		S = 2.0f * std::sqrt(1.0f - r11 + r22 - r33);
+		q.y = 0.25f * S;
+		q.w = (r13 - r31) / S;
+		q.x = (r12 + r21) / S;
+		q.z = (r23 + r32) / S;
+
+	}
+	else { // Case 4: r33 が最大 (z が最大)
+		S = 2.0f * std::sqrt(1.0f - r11 - r22 + r33);
+		q.z = 0.25f * S;
+		q.w = (r21 - r12) / S;
+		q.x = (r13 + r31) / S;
+		q.y = (r23 + r32) / S;
+	}
+
+	return q;
+}
+
 //=================================
 // Operator Overload
 //=================================

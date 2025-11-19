@@ -3,13 +3,14 @@
 #include "Collider.h"
 #include "Quaternion.h"
 #include "Player3D.h"
+#include "Particle.h"
 
 class TestScene
 	: public Scene
 {
 public:
 	TestScene() = default;
-	~TestScene() = default;
+	~TestScene()override;
 public:
 
 	// =================================
@@ -21,6 +22,6 @@ public:
 	void Draw() override;
 
 private:
-	Player3D player_;
+	Particle* particle_;
 };
 

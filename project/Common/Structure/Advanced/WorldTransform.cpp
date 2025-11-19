@@ -74,3 +74,24 @@ const Vector3 WorldTransform::GetWorldPos()const {
 	return { mat_.m[3][0] ,mat_.m[3][1] ,mat_.m[3][2] };
 }
 
+void WorldTransform::LookAtToVector(const Vector3& target) {
+
+	Vector3 globalUp = { 0.0f,1.0f,0.0f };
+
+	// 前方ベクトルを計算
+	Vector3 forward = target - GetWorldPos();
+
+	Vector3 newForward = Normalize(forward);
+
+	// 右ベクトルを計算
+	Vector3 newRight = CrossProduct(globalUp, newRight);
+
+	newRight = Normalize(newRight);
+
+	Vector3 newUp = CrossProduct(newForward, newRight);
+
+	Quaternion q = Quaternion::MakeFromBasis(newRight,newUp,newForward);
+
+	set_.Quaternion(Quaternion::Slerp(get_.Quaternion(),q,0.1f));
+}
+

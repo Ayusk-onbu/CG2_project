@@ -1,6 +1,7 @@
 #include "Fngine.h"
 #include "TextureManager.h"
 #include "Chronos.h"
+
 #pragma comment(lib, "d3d12.lib")
 #pragma comment(lib,"dxgi.lib")
 #pragma comment(lib,"dxguid.lib")//0103 ReportLiveobject
@@ -13,6 +14,8 @@ Fngine::~Fngine() {
 	ImGuiManager::GetInstance()->Shutdown();
 
 	TextureManager::GetInstance()->ReleaseInstance();
+
+	PSOManager::GetInstance()->ReleaseInstance();
 	//解放処理
 	tachyonSync_.GetCGPU().UnLoad();
 	music_.UnLoad();
@@ -24,14 +27,18 @@ Fngine::~Fngine() {
 }
 
 void Fngine::Initialize() {
-	//COMの初期化
+
+	//COMの初期化(Windowsが提供している機能)
 	CoInitializeEx(0, COINIT_MULTITHREADED);
+
 	//誰も補足しなかった場合に（Unhandled）、補足する関数を登録
 	//main関数はじまってすぐに登録するといい
 	SetUnhandledExceptionFilter(ErrorGuardian::ExportDump);
+	// Logの初期化
 	Log::Initialize();
 
-	window_.Initialize(L"CG2ClassName", L"CG2");
+	window_.Initialize(L"CG2ClassName", L"((σω-)..._( _'ω')_ｽｯ......._(　　_‾▿◝ )_ﾀﾞﾗｰﾝ..._(　_´ω`)_...⊂( ⊂ _ω_)⊃...꜀(.ო. ꜆三꜀ .ო.)꜆)");
+
 	errorGuardian_.SetDebugInterface();
 	dxgi_.RecruitEngineer();
 	omnisTechOracle_.Oracle(dxgi_);
@@ -62,14 +69,72 @@ void Fngine::Initialize() {
 	dsv_.MakeResource(d3d12_, kClienWidth_, kClienHeight_);
 	d3d12_.GetDevice()->CreateDepthStencilView(dsv_.GetResource().Get(), &dsv_.GetDSVDesc(), dsv_.GetHeap().GetHeap()->GetCPUDescriptorHandleForHeapStart());
 	tachyonSync_.GetCGPU().Initialize(d3d12_.GetDevice());
-	pso_.Initialize(d3d12_, PSOTYPE::Normal);
+
+
+	dxc_.Initialize();
+	
+	PSOManager::GetInstance()->Initialize(this);
+
+	PSOManager::GetInstance()->CreateNewPSO
+	(
+		{ 
+			PIPELINETYPE::Graphics,
+			ROOTTYPE::Structured,
+			PSOTYPE::Normal,
+		 {
+			L"resources/shaders/Particle/Particle.VS.hlsl",
+			L"resources/shaders/Particle/Particle.PS.hlsl",
+			L"",
+			L"vs_6_0",
+			L"ps_6_0",
+			L""
+		 },
+		 {
+			 D3D12_CULL_MODE_BACK,
+			 D3D12_FILL_MODE_SOLID,
+			 FALSE,
+			 0,
+			 0.0f
+		 }
+		},
+		"Structured"
+	);
+
+	PSOManager::GetInstance()->CreateNewPSO
+	(
+		{
+			PIPELINETYPE::Graphics,
+			ROOTTYPE::Normal,
+			PSOTYPE::Normal,
+		 {
+			L"resources/shaders/Object3D/Object3D.VS.hlsl",
+			L"resources/shaders/Object3D/Object3D.PS.hlsl",
+			L"",
+			L"vs_6_0",
+			L"ps_6_0",
+			L""
+		 },
+		 {
+			 D3D12_CULL_MODE_BACK,
+			 D3D12_FILL_MODE_SOLID,
+			 FALSE,
+			 0,
+			 0.0f
+		 }
+		},
+		"Object3D"
+	);
+
 	osr_.Initialize(d3d12_,srv_, float(kClienWidth_), float(kClienHeight_));
+
+	// こいつらはなに？キモい
 	viewport_.Width = static_cast<float>(window_.GetWindowRect().right);
 	viewport_.Height = static_cast<float>(window_.GetWindowRect().bottom);
 	viewport_.TopLeftX = 0;
 	viewport_.TopLeftY = 0;
 	viewport_.MinDepth = 0.0f;
 	viewport_.MaxDepth = 1.0f;
+
 	scissorRect_.left = 0;
 	scissorRect_.right = window_.GetWindowRect().right;
 	scissorRect_.top = 0;
@@ -81,6 +146,7 @@ void Fngine::Initialize() {
 	ImGuiManager::GetInstance()->SetImGui(window_.GetHwnd(), d3d12_.GetDevice().Get(), srv_.GetDescriptorHeap().GetHeap().Get());
 	TextureManager::GetInstance()->Initialize(*this);
 	Chronos::GetInstance()->Initialize();
+	RandomUtils::GetInstance()->Initialize();
 
 	light_.Initialize(d3d12_);
 }

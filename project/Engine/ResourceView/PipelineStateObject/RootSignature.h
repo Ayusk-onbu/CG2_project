@@ -6,6 +6,7 @@
 
 enum class ROOTTYPE {
 	Normal,
+	Structured,
 };
 
 class RootSignature

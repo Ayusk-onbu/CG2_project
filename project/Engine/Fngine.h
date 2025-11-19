@@ -20,13 +20,14 @@
 #include "OmnisTechOracle.h"
 #include "RenderTargetView.h"
 #include "Texture.h"
-#include "PipelineStateObject.h"
+#include "PipelineStateObjectManager.h"
 #include "OffScreenRendering.h"
 #include "DirectionLight.h"
 #include "ImGuiManager.h"
 #include "Structures.h"
 #include "ResourceBarrier.h"
 #include "InputManager.h"
+#include "RandomUtils.h"
 #include "Music.h"
 #include "Easing.h"
 #include "externals/DirectXTex/DirectXTex.h"
@@ -47,7 +48,7 @@ public:
 	D3D12System& GetD3D12System() { return d3d12_; }
 	TheOrderCommand& GetCommand() { return command_; }
 	SRV& GetSRV() { return srv_; }
-	PSO& GetPSO() { return pso_; }
+	DXC& GetDXC() { return dxc_; }
 	DirectionLight& GetLight() { return light_; }
 private:
 
@@ -67,12 +68,14 @@ private:
 	SRV srv_;
 	RTV rtv_;
 	DSV dsv_;
-	PSO pso_;
+	// 複数のPSOを作らないといけないのでManagerを作成する
+	DXC dxc_;
 	OffScreenRendering osr_;
 	D3D12_VIEWPORT viewport_;
 	D3D12_RECT scissorRect_;
 	SwapChain swapChain_;
 
+	//　将来的にGetInstanceで扱えるようにして方がいい
 	Music music_;
 
 	DirectionLight light_;
