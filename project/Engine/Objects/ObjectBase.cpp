@@ -3,8 +3,8 @@
 
 void ObjectBase::DrawBase() {
 	//RootSignalの設定
-	fngine_->GetCommand().GetList().GetList()->SetGraphicsRootSignature(fngine_->GetPSO().GetRootSignature().GetRS().Get());
-	fngine_->GetCommand().GetList().GetList()->SetPipelineState(fngine_->GetPSO().GetGPS().Get());
+	fngine_->GetCommand().GetList().GetList()->SetGraphicsRootSignature(PSOManager::GetInstance()->GetPSO("Object3D").GetRootSignature().GetRS().Get());
+	fngine_->GetCommand().GetList().GetList()->SetPipelineState(PSOManager::GetInstance()->GetPSO("Object3D").GetGPS().Get());
 	fngine_->GetCommand().GetList().GetList()->IASetVertexBuffers(0, 1, &vertexBufferView_);
 	//マテリアルCBufferの場所を設定
 	fngine_->GetCommand().GetList().GetList()->SetGraphicsRootConstantBufferView(0, materialResource_->GetGPUVirtualAddress());

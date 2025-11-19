@@ -1,35 +1,131 @@
 #include "PipelineStateObject.h"
 #include <cassert>
+#include "Fngine.h"
 
+// この設定はどこか違う場所で設定したい
+// B.完全な3Dメッシュ用レイアウト(現在のコードに近いもの)
+static const D3D12_INPUT_ELEMENT_DESC Layout_FullMesh[] = {
+	{ "POSITION", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
+	{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
+	{ "NORMAL",   0, DXGI_FORMAT_R32G32B32_FLOAT,    0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 }
+};
 
-void PipelineStateObject::Initialize(D3D12System& d3d12, PSOTYPE type) {
-	InitializeDescs(d3d12, type);
-	MargeDesc();
-	depthStencil_.InitializeDesc();
-	SetDesc(d3d12,type);
-}
+//void PipelineStateObject::Initialize(Fngine* fngine, PSOTYPE type) {
+//	// dxcは使いまわすことが出来るらしいのでアドレスを受け取るようにした
+//	dxc_ = &fngine->GetDXC();
+//
+//	InitializeDescs(fngine->GetD3D12System(), type);
+//
+//	MargeDesc();
+//
+//	depthStencil_.InitializeDesc();
+//
+//	SetDesc(fngine->GetD3D12System(), type);
+//}
 
-void PipelineStateObject::InitializeDescs(D3D12System& d3d12, PSOTYPE type) {
-	if (type == PSOTYPE::Normal) {
-		
+void PipelineStateObject::Initialize(
+	Fngine* fngine,
+	PIPELINETYPE pipelineType,
+	PSOTYPE psoType,
+	ROOTTYPE rootType,
+	RasterizerSettings rasterSettings,
+	//CompilerするShaderファイルへのパス
+	const std::wstring& vsFilePath,
+	//Compilerに使用するProfile
+	const wchar_t* vsProfile,
+	//CompilerするShaderファイルへのパス
+	const std::wstring& psFilePath,
+	//Compilerに使用するProfile
+	const wchar_t* psProfile
+) {
+	// DXCを取得
+	dxc_ = &fngine->GetDXC();
+
+	// rootSigantureを設定
+	rootSignature_.CreateRootSignature(fngine->GetD3D12System(), rootType);
+
+	// InputLayoutの設定
+	switch (psoType) {
+	case PSOTYPE::Normal:
+
+	case PSOTYPE::Line:
+
+	case PSOTYPE::OffScreen:
+
+		// ここはLayoutを外部で設定して適用できるように変更した
+		inputLayoutDesc_.Initialize(Layout_FullMesh, _countof(Layout_FullMesh));
+		break;
 	}
-	dxc_.Initialize();
-	rootSignature_.CreateRootSignature(d3d12, ROOTTYPE::Structured);
-	inputLayoutDesc_.Initialize();
+
+	// BlendStateの設定
 	blendState_.Initialize(USECOLOR::All);
-	rasterizer_.SetDesc(D3D12_CULL_MODE_BACK, D3D12_FILL_MODE_SOLID);
-	if (type == PSOTYPE::Line) {
+
+	// Rasterizerの設定
+	rasterizer_.SetDesc(rasterSettings);
+	if (psoType == PSOTYPE::Line) {
 		rasterizer_.GetDesc().AntialiasedLineEnable = true;
 	}
-	Compile();
+
+	// Compile
+	Compile(vsFilePath, vsProfile, psFilePath, psProfile);
+
+	pipelineType_ = pipelineType;
+	MargeDesc();
+
+	// depthStencil
+	depthStencil_.InitializeDesc();
+
+	// 
+	SetDesc(fngine->GetD3D12System(), psoType);
 }
 
-void PipelineStateObject::Compile() {
-	vertexShaderBlob_ = CompileShader(L"resources/shaders/Particle/Particle.VS.hlsl",
-		L"vs_6_0", dxc_.GetUtils().Get(), dxc_.GetCompiler().Get(), dxc_.GetIncludeHandle().Get());
+//void PipelineStateObject::InitializeDescs(D3D12System& d3d12, PSOTYPE type) {
+//	// タイプで決めるからここは不変
+//	rootSignature_.CreateRootSignature(d3d12, ROOTTYPE::Structured);
+//	
+//	switch (type) {
+//	case PSOTYPE::Normal:
+//
+//	case PSOTYPE::Line:
+//
+//	case PSOTYPE::OffScreen:
+//
+//		// ここはLayoutを外部で設定して適用できるように変更した
+//		inputLayoutDesc_.Initialize(Layout_FullMesh, _countof(Layout_FullMesh));
+//		break;
+//	}
+//
+//	blendState_.Initialize(USECOLOR::All);
+//
+//	RasterizerSettings rasterSettings;
+//	rasterizer_.SetDesc(rasterSettings);
+//
+//	if (type == PSOTYPE::Line) {
+//		rasterizer_.GetDesc().AntialiasedLineEnable = true;
+//	}
+//	Compile(
+//		L"resources/shaders/Particle/Particle.VS.hlsl",
+//		L"vs_6_0",
+//		L"resources/shaders/Particle/Particle.PS.hlsl",
+//		L"ps_6_0"
+//	);
+//}
+
+void PipelineStateObject::Compile(
+	//CompilerするShaderファイルへのパス
+	const std::wstring& vsFilePath,
+	//Compilerに使用するProfile
+	const wchar_t* vsProfile,
+	//CompilerするShaderファイルへのパス
+	const std::wstring& psFilePath,
+	//Compilerに使用するProfile
+	const wchar_t* psProfile)
+{
+	vertexShaderBlob_ = CompileShader(vsFilePath,vsProfile, 
+		dxc_->GetUtils().Get(), dxc_->GetCompiler().Get(), dxc_->GetIncludeHandle().Get());
 	assert(vertexShaderBlob_ != nullptr);
-	pixelShaderBlob_ = CompileShader(L"resources/shaders/Particle/Particle.PS.hlsl",
-		L"ps_6_0", dxc_.GetUtils().Get(), dxc_.GetCompiler().Get(), dxc_.GetIncludeHandle().Get());
+	pixelShaderBlob_ = CompileShader(psFilePath,psProfile,
+		dxc_->GetUtils().Get(), dxc_->GetCompiler().Get(), dxc_->GetIncludeHandle().Get());
 	assert(pixelShaderBlob_ != nullptr);
 }
 
@@ -103,13 +199,18 @@ Microsoft::WRL::ComPtr < IDxcBlob> PipelineStateObject::CompileShader(
 }
 
 void PipelineStateObject::MargeDesc() {
-	graphicsPipelineStateDesc_.pRootSignature = rootSignature_.GetRS().Get();//RootSignature
-	graphicsPipelineStateDesc_.InputLayout = inputLayoutDesc_.GetDesc();//InputLayout
-	graphicsPipelineStateDesc_.RasterizerState = rasterizer_.GetDesc();//RasterizerState
-	graphicsPipelineStateDesc_.VS = { vertexShaderBlob_->GetBufferPointer(),
-	vertexShaderBlob_->GetBufferSize() };// VertexShader
-	graphicsPipelineStateDesc_.PS = { pixelShaderBlob_->GetBufferPointer(),
-	pixelShaderBlob_->GetBufferSize() };//PixelShader
+	if (pipelineType_ == PIPELINETYPE::Graphics) {
+		graphicsPipelineStateDesc_.pRootSignature = rootSignature_.GetRS().Get();//RootSignature
+		graphicsPipelineStateDesc_.InputLayout = inputLayoutDesc_.GetDesc();//InputLayout
+		graphicsPipelineStateDesc_.RasterizerState = rasterizer_.GetDesc();//RasterizerState
+		graphicsPipelineStateDesc_.VS = { vertexShaderBlob_->GetBufferPointer(),
+		vertexShaderBlob_->GetBufferSize() };// VertexShader
+		graphicsPipelineStateDesc_.PS = { pixelShaderBlob_->GetBufferPointer(),
+		pixelShaderBlob_->GetBufferSize() };//PixelShader
+	}
+	else if (pipelineType_ == PIPELINETYPE::Compute) {
+
+	}
 }
 
 void PipelineStateObject::SetDesc(D3D12System& d3d12, PSOTYPE type) {

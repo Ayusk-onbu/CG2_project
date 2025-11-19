@@ -20,7 +20,7 @@
 #include "OmnisTechOracle.h"
 #include "RenderTargetView.h"
 #include "Texture.h"
-#include "PipelineStateObject.h"
+#include "PipelineStateObjectManager.h"
 #include "OffScreenRendering.h"
 #include "DirectionLight.h"
 #include "ImGuiManager.h"
@@ -48,7 +48,7 @@ public:
 	D3D12System& GetD3D12System() { return d3d12_; }
 	TheOrderCommand& GetCommand() { return command_; }
 	SRV& GetSRV() { return srv_; }
-	PSO& GetPSO() { return pso_; }
+	DXC& GetDXC() { return dxc_; }
 	DirectionLight& GetLight() { return light_; }
 private:
 
@@ -69,7 +69,7 @@ private:
 	RTV rtv_;
 	DSV dsv_;
 	// 複数のPSOを作らないといけないのでManagerを作成する
-	PSO pso_;
+	DXC dxc_;
 	OffScreenRendering osr_;
 	D3D12_VIEWPORT viewport_;
 	D3D12_RECT scissorRect_;

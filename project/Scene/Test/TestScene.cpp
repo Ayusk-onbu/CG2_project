@@ -31,19 +31,19 @@ void TestScene::Update() {
 #ifdef _DEBUG
 	ImGui::Begin("BlendMode");
 	if (ImGui::Button("Alpha")) {
-		p_fngine_->GetPSO().SetBlendState(BLENDMODE::AlphaBlend);
+		PSOManager::GetInstance()->GetPSO("Structured").SetBlendState(BLENDMODE::AlphaBlend);
 	}
 	if (ImGui::Button("Add")) {
-		p_fngine_->GetPSO().SetBlendState(BLENDMODE::Additive);
+		PSOManager::GetInstance()->GetPSO("Structured").SetBlendState(BLENDMODE::Additive);
 	}
 	if (ImGui::Button("Sub")) {
-		p_fngine_->GetPSO().SetBlendState(BLENDMODE::Subtractive);
+		PSOManager::GetInstance()->GetPSO("Structured").SetBlendState(BLENDMODE::Subtractive);
 	}
 	if (ImGui::Button("Mul")) {
-		p_fngine_->GetPSO().SetBlendState(BLENDMODE::Multiplicative);
+		PSOManager::GetInstance()->GetPSO("Structured").SetBlendState(BLENDMODE::Multiplicative);
 	}
 	if (ImGui::Button("Screen")) {
-		p_fngine_->GetPSO().SetBlendState(BLENDMODE::ScreenBlend);
+		PSOManager::GetInstance()->GetPSO("Structured").SetBlendState(BLENDMODE::ScreenBlend);
 	}
 	ImGui::End();
 #endif // _DEBUG

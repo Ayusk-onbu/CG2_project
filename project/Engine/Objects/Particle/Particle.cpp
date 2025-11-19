@@ -140,8 +140,8 @@ void Particle::Draw() {
 
 	p_fngine_->GetCommand().GetList().GetList()->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 	//RootSignalの設定
-	p_fngine_->GetCommand().GetList().GetList()->SetGraphicsRootSignature(p_fngine_->GetPSO().GetRootSignature().GetRS().Get());
-	p_fngine_->GetCommand().GetList().GetList()->SetPipelineState(p_fngine_->GetPSO().GetGPS().Get());
+	p_fngine_->GetCommand().GetList().GetList()->SetGraphicsRootSignature(PSOManager::GetInstance()->GetPSO("Structured").GetRootSignature().GetRS().Get());
+	p_fngine_->GetCommand().GetList().GetList()->SetPipelineState(PSOManager::GetInstance()->GetPSO("Structured").GetGPS().Get());
 	p_fngine_->GetCommand().GetList().GetList()->IASetVertexBuffers(0, 1, &vertexBufferView_);
 	// IndexBufferView(IBV)の設定
 	p_fngine_->GetCommand().GetList().GetList()->IASetIndexBuffer(&indexBufferView_);

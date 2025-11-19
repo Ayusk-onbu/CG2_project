@@ -191,7 +191,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="Engine\Objects\Primitive\SphereObject.cpp" />
     <ClCompile Include="Engine\Objects\Primitive\SpriteObject.cpp" />
     <ClCompile Include="Engine\Objects\Primitive\TriangleObject.cpp" />
-    <ClCompile Include="Engine\ResourceView\DepthStencil.cpp" />
+    <ClCompile Include="Engine\ResourceView\PipelineStateObject\DepthStencil.cpp" />
     <ClCompile Include="Engine\ResourceView\DescriptorHeap.cpp" />
     <ClCompile Include="Engine\ResourceView\Fence.cpp" />
     <ClCompile Include="Engine\ResourceView\PipelineStateObject\BlendState.cpp" />
@@ -235,6 +235,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="Game3D\Player3D\Player3DState\PlayerWalkState.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Game3D\Player3D\PlayerBodyCollider.cpp" />
+    <ClCompile Include="Engine\ResourceView\PipelineStateObject\PipelineStateObjectManager.cpp" />
     <ClCompile Include="Scene\Clear\ClearScene.cpp" />
     <ClCompile Include="Scene\GameOver\GameOver.cpp" />
     <ClCompile Include="Scene\Game\GameScene.cpp" />
@@ -306,7 +307,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="Engine\Objects\Primitive\SphereObject.h" />
     <ClInclude Include="Engine\Objects\Primitive\SpriteObject.h" />
     <ClInclude Include="Engine\Objects\Primitive\TriangleObject.h" />
-    <ClInclude Include="Engine\ResourceView\DepthStencil.h" />
+    <ClInclude Include="Engine\ResourceView\PipelineStateObject\DepthStencil.h" />
     <ClInclude Include="Engine\ResourceView\DescriptorHeap.h" />
     <ClInclude Include="Engine\ResourceView\Fence.h" />
     <ClInclude Include="Engine\ResourceView\PipelineStateObject\BlendState.h" />
@@ -334,6 +335,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="Game3D\Player3D\Player3D.h" />
     <ClInclude Include="Game3D\Player3D\Player3DState\PlayerState.h" />
     <ClInclude Include="Game3D\Player3D\PlayerBodyCollider.h" />
+    <ClInclude Include="Engine\ResourceView\PipelineStateObject\PipelineStateObjectManager.h" />
     <ClInclude Include="Scene\Clear\ClearScene.h" />
     <ClInclude Include="Scene\GameOver\GameOver.h" />
     <ClInclude Include="Scene\Game\GameScene.h" />

@@ -27,5 +27,5 @@ void GameOverScene::Draw() {
 		world_.mat_,
 		Matrix4x4::Make::Identity()
 	);
-	sprite_.Draw(p_fngine_->GetCommand(), p_fngine_->GetPSO(), p_fngine_->GetLight(), TextureManager::GetInstance()->GetTexture(textureHandle_));
+	//sprite_.Draw(p_fngine_->GetCommand(), p_fngine_->GetPSO(), p_fngine_->GetLight(), TextureManager::GetInstance()->GetTexture(textureHandle_));
 }

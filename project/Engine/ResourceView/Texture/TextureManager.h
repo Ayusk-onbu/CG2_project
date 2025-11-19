@@ -14,7 +14,7 @@ public:
 		}
 		return instance_.get();
 	}
-	static void ReleaseInstance() { instance_.reset(); }
+	void ReleaseInstance() { instance_.reset(); }
 public:
 	void Initialize(Fngine& fngine);
 	int LoadTexture(const char* filePath);

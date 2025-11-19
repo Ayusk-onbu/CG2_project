@@ -327,7 +327,7 @@
     <ClCompile Include="Engine\Objects\Primitive\TriangleObject.cpp">
       <Filter>Engine\Objects\Primitive</Filter>
     </ClCompile>
-    <ClCompile Include="Engine\ResourceView\DepthStencil.cpp">
+    <ClCompile Include="Engine\ResourceView\PipelineStateObject\DepthStencil.cpp">
       <Filter>Engine\ResourceView</Filter>
     </ClCompile>
     <ClCompile Include="Engine\ResourceView\DescriptorHeap.cpp">
@@ -479,6 +479,9 @@
     </ClCompile>
     <ClCompile Include="Engine\Core\DebugTeam\D3D12ResourceLeakChecker.cpp">
       <Filter>Engine\Core\DebugTeam</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\ResourceView\PipelineStateObject\PipelineStateObjectManager.cpp">
+      <Filter>ソース ファイル</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -644,7 +647,7 @@
     <ClInclude Include="Engine\Objects\Primitive\TriangleObject.h">
       <Filter>Engine\Objects\Primitive</Filter>
     </ClInclude>
-    <ClInclude Include="Engine\ResourceView\DepthStencil.h">
+    <ClInclude Include="Engine\ResourceView\PipelineStateObject\DepthStencil.h">
       <Filter>Engine\ResourceView</Filter>
     </ClInclude>
     <ClInclude Include="Engine\ResourceView\DescriptorHeap.h">
@@ -766,6 +769,9 @@
     </ClInclude>
     <ClInclude Include="Engine\Core\DebugTeam\D3D12ResourceLeakChecker.h">
       <Filter>Engine\Core\DebugTeam</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\ResourceView\PipelineStateObject\PipelineStateObjectManager.h">
+      <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -7,6 +7,12 @@
 #include "DepthStencil.h"
 #include "DXC.h"
 
+class Fngine;
+
+enum class PIPELINETYPE {
+	Graphics,// これは VS, PS, (GS, DS, HS etc...)
+	Compute  // CS のみに活用
+};
 
 enum class PSOTYPE {
 	Normal,
@@ -17,11 +23,37 @@ enum class PSOTYPE {
 class PipelineStateObject
 {
 public:
-	void Initialize(D3D12System& d3d12, PSOTYPE type);
+	//void Initialize(Fngine* fngine, PSOTYPE type);
+
+	void Initialize(
+		Fngine* fngine,
+		PIPELINETYPE pipelineType,
+		PSOTYPE psoType,
+		// RootSignatureの設定
+		ROOTTYPE rootType,
+		//Rasterizerの設定
+		RasterizerSettings rasterSettings,
+		//CompilerするShaderファイルへのパス
+		const std::wstring& vsFilePath,
+		//Compilerに使用するProfile
+		const wchar_t* vsProfile,
+		//CompilerするShaderファイルへのパス
+		const std::wstring& psFilePath,
+		//Compilerに使用するProfile
+		const wchar_t* psProfile
+	);
 
 	void InitializeDescs(D3D12System& d3d12,PSOTYPE type);
 
-	void Compile();
+	void Compile(
+		//CompilerするShaderファイルへのパス
+		const std::wstring& vsFilePath,
+		//Compilerに使用するProfile
+		const wchar_t* vsProfile,
+		//CompilerするShaderファイルへのパス
+		const std::wstring& psFilePath,
+		//Compilerに使用するProfile
+		const wchar_t* psProfile);
 
 	Microsoft::WRL::ComPtr < IDxcBlob> CompileShader(
 		//CompilerするShaderファイルへのパス
@@ -35,9 +67,12 @@ public:
 
 	void MargeDesc();
 
+	// --------------------------------
+	// Set 
+	// --------------------------------
+
 	void SetDesc(D3D12System& d3d12, PSOTYPE type);
 
-	DXC GetDXC() { return dxc_; }
 	RootSignature GetRootSignature() { return rootSignature_; }
 	InputLayout GetInputLayout() { return inputLayoutDesc_; }
 	BlendState GetBlendState() { return blendState_; }
@@ -48,7 +83,7 @@ public:
 	Microsoft::WRL::ComPtr <ID3D12PipelineState>& GetGPS();
 
 private:
-	DXC dxc_;
+	DXC* dxc_;
 	RootSignature rootSignature_;
 	InputLayout inputLayoutDesc_;
 	BlendState blendState_;
@@ -60,6 +95,8 @@ private:
 
 	// ブレンドモード
 	BLENDMODE blendMode_ = BLENDMODE::AlphaBlend;
+
+	PIPELINETYPE pipelineType_ = PIPELINETYPE::Graphics;
 
 	D3D12_GRAPHICS_PIPELINE_STATE_DESC graphicsPipelineStateDesc_ = {};
 	Microsoft::WRL::ComPtr <ID3D12PipelineState> graphicsPipelineState_ = nullptr;

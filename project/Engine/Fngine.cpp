@@ -14,6 +14,8 @@ Fngine::~Fngine() {
 	ImGuiManager::GetInstance()->Shutdown();
 
 	TextureManager::GetInstance()->ReleaseInstance();
+
+	PSOManager::GetInstance()->ReleaseInstance();
 	//解放処理
 	tachyonSync_.GetCGPU().UnLoad();
 	music_.UnLoad();
@@ -35,7 +37,7 @@ void Fngine::Initialize() {
 	// Logの初期化
 	Log::Initialize();
 
-	window_.Initialize(L"CG2ClassName", L"CG2");
+	window_.Initialize(L"CG2ClassName", L"((σω-)..._( _'ω')_ｽｯ......._(　　_‾▿◝ )_ﾀﾞﾗｰﾝ..._(　_´ω`)_...⊂( ⊂ _ω_)⊃...꜀(.ო. ꜆三꜀ .ო.)꜆)");
 
 	errorGuardian_.SetDebugInterface();
 	dxgi_.RecruitEngineer();
@@ -68,8 +70,60 @@ void Fngine::Initialize() {
 	d3d12_.GetDevice()->CreateDepthStencilView(dsv_.GetResource().Get(), &dsv_.GetDSVDesc(), dsv_.GetHeap().GetHeap()->GetCPUDescriptorHandleForHeapStart());
 	tachyonSync_.GetCGPU().Initialize(d3d12_.GetDevice());
 
-	//　マネージャー化も
-	pso_.Initialize(d3d12_, PSOTYPE::Normal);
+
+	dxc_.Initialize();
+	
+	PSOManager::GetInstance()->Initialize(this);
+
+	PSOManager::GetInstance()->CreateNewPSO
+	(
+		{ 
+			PIPELINETYPE::Graphics,
+			ROOTTYPE::Structured,
+			PSOTYPE::Normal,
+		 {
+			L"resources/shaders/Particle/Particle.VS.hlsl",
+			L"resources/shaders/Particle/Particle.PS.hlsl",
+			L"",
+			L"vs_6_0",
+			L"ps_6_0",
+			L""
+		 },
+		 {
+			 D3D12_CULL_MODE_BACK,
+			 D3D12_FILL_MODE_SOLID,
+			 FALSE,
+			 0,
+			 0.0f
+		 }
+		},
+		"Structured"
+	);
+
+	PSOManager::GetInstance()->CreateNewPSO
+	(
+		{
+			PIPELINETYPE::Graphics,
+			ROOTTYPE::Normal,
+			PSOTYPE::Normal,
+		 {
+			L"resources/shaders/Object3D/Object3D.VS.hlsl",
+			L"resources/shaders/Object3D/Object3D.PS.hlsl",
+			L"",
+			L"vs_6_0",
+			L"ps_6_0",
+			L""
+		 },
+		 {
+			 D3D12_CULL_MODE_BACK,
+			 D3D12_FILL_MODE_SOLID,
+			 FALSE,
+			 0,
+			 0.0f
+		 }
+		},
+		"Object3D"
+	);
 
 	osr_.Initialize(d3d12_,srv_, float(kClienWidth_), float(kClienHeight_));
 
