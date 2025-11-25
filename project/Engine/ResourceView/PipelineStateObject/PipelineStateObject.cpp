@@ -10,19 +10,6 @@ static const D3D12_INPUT_ELEMENT_DESC Layout_FullMesh[] = {
 	{ "NORMAL",   0, DXGI_FORMAT_R32G32B32_FLOAT,    0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 }
 };
 
-//void PipelineStateObject::Initialize(Fngine* fngine, PSOTYPE type) {
-//	// dxcは使いまわすことが出来るらしいのでアドレスを受け取るようにした
-//	dxc_ = &fngine->GetDXC();
-//
-//	InitializeDescs(fngine->GetD3D12System(), type);
-//
-//	MargeDesc();
-//
-//	depthStencil_.InitializeDesc();
-//
-//	SetDesc(fngine->GetD3D12System(), type);
-//}
-
 void PipelineStateObject::Initialize(
 	Fngine* fngine,
 	PIPELINETYPE pipelineType,
@@ -78,38 +65,6 @@ void PipelineStateObject::Initialize(
 	// 
 	SetDesc(fngine->GetD3D12System(), psoType);
 }
-
-//void PipelineStateObject::InitializeDescs(D3D12System& d3d12, PSOTYPE type) {
-//	// タイプで決めるからここは不変
-//	rootSignature_.CreateRootSignature(d3d12, ROOTTYPE::Structured);
-//	
-//	switch (type) {
-//	case PSOTYPE::Normal:
-//
-//	case PSOTYPE::Line:
-//
-//	case PSOTYPE::OffScreen:
-//
-//		// ここはLayoutを外部で設定して適用できるように変更した
-//		inputLayoutDesc_.Initialize(Layout_FullMesh, _countof(Layout_FullMesh));
-//		break;
-//	}
-//
-//	blendState_.Initialize(USECOLOR::All);
-//
-//	RasterizerSettings rasterSettings;
-//	rasterizer_.SetDesc(rasterSettings);
-//
-//	if (type == PSOTYPE::Line) {
-//		rasterizer_.GetDesc().AntialiasedLineEnable = true;
-//	}
-//	Compile(
-//		L"resources/shaders/Particle/Particle.VS.hlsl",
-//		L"vs_6_0",
-//		L"resources/shaders/Particle/Particle.PS.hlsl",
-//		L"ps_6_0"
-//	);
-//}
 
 void PipelineStateObject::Compile(
 	//CompilerするShaderファイルへのパス

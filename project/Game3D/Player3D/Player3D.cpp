@@ -8,7 +8,7 @@ Player3D::~Player3D() {
 void Player3D::Initialize(Fngine* fngine)
 {
 	obj_ = std::make_unique<ModelObject>();
-	obj_->Initialize(fngine->GetD3D12System(),"cube.obj");
+	obj_->Initialize(fngine->GetD3D12System(),"ground.obj");
 	obj_->SetFngine(fngine);
 	obj_->textureHandle_ = TextureManager::GetInstance()->LoadTexture("resources/uvChecker.png");
 
@@ -60,7 +60,8 @@ void Player3D::Update()
 	obj_->worldTransform_.set_.Translation(pos);
 
 
-	ImGuiManager::GetInstance()->DrawDrag("PlayerPos", obj_->worldTransform_.get_.Translation());
+	ImGuiManager::GetInstance()->DrawDrag("Player : Pos", obj_->worldTransform_.get_.Translation());
+	ImGuiManager::GetInstance()->DrawDrag("Player : Scale", obj_->worldTransform_.get_.Scale());
 	ImGuiManager::GetInstance()->DrawDrag("stamina", stamina_);
 	ImGuiManager::GetInstance()->DrawDrag("player : HP", hp_);
 	ImGuiManager::GetInstance()->DrawDrag("sppedMultiplier", speedMultiplier_);

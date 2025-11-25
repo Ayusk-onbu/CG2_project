@@ -12,12 +12,13 @@
 #include "DirectionLight.h"
 #include "TextureManager.h"
 #include "WorldTransform.h"
-#include "Fngine.h"
 
 struct ModelID {
 	uint32_t handle;
 	std::string name;
 };
+
+class Fngine;
 
 class ObjectBase
 {
@@ -30,8 +31,9 @@ public:
 
 	void InitializeMD(Vector4 color, bool isLight);
 	void InitializeWVPD();
-
+public:
 	void SetColor(const Vector4& color);
+	void SetEnableLighting(const bool& isLight) { materialData_->enableLighting = isLight; }
 	void SetFngine(Fngine* fngine) { fngine_ = fngine; }
 public:
 	// Resource

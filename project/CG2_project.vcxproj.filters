@@ -160,6 +160,12 @@
     <Filter Include="Scene\GameOver">
       <UniqueIdentifier>{4025fb79-5de8-44b4-805a-26a0fd32d0a1}</UniqueIdentifier>
     </Filter>
+    <Filter Include="UsefulTool\Light\PointLight">
+      <UniqueIdentifier>{51ef4757-cb60-43d3-ad90-817253be67b0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="UsefulTool\Light\SpotLight">
+      <UniqueIdentifier>{9c2e8a28-a585-4a60-a0e6-083bc7b7c907}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -481,7 +487,16 @@
       <Filter>Engine\Core\DebugTeam</Filter>
     </ClCompile>
     <ClCompile Include="Engine\ResourceView\PipelineStateObject\PipelineStateObjectManager.cpp">
-      <Filter>ソース ファイル</Filter>
+      <Filter>Engine\ResourceView\PipelineStateObject</Filter>
+    </ClCompile>
+    <ClCompile Include="UsefulTool\Light\PointLight\PointLight.cpp">
+      <Filter>UsefulTool\Light\PointLight</Filter>
+    </ClCompile>
+    <ClCompile Include="UsefulTool\Light\SpotLight\SpotLight.cpp">
+      <Filter>UsefulTool\Light\SpotLight</Filter>
+    </ClCompile>
+    <ClCompile Include="Common\Structure\Advanced\CameraForGPU.cpp">
+      <Filter>Common\Structure\Advanced</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -770,8 +785,17 @@
     <ClInclude Include="Engine\Core\DebugTeam\D3D12ResourceLeakChecker.h">
       <Filter>Engine\Core\DebugTeam</Filter>
     </ClInclude>
+    <ClInclude Include="Common\Structure\Advanced\CameraForGPU.h">
+      <Filter>Common\Structure\Advanced</Filter>
+    </ClInclude>
     <ClInclude Include="Engine\ResourceView\PipelineStateObject\PipelineStateObjectManager.h">
-      <Filter>ヘッダー ファイル</Filter>
+      <Filter>Engine\ResourceView\PipelineStateObject</Filter>
+    </ClInclude>
+    <ClInclude Include="UsefulTool\Light\PointLight\PointLight.h">
+      <Filter>UsefulTool\Light\PointLight</Filter>
+    </ClInclude>
+    <ClInclude Include="UsefulTool\Light\SpotLight\SpotLight.h">
+      <Filter>UsefulTool\Light\SpotLight</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

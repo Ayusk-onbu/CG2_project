@@ -26,6 +26,83 @@ Fngine::~Fngine() {
 	CloseWindow(window_.GetHwnd());
 }
 
+void Fngine::SettingShader() {
+	PSOManager::GetInstance()->CreateNewPSO
+	(
+		{
+			PIPELINETYPE::Graphics,
+			ROOTTYPE::Structured,
+			PSOTYPE::Normal,
+		 {
+			L"resources/shaders/Particle/Particle.VS.hlsl",
+			L"resources/shaders/Particle/Particle.PS.hlsl",
+			L"",
+			L"vs_6_0",
+			L"ps_6_0",
+			L""
+		 },
+		 {
+			 D3D12_CULL_MODE_BACK,
+			 D3D12_FILL_MODE_SOLID,
+			 FALSE,
+			 0,
+			 0.0f
+		 }
+		},
+		"Structured"
+	);
+
+	PSOManager::GetInstance()->CreateNewPSO
+	(
+		{
+			PIPELINETYPE::Graphics,
+			ROOTTYPE::Normal,
+			PSOTYPE::Normal,
+		 {
+			L"resources/shaders/Object3D/Object3D.VS.hlsl",
+			L"resources/shaders/Object3D/Object3D.PS.hlsl",
+			L"",
+			L"vs_6_0",
+			L"ps_6_0",
+			L""
+		 },
+		 {
+			 D3D12_CULL_MODE_BACK,
+			 D3D12_FILL_MODE_SOLID,
+			 FALSE,
+			 0,
+			 0.0f
+		 }
+		},
+		"Object3D"
+	);
+
+	PSOManager::GetInstance()->CreateNewPSO
+	(
+		{
+			PIPELINETYPE::Graphics,
+			ROOTTYPE::Normal,
+			PSOTYPE::Normal,
+		 {
+			L"resources/shaders/Object3D/Object3D.VS.hlsl",
+			L"resources/shaders/Object3D/Object3D.PS.hlsl",
+			L"",
+			L"vs_6_0",
+			L"ps_6_0",
+			L""
+		 },
+		 {
+			 D3D12_CULL_MODE_NONE,
+			 D3D12_FILL_MODE_SOLID,
+			 FALSE,
+			 0,
+			 0.0f
+		 }
+		},
+		"SpriteObject3D"
+	);
+}
+
 void Fngine::Initialize() {
 
 	//COMの初期化(Windowsが提供している機能)
@@ -75,55 +152,7 @@ void Fngine::Initialize() {
 	
 	PSOManager::GetInstance()->Initialize(this);
 
-	PSOManager::GetInstance()->CreateNewPSO
-	(
-		{ 
-			PIPELINETYPE::Graphics,
-			ROOTTYPE::Structured,
-			PSOTYPE::Normal,
-		 {
-			L"resources/shaders/Particle/Particle.VS.hlsl",
-			L"resources/shaders/Particle/Particle.PS.hlsl",
-			L"",
-			L"vs_6_0",
-			L"ps_6_0",
-			L""
-		 },
-		 {
-			 D3D12_CULL_MODE_BACK,
-			 D3D12_FILL_MODE_SOLID,
-			 FALSE,
-			 0,
-			 0.0f
-		 }
-		},
-		"Structured"
-	);
-
-	PSOManager::GetInstance()->CreateNewPSO
-	(
-		{
-			PIPELINETYPE::Graphics,
-			ROOTTYPE::Normal,
-			PSOTYPE::Normal,
-		 {
-			L"resources/shaders/Object3D/Object3D.VS.hlsl",
-			L"resources/shaders/Object3D/Object3D.PS.hlsl",
-			L"",
-			L"vs_6_0",
-			L"ps_6_0",
-			L""
-		 },
-		 {
-			 D3D12_CULL_MODE_BACK,
-			 D3D12_FILL_MODE_SOLID,
-			 FALSE,
-			 0,
-			 0.0f
-		 }
-		},
-		"Object3D"
-	);
+	SettingShader();
 
 	osr_.Initialize(d3d12_,srv_, float(kClienWidth_), float(kClienHeight_));
 
@@ -149,6 +178,9 @@ void Fngine::Initialize() {
 	RandomUtils::GetInstance()->Initialize();
 
 	light_.Initialize(d3d12_);
+	pointLight_.Initialize(this);
+	spotLight_.Initialize(this);
+	cameraForGPU_.Initialize(this);
 }
 
 void Fngine::BeginOSRFrame() {

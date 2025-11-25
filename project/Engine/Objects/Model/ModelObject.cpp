@@ -68,6 +68,7 @@ void ModelObject::Draw(TheOrderCommand& command, PSO& pso, DirectionLight& light
 void ModelObject::SetWVPData(Matrix4x4 WVP) {
 	wvpData_->WVP = WVP;
 	wvpData_->World = worldTransform_.mat_;
+	wvpData_->worldInverseTranspose = Matrix4x4::Transpose(Matrix4x4::Inverse(worldTransform_.mat_));
 	materialData_->uvTransform = uvTransform_.mat_;
 }
 

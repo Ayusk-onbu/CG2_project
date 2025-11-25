@@ -26,6 +26,7 @@ void Particle::Initialize(uint32_t numInstance) {
 	materialData_->color = {1.0f,1.0f,1.0f,1.0f};
 	materialData_->enableLighting = false;
 	materialData_->uvTransform = Matrix4x4::Make::Identity();
+	materialData_->shininess = 0.0f;
 
 	// アドレスを取得
 	instancingResource_->Map(0, nullptr, reinterpret_cast<void**>(&instancingData_));

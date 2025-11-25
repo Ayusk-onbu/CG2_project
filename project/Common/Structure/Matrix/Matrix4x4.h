@@ -148,6 +148,13 @@ public:
 	static Matrix4x4 Inverse(const Matrix4x4& m);
 #pragma endregion
 
+	/// <summary>
+	/// 行列の転置
+	/// </summary>
+	/// <param name="m"></param>
+	/// <returns></returns>
+	static Matrix4x4 Transpose(const Matrix4x4& m);
+
 	static Vector3 Transform(const Vector3& v, const Matrix4x4& m);
 	static Vector4 Transform(const Matrix4x4& m, const Vector4& v);
 

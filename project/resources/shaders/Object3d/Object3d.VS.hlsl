@@ -1,18 +1,11 @@
-//float4 main( float4 pos : POSITION ) : SV_POSITION
-//{
-//	return pos;
-//}
 #include "Object3d.hlsli"
 struct TransformationMatrix
 {
     float32_t4x4 WVP;
     float32_t4x4 World;
+    float32_t4x4 WorldInverseTranspose;
 };
 ConstantBuffer<TransformationMatrix> gTransformationMatrix : register(b0);
-//struct VertexShaderOutPut
-//{
-//    float32_t4 position : SV_POSITION;
-//};
 
 struct VertexShaderInput
 {
@@ -26,6 +19,7 @@ VertexShaderOutput main(VertexShaderInput input)
     VertexShaderOutput output;
     output.position = mul(input.position,gTransformationMatrix.WVP);
     output.texcoord = input.texcoord;
-    output.normal = normalize(mul(input.normal, (float32_t3x3) gTransformationMatrix.World));
+    output.normal = normalize(mul(input.normal, (float32_t3x3) gTransformationMatrix.WorldInverseTranspose));
+    output.worldPosition = mul(input.position, gTransformationMatrix.World).xyz;
     return output;
 }

@@ -18,9 +18,15 @@ void SceneDirector::Initialize(Scene& firstScene) {
 
 void SceneDirector::Run() {
 	CameraSystem::GetInstance()->Update();
+	p_fngine_->GetCameraForGPU().Update(CameraSystem::GetInstance()->GetActiveCamera()->GetTranslation());
 	//while()
 	currentScene_->Update();
 	currentScene_->Draw();
+
+	ImGuiManager::GetInstance()->DrawSlider("DirectionalLight : pos", p_fngine_->GetLight().directionalLightData_->direction,-1.0f,1.0f);
+	ImGuiManager::GetInstance()->DrawSlider("DirectionalLight : color", p_fngine_->GetLight().directionalLightData_->color, 0.0f, 1.0f);
+	p_fngine_->GetPointLight().Update();
+	p_fngine_->GetSpotLight().Update();
 }
 
 void SceneDirector::RequestChangeScene(Scene* newScene) {

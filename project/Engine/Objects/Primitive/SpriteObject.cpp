@@ -1,77 +1,153 @@
 #include "SpriteObject.h"
+#include "Fngine.h"
 
-void SpriteObject::Initialize(D3D12System& d3d12, float width, float height) {
-	InitializeResource(d3d12);
+// ----------------------------
+// Public Function
+// ----------------------------
+
+void SpriteObject::Initialize(int textureHandle,SPRITE_ANCHOR_TYPE type) {
+	textureHandle_ = textureHandle;
+	anchorType_ = type;
+	textureSize_ = TextureManager::GetInstance()->GetTexture(textureHandle_).GetSize();
+	InitializeResource(fngine_->GetD3D12System());
 	InitializeData();
-	InitializeVertex(width,height);
+	InitializeVertex();
+	worldTransform_.Initialize();
+	uvTransform_.Initialize();
 }
+
+void SpriteObject::Draw(SPRITE_VIEW_TYPE type) {
+	worldTransform_.LocalToWorld();
+	uvTransform_.LocalToWorld();
+	switch (type) {
+	case SPRITE_VIEW_TYPE::UI:
+		SetWVPData(CameraSystem::GetInstance()->GetActiveCamera()->DrawUI(worldTransform_.mat_));
+		break;
+	case SPRITE_VIEW_TYPE::Object:
+		SetWVPData(CameraSystem::GetInstance()->GetActiveCamera()->DrawCamera(worldTransform_.mat_));
+		break;
+	}
+	Draw(fngine_->GetCommand(),
+		PSOManager::GetInstance()->GetPSO("SpriteObject3D"),
+		fngine_->GetLight(),
+		TextureManager::GetInstance()->GetTexture(textureHandle_));
+}
+
+// ------------------------------
+// Private Function
+// ------------------------------
 
 void SpriteObject::Draw(TheOrderCommand& command, PSO& pso, DirectionLight& light, Texture& tex) {
 	command.GetList().GetList()->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-	object_.DrawIndexBase(command, pso, light, tex);
+	DrawIndexBase(command, pso, light, tex);
 	command.GetList().GetList()->DrawIndexedInstanced(6, 1, 0, 0, 0);
 }
 
 void SpriteObject::Draw2(TheOrderCommand& command, PSO& pso, DirectionLight& light, D3D12_GPU_DESCRIPTOR_HANDLE& tex) {
 	command.GetList().GetList()->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-	object_.DrawIndexBase(command, pso, light, tex);
+	DrawIndexBase(command, pso, light, tex);
 	command.GetList().GetList()->DrawIndexedInstanced(6, 1, 0, 0, 0);
 }
 
-void SpriteObject::SetWVPData(Matrix4x4 WVP, Matrix4x4 world, Matrix4x4 uv) {
-	object_.wvpData_->WVP = WVP;
-	object_.wvpData_->World = world;
-	object_.materialData_->uvTransform = uv;
+void SpriteObject::SetWVPData(Matrix4x4 WVP) {
+	wvpData_->WVP = WVP;
+	wvpData_->World = worldTransform_.mat_;
+	wvpData_->worldInverseTranspose = Matrix4x4::Transpose(Matrix4x4::Inverse(worldTransform_.mat_));
+	materialData_->uvTransform = uvTransform_.mat_;
 }
 
 void SpriteObject::InitializeResource(D3D12System& d3d12) {
-
-	object_.vertexResource_ = CreateBufferResource(d3d12.GetDevice().Get(), sizeof(VertexData) * 4);
-	object_.indexResource_ = CreateBufferResource(d3d12.GetDevice().Get(), sizeof(uint32_t) * 6);
-	object_.materialResource_ = CreateBufferResource(d3d12.GetDevice().Get(), sizeof(Material));
-	object_.wvpResource_ = CreateBufferResource(d3d12.GetDevice().Get(), sizeof(TransformationMatrix));
-
+	vertexResource_ = CreateBufferResource(d3d12.GetDevice().Get(), sizeof(VertexData) * 4);
+	indexResource_ = CreateBufferResource(d3d12.GetDevice().Get(), sizeof(uint32_t) * 6);
+	materialResource_ = CreateBufferResource(d3d12.GetDevice().Get(), sizeof(Material));
+	wvpResource_ = CreateBufferResource(d3d12.GetDevice().Get(), sizeof(TransformationMatrix));
 }
 
 void SpriteObject::InitializeData() {
-	object_.InitializeMD(Vector4(1.0f, 1.0f, 1.0f, 1.0f), false);
-	object_.InitializeWVPD();
-	//リソースの先頭のアドレスから使う
-	object_.vertexBufferView_.BufferLocation = object_.vertexResource_->GetGPUVirtualAddress();
-	//使用するリソースのサイズはちゅてん三つ分
-	object_.vertexBufferView_.SizeInBytes = sizeof(VertexData) * 4;//
-	//１個当たりのサイズ
-	object_.vertexBufferView_.StrideInBytes = sizeof(VertexData);//
-	// リソースの先頭のアドレスから使う
-	object_.indexBufferView_.BufferLocation = object_.indexResource_->GetGPUVirtualAddress();
-	// 使用するリソースのサイズはインデックス６つ分のサイズ
-	object_.indexBufferView_.SizeInBytes = sizeof(uint32_t) * 6;
-	// インデックスはuint32_tとする
-	object_.indexBufferView_.Format = DXGI_FORMAT_R32_UINT;
+	InitializeMD(Vector4(1.0f, 1.0f, 1.0f, 1.0f), false);
+	InitializeWVPD();
 
-	object_.vertexResource_->Map(0, nullptr, reinterpret_cast<void**>(&object_.vertexData_));
+	// ----------------------
+	//  Veretex Buffer View
+	// ----------------------
+
+	//リソースの先頭のアドレスから使う
+	vertexBufferView_.BufferLocation = vertexResource_->GetGPUVirtualAddress();
+	//使用するリソースのサイズはちゅてん三つ分
+	vertexBufferView_.SizeInBytes = sizeof(VertexData) * 4;//
+	//１個当たりのサイズ
+	vertexBufferView_.StrideInBytes = sizeof(VertexData);//
+	
+	// ----------------------
+	// Index Buffer View
+	// ----------------------
+
+	// リソースの先頭のアドレスから使う
+	indexBufferView_.BufferLocation = indexResource_->GetGPUVirtualAddress();
+	// 使用するリソースのサイズはインデックス６つ分のサイズ
+	indexBufferView_.SizeInBytes = sizeof(uint32_t) * 6;
+	// インデックスはuint32_tとする
+	indexBufferView_.Format = DXGI_FORMAT_R32_UINT;
+
+	
 }
 
-void SpriteObject::InitializeVertex(float width, float height) {
-	//1枚目の三角形
-	object_.vertexData_[0].position = { 0.0f,height,0.0f,1.0f };
-	object_.vertexData_[0].texcoord = { 0.0f,1.0f };
-	object_.vertexData_[1].position = { 0.0f,0.0f,0.0f,1.0f };
-	object_.vertexData_[1].texcoord = { 0.0f,0.0f };
-	object_.vertexData_[2].position = { width,height,0.0f,1.0f };
-	object_.vertexData_[2].texcoord = { 1.0f,1.0f };
-	object_.vertexData_[3].position = { width, 0.0f, 0.0f, 1.0f };
-	object_.vertexData_[3].texcoord = { 1.0f, 0.0f };
-	/*object_.vertexData_[0].position = { width/-2.0f,height/2.0f,0.0f,1.0f };
-	object_.vertexData_[0].texcoord = { 0.0f,1.0f };
-	object_.vertexData_[1].position = { width / -2.0f,height / -2.0f,0.0f,1.0f };
-	object_.vertexData_[1].texcoord = { 0.0f,0.0f };
-	object_.vertexData_[2].position = { width / 2.0f,height / 2.0f,0.0f,1.0f };
-	object_.vertexData_[2].texcoord = { 1.0f,1.0f };
-	object_.vertexData_[3].position = { width / 2.0f,height / -2.0f, 0.0f, 1.0f };
-	object_.vertexData_[3].texcoord = { 1.0f, 0.0f };*/
+void SpriteObject::InitializeVertex() {
+	vertexResource_->Map(0, nullptr, reinterpret_cast<void**>(&vertexData_));
 
-	object_.indexResource_->Map(0, nullptr, reinterpret_cast<void**>(&object_.indexData_));
-	object_.indexData_[0] = 0;object_.indexData_[1] = 1;object_.indexData_[2] = 2;
-	object_.indexData_[3] = 1;object_.indexData_[4] = 3;object_.indexData_[5] = 2;
+	switch (anchorType_) {
+	case SPRITE_ANCHOR_TYPE::LeftTop:
+		anchorPoint_ = { 0.0f,0.0f };
+		break;
+	case SPRITE_ANCHOR_TYPE::LeftBottom:
+		anchorPoint_ = { 0.0f,1.0f };
+		break;
+	case SPRITE_ANCHOR_TYPE::LeftMiddle:
+		anchorPoint_ = { 0.0f,0.5f };
+		break;
+	case SPRITE_ANCHOR_TYPE::RightTop:
+		anchorPoint_ = { 1.0f,0.0f };
+		break;
+	case SPRITE_ANCHOR_TYPE::RightBottom:
+		anchorPoint_ = { 1.0f,1.0f };
+		break;
+	case SPRITE_ANCHOR_TYPE::RightMiddle:
+		anchorPoint_ = { 0.0f,0.5f };
+		break;
+	case SPRITE_ANCHOR_TYPE::Middle:
+		anchorPoint_ = { 0.5f,0.5f };
+		break;
+	}
+
+	float left = 0.0f - anchorPoint_.x;
+	float right = 1.0f - anchorPoint_.x;
+	float top = 0.0f - anchorPoint_.y;
+	float bottom = 1.0f - anchorPoint_.y;
+
+	if (isFlipX_) {
+		left = -left;
+		right = -right;
+	}
+	if (isFlipY_) {
+		top = -top;
+		bottom = -bottom;
+	}
+	float sizeX = textureSize_.x;
+	float sizeY = textureSize_.y;
+	// 左下
+	vertexData_[0].position = { left * sizeX,bottom * sizeY,0.0f,1.0f };
+	vertexData_[0].texcoord = { 0.0f,1.0f };
+	// 左上
+	vertexData_[1].position = { left * sizeX,top * sizeY,0.0f,1.0f };
+	vertexData_[1].texcoord = { 0.0f,0.0f };
+	// 右下
+	vertexData_[2].position = { right * sizeX,bottom * sizeY,0.0f,1.0f };
+	vertexData_[2].texcoord = { 1.0f,1.0f };
+	// 右上
+	vertexData_[3].position = { right * sizeX, top * sizeY, 0.0f, 1.0f };
+	vertexData_[3].texcoord = { 1.0f, 0.0f };
+
+	indexResource_->Map(0, nullptr, reinterpret_cast<void**>(&indexData_));
+	indexData_[0] = 0;indexData_[1] = 1;indexData_[2] = 2;
+	indexData_[3] = 1;indexData_[4] = 3;indexData_[5] = 2;
 }

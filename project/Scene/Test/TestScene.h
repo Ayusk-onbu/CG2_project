@@ -23,5 +23,7 @@ public:
 
 private:
 	Particle* particle_;
+	Player3D player_;
+	SpriteObject* sprite_;
 };
 

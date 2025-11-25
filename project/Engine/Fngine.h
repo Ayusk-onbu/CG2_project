@@ -23,10 +23,14 @@
 #include "PipelineStateObjectManager.h"
 #include "OffScreenRendering.h"
 #include "DirectionLight.h"
+#include "PointLight.h"
+#include "SpotLight.h"
+#include "CameraForGPU.h"
 #include "ImGuiManager.h"
 #include "Structures.h"
 #include "ResourceBarrier.h"
 #include "InputManager.h"
+#include "CameraSystem.h"
 #include "RandomUtils.h"
 #include "Music.h"
 #include "Easing.h"
@@ -45,11 +49,17 @@ public:
 	void EndOSRFrame();
 	void BeginFrame();
 	void EndFrame();
+public:
 	D3D12System& GetD3D12System() { return d3d12_; }
 	TheOrderCommand& GetCommand() { return command_; }
 	SRV& GetSRV() { return srv_; }
 	DXC& GetDXC() { return dxc_; }
 	DirectionLight& GetLight() { return light_; }
+	PointLight& GetPointLight() { return pointLight_; }
+	SpotLight& GetSpotLight() { return spotLight_; }
+	CameraForGPU& GetCameraForGPU() { return cameraForGPU_; }
+private:
+	void SettingShader();
 private:
 
 	int32_t kClienWidth_ = 1280;
@@ -79,5 +89,8 @@ private:
 	Music music_;
 
 	DirectionLight light_;
+	PointLight pointLight_;
+	SpotLight spotLight_;
+	CameraForGPU cameraForGPU_;
 };
 

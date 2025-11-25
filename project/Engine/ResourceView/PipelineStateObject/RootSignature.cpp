@@ -21,7 +21,7 @@ void RootSignature::CreateRootSignature(D3D12System& d3d12, ROOTTYPE type) {
 		descriptorRange[0].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
 
 		//RootParameterの作成。複数設定できるので配列(CBufferの数に応じて増やす)
-		D3D12_ROOT_PARAMETER rootParameters[4] = {};
+		D3D12_ROOT_PARAMETER rootParameters[7] = {};
 
 		// Pixel Shader のConstantBuffer<>のb0に設定しているやつについて
 		rootParameters[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;//Use CBV
@@ -51,6 +51,21 @@ void RootSignature::CreateRootSignature(D3D12System& d3d12, ROOTTYPE type) {
 		rootParameters[3].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;//Use CBV
 		rootParameters[3].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;//Use PixelShader
 		rootParameters[3].Descriptor.ShaderRegister = 1;//レジスタ番号１(hlslのやつ)とバインド
+
+		// Pixel Shader のConstantBuffer<>のb2に設定しているやつについて(CameraPosition)
+		rootParameters[4].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;//Use CBV
+		rootParameters[4].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;//Use PixelShader
+		rootParameters[4].Descriptor.ShaderRegister = 2;//レジスタ番号2(hlslのやつ)とバインド
+
+		// Pixel Shader のConstantBuffer<>のb3に設定しているやつについて(CameraPosition)
+		rootParameters[5].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;//Use CBV
+		rootParameters[5].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;//Use PixelShader
+		rootParameters[5].Descriptor.ShaderRegister = 3;//レジスタ番号3(hlslのやつ)とバインド
+
+		// Pixel Shader のConstantBuffer<>のb4に設定しているやつについて(CameraPosition)
+		rootParameters[6].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;//Use CBV
+		rootParameters[6].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;//Use PixelShader
+		rootParameters[6].Descriptor.ShaderRegister = 4;//レジスタ番号3(hlslのやつ)とバインド
 
 		descriptionRootSignature.pParameters = rootParameters;//ルートパラメータ配列へのポインタ
 		descriptionRootSignature.NumParameters = _countof(rootParameters);//配列の長さ
@@ -104,7 +119,7 @@ void RootSignature::CreateRootSignature(D3D12System& d3d12, ROOTTYPE type) {
 		descriptorRangeForInstancing[0].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
 
 		//RootParameterの作成。複数設定できるので配列(CBufferの数に応じて増やす)
-		D3D12_ROOT_PARAMETER rootParameters[4] = {};
+		D3D12_ROOT_PARAMETER rootParameters[3] = {};
 
 		// PixelのCBVのb0はMaterial
 		rootParameters[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;

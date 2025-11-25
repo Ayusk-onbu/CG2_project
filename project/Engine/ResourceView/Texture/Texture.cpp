@@ -2,7 +2,7 @@
 #include "Log.h"
 
 
-void Texture::Initialize(D3D12System& d3d12, SRV& srv, const std::string& filePath,int num) {
+void Texture::Initialize(D3D12System& d3d12, SRV& srv, const std::string& filePath, int num) {
 	mipImages_ = LoadTexture(filePath);
 	const DirectX::TexMetadata metaData_ = mipImages_.GetMetadata();
 	textureResource_ = std::move(CreateTextureResource(d3d12.GetDevice().Get(), metaData_));
@@ -13,6 +13,11 @@ void Texture::Initialize(D3D12System& d3d12, SRV& srv, const std::string& filePa
 	textureSrvHandleCPU_ = srv.GetCPUDescriptorHandle();
 	textureSrvHandleGPU_ = srv.GetGPUDescriptorHandle();
 	d3d12.GetDevice().Get()->CreateShaderResourceView(textureResource_.Get(), &srvDesc_, textureSrvHandleCPU_);
+
+	textureSize_ = {
+		static_cast<float>(metaData_.width),
+		static_cast<float>(metaData_.height) 
+	};
 }
 
 void Texture::SetDesc(DXGI_FORMAT fmt, UINT mapping, D3D12_SRV_DIMENSION dimension, UINT mipLevel) {

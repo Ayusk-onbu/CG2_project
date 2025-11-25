@@ -1,5 +1,5 @@
 #include "ObjectBase.h"
-
+#include "Fngine.h"
 
 void ObjectBase::DrawBase() {
 	//RootSignalの設定
@@ -14,6 +14,12 @@ void ObjectBase::DrawBase() {
 	fngine_->GetCommand().GetList().GetList()->SetGraphicsRootDescriptorTable(2, TextureManager::GetInstance()->GetTexture(textureHandle_).GetHandleGPU());
 	//DirectionLight用のCBufferの場所を設定
 	fngine_->GetCommand().GetList().GetList()->SetGraphicsRootConstantBufferView(3, fngine_->GetLight().GetResource()->GetGPUVirtualAddress());
+	// カメラの位置を送るための設定
+	fngine_->GetCommand().GetList().GetList()->SetGraphicsRootConstantBufferView(4, fngine_->GetCameraForGPU().GetResource()->GetGPUVirtualAddress());
+	// PointLight用のCBufferの設定
+	fngine_->GetCommand().GetList().GetList()->SetGraphicsRootConstantBufferView(5, fngine_->GetPointLight().GetResource()->GetGPUVirtualAddress());
+	// SpotLight用のCBufferの設定
+	fngine_->GetCommand().GetList().GetList()->SetGraphicsRootConstantBufferView(6, fngine_->GetSpotLight().GetResource()->GetGPUVirtualAddress());
 }
 
 void ObjectBase::DrawBase(TheOrderCommand& command, PSO& pso, DirectionLight& light, Texture& tex) {
@@ -29,6 +35,12 @@ void ObjectBase::DrawBase(TheOrderCommand& command, PSO& pso, DirectionLight& li
 	command.GetList().GetList()->SetGraphicsRootDescriptorTable(2, tex.GetHandleGPU());
 	//DirectionLight用のCBufferの場所を設定
 	command.GetList().GetList()->SetGraphicsRootConstantBufferView(3, light.GetResource()->GetGPUVirtualAddress());
+	// カメラの位置を送るための設定
+	fngine_->GetCommand().GetList().GetList()->SetGraphicsRootConstantBufferView(4, fngine_->GetCameraForGPU().GetResource()->GetGPUVirtualAddress());
+	// PointLight用のCBufferの設定
+	fngine_->GetCommand().GetList().GetList()->SetGraphicsRootConstantBufferView(5, fngine_->GetPointLight().GetResource()->GetGPUVirtualAddress());
+	// SpotLight用のCBufferの設定
+	fngine_->GetCommand().GetList().GetList()->SetGraphicsRootConstantBufferView(6, fngine_->GetSpotLight().GetResource()->GetGPUVirtualAddress());
 }
 
 void ObjectBase::DrawBase(TheOrderCommand& command, PSO& pso, DirectionLight& light, D3D12_GPU_DESCRIPTOR_HANDLE& tex) {
@@ -44,6 +56,12 @@ void ObjectBase::DrawBase(TheOrderCommand& command, PSO& pso, DirectionLight& li
 	command.GetList().GetList()->SetGraphicsRootDescriptorTable(2, tex);
 	//DirectionLight用のCBufferの場所を設定
 	command.GetList().GetList()->SetGraphicsRootConstantBufferView(3, light.GetResource()->GetGPUVirtualAddress());
+	// カメラの位置を送るための設定
+	fngine_->GetCommand().GetList().GetList()->SetGraphicsRootConstantBufferView(4, fngine_->GetCameraForGPU().GetResource()->GetGPUVirtualAddress());
+	// PointLight用のCBufferの設定
+	fngine_->GetCommand().GetList().GetList()->SetGraphicsRootConstantBufferView(5, fngine_->GetPointLight().GetResource()->GetGPUVirtualAddress());
+	// SpotLight用のCBufferの設定
+	fngine_->GetCommand().GetList().GetList()->SetGraphicsRootConstantBufferView(6, fngine_->GetSpotLight().GetResource()->GetGPUVirtualAddress());
 }
 
 void ObjectBase::DrawIndexBase(TheOrderCommand& command, PSO& pso, DirectionLight& light, Texture& tex) {
@@ -61,6 +79,12 @@ void ObjectBase::DrawIndexBase(TheOrderCommand& command, PSO& pso, DirectionLigh
 	command.GetList().GetList()->SetGraphicsRootDescriptorTable(2, tex.GetHandleGPU());
 	//DirectionLight用のCBufferの場所を設定
 	command.GetList().GetList()->SetGraphicsRootConstantBufferView(3, light.GetResource()->GetGPUVirtualAddress());
+	// カメラの位置を送るための設定
+	fngine_->GetCommand().GetList().GetList()->SetGraphicsRootConstantBufferView(4, fngine_->GetCameraForGPU().GetResource()->GetGPUVirtualAddress());
+	// PointLight用のCBufferの設定
+	fngine_->GetCommand().GetList().GetList()->SetGraphicsRootConstantBufferView(5, fngine_->GetPointLight().GetResource()->GetGPUVirtualAddress());
+	// SpotLight用のCBufferの設定
+	fngine_->GetCommand().GetList().GetList()->SetGraphicsRootConstantBufferView(6, fngine_->GetSpotLight().GetResource()->GetGPUVirtualAddress());
 }
 
 void ObjectBase::DrawIndexBase(TheOrderCommand& command, PSO& pso, DirectionLight& light, D3D12_GPU_DESCRIPTOR_HANDLE& tex) {
@@ -78,6 +102,12 @@ void ObjectBase::DrawIndexBase(TheOrderCommand& command, PSO& pso, DirectionLigh
 	command.GetList().GetList()->SetGraphicsRootDescriptorTable(2, tex);
 	//DirectionLight用のCBufferの場所を設定
 	command.GetList().GetList()->SetGraphicsRootConstantBufferView(3, light.GetResource()->GetGPUVirtualAddress());
+	// カメラの位置を送るための設定
+	fngine_->GetCommand().GetList().GetList()->SetGraphicsRootConstantBufferView(4, fngine_->GetCameraForGPU().GetResource()->GetGPUVirtualAddress());
+	// PointLight用のCBufferの設定
+	fngine_->GetCommand().GetList().GetList()->SetGraphicsRootConstantBufferView(5, fngine_->GetPointLight().GetResource()->GetGPUVirtualAddress());
+	// SpotLight用のCBufferの設定
+	fngine_->GetCommand().GetList().GetList()->SetGraphicsRootConstantBufferView(6, fngine_->GetSpotLight().GetResource()->GetGPUVirtualAddress());
 }
 
 void ObjectBase::InitializeMD(Vector4 color, bool isLight) {
@@ -85,6 +115,7 @@ void ObjectBase::InitializeMD(Vector4 color, bool isLight) {
 	materialData_->color = color;
 	materialData_->enableLighting = isLight;
 	materialData_->uvTransform = Matrix4x4::Make::Identity();
+	materialData_->shininess = 32.0f;
 }
 
 void ObjectBase::InitializeWVPD() {
@@ -93,6 +124,7 @@ void ObjectBase::InitializeWVPD() {
 	//単位行列を書き込んでいく
 	wvpData_->WVP = Matrix4x4::Make::Identity();
 	wvpData_->World = Matrix4x4::Make::Identity();
+	wvpData_->worldInverseTranspose = Matrix4x4::Make::Identity();
 }
 
 void ObjectBase::SetColor(const Vector4& color) {

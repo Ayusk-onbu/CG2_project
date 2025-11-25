@@ -206,6 +206,21 @@ Matrix4x4 Matrix4x4::Make::LookAt(const Vector3& eye, const Vector3& target, con
 		return ret;
 	}
 
+	//行列の転置
+	Matrix4x4 Matrix4x4::Transpose(const Matrix4x4& m) {
+		float a11 = m.m[0][0], a12 = m.m[0][1], a13 = m.m[0][2], a14 = m.m[0][3],
+			a21 = m.m[1][0], a22 = m.m[1][1], a23 = m.m[1][2], a24 = m.m[1][3],
+			a31 = m.m[2][0], a32 = m.m[2][1], a33 = m.m[2][2], a34 = m.m[2][3],
+			a41 = m.m[3][0], a42 = m.m[3][1], a43 = m.m[3][2], a44 = m.m[3][3];
+		Matrix4x4 ret = {
+			a11,a21,a31,a41,
+			a12,a22,a32,a42,
+			a13,a23,a33,a43,
+			a14,a24,a34,a44
+		};
+		return ret;
+	}
+
 	Vector3 Matrix4x4::Transform(const Vector3& v, const Matrix4x4& m) {
 		Vector3 ret;
 		ret.x = v.x * m.m[0][0] + v.y * m.m[1][0] + v.z * m.m[2][0] + m.m[3][0];

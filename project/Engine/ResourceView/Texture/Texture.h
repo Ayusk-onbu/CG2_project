@@ -1,10 +1,8 @@
 #pragma once
 #include <string>
-
 #include "ShaderResourceView.h"
-//#include "D3D12System.h"
 #include "externals/DirectXTex/DirectXTex.h"
-
+#include "Structures.h"
 
 class Texture
 {
@@ -17,6 +15,7 @@ public:
 public:
 	void Initialize(D3D12System& d3d12, SRV& srv,const std::string& filePath,int num);
 	D3D12_GPU_DESCRIPTOR_HANDLE& GetHandleGPU() { return textureSrvHandleGPU_; }
+	Vector2 GetSize()const { return textureSize_; }
 private:
 	DirectX::ScratchImage LoadTexture(const std::string& filePath);
 	Microsoft::WRL::ComPtr < ID3D12Resource> CreateTextureResource(ID3D12Device* device, const DirectX::TexMetadata& metadata);
@@ -29,4 +28,5 @@ private:
 	D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc_{};
 	D3D12_CPU_DESCRIPTOR_HANDLE textureSrvHandleCPU_;
 	D3D12_GPU_DESCRIPTOR_HANDLE textureSrvHandleGPU_;
+	Vector2 textureSize_; 
 };

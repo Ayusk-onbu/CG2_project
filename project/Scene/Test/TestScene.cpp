@@ -9,15 +9,21 @@
 
 TestScene::~TestScene() {
 	delete particle_;
+	delete sprite_;
 }
 
 void TestScene::Initialize() {
 	// Initialization code for the game scene
 	CameraSystem::GetInstance()->MakeCamera("DebugCamera", CameraType::Debug);
 	CameraSystem::GetInstance()->SetActiveCamera("DebugCamera");
-	//player_.Initialize(p_fngine_);
+	player_.Initialize(p_fngine_);
 	particle_ = new Particle(p_fngine_);
-	particle_->Initialize(10);
+	particle_->Initialize(10000);
+
+	sprite_ = new SpriteObject(p_fngine_);
+	sprite_->SetFlip(false,false);
+	sprite_->Initialize(TextureManager::GetInstance()->LoadTexture("resources/uvChecker.png"));
+	sprite_->worldTransform_.set_.Translation({640.0f,360.0f,0.0f});
 }
 
 void TestScene::Update() {
@@ -27,7 +33,7 @@ void TestScene::Update() {
 	}
 	CameraSystem::GetInstance()->Update();
 	particle_->Update();
-	//player_.Update();
+	player_.Update();
 #ifdef _DEBUG
 	ImGui::Begin("BlendMode");
 	if (ImGui::Button("Alpha")) {
@@ -54,6 +60,7 @@ void TestScene::Update() {
 }
 
 void TestScene::Draw() {
-	//player_.Draw();
+	player_.Draw();
 	particle_->Draw();
+	sprite_->Draw(SPRITE_VIEW_TYPE::Object);
 }
