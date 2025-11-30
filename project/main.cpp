@@ -3,7 +3,7 @@
 #include "Chronos.h"
 #include "SceneDirector.h"
 #include "MathUtils.h"
-#include "WorldTransform.h"
+#include "GlobalVariables.h"
 
 
 //   決まり事
@@ -18,6 +18,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	fngine->Initialize();
 
 	std::unique_ptr<SceneDirector> scene = std::make_unique<SceneDirector>();
+
+	GlobalVariables::GetInstance()->LoadFiles();
+
 	scene->SetUpFngine(*fngine);
 	scene->Initialize(*new TestScene());
 	
@@ -38,6 +41,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		else {
 			ImGuiManager::GetInstance()->BeginFrame();
 			InputManager::Update();
+			GlobalVariables::GetInstance()->Update();
 #pragma region OffScreenRendering
 			/*ResourceBarrier barrierO = {};
 			barrierO.SetBarrier(command.GetList().GetList().Get(), osr.GetResource().Get(),

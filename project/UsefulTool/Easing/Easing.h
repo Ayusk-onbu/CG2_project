@@ -5,4 +5,4 @@
 
 void Easing(Vector3& Pos, const Vector3& startPos, const Vector3& endPos, float nowFrame, const float& endFrame,EASINGTYPE easeType, float magNum = 1.0f);
 float Easing_Float(const float& startValue, const float& endValue, float nowFrame, const float& endFrame, EASINGTYPE easeType, float magNum = 1.0f);
-
+Vector4 Easing_Vector4(const Vector4& startValue, const Vector4& endValue, float nowFrame, const float& endFrame, EASINGTYPE easeType, float magNum = 1.0f);

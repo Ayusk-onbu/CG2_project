@@ -43,9 +43,9 @@ void ModelObject::Initialize(D3D12System& d3d12, ModelData& modelData) {
 // Draw Function
 //==========-+-==========
 
-void ModelObject::Draw() {
+void ModelObject::Draw(ObjectDrawType type) {
 	fngine_->GetCommand().GetList().GetList()->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-	DrawBase();
+	DrawBase(type);
 	fngine_->GetCommand().GetList().GetList()->DrawInstanced(UINT(modelData_.vertices.size()), 1, 0, 0);
 }
 

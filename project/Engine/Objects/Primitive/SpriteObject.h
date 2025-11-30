@@ -36,8 +36,19 @@ public:
 	void SetAnchorPoint(const Vector2& point) { anchorPoint_ = point; }
 	Vector2 GetAnchorPoint()const { return anchorPoint_; }
 
-	// フリップ
+	/// <summary>
+	/// フリップ
+	/// </summary>
+	/// <param name="x">Object : false</param>
+	/// <param name="y">Object : true</param>
 	void SetFlip(bool x, bool y) { isFlipX_ = x;isFlipY_ = y; }
+
+	/// <summary>
+	/// 抜き出すサイズの調整
+	/// </summary>
+	/// <param name="leftTop">抜き出したい画像の左上</param>
+	/// <param name="size">抜き出す画像の高さと幅</param>
+	void SetTextureSize(const Vector2& leftTop, const Vector2& size);
 private:
 	void Draw(TheOrderCommand& command, PSO& pso, DirectionLight& light, Texture& tex);
 	void Draw2(TheOrderCommand& command, PSO& pso, DirectionLight& light, D3D12_GPU_DESCRIPTOR_HANDLE& tex);
@@ -50,6 +61,7 @@ private:
 	void InitializeVertex(float width,float height);
 
 	void InitializeVertex();
+
 private:
 	Vector2 anchorPoint_ = { 0.0f,0.0f };
 	SPRITE_ANCHOR_TYPE anchorType_;

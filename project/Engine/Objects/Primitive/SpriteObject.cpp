@@ -33,6 +33,22 @@ void SpriteObject::Draw(SPRITE_VIEW_TYPE type) {
 		TextureManager::GetInstance()->GetTexture(textureHandle_));
 }
 
+void SpriteObject::SetTextureSize(const Vector2& leftTop, const Vector2& size) {
+	float tex_left = leftTop.x / textureSize_.x;
+	float tex_right = (leftTop.x + size.x) / textureSize_.x;
+	float tex_top = leftTop.y / textureSize_.y;
+	float tex_bottom = (leftTop.y + size.y) / textureSize_.y;
+
+	// 左下
+	vertexData_[0].texcoord = { tex_left,tex_bottom };
+	// 左上
+	vertexData_[1].texcoord = { tex_left,tex_top };
+	// 右下
+	vertexData_[2].texcoord = { tex_right,tex_bottom };
+	// 右上
+	vertexData_[3].texcoord = { tex_right, tex_top };
+}
+
 // ------------------------------
 // Private Function
 // ------------------------------

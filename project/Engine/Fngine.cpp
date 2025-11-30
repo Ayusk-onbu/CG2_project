@@ -92,6 +92,31 @@ void Fngine::SettingShader() {
 			L""
 		 },
 		 {
+			 D3D12_CULL_MODE_BACK,
+			 D3D12_FILL_MODE_WIREFRAME,
+			 FALSE,
+			 0,
+			 0.0f
+		 }
+		},
+		"DebugObject3D"
+	);
+
+	PSOManager::GetInstance()->CreateNewPSO
+	(
+		{
+			PIPELINETYPE::Graphics,
+			ROOTTYPE::Normal,
+			PSOTYPE::Normal,
+		 {
+			L"resources/shaders/Object3D/Object3D.VS.hlsl",
+			L"resources/shaders/Object3D/Object3D.PS.hlsl",
+			L"",
+			L"vs_6_0",
+			L"ps_6_0",
+			L""
+		 },
+		 {
 			 D3D12_CULL_MODE_NONE,
 			 D3D12_FILL_MODE_SOLID,
 			 FALSE,
@@ -114,7 +139,7 @@ void Fngine::Initialize() {
 	// Logの初期化
 	Log::Initialize();
 
-	window_.Initialize(L"CG2ClassName", L"((σω-)..._( _'ω')_ｽｯ......._(　　_‾▿◝ )_ﾀﾞﾗｰﾝ..._(　_´ω`)_...⊂( ⊂ _ω_)⊃...꜀(.ო. ꜆三꜀ .ო.)꜆)");
+	window_.Initialize(L"CG2ClassName", L"LE2B_19_ハマダ_カズヤ");
 
 	errorGuardian_.SetDebugInterface();
 	dxgi_.RecruitEngineer();
