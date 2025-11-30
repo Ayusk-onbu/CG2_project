@@ -64,6 +64,8 @@ private:
 	void ApplyPhysics();
 	// スタミナ回復処理
 	void UpdateStaminaRecovery();
+
+	void ApplyGlobalVariables();
 private:
 	std::unique_ptr<ModelObject>obj_;
 	PlayerState* state_ = nullptr;
@@ -89,6 +91,8 @@ private:
 	float speedMultiplier_ = 1.0f;
 	// 旋回するスピード
 	float rotateSpeed_ = 0.4f;
+
+	float test_ = 0.0f;
 	
 	// スタミナ
 	float stamina_ = 100.0f;

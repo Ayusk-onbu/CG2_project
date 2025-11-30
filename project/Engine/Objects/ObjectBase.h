@@ -18,12 +18,17 @@ struct ModelID {
 	std::string name;
 };
 
+enum class ObjectDrawType {
+	SOLID,
+	WIREFRAME,
+};
+
 class Fngine;
 
 class ObjectBase
 {
 public:
-	void DrawBase();
+	void DrawBase(ObjectDrawType type = ObjectDrawType::SOLID);
 	void DrawBase(TheOrderCommand& command,PSO& pso,DirectionLight& light,Texture& tex);
 	void DrawBase(TheOrderCommand& command, PSO& pso, DirectionLight& light, D3D12_GPU_DESCRIPTOR_HANDLE& tex);
 	void DrawIndexBase(TheOrderCommand& command, PSO& pso, DirectionLight& light, Texture& tex);

@@ -1,8 +1,14 @@
 #include "Player3D.h"
 #include "CameraSystem.h"
+#include "GlobalVariables.h"
 
 Player3D::~Player3D() {
 	delete state_;
+}
+void Player3D::ApplyGlobalVariables() {
+	GlobalVariables* globalVariables = GlobalVariables::GetInstance();
+	const char* groupName = "Player";
+	test_ = globalVariables->GetValue<float>(groupName, "test");
 }
 
 void Player3D::Initialize(Fngine* fngine)
@@ -29,6 +35,11 @@ void Player3D::Initialize(Fngine* fngine)
 	// 2, Attack
 	attackCollider_ = std::make_unique<AttackCollider>();
 	EnableHitBox(false, obj_->worldTransform_.get_.Translation());
+
+	ApplyGlobalVariables();
+
+	GlobalVariables::GetInstance()->CreateGroup("Player");
+	GlobalVariables::GetInstance()->AddItem("Player", "test", test_);
 }
 
 void Player3D::Update()
@@ -66,6 +77,8 @@ void Player3D::Update()
 	ImGuiManager::GetInstance()->DrawDrag("player : HP", hp_);
 	ImGuiManager::GetInstance()->DrawDrag("sppedMultiplier", speedMultiplier_);
 	ImGuiManager::GetInstance()->DrawDrag("mat", obj_->worldTransform_.mat_);
+
+	ImGuiManager::GetInstance()->DrawDrag("test", test_);
 }
 
 void Player3D::Draw()

@@ -1,10 +1,16 @@
 #include "ObjectBase.h"
 #include "Fngine.h"
 
-void ObjectBase::DrawBase() {
+void ObjectBase::DrawBase(ObjectDrawType type) {
 	//RootSignalの設定
-	fngine_->GetCommand().GetList().GetList()->SetGraphicsRootSignature(PSOManager::GetInstance()->GetPSO("Object3D").GetRootSignature().GetRS().Get());
-	fngine_->GetCommand().GetList().GetList()->SetPipelineState(PSOManager::GetInstance()->GetPSO("Object3D").GetGPS().Get());
+	if (type == ObjectDrawType::SOLID) {
+		fngine_->GetCommand().GetList().GetList()->SetGraphicsRootSignature(PSOManager::GetInstance()->GetPSO("Object3D").GetRootSignature().GetRS().Get());
+		fngine_->GetCommand().GetList().GetList()->SetPipelineState(PSOManager::GetInstance()->GetPSO("Object3D").GetGPS().Get());
+	}
+	if (type == ObjectDrawType::WIREFRAME) {
+		fngine_->GetCommand().GetList().GetList()->SetGraphicsRootSignature(PSOManager::GetInstance()->GetPSO("DebugObject3D").GetRootSignature().GetRS().Get());
+		fngine_->GetCommand().GetList().GetList()->SetPipelineState(PSOManager::GetInstance()->GetPSO("DebugObject3D").GetGPS().Get());
+	}
 	fngine_->GetCommand().GetList().GetList()->IASetVertexBuffers(0, 1, &vertexBufferView_);
 	//マテリアルCBufferの場所を設定
 	fngine_->GetCommand().GetList().GetList()->SetGraphicsRootConstantBufferView(0, materialResource_->GetGPUVirtualAddress());

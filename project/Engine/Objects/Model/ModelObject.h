@@ -11,7 +11,7 @@ public:
 	void Initialize(D3D12System& d3d12, const std::string& filename, const std::string& directoryPath = "resources");
 	void Initialize(D3D12System& d3d12, ModelData& modelData);
 
-	void Draw();
+	void Draw(ObjectDrawType type = ObjectDrawType::SOLID);
 	void Draw(TheOrderCommand& command, PSO& pso, DirectionLight& light, Texture& tex);
 	void Draw(TheOrderCommand& command, PSO& pso, DirectionLight& light, D3D12_GPU_DESCRIPTOR_HANDLE& tex);
 

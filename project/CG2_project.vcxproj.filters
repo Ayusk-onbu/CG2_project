@@ -166,6 +166,9 @@
     <Filter Include="UsefulTool\Light\SpotLight">
       <UniqueIdentifier>{9c2e8a28-a585-4a60-a0e6-083bc7b7c907}</UniqueIdentifier>
     </Filter>
+    <Filter Include="UsefulTool\GlobalVariables">
+      <UniqueIdentifier>{3ebde07e-b7c4-4d82-b881-01ea3b6c8463}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -498,6 +501,18 @@
     <ClCompile Include="Common\Structure\Advanced\CameraForGPU.cpp">
       <Filter>Common\Structure\Advanced</Filter>
     </ClCompile>
+    <ClCompile Include="Engine\Objects\Particle\ParticleEmitter.cpp">
+      <Filter>Engine\Objects\Particle</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\Objects\Particle\ForceField.cpp">
+      <Filter>Engine\Objects\Particle</Filter>
+    </ClCompile>
+    <ClCompile Include="Common\Structure\Advanced\Structured.cpp">
+      <Filter>Common\Structure\Advanced</Filter>
+    </ClCompile>
+    <ClCompile Include="UsefulTool\GlobalVariables\GlobalVariables.cpp">
+      <Filter>UsefulTool\GlobalVariables</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="externals\imgui\imconfig.h">
@@ -796,6 +811,21 @@
     </ClInclude>
     <ClInclude Include="UsefulTool\Light\SpotLight\SpotLight.h">
       <Filter>UsefulTool\Light\SpotLight</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Objects\Particle\ForceField.h">
+      <Filter>Engine\Objects\Particle</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Objects\Particle\ParticleEmitter.h">
+      <Filter>Engine\Objects\Particle</Filter>
+    </ClInclude>
+    <ClInclude Include="Common\Structure\Advanced\Structured.h">
+      <Filter>Common\Structure\Advanced</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Objects\Particle\ParticleData.h">
+      <Filter>Engine\Objects\Particle</Filter>
+    </ClInclude>
+    <ClInclude Include="UsefulTool\GlobalVariables\GlobalVariables.h">
+      <Filter>UsefulTool\GlobalVariables</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
