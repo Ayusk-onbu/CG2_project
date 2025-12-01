@@ -139,7 +139,7 @@ void Fngine::Initialize() {
 	// Logの初期化
 	Log::Initialize();
 
-	window_.Initialize(L"CG2ClassName", L"LE2B_19_ハマダ_カズヤ");
+	window_.Initialize(L"CG2ClassName", L"LE2B_19_ハマダ_カズヤ : ((σω-)..._( _'ω')ｽｯ.......(　　_‾▿◝ )ﾀﾞﾗｰﾝ...(　´ω`)...⊂( ⊂ ω)⊃...꜀(.ო. ꜆三꜀ .ო.)꜆)");
 
 	errorGuardian_.SetDebugInterface();
 	dxgi_.RecruitEngineer();
