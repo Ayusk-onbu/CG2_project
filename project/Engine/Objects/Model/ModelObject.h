@@ -16,6 +16,7 @@ public:
 	void Draw(TheOrderCommand& command, PSO& pso, DirectionLight& light, D3D12_GPU_DESCRIPTOR_HANDLE& tex);
 
 	ModelData LoadObjFile(const std::string& filename, const std::string& directoryPath);
+	ModelData LoadFiles(const std::string& fileName, const std::string& directoryPath);
 	void LocalToWorld();
 
 	//--=---=--- - + - ---=---=--
