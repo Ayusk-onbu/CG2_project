@@ -2,6 +2,10 @@
 #include <sstream>
 #include "Log.h"
 
+#include <assimp/Importer.hpp>
+#include <assimp/scene.h>
+#include <assimp/postprocess.h>
+
 //==========-+-==========
 // Initialize Function
 //==========-+-==========
@@ -82,118 +86,62 @@ ModelData ModelObject::LoadFiles(const std::string& fileName, const std::string&
 	// 変数宣言
 	/////////////////
 	ModelData modelData;
-	std::vector<Vector4> positions;
-	std::vector<Vector3> normals;
-	std::vector<Vector2> texcoords;
-	std::string line;
+	//std::vector<Vector4> positions;
+	//std::vector<Vector3> normals;
+	//std::vector<Vector2> texcoords;
 
 	/////////////////
 	// ファイルをひらく
 	/////////////////
-	std::ifstream file(directoryPath + "/" + fileName);
-	assert(file.is_open());
+	Assimp::Importer importer;
+	std::string filePath = directoryPath + "/" + fileName;
+	const aiScene* scene = importer.ReadFile(filePath.c_str(), aiProcess_FlipWindingOrder | aiProcess_FlipUVs);
+	assert(scene->HasMeshes());
 
 	/////////////////
 	// ModelDataを構築する
 	/////////////////
-	while (std::getline(file, line))
-	{
-		std::string identifier;
-		std::istringstream s(line);
-		s >> identifier;
-		// 頂点位置
-		if (identifier == "v")
-		{
-			Vector4 position;
-			s >> position.x >> position.y >> position.z;
-			position.x *= -1.0f;
-			position.w = 1.0f;
-			positions.push_back(position);
-		}
-		// 頂点テクスチャ座標
-		else if (identifier == "vt")
-		{
-			Vector2 texcoord;
-			s >> texcoord.x >> texcoord.y;
-			texcoord.y = 1.0f - texcoord.y;
-			texcoords.push_back(texcoord);
-		}
-		// 頂点法線
-		else if (identifier == "vn")
-		{
-			Vector3 normal;
-			s >> normal.x >> normal.y >> normal.z;
-			normal.x *= -1.0f;
-			normals.push_back(normal);
-		}
-		// 面
-		else if (identifier == "f")
-		{
-			// 1行分の頂点定義をすべて取得
-			std::vector<std::string> vertexDefs;
-			std::string vertexDefinition;
-			while (s >> vertexDefinition)
-			{
-				vertexDefs.push_back(vertexDefinition);
+
+	for (uint32_t meshIndex = 0;meshIndex < scene->mNumMeshes;++meshIndex) {
+		aiMesh* mesh = scene->mMeshes[meshIndex];
+		assert(mesh->HasNormals());// 法線を持っているかのチェック
+		assert(mesh->HasTextureCoords(0));// Texcoordを持っているかのチェック
+		// ここからmeshの中身（Face）の解析
+
+		for (uint32_t faceIndex = 0;faceIndex < mesh->mNumFaces;++faceIndex) {
+			aiFace& face = mesh->mFaces[faceIndex];
+			assert(face.mNumIndices == 3);// 三角形のみを読み込むようになる
+			// ここからFaceの中身(Vertex)の解析
+
+			for (uint32_t element = 0;element < face.mNumIndices;++element) {
+				uint32_t vertexIndex = face.mIndices[element];
+				aiVector3D& position = mesh->mVertices[vertexIndex];
+				aiVector3D& normal = mesh->mNormals[vertexIndex];
+				aiVector3D& texcoord = mesh->mTextureCoords[0][vertexIndex];
+				VertexData vertex;
+				vertex.position = { position.x,position.y,position.z,1.0f };
+				vertex.normal = { normal.x,normal.y,normal.z };
+				vertex.texcoord = { texcoord.x,texcoord.y };
+				// aiProcess_MakeLeftHandedはz*=-1で、右て->左手に変換するので主導で対処
+				vertex.position.x *= -1.0f;
+				vertex.normal.x *= -1.0f;
+				modelData.vertices.push_back(vertex);
 			}
 
-			// 3頂点未満は無視
-			if (vertexDefs.size() < 3) continue;
-
-			// 扇形分割で三角形を生成
-			for (size_t i = 1; i + 1 < vertexDefs.size(); ++i)
-			{
-				VertexData triangle[3];
-				std::string vdefs[3] = { vertexDefs[0], vertexDefs[i], vertexDefs[i + 1] };
-				for (int faceVertex = 0; faceVertex < 3; ++faceVertex)
-				{
-					std::istringstream v(vdefs[faceVertex]);
-					uint32_t elementIndices[3] = {};
-					/*for (int element = 0; element < 3; ++element)
-					{
-						std::string index;
-						std::getline(v, index, '/');
-						elementIndices[element] = std::stoi(index);
-					}*/
-					for (int element = 0; element < 3; ++element) {
-						std::string index;
-						if (!std::getline(v, index, '/')) {
-							elementIndices[element] = 0; // デフォルト値 or エラー処理
-						}
-						else if (index.empty()) {
-							elementIndices[element] = 0; // デフォルト値 or エラー処理
-						}
-						else {
-							elementIndices[element] = std::stoi(index);
-						}
-					}
-					Vector4 position = positions[elementIndices[0] - 1];
-					//Vector2 texcoord = texcoords[elementIndices[1] - 1];
-					Vector2 texcoord;
-					if (elementIndices[1] > 0 && elementIndices[1] <= texcoords.size()) {
-						texcoord = texcoords[elementIndices[1] - 1];
-					}
-					else {
-						texcoord = { 0.0f, 0.0f }; // デフォルトUV
-					}
-					Vector3 normal = normals[elementIndices[2] - 1];
-					triangle[faceVertex] = { position, texcoord, normal };
-				}
-				// 頂点の順序を逆にして追加（右手系→左手系変換のため）
-				modelData.vertices.push_back(triangle[2]);
-				modelData.vertices.push_back(triangle[1]);
-				modelData.vertices.push_back(triangle[0]);
-			}
 		}
 
-		// mtllib
-		else if (identifier == "mtllib")
-		{
-			// materialTemplateLibraryファイルの名前を取得する
-			std::string materialFilename;
-			s >> materialFilename;
-			// 基本的にmtlはobjファイルと同一階層に配置指せるので、ディレクトリ名とファイル名を渡す
-			modelData.material = LoadMaterialTemplateFile(directoryPath, materialFilename);
+	}
+
+	// ---------------------------
+	// Material Data を構築
+	// ---------------------------
+
+	for (uint32_t materialIndex = 0;materialIndex < scene->mNumMaterials;++materialIndex) {
+		aiMaterial* material = scene->mMaterials[materialIndex];
+		if (material->GetTextureCount(aiTextureType_DIFFUSE) != 0) {
+			aiString textureFilePath;
+			material->GetTexture(aiTextureType_DIFFUSE, 0, &textureFilePath);
+			modelData.material.textureFilePath = directoryPath + "/" + textureFilePath.C_Str();
 		}
 	}
 
@@ -333,7 +281,8 @@ ModelData ModelObject::LoadObjFile(const std::string& filename, const std::strin
 
 // ----------------------------------------------------- [ PRIVATE ] -------------------------------------------------- //
 void ModelObject::InitializeResource(D3D12System& d3d12, const std::string& filename, const std::string& directoryPath) {
-	modelData_ = LoadObjFile(filename, directoryPath);
+	//modelData_ = LoadObjFile(filename, directoryPath);
+	modelData_ = LoadFiles(filename, directoryPath);
 	vertexResource_ = CreateBufferResource(d3d12.GetDevice().Get(), sizeof(VertexData) * modelData_.vertices.size());
 	materialResource_ = CreateBufferResource(d3d12.GetDevice().Get(), sizeof(Material));
 	wvpResource_ = CreateBufferResource(d3d12.GetDevice().Get(), sizeof(TransformationMatrix));
