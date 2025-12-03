@@ -47,7 +47,8 @@ void Fngine::SettingShader() {
 			 FALSE,
 			 0,
 			 0.0f
-		 }
+		 },
+		 false
 		},
 		"Structured"
 	);
@@ -72,7 +73,8 @@ void Fngine::SettingShader() {
 			 FALSE,
 			 0,
 			 0.0f
-		 }
+		 },
+		true
 		},
 		"Object3D"
 	);
@@ -97,7 +99,8 @@ void Fngine::SettingShader() {
 			 FALSE,
 			 0,
 			 0.0f
-		 }
+		 },
+		true
 		},
 		"DebugObject3D"
 	);
@@ -122,7 +125,8 @@ void Fngine::SettingShader() {
 			 FALSE,
 			 0,
 			 0.0f
-		 }
+		 },
+		true
 		},
 		"SpriteObject3D"
 	);

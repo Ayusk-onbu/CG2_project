@@ -16,6 +16,8 @@ void PipelineStateObject::Initialize(
 	PSOTYPE psoType,
 	ROOTTYPE rootType,
 	RasterizerSettings rasterSettings,
+	// Depth
+	bool depthFlag,
 	//CompilerするShaderファイルへのパス
 	const std::wstring& vsFilePath,
 	//Compilerに使用するProfile
@@ -60,7 +62,7 @@ void PipelineStateObject::Initialize(
 	MargeDesc();
 
 	// depthStencil
-	depthStencil_.InitializeDesc();
+	depthStencil_.InitializeDesc(depthFlag);
 
 	// 
 	SetDesc(fngine->GetD3D12System(), psoType);

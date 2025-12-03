@@ -22,7 +22,7 @@ public:
 	void Draw() override;
 
 private:
-	//Particle* particle_;
+	Particle* particle_;
 	Player3D player_;
 	//SpriteObject* sprite_;
 };

@@ -1,5 +1,8 @@
 #pragma once
 #include "ObjectBase.h"
+#include <assimp/Importer.hpp>
+#include <assimp/scene.h>
+#include <assimp/postprocess.h>
 
 class ModelObject
 	:public ObjectBase
@@ -41,6 +44,7 @@ private:
 	void InitializeResource(D3D12System& d3d12,const std::string& filename, const std::string& directoryPath);
 	void InitializeResource(D3D12System& d3d12, ModelData& modelData);
 	void InitializeData();
+	Node ReadNode(aiNode* node);
 	MaterialData LoadMaterialTemplateFile(const std::string& directoryPath, const std::string& filename);
 private:
 	ModelData modelData_;

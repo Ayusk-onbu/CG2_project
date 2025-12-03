@@ -14,7 +14,7 @@ void Player3D::ApplyGlobalVariables() {
 void Player3D::Initialize(Fngine* fngine)
 {
 	obj_ = std::make_unique<ModelObject>();
-	obj_->Initialize(fngine->GetD3D12System(),"axis.obj");
+	obj_->Initialize(fngine->GetD3D12System(),"cube.obj");
 	obj_->SetFngine(fngine);
 	obj_->textureHandle_ = TextureManager::GetInstance()->LoadTexture("resources/uvChecker.png");
 
@@ -84,7 +84,7 @@ void Player3D::Update()
 void Player3D::Draw()
 {
 	obj_->LocalToWorld();
-	obj_->SetWVPData(CameraSystem::GetInstance()->GetActiveCamera()->DrawCamera(obj_->worldTransform_.mat_));
+	obj_->SetWVPData(CameraSystem::GetInstance()->GetActiveCamera()->DrawCamera(/*obj_->GetModelData().rootNode.localMatrix * */obj_->worldTransform_.mat_));
 	obj_->Draw();
 
 	if (isAttackViewFlag_) {

@@ -27,6 +27,8 @@ struct PSOKey {
 	// ラスタライザ設定
 	RasterizerSettings rasterizerSettings;
 
+	// Depthの設定
+	bool depthFlag;
 };
 
 class PipelineStateObjectManager
