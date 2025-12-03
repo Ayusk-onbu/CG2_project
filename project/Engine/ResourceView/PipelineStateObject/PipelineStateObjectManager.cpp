@@ -14,6 +14,7 @@ void PipelineStateObjectManager::CreateNewPSO(const PSOKey& key,const std::strin
 		key.psoType,
 		key.rootSignatureType,
 		key.rasterizerSettings,
+		key.depthFlag,
 		key.shaderCompileSettings.vsFilePath,
 		key.shaderCompileSettings.vsProfile,
 		key.shaderCompileSettings.psFilePath,

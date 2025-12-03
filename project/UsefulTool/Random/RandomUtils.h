@@ -13,7 +13,7 @@ public:
 	void Initialize();
 	float GetRandom(int num);
 private:
-	float randomNum_;
+	float randomNum_{};
 };
 
 class HighRandom {

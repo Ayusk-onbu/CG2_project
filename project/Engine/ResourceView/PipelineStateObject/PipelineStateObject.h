@@ -33,6 +33,8 @@ public:
 		ROOTTYPE rootType,
 		//Rasterizerの設定
 		RasterizerSettings rasterSettings,
+		// Depth
+		bool depthFlag,
 		//CompilerするShaderファイルへのパス
 		const std::wstring& vsFilePath,
 		//Compilerに使用するProfile
@@ -42,8 +44,6 @@ public:
 		//Compilerに使用するProfile
 		const wchar_t* psProfile
 	);
-
-	void InitializeDescs(D3D12System& d3d12,PSOTYPE type);
 
 	void Compile(
 		//CompilerするShaderファイルへのパス

@@ -9,7 +9,7 @@
 
 TestScene::~TestScene() {
 	delete particle_;
-	delete sprite_;
+	//delete sprite_;
 }
 
 void TestScene::Initialize() {
@@ -20,10 +20,10 @@ void TestScene::Initialize() {
 	particle_ = new Particle(p_fngine_);
 	particle_->Initialize(7500);
 
-	sprite_ = new SpriteObject(p_fngine_);
+	/*sprite_ = new SpriteObject(p_fngine_);
 	sprite_->SetFlip(false,true);
 	sprite_->Initialize(TextureManager::GetInstance()->LoadTexture("resources/uvChecker.png"));
-	sprite_->worldTransform_.set_.Translation({640.0f,360.0f,0.0f});
+	sprite_->worldTransform_.set_.Translation({640.0f,360.0f,0.0f});*/
 
 	CameraSystem::GetInstance()->GetActiveCamera()->SetRadius(100.0f);
 	PSOManager::GetInstance()->GetPSO("Structured").SetBlendState(BLENDMODE::Additive);
@@ -39,7 +39,7 @@ void TestScene::Update() {
 	player_.Update();
 
 	if (InputManager::IsAttack()) {
-		sprite_->SetTextureSize({0.0f,0.0f}, {64.0f,64.0f});
+		//sprite_->SetTextureSize({0.0f,0.0f}, {64.0f,64.0f});
 	}
 
 #ifdef _DEBUG
@@ -68,8 +68,8 @@ void TestScene::Update() {
 }
 
 void TestScene::Draw() {
-	//player_.Draw();
+	player_.Draw();
 	particle_->DrawDebug();
-	sprite_->Draw(SPRITE_VIEW_TYPE::Object);
+	//sprite_->Draw(SPRITE_VIEW_TYPE::Object);
 	particle_->Draw();
 }
