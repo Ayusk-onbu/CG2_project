@@ -48,4 +48,6 @@ private:
 	MaterialData LoadMaterialTemplateFile(const std::string& directoryPath, const std::string& filename);
 private:
 	ModelData modelData_;
+public:
+	std::string modelName_;
 };

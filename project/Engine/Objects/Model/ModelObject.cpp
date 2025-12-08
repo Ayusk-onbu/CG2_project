@@ -1,6 +1,7 @@
 #include "ModelObject.h"
 #include <sstream>
 #include "Log.h"
+#include "ModelManager.h"
 
 //==========-+-==========
 // Initialize Function
@@ -19,8 +20,10 @@ void ModelObject::Initialize(Fngine* fngine) {
 	else {
 		assert(0 && "Fngineのポインタがnullptrです");
 	}
+	InitializeResource(fngine->GetD3D12System(), ModelManager::GetInstance()->LoadModelData(modelName_));
 	InitializeData();
 	worldTransform_.Initialize();
+	uvTransform_.Initialize();
 }
 
 void ModelObject::Initialize(D3D12System& d3d12, const std::string& filename, const std::string& directoryPath) {

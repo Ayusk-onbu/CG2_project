@@ -1,11 +1,14 @@
 #include "SceneDirector.h"
 #include "CameraSystem.h"
+#include "ModelManager.h"
 
 SceneDirector::~SceneDirector() {
 	delete currentScene_;
 }
 
 void SceneDirector::Initialize(Scene& firstScene) {
+	LoadModelData();
+
 	currentScene_ = &firstScene;
 	currentScene_->FngineSetUp(*p_fngine_);
 	currentScene_->Initialize();
@@ -37,4 +40,9 @@ void SceneDirector::RequestChangeScene(Scene* newScene) {
 	currentScene_->FngineSetUp(*p_fngine_);
 	currentScene_->Initialize();
 	currentScene_->GetSceneDirector(this);
+}
+
+void SceneDirector::LoadModelData() {
+	std::string name;
+	name = ModelManager::GetInstance()->LoadObj("cube");
 }

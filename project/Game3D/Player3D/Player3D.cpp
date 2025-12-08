@@ -14,9 +14,9 @@ void Player3D::ApplyGlobalVariables() {
 void Player3D::Initialize(Fngine* fngine)
 {
 	obj_ = std::make_unique<ModelObject>();
-	obj_->Initialize(fngine->GetD3D12System(),"cube.obj");
-	obj_->SetFngine(fngine);
+	obj_->modelName_ = "cube";
 	obj_->textureHandle_ = TextureManager::GetInstance()->LoadTexture("resources/uvChecker.png");
+	obj_->Initialize(fngine);	
 
 	// 始まりのState
 	state_ = new PlayerStopState();

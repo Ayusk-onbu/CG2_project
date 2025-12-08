@@ -13,11 +13,6 @@
 #include "TextureManager.h"
 #include "WorldTransform.h"
 
-struct ModelID {
-	uint32_t handle;
-	std::string name;
-};
-
 enum class ObjectDrawType {
 	SOLID,
 	WIREFRAME,
@@ -58,6 +53,5 @@ public:
 	WorldTransform worldTransform_;
 	WorldTransform uvTransform_;
 	uint32_t textureHandle_;
-	uint32_t modelHandle_;
 };
 

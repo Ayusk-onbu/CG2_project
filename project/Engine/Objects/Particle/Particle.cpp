@@ -6,7 +6,9 @@
 using json = nlohmann::json;
 
 Particle::Particle(Fngine* fngine)
-	: p_fngine_(fngine){}
+	: p_fngine_(fngine){
+
+}
 
 void Particle::Initialize(uint32_t numInstance) {
 

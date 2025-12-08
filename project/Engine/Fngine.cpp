@@ -1,5 +1,6 @@
 #include "Fngine.h"
 #include "TextureManager.h"
+#include "ModelManager.h"
 #include "Chronos.h"
 
 #pragma comment(lib, "d3d12.lib")
@@ -14,6 +15,8 @@ Fngine::~Fngine() {
 	ImGuiManager::GetInstance()->Shutdown();
 
 	TextureManager::GetInstance()->ReleaseInstance();
+
+	ModelManager::GetInstance()->ReleaseInstance();
 
 	PSOManager::GetInstance()->ReleaseInstance();
 	//解放処理
@@ -202,6 +205,7 @@ void Fngine::Initialize() {
 
 	InputManager::Initialize(window_.GetWindowClass(), window_.GetHwnd());
 	ImGuiManager::GetInstance()->SetImGui(window_.GetHwnd(), d3d12_.GetDevice().Get(), srv_.GetDescriptorHeap().GetHeap().Get());
+	ModelManager::GetInstance()->Initialize(this);
 	TextureManager::GetInstance()->Initialize(*this);
 	Chronos::GetInstance()->Initialize();
 	RandomUtils::GetInstance()->Initialize();
