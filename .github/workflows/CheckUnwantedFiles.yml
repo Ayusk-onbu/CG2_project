@@ -21,7 +21,7 @@ on:
   jobs:
     check-files:
       name: 不要なファイルを検索
-      runs-on: ubutu-latest
+      runs-on: ubuntu-latest
 
       steps:
         - name: リポジトリをチェックアウト
@@ -30,14 +30,14 @@ on:
           run: |
             # ディレクトリ条件を構築（最初の不要な -o を後で削除）
             DIR_CONDITIONS=()
-            for patternin $UNWANTED_DIR_PATTERNS; do
+            for pattern in $UNWANTED_DIR_PATTERNS; do
               DIR_CONDITIONS+=(-o -iname "$pattern")
             done
             unset DIR_CONDITIONS[0]
 
             # ファイル条件を構築（最初の不要な -o を後で削除）
             NAME_CONDITIONS=()
-            for patternin $UNWANTED_NAME_PATTERNS; do
+            for pattern in $UNWANTED_NAME_PATTERNS; do
               NAME_CONDITIONS+=(-o -iname "$pattern")
             done
             unset NAME_CONDITIONS[0]
