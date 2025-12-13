@@ -56,6 +56,11 @@ public:
 	/// </summary>
 	/// <param name="name"></param>
 	PSO& GetPSO(const std::string& name);
+
+	/// <summary>
+	/// 主にBlendModeのImGuiである
+	/// </summary>
+	void ImGui();
 private:
 	static std::unique_ptr<PipelineStateObjectManager>instance_;
 

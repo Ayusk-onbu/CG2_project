@@ -30,6 +30,8 @@ void SceneDirector::Run() {
 	ImGuiManager::GetInstance()->DrawSlider("DirectionalLight : color", p_fngine_->GetLight().directionalLightData_->color, 0.0f, 1.0f);
 	p_fngine_->GetPointLight().Update();
 	p_fngine_->GetSpotLight().Update();
+
+	PSOManager::GetInstance()->ImGui();
 }
 
 void SceneDirector::RequestChangeScene(Scene* newScene) {
