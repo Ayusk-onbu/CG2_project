@@ -9,4 +9,5 @@ public:
 	Vector3 min;
 	Vector3 max;
 	Vector3 center()const;
+	void Initialize();
 };
