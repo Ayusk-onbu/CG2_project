@@ -32,11 +32,11 @@ public:
 	const Vector3 GetWorldPos()const;
 	void LookAtToVector(const Vector3& v);
 public:
-	Get get_{ this };
-	Set set_{ this };
+	Get get_;
+	Set set_;
 
 	Transform transform_;
 	Matrix4x4 mat_;
-	bool isDirty_;
+	bool isDirty_ = false;
 	Quaternion quaternion_;
 };

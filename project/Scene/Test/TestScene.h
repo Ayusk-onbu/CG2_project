@@ -22,6 +22,6 @@ public:
 	void Draw() override;
 
 private:
-	
+	std::unique_ptr<Player3D>player_;
 };
 

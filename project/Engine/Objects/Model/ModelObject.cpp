@@ -2,6 +2,7 @@
 #include <sstream>
 #include "Log.h"
 #include "ModelManager.h"
+#include "MathUtils.h"
 
 //==========-+-==========
 // Initialize Function
@@ -24,20 +25,11 @@ void ModelObject::Initialize(Fngine* fngine) {
 	uvTransform_.Initialize();
 }
 
-void ModelObject::Initialize(D3D12System& d3d12, const std::string& filename, const std::string& directoryPath) {
-	InitializeResource(d3d12, filename, directoryPath);
+void ModelObject::Initialize(D3D12System& d3d12, const std::string& filename, const std::string& directoryPath,LoadFileType type) {
+	InitializeResource(d3d12, filename, directoryPath,type);
 	InitializeData();
-	vertexResource_->SetName(L"vertexResource");
-	wvpResource_->SetName(L"wvpResource");
-	materialResource_->SetName(L"materialResource");
-
 	worldTransform_.Initialize();
 	uvTransform_.Initialize();
-}
-
-void ModelObject::Initialize(D3D12System& d3d12, ModelData& modelData) {
-	InitializeResource(d3d12,modelData);
-	InitializeData();
 }
 
 //==========-+-==========
@@ -46,14 +38,13 @@ void ModelObject::Initialize(D3D12System& d3d12, ModelData& modelData) {
 
 void ModelObject::Draw(ObjectDrawType type) {
 	fngine_->GetCommand().GetList().GetList()->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+	if (modelData_.indices.size() > 0) {
+		DrawIndexBase();
+		fngine_->GetCommand().GetList().GetList()->DrawIndexedInstanced(UINT(modelData_.indices.size()), 1, 0, 0, 0);
+		return;
+	}
 	DrawBase(type);
 	fngine_->GetCommand().GetList().GetList()->DrawInstanced(UINT(modelData_.vertices.size()), 1, 0, 0);
-}
-
-void ModelObject::Draw(TheOrderCommand& command, PSO& pso, DirectionLight& light, Texture& tex) {
-	command.GetList().GetList()->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-	DrawBase(command, pso, light, tex);
-	command.GetList().GetList()->DrawInstanced(UINT(modelData_.vertices.size()), 1, 0, 0);
 }
 
 void ModelObject::Draw(TheOrderCommand& command, PSO& pso, DirectionLight& light, D3D12_GPU_DESCRIPTOR_HANDLE& tex) {
@@ -68,7 +59,7 @@ void ModelObject::Draw(TheOrderCommand& command, PSO& pso, DirectionLight& light
 
 void ModelObject::SetWVPData(Matrix4x4 WVP) {
 	wvpData_->WVP = WVP;
-	wvpData_->World = /*modelData_.rootNode.localMatrix * */worldTransform_.mat_;
+	wvpData_->World = worldTransform_.mat_;
 	wvpData_->worldInverseTranspose = Matrix4x4::Transpose(Matrix4x4::Inverse(worldTransform_.mat_));
 	materialData_->uvTransform = uvTransform_.mat_;
 }
@@ -104,29 +95,50 @@ ModelData ModelObject::LoadFiles(const std::string& fileName, const std::string&
 		assert(mesh->HasNormals());// 法線を持っているかのチェック
 		assert(mesh->HasTextureCoords(0));// Texcoordを持っているかのチェック
 		// ここからmeshの中身（Face）の解析
+		// 頂点数分のメモリを確保する
+		modelData.vertices.resize(mesh->mNumVertices);
+		for (uint32_t vertexIndex = 0; vertexIndex < mesh->mNumVertices;++vertexIndex) {
+			aiVector3D& position = mesh->mVertices[vertexIndex];
+			aiVector3D& normal = mesh->mNormals[vertexIndex];
+			aiVector3D& texcoord = mesh->mTextureCoords[0][vertexIndex];
+			// 右手座標系から左手座標系に変換しながら保存
+			modelData.vertices[vertexIndex].position = { -position.x,position.y, position.z ,1.0f};
+			modelData.vertices[vertexIndex].normal = { -normal.x,normal.y,normal.z };
+			modelData.vertices[vertexIndex].texcoord = { texcoord.x,texcoord.y };
+		}
 
+		// IndexDataの取得
 		for (uint32_t faceIndex = 0;faceIndex < mesh->mNumFaces;++faceIndex) {
 			aiFace& face = mesh->mFaces[faceIndex];
 			assert(face.mNumIndices == 3);// 三角形のみを読み込むようになる
-			// ここからFaceの中身(Vertex)の解析
-
-			for (uint32_t element = 0;element < face.mNumIndices;++element) {
+			
+			for (uint32_t element = 0; element < face.mNumIndices; ++element) {
 				uint32_t vertexIndex = face.mIndices[element];
-				aiVector3D& position = mesh->mVertices[vertexIndex];
-				aiVector3D& normal = mesh->mNormals[vertexIndex];
-				aiVector3D& texcoord = mesh->mTextureCoords[0][vertexIndex];
-				VertexData vertex;
-				vertex.position = { position.x,position.y,position.z,1.0f };
-				vertex.normal = { normal.x,normal.y,normal.z };
-				vertex.texcoord = { texcoord.x,texcoord.y };
-				// aiProcess_MakeLeftHandedはz*=-1で、右て->左手に変換するので主導で対処
-				vertex.position.x *= -1.0f;
-				vertex.normal.x *= -1.0f;
-				modelData.vertices.push_back(vertex);
+				modelData.indices.push_back(vertexIndex);
 			}
-
 		}
 
+		// SkiningDataの取得
+		for (uint32_t boneIndex = 0; boneIndex < mesh->mNumBones; ++boneIndex) {
+			// Assimpに関連づけられたJointからデータを取得
+			// ※Joint = Bone
+			aiBone* bone = mesh->mBones[boneIndex];
+			std::string jointName = bone->mName.C_Str();
+			JointWeightData& jointWeightData = modelData.skinClusterData[jointName];
+
+			aiMatrix4x4 bindPoseMatrixAssimp = bone->mOffsetMatrix.Inverse();
+			aiVector3D scale, translate;
+			aiQuaternion rotate;
+			bindPoseMatrixAssimp.Decompose(scale, rotate, translate);
+			Matrix4x4 bindPoseMatrix = MakeAffineMatrix(
+				{ scale.x,scale.y,scale.z }, { rotate.x,-rotate.y,-rotate.z,rotate.w }, { -translate.x,translate.y,translate.z });
+			jointWeightData.inverseBindPoseMatrix = Matrix4x4::Inverse(bindPoseMatrix);
+
+			// Weight情報を抜き出し
+			for (uint32_t weightIndex = 0;weightIndex < bone->mNumWeights;++weightIndex) {
+				jointWeightData.vertexWeights.push_back({ bone->mWeights[weightIndex].mWeight, bone->mWeights[weightIndex].mVertexId });
+			}
+		}
 	}
 
 	// ---------------------------
@@ -147,7 +159,6 @@ ModelData ModelObject::LoadFiles(const std::string& fileName, const std::string&
 	// ----------------------------
 
 	modelData.rootNode = ReadNode(scene->mRootNode);
-
 
 	/////////////////
 	// 構築したModelDataをreturnする
@@ -283,9 +294,16 @@ ModelData ModelObject::LoadObjFile(const std::string& filename, const std::strin
 }
 
 // ----------------------------------------------------- [ PRIVATE ] -------------------------------------------------- //
-void ModelObject::InitializeResource(D3D12System& d3d12, const std::string& filename, const std::string& directoryPath) {
-	modelData_ = LoadObjFile(filename, directoryPath);
-	//modelData_ = LoadFiles(filename, directoryPath);
+void ModelObject::InitializeResource(D3D12System& d3d12, const std::string& filename, const std::string& directoryPath, LoadFileType type) {
+	if (type == LoadFileType::Assimp) {
+		modelData_ = LoadFiles(filename, directoryPath);
+		// Index Resource の作成
+		indexResource_ = CreateBufferResource(d3d12.GetDevice().Get(), sizeof(uint32_t) * modelData_.indices.size());
+	}
+	else if (type == LoadFileType::OBJ) {
+		modelData_ = LoadObjFile(filename, directoryPath);
+	}
+	
 	vertexResource_ = CreateBufferResource(d3d12.GetDevice().Get(), sizeof(VertexData) * modelData_.vertices.size());
 	materialResource_ = CreateBufferResource(d3d12.GetDevice().Get(), sizeof(Material));
 	wvpResource_ = CreateBufferResource(d3d12.GetDevice().Get(), sizeof(TransformationMatrix));
@@ -294,6 +312,9 @@ void ModelObject::InitializeResource(D3D12System& d3d12, const std::string& file
 void ModelObject::InitializeResource(D3D12System& d3d12, ModelData& modelData) {
 	modelData_ = modelData;
 	vertexResource_ = CreateBufferResource(d3d12.GetDevice().Get(), sizeof(VertexData) * modelData_.vertices.size());
+	if (modelData_.indices.size() > 0) {
+		indexResource_ = CreateBufferResource(d3d12.GetDevice().Get(), sizeof(uint32_t) * modelData_.indices.size());
+	}
 	materialResource_ = CreateBufferResource(d3d12.GetDevice().Get(), sizeof(Material));
 	wvpResource_ = CreateBufferResource(d3d12.GetDevice().Get(), sizeof(TransformationMatrix));
 }
@@ -302,6 +323,13 @@ void ModelObject::InitializeData() {
 	InitializeMD(Vector4(1.0f, 1.0f, 1.0f, 1.0f), true);
 	InitializeWVPD();
 
+	if (modelData_.indices.size() > 0) {
+		indexBufferView_.BufferLocation = indexResource_->GetGPUVirtualAddress();
+		indexBufferView_.SizeInBytes = static_cast<UINT>(sizeof(uint32_t) * modelData_.indices.size());
+		indexBufferView_.Format = DXGI_FORMAT_R32_UINT;
+		indexResource_->Map(0, nullptr, reinterpret_cast<void**>(&indexData_));
+		std::memcpy(indexData_, modelData_.indices.data(), sizeof(uint32_t) * modelData_.indices.size());
+	}
 	vertexBufferView_.BufferLocation = vertexResource_->GetGPUVirtualAddress();
 	vertexBufferView_.SizeInBytes = UINT(sizeof(VertexData) * modelData_.vertices.size());
 	vertexBufferView_.StrideInBytes = sizeof(VertexData);
@@ -313,31 +341,18 @@ void ModelObject::InitializeData() {
 Node ModelObject::ReadNode(aiNode* node) {
 	// 返す値
 	Node result;
-	// nodeのlocalMatrixを取得する
-	aiMatrix4x4 aiLocalMatrix = node->mTransformation;
-	// 列ベクトル形式を行ベクトル形式に転置
-	aiLocalMatrix.Transpose();
-	// データを移行
-	result.localMatrix.m[0][0] = aiLocalMatrix[0][0];
-	result.localMatrix.m[0][1] = aiLocalMatrix[0][1];
-	result.localMatrix.m[0][2] = aiLocalMatrix[0][2];
-	result.localMatrix.m[0][3] = aiLocalMatrix[0][3];
-
-	result.localMatrix.m[1][0] = aiLocalMatrix[1][0];
-	result.localMatrix.m[1][1] = aiLocalMatrix[1][1];
-	result.localMatrix.m[1][2] = aiLocalMatrix[1][2];
-	result.localMatrix.m[1][3] = aiLocalMatrix[1][3];
-
-	result.localMatrix.m[2][0] = aiLocalMatrix[2][0];
-	result.localMatrix.m[2][1] = aiLocalMatrix[2][1];
-	result.localMatrix.m[2][2] = aiLocalMatrix[2][2];
-	result.localMatrix.m[2][3] = aiLocalMatrix[2][3];
-
-	result.localMatrix.m[3][0] = aiLocalMatrix[3][0];
-	result.localMatrix.m[3][1] = aiLocalMatrix[3][1];
-	result.localMatrix.m[3][2] = aiLocalMatrix[3][2];
-	result.localMatrix.m[3][3] = aiLocalMatrix[3][3];
-
+	// 取得する値
+	aiVector3D scale, translate;
+	aiQuaternion rotate;
+	// 取得開始
+	// [ assimpの行列からSRTを抽出する関数を利用 ]
+	node->mTransformation.Decompose(scale, rotate, translate);
+	// [ 右手座標系から左手座標系に変換しながら代入 ]
+	result.transform.Initialize();
+	result.transform.set_.Scale({scale.x,scale.y,scale.z});
+	result.transform.set_.Quaternion({ rotate.x,-rotate.y,-rotate.z ,rotate.w });
+	result.transform.set_.Translation({ -translate.x,translate.y ,translate.z });
+	result.transform.LocalToWorld();
 	// Node名を取得
 	result.name = node->mName.C_Str();
 	// 子供の数を取得し、サイズを確保
@@ -374,3 +389,4 @@ MaterialData ModelObject::LoadMaterialTemplateFile(const std::string& directoryP
 	// 4, MaterialDataを返す
 	return materialData;
 }
+

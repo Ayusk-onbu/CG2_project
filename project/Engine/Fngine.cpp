@@ -133,6 +133,32 @@ void Fngine::SettingShader() {
 		},
 		"SpriteObject3D"
 	);
+
+	PSOManager::GetInstance()->CreateNewPSO
+	(
+		{
+			PIPELINETYPE::Graphics,
+			ROOTTYPE::Skinning,
+			PSOTYPE::Skinning,
+		 {
+			L"resources/shaders/SkinningObject3D/SkinningObject3D.VS.hlsl",
+			L"resources/shaders/SkinningObject3D/SkinningObject3D.PS.hlsl",
+			L"",
+			L"vs_6_0",
+			L"ps_6_0",
+			L""
+		 },
+		 {
+			 D3D12_CULL_MODE_BACK,
+			 D3D12_FILL_MODE_SOLID,
+			 FALSE,
+			 0,
+			 0.0f
+		 },
+		true
+		},
+		"SkinningObject3D"
+	);
 }
 
 void Fngine::Initialize() {

@@ -46,5 +46,10 @@ void SceneDirector::RequestChangeScene(Scene* newScene) {
 
 void SceneDirector::LoadModelData() {
 	std::string name;
-	name = ModelManager::GetInstance()->LoadObj("cube");
+	name = ModelManager::GetInstance()->LoadObj("cube.obj","resources",LoadFileType::OBJ);
+	name = ModelManager::GetInstance()->LoadObj("axis.obj", "resources", LoadFileType::OBJ);
+	name = ModelManager::GetInstance()->LoadObj("AnimatedCube.gltf", "resources/AnimatedCube");
+	name = ModelManager::GetInstance()->LoadObj("walk.gltf", "resources/Human");
+	name = ModelManager::GetInstance()->LoadObj("sneakWalk.gltf", "resources/Human");
+	name = ModelManager::GetInstance()->LoadObj("simpleSkin.gltf", "resources/simpleSkin");
 }

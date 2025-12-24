@@ -14,20 +14,20 @@ void Player3D::ApplyGlobalVariables() {
 void Player3D::Initialize(Fngine* fngine)
 {
 	obj_ = std::make_unique<ModelObject>();
-	obj_->modelName_ = "cube";
+	obj_->modelName_ = "walk";
 	obj_->textureHandle_ = TextureManager::GetInstance()->LoadTexture("resources/uvChecker.png");
-	obj_->Initialize(fngine);	
+	obj_->Initialize(fngine);
+	obj_->worldTransform_.set_.Scale({ 10.0f,10.0f,10.0f });
 
 	// 始まりのState
 	state_ = new PlayerStopState();
 	state_->SetPlayer(this);
 
 	attackColliderObj_ = std::make_unique<ModelObject>();
-	attackColliderObj_->Initialize(fngine->GetD3D12System(), "axis.obj");
-	attackColliderObj_->SetFngine(fngine);
-	attackColliderObj_->worldTransform_.set_.Scale({1.0f,1.0f,1.0f});
-	attackColliderObj_->SetColor({0.0f,0.0f,0.0f,1.0f});
+	attackColliderObj_->modelName_ = "cube";
 	attackColliderObj_->textureHandle_ = TextureManager::GetInstance()->LoadTexture("resources/uvChecker.png");
+	attackColliderObj_->Initialize(fngine);
+	attackColliderObj_->SetColor({ 0.0f,0.0f,0.0f,1.0f });
 
 	// Colliderの設定
 	// 1, Player
@@ -37,6 +37,15 @@ void Player3D::Initialize(Fngine* fngine)
 	EnableHitBox(false, obj_->worldTransform_.get_.Translation());
 
 	ApplyGlobalVariables();
+
+	animation_ = std::make_unique<Animation>();
+	animation_->LoadAnimationFile("resources/Human", "walk.gltf");
+	animation_->SetIsLoop(true);
+
+	skeleton_ = std::make_unique<Skeleton>();
+	skeleton_->CreateSkeleton(obj_->GetNode());
+
+	obj_->skinCluster_.Create(fngine, *skeleton_, obj_->GetModelData());
 
 	GlobalVariables::GetInstance()->CreateGroup("Player");
 	GlobalVariables::GetInstance()->AddItem("Player", "test", test_);
@@ -70,21 +79,20 @@ void Player3D::Update()
 	pos.z += move_.z * speed_ * speedMultiplier_;
 	obj_->worldTransform_.set_.Translation(pos);
 
+	//obj_->worldTransform_.mat_ = animation_->Update("walk");
+	//animation_->Update("walk");
+	animation_->TimeFlow();
+	animation_->ApplyAnimation(*skeleton_.get());
+	skeleton_->Update();
+	obj_->skinCluster_.Update(*skeleton_);
 
-	ImGuiManager::GetInstance()->DrawDrag("Player : Pos", obj_->worldTransform_.get_.Translation());
-	ImGuiManager::GetInstance()->DrawDrag("Player : Scale", obj_->worldTransform_.get_.Scale());
-	ImGuiManager::GetInstance()->DrawDrag("stamina", stamina_);
-	ImGuiManager::GetInstance()->DrawDrag("player : HP", hp_);
-	ImGuiManager::GetInstance()->DrawDrag("sppedMultiplier", speedMultiplier_);
-	ImGuiManager::GetInstance()->DrawDrag("mat", obj_->worldTransform_.mat_);
-
-	ImGuiManager::GetInstance()->DrawDrag("test", test_);
+	ImGui();
 }
 
 void Player3D::Draw()
 {
 	obj_->LocalToWorld();
-	obj_->SetWVPData(CameraSystem::GetInstance()->GetActiveCamera()->DrawCamera(/*obj_->GetModelData().rootNode.localMatrix * */obj_->worldTransform_.mat_));
+	obj_->SetWVPData(CameraSystem::GetInstance()->GetActiveCamera()->DrawCamera(obj_->worldTransform_.mat_));
 	obj_->Draw();
 
 	if (isAttackViewFlag_) {
@@ -93,6 +101,17 @@ void Player3D::Draw()
 		attackColliderObj_->SetWVPData(CameraSystem::GetInstance()->GetActiveCamera()->DrawCamera(attackColliderObj_->worldTransform_.mat_));
 		attackColliderObj_->Draw();
 	}
+}
+
+void Player3D::ImGui() {
+	ImGuiManager::GetInstance()->DrawDrag("Player : Pos", obj_->worldTransform_.get_.Translation());
+	ImGuiManager::GetInstance()->DrawDrag("Player : Scale", obj_->worldTransform_.get_.Scale());
+	ImGuiManager::GetInstance()->DrawDrag("stamina", stamina_);
+	ImGuiManager::GetInstance()->DrawDrag("player : HP", hp_);
+	ImGuiManager::GetInstance()->DrawDrag("sppedMultiplier", speedMultiplier_);
+	ImGuiManager::GetInstance()->DrawDrag("mat", obj_->worldTransform_.mat_);
+
+	ImGuiManager::GetInstance()->DrawDrag("test", test_);
 }
 
 void Player3D::ChangeState(PlayerState* newState) {

@@ -172,6 +172,15 @@
     <Filter Include="Common\MathUtils\Physics\GJK">
       <UniqueIdentifier>{6e0c8eda-2e64-46f4-bbb8-f89af464a263}</UniqueIdentifier>
     </Filter>
+    <Filter Include="UsefulTool\Animation">
+      <UniqueIdentifier>{48994a07-42e4-4474-a1ef-a6eb1683d600}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="UsefulTool\Animation\Keyframe">
+      <UniqueIdentifier>{eb8a8c6f-3ece-45d9-a987-d1bca278c148}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="resources\shaders\SkinningObject3d">
+      <UniqueIdentifier>{768110a9-3e68-4c94-8c11-0ab15faa5fa3}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -519,6 +528,21 @@
     <ClCompile Include="Common\MathUtils\Physics\GJK\GJK.cpp">
       <Filter>Common\MathUtils\Physics\GJK</Filter>
     </ClCompile>
+    <ClCompile Include="UsefulTool\Animation\Keyframe\Keyframe.cpp">
+      <Filter>UsefulTool\Animation\Keyframe</Filter>
+    </ClCompile>
+    <ClCompile Include="UsefulTool\Animation\Animation.cpp">
+      <Filter>UsefulTool\Animation</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\Objects\Model\Skeleton.cpp">
+      <Filter>Engine\Objects\Model</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\Objects\Model\Joint.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\Objects\Model\SkinCluster.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="externals\imgui\imconfig.h">
@@ -836,6 +860,12 @@
     <ClInclude Include="Common\MathUtils\Physics\GJK\GJK.h">
       <Filter>Common\MathUtils\Physics\GJK</Filter>
     </ClInclude>
+    <ClInclude Include="UsefulTool\Animation\Keyframe\Keyframe.h">
+      <Filter>UsefulTool\Animation\Keyframe</Filter>
+    </ClInclude>
+    <ClInclude Include="UsefulTool\Animation\Animation.h">
+      <Filter>UsefulTool\Animation</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Text Include="externals\imgui\LICENSE.txt">
@@ -848,6 +878,9 @@
     </None>
     <None Include="resources\shaders\Particle\Particle.hlsli">
       <Filter>resources\shaders\Particle</Filter>
+    </None>
+    <None Include="resources\shaders\SkinningObject3d\SkinningObject3d.hlsli">
+      <Filter>resources\shaders\SkinningObject3d</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>
@@ -862,6 +895,12 @@
     </FxCompile>
     <FxCompile Include="resources\shaders\Particle\Particle.VS.hlsl">
       <Filter>resources\shaders\Particle</Filter>
+    </FxCompile>
+    <FxCompile Include="resources\shaders\SkinningObject3d\SkinningObject3d.PS.hlsl">
+      <Filter>resources\shaders\SkinningObject3d</Filter>
+    </FxCompile>
+    <FxCompile Include="resources\shaders\SkinningObject3d\SkinningObject3d.VS.hlsl">
+      <Filter>resources\shaders\SkinningObject3d</Filter>
     </FxCompile>
   </ItemGroup>
 </Project>

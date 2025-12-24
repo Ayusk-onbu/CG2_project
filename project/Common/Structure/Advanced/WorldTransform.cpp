@@ -51,16 +51,20 @@ void WorldTransform::Initialize() {
 	transform_.Initialize();
 	quaternion_.Initialize();
 	isDirty_ = true;
+	get_.parent_ = this;
+	set_.parent_ = this;
 }
 
 void WorldTransform::LocalToWorld() {
 	if (isDirty_ == false) {
-		return;
+		if (get_.parent_->isDirty_ == false) {
+			return;
+		}
 	}
 	
-	Matrix4x4 scaleMat = Matrix4x4::Make::Scale(get_.Scale());
+	Matrix4x4 scaleMat = Matrix4x4::Make::Scale(transform_.scale_);
 	Matrix4x4 rotationMat = Quaternion::MakeRotateMatrix(quaternion_);
-	Matrix4x4 translateMat = Matrix4x4::Make::Translate(get_.Translation());
+	Matrix4x4 translateMat = Matrix4x4::Make::Translate(transform_.translation_);
 
 	// S * R * T
 	mat_ = Matrix4x4::Multiply(scaleMat, rotationMat);
@@ -68,6 +72,7 @@ void WorldTransform::LocalToWorld() {
 	//mat_ = Matrix4x4::Make::Affine(get_.Scale(), get_.Rotation(), get_.Translation());
 
 	isDirty_ = false;
+	get_.parent_->isDirty_ = false;
 }
 
 const Vector3 WorldTransform::GetWorldPos()const {

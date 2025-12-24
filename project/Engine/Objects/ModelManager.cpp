@@ -1,6 +1,7 @@
 #include "ModelManager.h"
 #include <sstream>
 #include "Log.h"
+#include "Trigonometric.h"
 
 std::unique_ptr<ModelManager>ModelManager::instance_ = nullptr;
 
@@ -8,13 +9,15 @@ void ModelManager::Initialize(Fngine* fngine) {
 	pFngine_ = fngine;
 }
 
-std::string ModelManager::LoadObj(const std::string& filename, const std::string& directoryPath) {
+std::string ModelManager::LoadObj(const std::string& filename, const std::string& directoryPath, LoadFileType type) {
 	// model を生成
 	std::unique_ptr<ModelObject>model = std::make_unique<ModelObject>();
 	// Model 初期化 -この処理はObjファイルのみになってしまっている
-	model->Initialize(pFngine_->GetD3D12System(),filename + ".obj", directoryPath);
+	model->Initialize(pFngine_->GetD3D12System(),filename, directoryPath,type);
 	// Model Name を生成
 	std::string modelName = filename;
+	// ファイルの名前から.以降の拡張子を削除
+	remove_extension_in_place(modelName);
 	// 追加
 	models_.emplace(modelName, std::move(model));
 	// 返す

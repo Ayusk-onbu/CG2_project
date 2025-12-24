@@ -51,4 +51,7 @@ void DebugCameraController::Update(Camera& camera)
 	ImGuiManager::GetInstance()->DrawDrag("xAxis", camera.xAxis_);
 	ImGuiManager::GetInstance()->DrawDrag("yAxis", camera.yAxis_);
 	ImGuiManager::GetInstance()->DrawDrag("zAxis", camera.zAxis_);
+	ImGuiManager::GetInstance()->DrawDrag("radius", camera.GetRadius());
+	ImGuiManager::GetInstance()->DrawDrag("theta", camera.GetTheta());
+	ImGuiManager::GetInstance()->DrawDrag("phi", camera.GetPhi());
 }
