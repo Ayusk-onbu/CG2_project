@@ -12,15 +12,14 @@ TestScene::~TestScene() {
 }
 
 void TestScene::Initialize() {
-	// Initialization code for the game scene
-	CameraSystem::GetInstance()->MakeCamera("DebugCamera", CameraType::Debug);
-	CameraSystem::GetInstance()->SetActiveCamera("DebugCamera");
+	// 初期化処理
 
-	PSOManager::GetInstance()->GetPSO("Structured").SetBlendState(BLENDMODE::Additive);
+	player_ = std::make_unique<Player3D>();
+	player_->Initialize(p_fngine_);
 }
 
 void TestScene::Update() {
-
+	player_->Update();
 
 	if (hasRequestedNextScene_) {
 		p_sceneDirector_->RequestChangeScene(new GameScene());
@@ -28,5 +27,5 @@ void TestScene::Update() {
 }
 
 void TestScene::Draw() {
-	
+	player_->Draw();
 }

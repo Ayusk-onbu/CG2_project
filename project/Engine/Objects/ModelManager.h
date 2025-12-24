@@ -15,8 +15,22 @@ public:
 	void ReleaseInstance() { instance_.reset(); }
 public:
 	void Initialize(Fngine* fngine);
+
+	/// <summary>
+	/// データを送る
+	/// </summary>
+	/// <param name="ID"></param>
+	/// <returns></returns>
 	ModelData& LoadModelData(const std::string& ID);
-	std::string LoadObj(const std::string& filename, const std::string& directoryPath = "resources");
+
+	/// <summary>
+	/// Modelデータをロードする
+	/// </summary>
+	/// <param name="filename">ファイルネーム</param>
+	/// <param name="directoryPath"></param>
+	/// <param name="type">三角面化してないならType::OBJ</param>
+	/// <returns></returns>
+	std::string LoadObj(const std::string& filename, const std::string& directoryPath = "resources",LoadFileType type = LoadFileType::Assimp);
 private:
 	static std::unique_ptr<ModelManager>instance_;
 	// 図鑑的な存在

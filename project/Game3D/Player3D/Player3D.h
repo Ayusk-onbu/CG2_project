@@ -4,6 +4,7 @@
 #include "Collider.h"
 #include "PlayerBodyCollider.h"
 #include "SpriteObject.h"
+#include "Animation.h"
 
 class Player3D
 {
@@ -13,6 +14,7 @@ public:
 	void Initialize(Fngine* fngine);
 	void Update();
 	void Draw();
+	void ImGui();
 public:
 	void ChangeState(PlayerState* newState);
 	// 攻撃の当たり判定の変更
@@ -111,5 +113,9 @@ private:
 	bool isOnGround_ = false;
 	// 二段ジャンプが可能かのフラグ
 	bool canDoubleJump_ = true;
+
+	// アニメーション
+	std::unique_ptr<Animation>animation_ = nullptr;
+	std::unique_ptr<Skeleton>skeleton_ = nullptr;
 };
 
