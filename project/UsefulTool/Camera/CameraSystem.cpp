@@ -1,11 +1,6 @@
 #include "CameraSystem.h"
 
 void CameraSystem::Update() {
-	/*for (auto& pair : cameras_) {
-		for (auto& camera : pair.second) {
-			camera->Update();
-		}
-	}*/
 	activeCamera_->Update();
 }
 

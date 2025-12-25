@@ -17,7 +17,7 @@ void Player3D::Initialize(Fngine* fngine)
 	obj_->modelName_ = "walk";
 	obj_->textureHandle_ = TextureManager::GetInstance()->LoadTexture("resources/uvChecker.png");
 	obj_->Initialize(fngine);
-	obj_->worldTransform_.set_.Scale({ 10.0f,10.0f,10.0f });
+	obj_->worldTransform_.set_.Scale({ 1.0f,1.0f,1.0f });
 
 	// 始まりのState
 	state_ = new PlayerStopState();
