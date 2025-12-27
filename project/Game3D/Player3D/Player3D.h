@@ -88,7 +88,7 @@ private:
 
 	Vector3 move_ = { 0,0,0 };
 	// 一旦これは元のスピード
-	float speed_ = 1.0f;
+	float speed_ = 1.5f;
 	// 移動速度倍率
 	float speedMultiplier_ = 1.0f;
 	// 旋回するスピード
@@ -108,7 +108,7 @@ private:
 	// 垂直速度（Ｙ軸方向）
 	float verticalVelocity_ = 0.0f;
 	// 重力加速度
-	float gravity_ = 0.098f;
+	float gravity_ = 9.8f;
 	// 地面にいるかどうかのフラグ
 	bool isOnGround_ = false;
 	// 二段ジャンプが可能かのフラグ

@@ -19,3 +19,7 @@ void CameraSystem::MakeCamera(std::string name,CameraType cameraType) {
 Camera* CameraSystem::GetActiveCamera() {
 	return activeCamera_.get();
 }
+
+void CameraSystem::ImGui() {
+	/*ここからImGuiの処理を施す*/
+}

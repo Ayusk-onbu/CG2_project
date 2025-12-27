@@ -8,7 +8,6 @@ Player3D::~Player3D() {
 void Player3D::ApplyGlobalVariables() {
 	GlobalVariables* globalVariables = GlobalVariables::GetInstance();
 	const char* groupName = "Player";
-	test_ = globalVariables->GetValue<float>(groupName, "test");
 }
 
 void Player3D::Initialize(Fngine* fngine)
@@ -46,9 +45,6 @@ void Player3D::Initialize(Fngine* fngine)
 	skeleton_->CreateSkeleton(obj_->GetNode());
 
 	obj_->skinCluster_.Create(fngine, *skeleton_, obj_->GetModelData());
-
-	GlobalVariables::GetInstance()->CreateGroup("Player");
-	GlobalVariables::GetInstance()->AddItem("Player", "test", test_);
 }
 
 void Player3D::Update()
@@ -74,9 +70,10 @@ void Player3D::Update()
 	RotateToMoveDirection();
 
 	Vector3 pos = obj_->worldTransform_.get_.Translation();
-	pos.x += move_.x * speed_ * speedMultiplier_;
+	float deltaTime = 1.0f / 60.0f;
+	pos.x += move_.x * speed_ * deltaTime * speedMultiplier_;
 	pos.y += move_.y * verticalVelocity_;
-	pos.z += move_.z * speed_ * speedMultiplier_;
+	pos.z += move_.z * speed_ * deltaTime * speedMultiplier_;
 	obj_->worldTransform_.set_.Translation(pos);
 
 	//obj_->worldTransform_.mat_ = animation_->Update("walk");
@@ -86,6 +83,7 @@ void Player3D::Update()
 	skeleton_->Update();
 	obj_->skinCluster_.Update(*skeleton_);
 
+	//CameraSystem::GetInstance()->GetActiveCamera()->SetTargetPos({ obj_->worldTransform_.get_.Translation().x,obj_->worldTransform_.get_.Translation().y + 1.0f,obj_->worldTransform_.get_.Translation().z });
 	ImGui();
 }
 
@@ -108,6 +106,7 @@ void Player3D::ImGui() {
 	ImGuiManager::GetInstance()->DrawDrag("Player : Scale", obj_->worldTransform_.get_.Scale());
 	ImGuiManager::GetInstance()->DrawDrag("stamina", stamina_);
 	ImGuiManager::GetInstance()->DrawDrag("player : HP", hp_);
+	ImGuiManager::GetInstance()->DrawDrag("Player : Speed", speed_);
 	ImGuiManager::GetInstance()->DrawDrag("sppedMultiplier", speedMultiplier_);
 	ImGuiManager::GetInstance()->DrawDrag("mat", obj_->worldTransform_.mat_);
 
@@ -157,7 +156,7 @@ void Player3D::EnableHitBox(bool enable, const Vector3& worldPos) {
 
 void Player3D::ApplyPhysics() {
 	if (isOnGround_ == false) {
-		verticalVelocity_ -= gravity_;
+		verticalVelocity_ -= gravity_ * (1.0f / 60.0f);
 	}
 
 	// 一旦地面との当たり判定（地面を０とする）

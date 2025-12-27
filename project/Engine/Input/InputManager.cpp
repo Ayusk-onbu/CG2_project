@@ -1,4 +1,5 @@
 #include "InputManager.h"
+#include "InputManager.h"
 #include <cassert>
 
 Key InputManager::key_;
