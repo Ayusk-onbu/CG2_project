@@ -543,6 +543,9 @@
     <ClCompile Include="Engine\Objects\Model\SkinCluster.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
+    <ClCompile Include="UsefulTool\Camera\CameraController\GameCameraController.cpp">
+      <Filter>UsefulTool\Camera\CameraController</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="externals\imgui\imconfig.h">

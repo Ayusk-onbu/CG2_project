@@ -16,14 +16,17 @@ void SceneDirector::Initialize(Scene& firstScene) {
 
 	CameraSystem::GetInstance()->MakeCamera("NormalCamera", CameraType::Normal);
 	CameraSystem::GetInstance()->MakeCamera("DebugCamera", CameraType::Debug);
-	CameraSystem::GetInstance()->SetActiveCamera("DebugCamera");
+	CameraSystem::GetInstance()->MakeCamera("GameCamera", CameraType::Game);
+	CameraSystem::GetInstance()->SetActiveCamera("GameCamera");
 }
 
 void SceneDirector::Run() {
 	CameraSystem::GetInstance()->Update();
 	p_fngine_->GetCameraForGPU().Update(CameraSystem::GetInstance()->GetActiveCamera()->GetTranslation());
 	//while()
-	currentScene_->Update();
+	if (isGameRunning_) {
+		currentScene_->Update();
+	}
 	currentScene_->Draw();
 
 	ImGuiManager::GetInstance()->DrawSlider("DirectionalLight : pos", p_fngine_->GetLight().directionalLightData_->direction,-1.0f,1.0f);

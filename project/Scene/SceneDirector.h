@@ -21,5 +21,6 @@ private:
 private:
 	Fngine* p_fngine_;
 	Scene* currentScene_;
+	bool isGameRunning_ = true;
 };
 

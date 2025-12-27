@@ -17,6 +17,7 @@ public:
 public:
 	void MakeCamera(std::string name,CameraType cameraType);
 	void Update();
+	void ImGui();
 	void SetActiveCamera(std::string name);
 	Camera* GetActiveCamera();
 private:

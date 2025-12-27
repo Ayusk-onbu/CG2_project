@@ -40,6 +40,7 @@ public:
 	void SetTheta(const float& theta) { theta_ = theta; }
 	void SetPhi(const float& phi) { phi_ = phi; }
 	void SetRadius(const float& rad) { radius_ = rad; }
+	void SetTargetPos(const Vector3& pos) { targetPos_ = pos; }
 
 private:
 	void AddController(CameraType cameraType);

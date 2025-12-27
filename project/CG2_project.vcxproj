@@ -251,6 +251,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="Game3D\Player3D\Player3DState\PlayerStopState.cpp" />
     <ClCompile Include="Game3D\Player3D\Player3DState\PlayerWalkState.cpp" />
     <ClCompile Include="UsefulTool\Animation\Keyframe\Keyframe.cpp" />
+    <ClCompile Include="UsefulTool\Camera\CameraController\GameCameraController.cpp" />
     <ClCompile Include="UsefulTool\GlobalVariables\GlobalVariables.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Game3D\Player3D\PlayerBodyCollider.cpp" />

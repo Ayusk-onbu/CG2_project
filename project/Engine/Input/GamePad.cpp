@@ -1,4 +1,5 @@
 #include "GamePad.h"
+#include "ImGuiManager.h"
 
 #pragma comment(lib, "Xinput.lib")
 
@@ -13,6 +14,12 @@ void GamePad::Update() {
     ZeroMemory(&state_, sizeof(XINPUT_STATE));
     DWORD result = XInputGetState(controllerIndex_, &state_);
     isConnected_ = (result == ERROR_SUCCESS);
+#ifdef _DEBUG
+    ImGui::Begin("GamePad");
+	float rightStickX = static_cast<float>(GetRightStickX());
+	ImGui::DragFloat("RightStickX", &rightStickX, 0.01f, -1.0f, 1.0f);
+    ImGui::End();
+#endif//_DEBUG
 }
 
 bool GamePad::IsConnected() const {
@@ -42,12 +49,14 @@ SHORT GamePad::GetLeftStickY() const {
     return isConnected_ ? state_.Gamepad.sThumbLY : 0;
 }
 
-SHORT GamePad::GetRightStickX() const {
-    return isConnected_ ? state_.Gamepad.sThumbRX : 0;
+float GamePad::GetRightStickX() const {
+    return isConnected_ ? static_cast<float>(state_.Gamepad.sThumbRX / 32767.0f) : 0;
 }
-SHORT GamePad::GetRightStickY() const {
-    return isConnected_ ? state_.Gamepad.sThumbRY : 0;
+
+float GamePad::GetRightStickY() const {
+    return isConnected_ ? static_cast<float>(state_.Gamepad.sThumbRY / 32767.0f) : 0;
 }
+
 BYTE GamePad::GetRightTrigger() const {
     return isConnected_ ? state_.Gamepad.bRightTrigger : 0;
 }
