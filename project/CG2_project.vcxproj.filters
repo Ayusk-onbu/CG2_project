@@ -181,6 +181,12 @@
     <Filter Include="resources\shaders\SkinningObject3d">
       <UniqueIdentifier>{768110a9-3e68-4c94-8c11-0ab15faa5fa3}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Game3D\Player3D\Player3DCommand">
+      <UniqueIdentifier>{95d85004-aebf-4ac3-ac33-0c8080cdab73}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Game3D\Other">
+      <UniqueIdentifier>{35ecde88-901f-43bb-8144-b5394c6b2065}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -546,6 +552,30 @@
     <ClCompile Include="UsefulTool\Camera\CameraController\GameCameraController.cpp">
       <Filter>UsefulTool\Camera\CameraController</Filter>
     </ClCompile>
+    <ClCompile Include="Game3D\Player3D\Player3DCommand\Player3DCommand.cpp">
+      <Filter>Game3D\Player3D\Player3DCommand</Filter>
+    </ClCompile>
+    <ClCompile Include="Game3D\Player3D\Player3DCommand\PlayerInputHandler.cpp">
+      <Filter>Game3D\Player3D\Player3DCommand</Filter>
+    </ClCompile>
+    <ClCompile Include="Game3D\Player3D\Player3DState\PlayerStepEvasionState.cpp">
+      <Filter>Game3D\Player3D\PlayerState</Filter>
+    </ClCompile>
+    <ClCompile Include="Game3D\Player3D\Player3DState\PlayerJustEvasionState.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="Game3D\Enemy\EnemyState\BossDashAttackState.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="Game3D\Enemy\EnemyState\BossSpinAttackState.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="Game3D\Enemy\EnemyState\BossRoarState.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="Game3D\Other\Ground.cpp">
+      <Filter>Game3D\Other</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="externals\imgui\imconfig.h">
@@ -868,6 +898,15 @@
     </ClInclude>
     <ClInclude Include="UsefulTool\Animation\Animation.h">
       <Filter>UsefulTool\Animation</Filter>
+    </ClInclude>
+    <ClInclude Include="Game3D\Player3D\Player3DCommand\Player3DCommand.h">
+      <Filter>Game3D\Player3D\Player3DCommand</Filter>
+    </ClInclude>
+    <ClInclude Include="Game3D\Player3D\Player3DCommand\PlayerInputHandler.h">
+      <Filter>Game3D\Player3D\Player3DCommand</Filter>
+    </ClInclude>
+    <ClInclude Include="Game3D\Other\Ground.h">
+      <Filter>Game3D\Other</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

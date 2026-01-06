@@ -55,4 +55,9 @@ void SceneDirector::LoadModelData() {
 	name = ModelManager::GetInstance()->LoadObj("walk.gltf", "resources/Human");
 	name = ModelManager::GetInstance()->LoadObj("sneakWalk.gltf", "resources/Human");
 	name = ModelManager::GetInstance()->LoadObj("simpleSkin.gltf", "resources/simpleSkin");
+	name = ModelManager::GetInstance()->LoadObj("ground.obj", "resources", LoadFileType::OBJ);
+	name = ModelManager::GetInstance()->LoadObj("enemy.obj", "resources/Game", LoadFileType::OBJ);
+	name = ModelManager::GetInstance()->LoadObj("player.obj", "resources/Game", LoadFileType::OBJ);
+	name = ModelManager::GetInstance()->LoadObj("Confuse.obj", "resources/Star", LoadFileType::OBJ);
+	name = ModelManager::GetInstance()->LoadObj("stone.obj", "resources/Game", LoadFileType::OBJ);
 }

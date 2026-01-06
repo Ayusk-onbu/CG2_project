@@ -27,21 +27,22 @@ void GameCameraController::Update(Camera& camera) {
 	if (1/*もしロックオン状態では無ければを追加する*/) {
 		//camera.GetTheta() += (InputManager::GetMouse().getDelta().y * 0.1f);
 		camera.GetPhi() += std::sqrtf(InputManager::GetGamePad(0).GetRightStickX() * InputManager::GetGamePad(0).GetRightStickX()) > 0.15f 
-			? InputManager::GetGamePad(0).GetRightStickX() : 0.0f;
+			? -InputManager::GetGamePad(0).GetRightStickX() : 0.0f;
 	}
 
 	float theta = 0;
 	camera.GetTheta() = std::clamp(camera.GetTheta(), -89.0f, 89.0f); // X軸回転は-90度から90度まで
-	theta = Deg2Rad(camera.GetTheta());
+	theta = Deg2Rad(8);
 	float phi = 0;
 	phi = Deg2Rad(camera.GetPhi());
 
 	//Easing(camera.targetPos_, prevTargetPos_, camera.targetPos_, 0.7f, 1.0f, EASINGTYPE::None);
 
 	// ここから変換
-	camera.GetTranslation().x = camera.targetPos_.x + camera.GetRadius() * std::cos(theta) * std::cos(phi);
-	camera.GetTranslation().y = camera.targetPos_.y + camera.GetRadius() * std::sin(theta);
-	camera.GetTranslation().z = camera.targetPos_.z + camera.GetRadius() * std::cos(theta) * std::sin(phi);
+	float easingTime = 0.35f;
+	camera.GetTranslation().x = Easing_Float(camera.GetTranslation().x, camera.targetPos_.x + camera.GetRadius() * std::cos(theta) * std::cos(phi), easingTime,1.0f,EASINGTYPE::None);
+	camera.GetTranslation().y = Easing_Float(camera.GetTranslation().y, camera.targetPos_.y + camera.GetRadius() * std::sin(theta), easingTime, 1.0f, EASINGTYPE::None);
+	camera.GetTranslation().z = Easing_Float(camera.GetTranslation().z, camera.targetPos_.z + camera.GetRadius() * std::cos(theta) * std::sin(phi), easingTime, 1.0f, EASINGTYPE::None);
 	//viewProjectionMatrix_ = Matrix4x4::Inverse(Matrix4x4::Make::Affine(scale_, rotation_, translation_));
 	camera.GetViewProjectionMatrix() = (Matrix4x4::Make::LookAt(camera.GetTranslation(), camera.targetPos_, camera.up_, camera.xAxis_, camera.yAxis_, camera.zAxis_));
 

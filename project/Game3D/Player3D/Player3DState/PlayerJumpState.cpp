@@ -14,11 +14,11 @@ void PlayerJumpState::Update() {
 		return;
 	}
 
-	if (player_->CanDoubleJump() && InputManager::IsJump()) {
-		// 二段ジャンプへ
-		player_->ChangeState(new PlayerDoubleJumpState());
-		return;
-	}
+	//if (player_->CanDoubleJump() && InputManager::IsJump()) {
+	//	// 二段ジャンプへ
+	//	player_->ChangeState(new PlayerDoubleJumpState());
+	//	return;
+	//}
 
 	// 一応
 	if (player_->IsOnGround() == true) {
@@ -27,5 +27,15 @@ void PlayerJumpState::Update() {
 		return;
 	}
 
+	if (player_->HasAttackBuffer()) {
+		// 攻撃
+		player_->ChangeState(new PlayerAttackState(0));
+		return;
+	}
+
 	ImGuiManager::GetInstance()->Text("JumpState");
+}
+
+void PlayerJumpState::Exit() {
+
 }

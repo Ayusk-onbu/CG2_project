@@ -18,6 +18,8 @@ void GamePad::Update() {
     ImGui::Begin("GamePad");
 	float rightStickX = static_cast<float>(GetRightStickX());
 	ImGui::DragFloat("RightStickX", &rightStickX, 0.01f, -1.0f, 1.0f);
+    float leftStickX = GetLeftStickX();
+    ImGui::DragFloat("LeftStickX", &leftStickX, 0.01f, -1.0f, 1.0f);
     ImGui::End();
 #endif//_DEBUG
 }
@@ -41,12 +43,12 @@ BYTE GamePad::GetLeftTrigger() const {
     return isConnected_ ? state_.Gamepad.bLeftTrigger : 0;
 }
 
-SHORT GamePad::GetLeftStickX() const {
-    return isConnected_ ? state_.Gamepad.sThumbLX : 0;
+float GamePad::GetLeftStickX() const {
+    return isConnected_ ? static_cast<float>(state_.Gamepad.sThumbLX / 32767.0f) : 0;
 }
 
-SHORT GamePad::GetLeftStickY() const {
-    return isConnected_ ? state_.Gamepad.sThumbLY : 0;
+float GamePad::GetLeftStickY() const {
+    return isConnected_ ? static_cast<float>(state_.Gamepad.sThumbLY / 32767.0f) : 0;
 }
 
 float GamePad::GetRightStickX() const {

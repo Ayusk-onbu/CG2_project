@@ -20,29 +20,6 @@ void PlayerHurtState::Update()
 {
 	if (!player_) return;
 
-	bool isMove = false;
-	auto& move = player_->Move();
-	if (InputManager::GetKey().PressKey(DIK_W))
-	{
-		move.z = 1.0f;
-		isMove = true;
-	}
-	if (InputManager::GetKey().PressKey(DIK_S))
-	{
-		move.z = -1.0f;
-		isMove = true;
-	}
-	if (InputManager::GetKey().PressKey(DIK_A))
-	{
-		move.x = -1.0f;
-		isMove = true;
-	}
-	if (InputManager::GetKey().PressKey(DIK_D))
-	{
-		move.x = 1.0f;
-		isMove = true;
-	}
-
 	// デルタタイム
 	const float deltaTime = 1.0f / 60.0f;
 	hurtTimer_ += deltaTime;
@@ -57,6 +34,12 @@ void PlayerHurtState::Update()
 		// 奇数回 (例: 0.1～0.2, 0.3～0.4) は透明 (α=0.0)
 		player_->SetAlpha(0.0f);
 	}
+
+	//// 攻撃したかったら無敵解除する
+	//if (player_->HasAttackBuffer()) {
+	//	player_->ChangeState(new PlayerAttackState(0));
+	//	return;
+	//}
 
 	// 2. **State 遷移ロジック (終了判定)**
 	// --- のけぞりアニメーション/無敵時間終了 ---

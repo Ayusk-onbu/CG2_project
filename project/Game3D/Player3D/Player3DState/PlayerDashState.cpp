@@ -8,6 +8,9 @@ void PlayerDashState::Initialize() {
 		// 疲れた状態への遷移？ or 歩く？
 
 	}
+	// ダッシュの先行入力をクリア
+	player_->ClearDashBuffer();
+
 	// 開始時のスタミナの消費
 	player_->DrainStamina(initial_staminaCost_);
 
@@ -21,34 +24,12 @@ void PlayerDashState::Initialize() {
 
 void PlayerDashState::Update() {
 
-	bool isMove = false;
-	auto& move = player_->Move();
-	if (InputManager::GetKey().PressKey(DIK_W))
-	{
-		move.z = 1.0f;
-		isMove = true;
-	}
-	if (InputManager::GetKey().PressKey(DIK_S))
-	{
-		move.z = -1.0f;
-		isMove = true;
-	}
-	if (InputManager::GetKey().PressKey(DIK_A))
-	{
-		move.x = -1.0f;
-		isMove = true;
-	}
-	if (InputManager::GetKey().PressKey(DIK_D))
-	{
-		move.x = 1.0f;
-		isMove = true;
-	}
-
+	bool isMove = player_->IsMoving();
 	const float deltaTime = 1.0f / 60.0f;
 
 	// 加速処理
 	if (currentSpeedMultiplier_ < maxSpeedMultiplier_) {
-		currentSpeedMultiplier_ += accelerationRate_ * deltaTime;
+		currentSpeedMultiplier_ += accelerationRate_ * deltaTime * 2.0f;
 		if (currentSpeedMultiplier_ > maxSpeedMultiplier_) {
 			// 最大を超えたときの処理
 			currentSpeedMultiplier_ = maxSpeedMultiplier_;
@@ -61,7 +42,6 @@ void PlayerDashState::Update() {
 	player_->DrainStamina(staminaDrainRate_ * deltaTime);
 
 	//	ここから状態遷移チェック
-	bool is_dash = InputManager::IsDash();
 	bool has_stamina = player_->GetStamina() > 0.0f;
 
 	if (has_stamina == false) {
@@ -70,7 +50,7 @@ void PlayerDashState::Update() {
 		return;
 	}
 
-	if (is_dash == false) {
+	if (player_->CanDash() == false) {
 		player_->ChangeState(new PlayerStopState());
 		return;
 	}
@@ -81,9 +61,9 @@ void PlayerDashState::Update() {
 		return;
 	}
 
-	if (InputManager::IsAttack()) {
+	if (player_->HasAttackBuffer()) {
 		// 攻撃
-		player_->ChangeState(new PlayerAttackState());
+		player_->ChangeState(new PlayerAttackState(0));
 		return;
 	}
 	

@@ -144,20 +144,37 @@ Quaternion Quaternion::Slerp(const Quaternion& q0, const Quaternion& q1, float t
 		normQ1.w = -normQ1.w;
 		dot = -dot;
 	}
-
-	float theta = std::acos(dot);
+	if (std::isnan(dot)) {
+		return {0.0f,0.0f,0.0f,1.0f};
+	}
+	dot = dot > 1.0f ? 1.0f : dot;
+	float theta = std::acosf(dot);
+	if (std::isnan(theta)) {
+		return { 0.0f,0.0f,0.0f,1.0f };
+	}
 	float sinTheta = std::sin(theta);
+	if (std::isnan(sinTheta)) {
+		return { 0.0f,0.0f,0.0f,1.0f };
+	}
 	if (std::abs(sinTheta) < 1e-6f) {
 		Quaternion result;
 		result.x = normQ0.x + t * (normQ1.x - normQ0.x);
 		result.y = normQ0.y + t * (normQ1.y - normQ0.y);
 		result.z = normQ0.z + t * (normQ1.z - normQ0.z);
 		result.w = normQ0.w + t * (normQ1.w - normQ0.w);
+		if (std::isnan(result.x)) {
+			return { 0.0f,0.0f,0.0f,1.0f };
+		}
 		return Normalize(result);
 	}
 	float sinOne_theta = std::sin((1.0f - t) * theta) / sinTheta;
+	if (std::isnan(sinOne_theta)) {
+		return { 0.0f,0.0f,0.0f,1.0f };
+	}
 	float sinT_theta = std::sin(t * theta) / sinTheta;
-
+	if (std::isnan(sinT_theta)) {
+		return { 0.0f,0.0f,0.0f,1.0f };
+	}
 	return {
 		normQ0.x * sinOne_theta + normQ1.x * sinT_theta,
 		normQ0.y * sinOne_theta + normQ1.y * sinT_theta,

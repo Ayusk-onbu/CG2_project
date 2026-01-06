@@ -1,6 +1,11 @@
 #include "Player3D.h"
 #include "CameraSystem.h"
 #include "GlobalVariables.h"
+#include <algorithm>
+
+/*
+* 強攻撃を増やしたい
+*/
 
 Player3D::~Player3D() {
 	delete state_;
@@ -13,8 +18,8 @@ void Player3D::ApplyGlobalVariables() {
 void Player3D::Initialize(Fngine* fngine)
 {
 	obj_ = std::make_unique<ModelObject>();
-	obj_->modelName_ = "walk";
-	obj_->textureHandle_ = TextureManager::GetInstance()->LoadTexture("resources/uvChecker.png");
+	obj_->modelName_ = "player";
+	obj_->textureHandle_ = TextureManager::GetInstance()->LoadTexture("resources/ulthimaSky.png");
 	obj_->Initialize(fngine);
 	obj_->worldTransform_.set_.Scale({ 1.0f,1.0f,1.0f });
 
@@ -23,10 +28,10 @@ void Player3D::Initialize(Fngine* fngine)
 	state_->SetPlayer(this);
 
 	attackColliderObj_ = std::make_unique<ModelObject>();
-	attackColliderObj_->modelName_ = "cube";
-	attackColliderObj_->textureHandle_ = TextureManager::GetInstance()->LoadTexture("resources/uvChecker.png");
+	attackColliderObj_->modelName_ = "Confuse";
+	attackColliderObj_->textureHandle_ = TextureManager::GetInstance()->LoadTexture("resources/Star/Confuse.png");
 	attackColliderObj_->Initialize(fngine);
-	attackColliderObj_->SetColor({ 0.0f,0.0f,0.0f,1.0f });
+	attackColliderObj_->SetColor({ 0.9f,1.0f,0.1f,1.0f });
 
 	// Colliderの設定
 	// 1, Player
@@ -35,27 +40,53 @@ void Player3D::Initialize(Fngine* fngine)
 	attackCollider_ = std::make_unique<AttackCollider>();
 	EnableHitBox(false, obj_->worldTransform_.get_.Translation());
 
+	// UI関係
+	// [ HP ]
+	mainHPBar_ = std::make_unique<SpriteObject>(fngine);
+	mainHPBar_->Initialize(TextureManager::GetInstance()->LoadTexture("resources/GridLine.png"), SPRITE_ANCHOR_TYPE::LeftMiddle);
+	mainHPBar_->worldTransform_.set_.Translation({ 10.0f,20.0f,0.0f });
+	subHPBar_ = std::make_unique<SpriteObject>(fngine);
+	subHPBar_->Initialize(mainHPBar_->textureHandle_, SPRITE_ANCHOR_TYPE::LeftMiddle);
+	subHPBar_->SetColor({ 1.0f,0.0f,0.0f,1.0f });
+	subHPBar_->worldTransform_.set_.Translation(mainHPBar_->worldTransform_.get_.Translation());
+	// [ Stamina ]
+	staminaBar_ = std::make_unique<SpriteObject>(fngine);
+	staminaBar_->Initialize(TextureManager::GetInstance()->LoadTexture("resources/GridLine.png"), SPRITE_ANCHOR_TYPE::LeftMiddle);
+	staminaBar_->worldTransform_.set_.Translation({ 10.0f,20.0f + 32.0f,0.0f });
+	staminaBar_->SetColor({ 0.86f,0.86f,0.0f,1.0f });
+
 	ApplyGlobalVariables();
 
-	animation_ = std::make_unique<Animation>();
-	animation_->LoadAnimationFile("resources/Human", "walk.gltf");
-	animation_->SetIsLoop(true);
+	//animation_ = std::make_unique<Animation>();
+	//animation_->LoadAnimationFile("resources/Human", "walk.gltf");
+	//animation_->SetIsLoop(true);
 
-	skeleton_ = std::make_unique<Skeleton>();
-	skeleton_->CreateSkeleton(obj_->GetNode());
+	//skeleton_ = std::make_unique<Skeleton>();
+	//skeleton_->CreateSkeleton(obj_->GetNode());
 
-	obj_->skinCluster_.Create(fngine, *skeleton_, obj_->GetModelData());
+	//obj_->skinCluster_.Create(fngine, *skeleton_, obj_->GetModelData());
+
+	// 入力処理の初期化
+	inputHandler_ = std::make_unique<PlayerInputHandler>();
+	inputHandler_->SetPlayer(this);
 }
 
 void Player3D::Update()
 {
-	// 毎フレーム初期化する処理↓↓↓
-	move_ = { 0.0f,0.0f,0.0f };
+	if (InputManager::IsLockOn()) {
+		lockOn_ = !lockOn_;
+	}
+	CameraSystem::GetInstance()->GetActiveCamera()->SetTargetPos(
+		{ obj_->worldTransform_.get_.Translation().x,obj_->worldTransform_.get_.Translation().y ,obj_->worldTransform_.get_.Translation().z });
+	if (lockOn_ == false) {
+		
+		CameraSystem::GetInstance()->GetActiveCamera()->SetRadius(30);
+	}
 
-	// 毎フレーム初期化する処理↑↑↑
-
+	inputHandler_->HandleInput();
 	ApplyPhysics();
-
+	EvasionUpdate();
+	DashBufferUpdate();
 	if (state_) {
 		state_->Update();
 	}
@@ -71,19 +102,38 @@ void Player3D::Update()
 
 	Vector3 pos = obj_->worldTransform_.get_.Translation();
 	float deltaTime = 1.0f / 60.0f;
-	pos.x += move_.x * speed_ * deltaTime * speedMultiplier_;
-	pos.y += move_.y * verticalVelocity_;
-	pos.z += move_.z * speed_ * deltaTime * speedMultiplier_;
+	if (moveBlockers_ == 0) {
+		pos.x += move_.x * speed_ * deltaTime * speedMultiplier_;
+		pos.z += move_.z * speed_ * deltaTime * speedMultiplier_;
+		// ※ここの性で攻撃すると空中に止まるよ
+		pos.y += move_.y * verticalVelocity_;
+	}
 	obj_->worldTransform_.set_.Translation(pos);
 
-	//obj_->worldTransform_.mat_ = animation_->Update("walk");
-	//animation_->Update("walk");
-	animation_->TimeFlow();
+	// 一旦地面との当たり判定（地面を０とする）
+	if (obj_->worldTransform_.get_.Translation().y <= 0.0f) {
+		isOnGround_ = true;
+		Vector3 pos = obj_->worldTransform_.get_.Translation();
+		pos.y = 0.0f;
+		obj_->worldTransform_.set_.Translation(pos);
+	}
+
+	if (isOnGround_ == true) {
+		verticalVelocity_ = 0.0f;
+		canDoubleJump_ = true;
+	}
+
+	HPBarUpdate();
+
+	if (IsDead()) {
+		obj_->worldTransform_.set_.Scale({ obj_->worldTransform_.get_.Scale().x - 0.01f,obj_->worldTransform_.get_.Scale().y - 0.01f ,obj_->worldTransform_.get_.Scale().z - 0.01f });
+	}
+
+	/*animation_->TimeFlow();
 	animation_->ApplyAnimation(*skeleton_.get());
 	skeleton_->Update();
-	obj_->skinCluster_.Update(*skeleton_);
+	obj_->skinCluster_.Update(*skeleton_);*/
 
-	//CameraSystem::GetInstance()->GetActiveCamera()->SetTargetPos({ obj_->worldTransform_.get_.Translation().x,obj_->worldTransform_.get_.Translation().y + 1.0f,obj_->worldTransform_.get_.Translation().z });
 	ImGui();
 }
 
@@ -94,11 +144,16 @@ void Player3D::Draw()
 	obj_->Draw();
 
 	if (isAttackViewFlag_) {
+		attackColliderObj_->worldTransform_.set_.Rotation({ 0.0f,attackColliderObj_->worldTransform_.get_.Rotation().y + 20.0f,0.0f });
 		attackColliderObj_->worldTransform_.set_.Translation(attackCollider_->GetWorldPosition());
 		attackColliderObj_->LocalToWorld();
 		attackColliderObj_->SetWVPData(CameraSystem::GetInstance()->GetActiveCamera()->DrawCamera(attackColliderObj_->worldTransform_.mat_));
 		attackColliderObj_->Draw();
 	}
+
+	subHPBar_->Draw();
+	mainHPBar_->Draw();
+	staminaBar_->Draw();
 }
 
 void Player3D::ImGui() {
@@ -109,8 +164,8 @@ void Player3D::ImGui() {
 	ImGuiManager::GetInstance()->DrawDrag("Player : Speed", speed_);
 	ImGuiManager::GetInstance()->DrawDrag("sppedMultiplier", speedMultiplier_);
 	ImGuiManager::GetInstance()->DrawDrag("mat", obj_->worldTransform_.mat_);
-
-	ImGuiManager::GetInstance()->DrawDrag("test", test_);
+	ImGuiManager::GetInstance()->DrawDrag("gravity", gravity_);
+	ImGuiManager::GetInstance()->DrawDrag("DashBufferTime", dashBufferTimer_);
 }
 
 void Player3D::ChangeState(PlayerState* newState) {
@@ -147,7 +202,7 @@ void Player3D::EnableHitBox(bool enable, const Vector3& worldPos) {
 		attackCollider_->SetYourType(COL_None);
 		ImGuiManager::GetInstance()->Text("Player Attack -> Enemy NO!!");
 	}
-	
+
 }
 
 // ------------------------------
@@ -156,20 +211,9 @@ void Player3D::EnableHitBox(bool enable, const Vector3& worldPos) {
 
 void Player3D::ApplyPhysics() {
 	if (isOnGround_ == false) {
-		verticalVelocity_ -= gravity_ * (1.0f / 60.0f);
-	}
-
-	// 一旦地面との当たり判定（地面を０とする）
-	if (obj_->worldTransform_.get_.Translation().y <= 0.0f) {
-		isOnGround_ = true;
-		Vector3 pos = obj_->worldTransform_.get_.Translation();
-		pos.y = 0.0f;
-		obj_->worldTransform_.set_.Translation(pos);
-	}
-
-	if (isOnGround_ == true) {
-		verticalVelocity_ = 0.0f;
-		canDoubleJump_ = true;
+		if (moveBlockers_ == 0) {
+			verticalVelocity_ -= gravity_ * (1.0f / 60.0f) * 0.85f;
+		}
 	}
 }
 
@@ -195,6 +239,11 @@ void Player3D::UpdateStaminaRecovery() {
 // ------------------------------
 
 void Player3D::RotateToMoveDirection() {
+	// 死んでいたら無視
+	if (IsDead()) {
+		return;
+	}
+
 	// 移動処理がなければスキップ
 	if (move_.x == 0.0f && move_.z == 0.0f) {
 		// 入力が無かった
@@ -202,11 +251,15 @@ void Player3D::RotateToMoveDirection() {
 	}
 
 	float targetAngle = std::atan2(move_.x, move_.z);
-
+	
 	Quaternion targetQuaternion = Quaternion::MakeRotateAxisAngleQuaternion({ 0.0f,1.0f,0.0f }, targetAngle);
 
 	Quaternion currentQuaternion = obj_->worldTransform_.get_.Quaternion();
 	currentQuaternion = Quaternion::Slerp(currentQuaternion, targetQuaternion, rotateSpeed_);
+	if (std::isnan(currentQuaternion.x)) {
+
+		return;
+	}
 	obj_->worldTransform_.set_.Quaternion(currentQuaternion);
 }
 
@@ -221,8 +274,14 @@ Vector3 Player3D::GetForwardVector() {
 // ---------------------------
 
 void Player3D::TakeDamage(float damage) {
+	// ジャスト回避状態ならジャスト回避Stateに移行
+	if (IsJustEvasion()) {
+		ChangeState(new PlayerJustEvasionState());
+		return;
+	}
+
 	// 1. 死亡状態、または無敵時間中の場合は処理をスキップ
-	if (IsDead() || IsInvulnerable()){
+	if (IsDead() || IsInvulnerable()) {
 		return;
 	}
 
@@ -233,18 +292,120 @@ void Player3D::TakeDamage(float damage) {
 	}
 
 	// 3. 死亡判定
-	if (IsDead()){
+	if (IsDead()) {
 		// HPが0になったら死亡 State へ遷移
 		ChangeState(new PlayerDeathState());
 
 		// 本体Colliderを無効化（死亡後に当たり判定を残さないため）
 		playerCollider_->SetMyType(COL_None);
 	}
-	else{
+	else {
 		// HPが残っている場合は被ダメージ State へ遷移
 		ChangeState(new PlayerHurtState());
 
 		// 無敵時間を設定する (HurtState側でリセットする)
 		SetInvulnerable(true);
 	}
+}
+
+// ---------------------------
+// Command で呼び出す処理たち
+// ---------------------------
+
+void Player3D::OnJumpInput() {
+	// ジャンプが禁止されているなら処理を無視
+	if (CanJump() == false)return;
+
+	// 地面にいる場合、二段ジャンプが可能ならStateを切り替える
+	if (isOnGround_ || canDoubleJump_) {
+		if (isOnGround_) {
+			ChangeState(new PlayerJumpState());
+		}
+		else {
+			ChangeState(new PlayerDoubleJumpState());
+		}
+	}
+}
+
+void Player3D::OnAttackInput() {
+	// 攻撃Stateに遷移
+	isAttackBuffered_ = true;
+}
+
+void Player3D::OnDashInput() {
+	// ダッシュする意思があったことを「maxDashBufferTime」秒保存する
+	dashBufferTimer_ = maxDashBufferTime_;
+}
+
+void Player3D::OnEvasionInput() {
+	// 回避ボタンが押されたことをつたえる
+	if (isWaitingEvasion_ == false) {
+		evasionPressTimer_ = 0.0f;
+		isWaitingEvasion_ = true;
+	}
+	// *** 連打した際にバグりそうで何か怖い ***
+}
+
+// ---------------------------
+// 先行入力関係の処理
+// ---------------------------
+
+void Player3D::DashBufferUpdate() {
+	//ダッシュ先行入力のタイマー更新
+	if (dashBufferTimer_ > 0.0f) {
+		dashBufferTimer_ -= (1.0f / 60.0f);
+		dashBufferTimer_ = std::clamp(dashBufferTimer_, 0.0f, maxDashBufferTime_);
+	}
+}
+
+void Player3D::EvasionUpdate() {
+	if (isWaitingEvasion_) {
+		float deltaTime = 1.0f / 60.0f;
+		evasionPressTimer_ += deltaTime;// +=deltaTIme
+		if (evasionPressTimer_ > deltaTime * 9.0f) {
+			// 少し眺めならローリング
+			ExecuteEvasion(true);
+		}
+		else if (InputManager::IsEvasion() == false) {
+			// 時間内に離したらスライド
+			ExecuteEvasion(false);
+		}
+	}
+}
+
+void Player3D::ExecuteEvasion(bool isLongPress) {
+	isWaitingEvasion_ = false;
+	evasionPressTimer_ = 0.0f;
+	if (/*ロックオン &&*/isLongPress == false) {
+		// ロックオンならステップ回避
+		ChangeState(new PlayerStepEvasionState());
+	}
+	else {
+		// それ以外ならローリング回避
+		ChangeState(new PlayerEvasionState());
+	}
+}
+
+void Player3D::ClearAttackBuffer() {
+	isAttackBuffered_ = false;
+}
+
+// ------------------------
+// HP関係の関数
+// ------------------------
+
+void Player3D::HPBarUpdate() {
+	float hpWidth = hp_ / 16.0f * 6.2f;
+	mainHPBar_->worldTransform_.set_.Scale({ hpWidth,1.0f,0.0f });
+	subHPBar_->worldTransform_.set_.Scale({ Easing_Float(subHPBar_->worldTransform_.get_.Scale().x, hpWidth, 0.2f, 1.0f, EASINGTYPE::InSine),1.0f, 1.0f });
+	if (hp_ > maxHP_ * 0.5f) {
+		mainHPBar_->SetColor({ 0.1f,1.0f,0.2f,1.0f });
+	}
+	/*else if (hp_ > maxHP_ * 0.2f) {
+		mainHPBar_->SetColor({ 0.65f,0.65f,0.1f,1.0f });
+	}*/
+	else {
+		mainHPBar_->SetColor({ 0.8f,0.1f,0.1f,1.0f });
+	}
+	staminaBar_->worldTransform_.set_.Scale({ stamina_ / 16.0f * 6.2f, 1.0f,0.0f });
 }

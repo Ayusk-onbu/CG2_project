@@ -22,6 +22,9 @@ public:
 	void Draw() override;
 
 private:
+	float toGameTimer_ = 0.0f;
 	std::unique_ptr<Player3D>player_;
+	std::unique_ptr<SpriteObject>title_;
+	std::unique_ptr<SpriteObject>fade_;
 };
 

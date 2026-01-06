@@ -30,7 +30,7 @@ void PlayerBodyCollider::OnCollision(Collider* other)
 
 		// 3. **Player3D 本体にダメージを通知**
 		// Player3D に TakeDamage(float) メソッドが必要です
-		player_->TakeDamage(damage);
+		player_->TakeDamage(9.8f);
 	}
 }
 

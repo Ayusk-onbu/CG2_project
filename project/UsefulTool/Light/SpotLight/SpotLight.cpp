@@ -6,11 +6,11 @@ void SpotLight::Initialize(Fngine* fngine) {
 	//書き込むためのアドレスを取得
 	resource_->Map(0, nullptr, reinterpret_cast<void**>(&data_));
 	data_->color = { 1.0f,1.0f,1.0f,1.0f };//白色
-	data_->position = { 2.0f,1.25f,0.0f };//原点
+	data_->position = { 0.0f,16.0f,0.0f };//原点
 	data_->intensity = 4.0f;//輝度1.0f
-	data_->distance = 7.0f;//影響範囲
+	data_->distance = 45.0f;//影響範囲
 	data_->decay = 2.0f;//減衰率
-	data_->direction = { -1.0f,-1.0f,0.0f };
+	data_->direction = { -0.0f,-1.0f,0.0f };
 	data_->cosAngle = std::cosf(Deg2Rad(angle_));
 	data_->cosFalloffStartAngle = std::cosf(Deg2Rad(angle_ * falloff_));
 }
