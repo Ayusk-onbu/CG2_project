@@ -18,6 +18,7 @@ public:
 	void SetUpFngine(Fngine& fngine) { p_fngine_ = &fngine; }
 private:
 	void LoadModelData();
+	void LoadTexture();
 private:
 	Fngine* p_fngine_;
 	Scene* currentScene_;

@@ -17,11 +17,11 @@ void TestScene::Initialize() {
 	/*player_ = std::make_unique<Player3D>();
 	player_->Initialize(p_fngine_);*/
 	title_ = std::make_unique<SpriteObject>(p_fngine_);
-	title_->Initialize(TextureManager::GetInstance()->LoadTexture("resources/Title/titleBack.png"));
+	title_->Initialize("titleBack");
 	title_->worldTransform_.set_.Translation({640.0f,360.0f,0.0f});
 
 	fade_ = std::make_unique<SpriteObject>(p_fngine_);
-	fade_->Initialize(TextureManager::GetInstance()->LoadTexture("resources/GridLine.png"));
+	fade_->Initialize("GridLine");
 	fade_->worldTransform_.set_.Translation({ 640.0f,360.0f,0.0f });
 	fade_->worldTransform_.set_.Scale({ 1280.0f / 16.0f,1280.0f / 16.0f ,0.0f });
 	fade_->SetColor({ 0.0f,0.0f,0.0f,0.0f });

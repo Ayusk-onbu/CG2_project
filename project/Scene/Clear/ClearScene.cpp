@@ -5,7 +5,7 @@
 void ClearScene::Initialize() {
 	//sprite_.Initialize(p_fngine_->GetD3D12System(), 1280.0f, 720.0f);
 	clearSprite_ = std::make_unique<SpriteObject>(p_fngine_);
-	clearSprite_->Initialize(TextureManager::GetInstance()->LoadTexture("resources/GameClear.png"));
+	clearSprite_->Initialize("GameClear");
 	clearSprite_->worldTransform_.set_.Translation({640.0f,360.0f,0.0f});
 }
 

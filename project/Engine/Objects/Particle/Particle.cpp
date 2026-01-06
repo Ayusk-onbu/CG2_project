@@ -17,7 +17,7 @@ void Particle::Initialize(uint32_t numInstance) {
 	numMaxInstance_ = numInstance;
 	// [ 使うTextureの設定 ]
 	// 固定なのキモすぎ
-	textureHandle_ = TextureManager::GetInstance()->LoadTexture("resources/circle.png");
+	textureName_ = "circle";
 
 	vertexResource_ = CreateBufferResource(p_fngine_->GetD3D12System().GetDevice().Get(), sizeof(VertexData) * 4);
 	vertexResource_->Map(0, nullptr, reinterpret_cast<void**>(&vertexData_));
@@ -222,7 +222,7 @@ void Particle::Draw() {
 	//wvp用のCBufferの場所を設定
 	p_fngine_->GetCommand().GetList().GetList()->SetGraphicsRootDescriptorTable(1, instancingBuffer_->GetSRVHandleGPU());
 	//SRVのDescritorTableの先頭を設定。2はrootParameter[2]である
-	p_fngine_->GetCommand().GetList().GetList()->SetGraphicsRootDescriptorTable(2, TextureManager::GetInstance()->GetTexture(textureHandle_).GetHandleGPU());
+	p_fngine_->GetCommand().GetList().GetList()->SetGraphicsRootDescriptorTable(2, TextureManager::GetInstance()->GetTexture(textureName_).GetHandleGPU());
 
 	p_fngine_->GetCommand().GetList().GetList()->DrawIndexedInstanced(6, numInstance, 0, 0, 0);
 }

@@ -15,7 +15,7 @@ void Bullet::Initialize(Fngine* fngine, const Vector3& pos, const Vector3& speed
 	fngine_ = fngine;
 	obj_ = std::make_unique<ModelObject>();
 	obj_->modelName_ = "cube";
-	obj_->textureHandle_ = 3;
+	obj_->textureName_ = "GridLine";
 	obj_->Initialize(fngine);
 	obj_->worldTransform_.set_.Translation(pos);
 	obj_->worldTransform_.set_.Scale({ radius,radius,radius });

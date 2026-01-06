@@ -19,7 +19,7 @@ void Player3D::Initialize(Fngine* fngine)
 {
 	obj_ = std::make_unique<ModelObject>();
 	obj_->modelName_ = "player";
-	obj_->textureHandle_ = TextureManager::GetInstance()->LoadTexture("resources/ulthimaSky.png");
+	obj_->textureName_ = "ulthimaSky";
 	obj_->Initialize(fngine);
 	obj_->worldTransform_.set_.Scale({ 1.0f,1.0f,1.0f });
 
@@ -29,7 +29,7 @@ void Player3D::Initialize(Fngine* fngine)
 
 	attackColliderObj_ = std::make_unique<ModelObject>();
 	attackColliderObj_->modelName_ = "Confuse";
-	attackColliderObj_->textureHandle_ = TextureManager::GetInstance()->LoadTexture("resources/Star/Confuse.png");
+	attackColliderObj_->textureName_ = "Confuse";
 	attackColliderObj_->Initialize(fngine);
 	attackColliderObj_->SetColor({ 0.9f,1.0f,0.1f,1.0f });
 
@@ -43,15 +43,15 @@ void Player3D::Initialize(Fngine* fngine)
 	// UI関係
 	// [ HP ]
 	mainHPBar_ = std::make_unique<SpriteObject>(fngine);
-	mainHPBar_->Initialize(TextureManager::GetInstance()->LoadTexture("resources/GridLine.png"), SPRITE_ANCHOR_TYPE::LeftMiddle);
+	mainHPBar_->Initialize("GridLine", SPRITE_ANCHOR_TYPE::LeftMiddle);
 	mainHPBar_->worldTransform_.set_.Translation({ 10.0f,20.0f,0.0f });
 	subHPBar_ = std::make_unique<SpriteObject>(fngine);
-	subHPBar_->Initialize(mainHPBar_->textureHandle_, SPRITE_ANCHOR_TYPE::LeftMiddle);
+	subHPBar_->Initialize("GridLine", SPRITE_ANCHOR_TYPE::LeftMiddle);
 	subHPBar_->SetColor({ 1.0f,0.0f,0.0f,1.0f });
 	subHPBar_->worldTransform_.set_.Translation(mainHPBar_->worldTransform_.get_.Translation());
 	// [ Stamina ]
 	staminaBar_ = std::make_unique<SpriteObject>(fngine);
-	staminaBar_->Initialize(TextureManager::GetInstance()->LoadTexture("resources/GridLine.png"), SPRITE_ANCHOR_TYPE::LeftMiddle);
+	staminaBar_->Initialize("GridLine", SPRITE_ANCHOR_TYPE::LeftMiddle);
 	staminaBar_->worldTransform_.set_.Translation({ 10.0f,20.0f + 32.0f,0.0f });
 	staminaBar_->SetColor({ 0.86f,0.86f,0.0f,1.0f });
 

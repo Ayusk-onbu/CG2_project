@@ -23,7 +23,7 @@ public:
 	SpriteObject(Fngine* fngine) { fngine_ = fngine; };
 	~SpriteObject() = default;
 public:
-	void Initialize(int textureHandle,SPRITE_ANCHOR_TYPE type = SPRITE_ANCHOR_TYPE::Middle);
+	void Initialize(std::string textureName,SPRITE_ANCHOR_TYPE type = SPRITE_ANCHOR_TYPE::Middle);
 	void Draw(SPRITE_VIEW_TYPE type = SPRITE_VIEW_TYPE::UI);
 private:
 	

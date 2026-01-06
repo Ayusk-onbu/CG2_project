@@ -55,6 +55,6 @@ public:
 
 	WorldTransform worldTransform_;
 	WorldTransform uvTransform_;
-	uint32_t textureHandle_;
+	std::string textureName_;
 };
 

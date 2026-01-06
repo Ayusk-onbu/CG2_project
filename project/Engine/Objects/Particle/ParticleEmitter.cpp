@@ -7,7 +7,7 @@ void ParticleEmitter::Initialize(Fngine* fngine) {
     obj_ = std::make_unique<ModelObject>();
     obj_->Initialize(fngine->GetD3D12System(),"bullet.obj");
     obj_->SetFngine(fngine);
-    obj_->textureHandle_ = 3;
+    obj_->textureName_ = 3;
 }
 
 void ParticleEmitter::Update(Particle* particleSystem) {

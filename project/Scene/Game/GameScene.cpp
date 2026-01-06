@@ -25,25 +25,25 @@ void GameScene::Initialize() {
 	toGameTimer_ = 0.0f;
 	// Fade関係のUI
 	fadeUp_ = std::make_unique<SpriteObject>(p_fngine_);
-	fadeUp_->Initialize(TextureManager::GetInstance()->LoadTexture("resources/GridLine.png"));
+	fadeUp_->Initialize("GridLine");
 	fadeUp_->worldTransform_.set_.Translation({ 640.0f,180.0f,0.0f });
 	fadeUp_->worldTransform_.set_.Scale({ 1280.0f / 16.0f, 360.0f / 16.0f,0.0f });
 	fadeUp_->SetColor({ 0.0f,0.0f,0.0f,1.0f });
 
 	fadeDown_ = std::make_unique<SpriteObject>(p_fngine_);
-	fadeDown_->Initialize(TextureManager::GetInstance()->LoadTexture("resources/GridLine.png"));
+	fadeDown_->Initialize("GridLine");
 	fadeDown_->worldTransform_.set_.Translation({ 640.0f,180.0f + 360.0f,0.0f });
 	fadeDown_->worldTransform_.set_.Scale({ 1280.0f / 16.0f, 360.0f / 16.0f,0.0f });
 	fadeDown_->SetColor({ 0.0f,0.0f,0.0f,1.0f });
 
 	purposeUI_ = std::make_unique<SpriteObject>(p_fngine_);
-	purposeUI_->Initialize(TextureManager::GetInstance()->LoadTexture("resources/Title/Purpose.png"));
+	purposeUI_->Initialize("Purpose");
 	purposeUI_->worldTransform_.set_.Translation({ 640.0f,180.0f,0.0f });
 	purposeUI_->worldTransform_.set_.Scale({ 1.0f, 1.0f,0.0f });
 	purposeUI_->SetColor({ 1.0f,1.0f,1.0f,1.0f });
 
 	playUI_ = std::make_unique<SpriteObject>(p_fngine_);
-	playUI_->Initialize(TextureManager::GetInstance()->LoadTexture("resources/UI.png"));
+	playUI_->Initialize("UI");
 	playUI_->worldTransform_.set_.Translation({ 1280.0f - 128.0f - 40.0f,64.0f + 50.0f,0.0f });
 	playUI_->worldTransform_.set_.Scale({ 0.65f, 0.65f,0.0f });
 	playUI_->SetColor({ 1.0f,1.0f,1.0f,1.0f });

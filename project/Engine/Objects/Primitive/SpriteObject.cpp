@@ -5,10 +5,10 @@
 // Public Function
 // ----------------------------
 
-void SpriteObject::Initialize(int textureHandle,SPRITE_ANCHOR_TYPE type) {
-	textureHandle_ = textureHandle;
+void SpriteObject::Initialize(std::string textureName,SPRITE_ANCHOR_TYPE type) {
+	textureName_ = textureName;
 	anchorType_ = type;
-	textureSize_ = TextureManager::GetInstance()->GetTexture(textureHandle_).GetSize();
+	textureSize_ = TextureManager::GetInstance()->GetTexture(textureName_).GetSize();
 	InitializeResource(fngine_->GetD3D12System());
 	InitializeData();
 	InitializeVertex();
@@ -30,7 +30,7 @@ void SpriteObject::Draw(SPRITE_VIEW_TYPE type) {
 	Draw(fngine_->GetCommand(),
 		PSOManager::GetInstance()->GetPSO("SpriteObject3D"),
 		fngine_->GetLight(),
-		TextureManager::GetInstance()->GetTexture(textureHandle_));
+		TextureManager::GetInstance()->GetTexture(textureName_));
 }
 
 void SpriteObject::SetTextureSize(const Vector2& leftTop, const Vector2& size) {

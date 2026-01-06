@@ -8,6 +8,7 @@ SceneDirector::~SceneDirector() {
 
 void SceneDirector::Initialize(Scene& firstScene) {
 	LoadModelData();
+	LoadTexture();
 
 	currentScene_ = &firstScene;
 	currentScene_->FngineSetUp(*p_fngine_);
@@ -60,4 +61,19 @@ void SceneDirector::LoadModelData() {
 	name = ModelManager::GetInstance()->LoadObj("player.obj", "resources/Game", LoadFileType::OBJ);
 	name = ModelManager::GetInstance()->LoadObj("Confuse.obj", "resources/Star", LoadFileType::OBJ);
 	name = ModelManager::GetInstance()->LoadObj("stone.obj", "resources/Game", LoadFileType::OBJ);
+}
+
+void SceneDirector::LoadTexture() {
+	std::string name;
+	name = TextureManager::GetInstance()->LoadTexture("GridLine.png", "resources");
+	name = TextureManager::GetInstance()->LoadTexture("ulthimaSky.png","resources");
+	name = TextureManager::GetInstance()->LoadTexture("Confuse.png","resources/Star");
+	name = TextureManager::GetInstance()->LoadTexture("bullet.png", "resources");
+	name = TextureManager::GetInstance()->LoadTexture("circle.png", "resources");
+	name = TextureManager::GetInstance()->LoadTexture("Legends_Ground.png", "resources");
+	name = TextureManager::GetInstance()->LoadTexture("GameClear.png", "resources");
+	name = TextureManager::GetInstance()->LoadTexture("GameOver.png", "resources");
+	name = TextureManager::GetInstance()->LoadTexture("Purpose.png", "resources/Title");
+	name = TextureManager::GetInstance()->LoadTexture("UI.png", "resources");
+	name = TextureManager::GetInstance()->LoadTexture("titleBack.png", "resources/Title");
 }

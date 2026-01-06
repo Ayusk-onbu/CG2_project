@@ -4,7 +4,7 @@
 
 void GameOverScene::Initialize() {
 	sprite_ = std::make_unique<SpriteObject>(p_fngine_);
-	sprite_->Initialize(TextureManager::GetInstance()->LoadTexture("resources/GameOver.png"));
+	sprite_->Initialize("GameOver");
 	sprite_->worldTransform_.set_.Translation({ 640.0f,360.0f,0.0f });
 }
 

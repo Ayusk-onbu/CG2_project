@@ -3,7 +3,7 @@
 void Ground::Initialize(Fngine* fngine) {
 	obj_ = std::make_unique<ModelObject>();
 	obj_->modelName_ = "ground";
-	obj_->textureHandle_ = TextureManager::GetInstance()->LoadTexture("resources/Legends_Ground.png");
+	obj_->textureName_ = "Legends_Ground";
 	obj_->Initialize(fngine);
 }
 

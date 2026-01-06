@@ -53,7 +53,7 @@ public:
 	// 位置情報
 	std::list<std::unique_ptr<ParticleData>> info_;
 	// Texture
-	int textureHandle_ = 1;
+	std::string textureName_;
 	std::string input_name_buffer = "";
 	// 色
 	Vector4 color_{};

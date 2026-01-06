@@ -14,7 +14,7 @@ void BossEnemy::Initialize(Fngine* fngine, Player3D* target) {
 
     obj_ = std::make_unique<ModelObject>();
     obj_->modelName_ = "enemy";
-    obj_->textureHandle_ = TextureManager::GetInstance()->LoadTexture("resources/bullet.png");
+    obj_->textureName_ = "bullet";
     obj_->Initialize(fngine);
     obj_->worldTransform_.set_.Translation({ 0.0f,0.0f,30.0f });
     obj_->worldTransform_.set_.Scale({ bossBodyRadius,bossBodyRadius,bossBodyRadius });
@@ -27,7 +27,7 @@ void BossEnemy::Initialize(Fngine* fngine, Player3D* target) {
 
     bodyColliderObj_ = std::make_unique<ModelObject>();
     bodyColliderObj_->modelName_ = "stone";
-    bodyColliderObj_->textureHandle_ = TextureManager::GetInstance()->LoadTexture("resources/GridLine.png");
+    bodyColliderObj_->textureName_ = "GridLine";
     bodyColliderObj_->Initialize(fngine);
     bodyColliderObj_->worldTransform_.set_.Scale({ bossBodyRadius,bossBodyRadius,bossBodyRadius });
     bodyColliderObj_->SetColor({ 0.27f,0.16f,0.0f,1.0f });
@@ -42,10 +42,10 @@ void BossEnemy::Initialize(Fngine* fngine, Player3D* target) {
     // UI関係
     // [ HP ]
     mainHPBar_ = std::make_unique<SpriteObject>(fngine);
-    mainHPBar_->Initialize(TextureManager::GetInstance()->LoadTexture("resources/GridLine.png"), SPRITE_ANCHOR_TYPE::LeftMiddle);
+    mainHPBar_->Initialize("GridLine", SPRITE_ANCHOR_TYPE::LeftMiddle);
     mainHPBar_->worldTransform_.set_.Translation({ 640.0f - 480.0f,670.0f,0.0f });
     subHPBar_ = std::make_unique<SpriteObject>(fngine);
-    subHPBar_->Initialize(mainHPBar_->textureHandle_, SPRITE_ANCHOR_TYPE::LeftMiddle);
+    subHPBar_->Initialize(mainHPBar_->textureName_, SPRITE_ANCHOR_TYPE::LeftMiddle);
     subHPBar_->SetColor({ 1.0f,0.0f,0.0f,1.0f });
     subHPBar_->worldTransform_.set_.Translation(mainHPBar_->worldTransform_.get_.Translation());
 

@@ -17,7 +17,7 @@ void ObjectBase::DrawBase(ObjectDrawType type) {
 	//wvp用のCBufferの場所を設定
 	fngine_->GetCommand().GetList().GetList()->SetGraphicsRootConstantBufferView(1, wvpResource_->GetGPUVirtualAddress());
 	//SRVのDescritorTableの先頭を設定。2はrootParameter[2]である
-	fngine_->GetCommand().GetList().GetList()->SetGraphicsRootDescriptorTable(2, TextureManager::GetInstance()->GetTexture(textureHandle_).GetHandleGPU());
+	fngine_->GetCommand().GetList().GetList()->SetGraphicsRootDescriptorTable(2, TextureManager::GetInstance()->GetTexture(textureName_).GetHandleGPU());
 	//DirectionLight用のCBufferの場所を設定
 	fngine_->GetCommand().GetList().GetList()->SetGraphicsRootConstantBufferView(3, fngine_->GetLight().GetResource()->GetGPUVirtualAddress());
 	// カメラの位置を送るための設定
@@ -92,7 +92,7 @@ void ObjectBase::DrawIndexBase(ObjectDrawType type) {
 	//wvp用のCBufferの場所を設定
 	fngine_->GetCommand().GetList().GetList()->SetGraphicsRootConstantBufferView(1, wvpResource_->GetGPUVirtualAddress());
 	//SRVのDescritorTableの先頭を設定。2はrootParameter[2]である
-	fngine_->GetCommand().GetList().GetList()->SetGraphicsRootDescriptorTable(2, TextureManager::GetInstance()->GetTexture(textureHandle_).GetHandleGPU());
+	fngine_->GetCommand().GetList().GetList()->SetGraphicsRootDescriptorTable(2, TextureManager::GetInstance()->GetTexture(textureName_).GetHandleGPU());
 	//DirectionLight用のCBufferの場所を設定
 	fngine_->GetCommand().GetList().GetList()->SetGraphicsRootConstantBufferView(3, fngine_->GetLight().GetResource()->GetGPUVirtualAddress());
 	// カメラの位置を送るための設定
