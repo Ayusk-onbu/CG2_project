@@ -1,4 +1,5 @@
 #pragma once
+#include "Structures.h"
 
 class BossEnemy; // 前方宣言
 
@@ -106,4 +107,58 @@ public:
 private:
 	float deathTimer_ = 0.0f;           // 演出の経過時間
 	const float maxDeathDuration_ = 3.0f; // 演出の持続時間 (3.0秒)
+};
+
+// Dash Attack
+class BossDashAttackState
+	:public BossState
+{
+public:
+	void Initialize() override;
+	void Update() override;
+	void Exit() override;
+private:
+	enum class DashPhase {
+		Prepare, // 溜め
+		Dash,    // 突進
+		Recover  // 硬直
+	};
+
+	DashPhase phase_ = DashPhase::Prepare;
+	float timer_ = 0.0f;
+	Vector3 dashDirection_;
+
+	// パラメータ
+	const float prepareDuration_ = 1.0f; // 溜め時間
+	const float dashDuration_ = 0.5f;    // 突進時間
+	const float recoverDuration_ = 1.2f; // 終わった後の隙
+	const float dashSpeed_ = 40.0f;      // 突進速度
+};
+
+// Spin Attack
+class BossSpinAttackState
+	:public BossState
+{
+public:
+	void Initialize() override;
+	void Update() override;
+	void Exit() override;
+private:
+	float timer_ = 0.0f;
+	const float maxDuration_ = 1.2f;    // 攻撃全体の時間
+	const float activeStart_ = 0.4f;   // 判定開始
+	const float activeEnd_ = 0.8f;     // 判定終了
+	const float spinRadius_ = 5.0f;    // 回転攻撃の広い半径
+
+	float currentAngle_ = 0.0f;        // 演出用の回転角
+};
+
+class BossRoarState
+	:public BossState
+{
+public:
+	void Initialize() override;
+	void Update() override;
+	void Exit() override;
+private:
 };

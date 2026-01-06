@@ -26,6 +26,9 @@ public:
 	static bool IsJump();
 	static bool IsDash();
 	static bool IsAttack();
+	static bool IsEvasion();
+	static bool TrigerEvasion();
+	static bool IsLockOn();
 private:
 	static Microsoft::WRL::ComPtr<IDirectInput8> directInput_;
 	static Key  key_;

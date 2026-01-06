@@ -1,7 +1,17 @@
 #include "CameraSystem.h"
+#include "ImGuiManager.h"
 
 void CameraSystem::Update() {
 	activeCamera_->Update();
+#ifdef _DEBUG
+	ImGui::Begin("Cameras");
+	for (auto& camera : cameras_) {
+		if (ImGui::Button(camera.first.c_str())) {
+			SetActiveCamera(camera.first);
+		}
+	}
+	ImGui::End();
+#endif// _DEBUG
 }
 
 void CameraSystem::SetActiveCamera(std::string name) {

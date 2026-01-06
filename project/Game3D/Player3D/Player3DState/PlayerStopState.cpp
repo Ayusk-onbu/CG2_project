@@ -3,28 +3,19 @@
 #include "ImGuiManager.h"
 
 void PlayerStopState::Initialize() {
-
+	player_->BlockMove();
+	// 速度を元に戻す(戻っていなかった時の対策)
+	player_->SetSpeedMultiplier(1.0f);
 }
 
 void PlayerStopState::Update() {
 
-	bool isMove = false;
-	if (InputManager::GetKey().PressKey(DIK_W)){isMove = true;}
-	else if (InputManager::GetKey().PressKey(DIK_S)){isMove = true;}
-	else if (InputManager::GetKey().PressKey(DIK_A)){isMove = true;}
-	else if (InputManager::GetKey().PressKey(DIK_D)){isMove = true;}
-
+	bool isMove = player_->IsMoving();
 	bool has_stamina = player_->GetStamina() > 0.0f;
 
 	if (has_stamina == false) {
 		// スタミナ切れ
 		player_->ChangeState(new PlayerExhaustedState());
-		return;
-	}
-
-	if (InputManager::IsJump()) {
-		// ジャンプした
-		player_->ChangeState(new PlayerJumpState());
 		return;
 	}
 	
@@ -33,16 +24,20 @@ void PlayerStopState::Update() {
 		return;
 	}
 
-	if (InputManager::IsDash()) {
+	if (player_->CanDash()) {
 		// 走る
 		player_->ChangeState(new PlayerDashState());
 		return;
 	}
 
-	if (InputManager::IsAttack()) {
+	if (player_->HasAttackBuffer()) {
 		// 攻撃
-		player_->ChangeState(new PlayerAttackState());
+		player_->ChangeState(new PlayerAttackState(0));
 		return;
 	}
 	ImGuiManager::GetInstance()->Text("StopState");
+}
+
+void PlayerStopState::Exit() {
+	player_->UnBlockMove();
 }
