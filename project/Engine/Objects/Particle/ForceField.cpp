@@ -8,17 +8,17 @@
 
 void GravityForceField::Initialize(Fngine* fngine) {
 	obj_ = std::make_unique<ModelObject>();
-	obj_->Initialize(fngine->GetD3D12System(), "debugBlock.obj");
-	obj_->SetFngine(fngine);
-	obj_->textureName_ = 3;
+	obj_->textureName_ = "GridLine";
+	obj_->modelName_ = "debugBlock";
+	obj_->Initialize(fngine);
 }
 
 void GravityForceField::ApplyForce(ParticleData* info) {
 	float deltaTime = 1.0f / 60.0f;
 
 	// 位置情報の取得
-	Vector3 particlePos = info->worldTransform.get_.Translation();
-	Vector3 fieldCenter = worldTransform_.get_.Translation();
+	Vector3 particlePos = info->worldTransform.transform_.translation_;
+	Vector3 fieldCenter = worldTransform_.transform_.translation_;
 
 	// Particleから場中心へのベクトル
 	Vector3 direction = fieldCenter - particlePos;
@@ -65,9 +65,9 @@ void GravityForceField::DrawDebug() {
 
 void PointForceField::Initialize(Fngine* fngine) {
 	obj_ = std::make_unique<ModelObject>();
-	obj_->Initialize(fngine->GetD3D12System(), "bullet.obj");
-	obj_->SetFngine(fngine);
-	obj_->textureName_ = 3;
+	obj_->modelName_ = "bullet";
+	obj_->textureName_ = "GridLine";
+	obj_->Initialize(fngine);
 }
 
 void PointForceField::ApplyForce(ParticleData* info) {

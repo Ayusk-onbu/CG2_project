@@ -44,7 +44,9 @@ void Player3D::Initialize(Fngine* fngine)
 	// [ HP ]
 	mainHPBar_ = std::make_unique<SpriteObject>(fngine);
 	mainHPBar_->Initialize("GridLine", SPRITE_ANCHOR_TYPE::LeftMiddle);
+
 	mainHPBar_->worldTransform_.set_.Translation({ 10.0f,20.0f,0.0f });
+
 	subHPBar_ = std::make_unique<SpriteObject>(fngine);
 	subHPBar_->Initialize("GridLine", SPRITE_ANCHOR_TYPE::LeftMiddle);
 	subHPBar_->SetColor({ 1.0f,0.0f,0.0f,1.0f });

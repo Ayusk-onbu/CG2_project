@@ -47,6 +47,7 @@ void GameScene::Initialize() {
 	playUI_->worldTransform_.set_.Translation({ 1280.0f - 128.0f - 40.0f,64.0f + 50.0f,0.0f });
 	playUI_->worldTransform_.set_.Scale({ 0.65f, 0.65f,0.0f });
 	playUI_->SetColor({ 1.0f,1.0f,1.0f,1.0f });
+
 }
 
 void GameScene::Update(){
@@ -69,6 +70,7 @@ void GameScene::Update(){
 		CollisionCheck();
 
 		ToScene();
+
 	}
 }
 
@@ -83,6 +85,7 @@ void GameScene::Draw() {
 	fadeDown_->Draw();
 	// UI
 	purposeUI_->Draw();
+
 }
 
 void GameScene::CollisionCheck() {

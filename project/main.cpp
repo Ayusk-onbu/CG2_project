@@ -22,7 +22,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	GlobalVariables::GetInstance()->LoadFiles();
 
 	scene->SetUpFngine(*fngine);
-	scene->Initialize(*new TestScene());
+	scene->Initialize(*new GameScene());
 	
 	
 	MSG msg{};

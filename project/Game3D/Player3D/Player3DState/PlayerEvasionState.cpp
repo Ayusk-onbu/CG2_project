@@ -73,24 +73,25 @@ void PlayerEvasionState::Update()
 	// 2. **状態遷移ロジック (終了判定)**
 
 	// --- 回避時間終了 ---
-	if (evasionTimer_ >= EVASION_DURATION)
-	{
-		// 無敵状態を解除
-		player_->SetInvulnerable(false);
-
-		// 速度を元に戻す
-		player_->SetSpeedMultiplier(1.0f);
-
-		// 回転をもとに戻す
-		player_->SetPlayerQuaternion(preQuaternion_);
-
-		// スタミナ回復を解除
-		player_->UnblockStaminaRecovery();
-
+	if (evasionTimer_ >= EVASION_DURATION){
 		// 待機 State に戻る
 		player_->ChangeState(new PlayerStopState());
 		return;
 	}
 
 	ImGuiManager::GetInstance()->Text("EvasionState");
+}
+
+void PlayerEvasionState::Exit() {
+	// 無敵状態を解除
+	player_->SetInvulnerable(false);
+
+	// 速度を元に戻す
+	player_->SetSpeedMultiplier(1.0f);
+
+	// 回転をもとに戻す
+	player_->SetPlayerQuaternion(preQuaternion_);
+
+	// スタミナ回復を解除
+	player_->UnblockStaminaRecovery();
 }

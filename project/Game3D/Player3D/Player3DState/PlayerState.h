@@ -177,7 +177,7 @@ class PlayerEvasionState
 public:
 	void Initialize() override;
 	void Update() override;
-	void Exit() override {} // Exit時は特に処理なし
+	void Exit() override;
 
 private:
 	float evasionTimer_ = 0.0f;               // 回避の経過時間
