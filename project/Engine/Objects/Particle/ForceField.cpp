@@ -37,7 +37,7 @@ void GravityForceField::ApplyForce(ParticleData* info) {
 void GravityForceField::DrawDebug() {
 	Vector3 pos = worldTransform_.get_.Translation();
 	std::string name = "GravityForce" + name_;
-
+#ifdef USE_IMGUI
 	ImGui::Begin(name.c_str());
 	ImGui::DragFloat3("pos", &pos.x);
 	ImGui::DragFloat3("Direction", &direction_.x);
@@ -46,7 +46,7 @@ void GravityForceField::DrawDebug() {
 		isVisible_ = isVisible_ == true ? false : true;
 	}
 	ImGui::End();
-
+#endif
 	worldTransform_.set_.Translation(pos);
 
 	if (isVisible_) {
@@ -100,7 +100,7 @@ void PointForceField::DrawDebug() {
 
 	Vector3 pos = worldTransform_.get_.Translation();
 	std::string name = "PointForce" + name_;
-
+#ifdef USE_IMGUI
 	ImGui::Begin(name.c_str());
 	ImGui::DragFloat3("pos", &pos.x);
 	ImGui::DragFloat("strength", &strength_);
@@ -109,7 +109,7 @@ void PointForceField::DrawDebug() {
 		isVisible_ = isVisible_ == true ? false : true;
 	}
 	ImGui::End();
-
+#endif
 	worldTransform_.set_.Translation(pos);
 
 	if (isVisible_) {

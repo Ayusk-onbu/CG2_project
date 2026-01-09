@@ -50,10 +50,10 @@ void Bullet::Update() {
 		// 死ぬ
 		Dead();
 	}
-#ifdef _DEBUG
+#ifdef USE_IMGUI
 	ImGui::Begin("Bullet");
 	ImGui::End();
-#endif// _DEBUG
+#endif// USE_IMGUI
 }
 
 void Bullet::Draw() {

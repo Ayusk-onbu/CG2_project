@@ -169,14 +169,16 @@ void Particle::Update() {
 
 	}
 	int size = static_cast<int>(info_.size());
+#ifdef USE_IMGUI
 	ImGui::Begin("Particle");
 	ImGui::SliderInt("Num",&size,0,0);
+#endif
 	// 1. 名前の入力フィールド
 	// std::stringのポインタを渡すオーバーロードを使用
 	char buf[128];
 	strncpy_s(buf, sizeof(buf), input_name_buffer.c_str(), _TRUNCATE);
 	buf[sizeof(buf) - 1] = 0; // 確実にNULL終端
-
+#ifdef USE_IMGUI
 	if (ImGui::InputText("Emitter Name", buf, sizeof(buf))) {
 		// 入力が変更されたらstd::stringを更新
 		input_name_buffer = buf;
@@ -191,6 +193,7 @@ void Particle::Update() {
 		AddParticleEmitter(input_name_buffer);
 	}
 	ImGui::End();
+#endif
 }
 
 void Particle::Draw() {
