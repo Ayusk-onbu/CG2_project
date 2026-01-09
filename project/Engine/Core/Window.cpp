@@ -53,9 +53,11 @@ void Window::Initialize(const std::wstring& windowClassName, const std::wstring&
 LRESULT CALLBACK Window::WindowProc(HWND hwnd, UINT msg,
 	WPARAM wparam, LPARAM lparam) {
 	// たぶんImGuiのところで使うからImGuiクラスを作った後
+#ifdef USE_IMGUI
 	if (ImGui_ImplWin32_WndProcHandler(hwnd, msg, wparam, lparam)) {
 		return true;
 	}
+#endif
 
 	//メッセージに応じてゲーム固有の処理を行う
 	switch (msg) {

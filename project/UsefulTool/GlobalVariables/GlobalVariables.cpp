@@ -168,7 +168,7 @@ void GlobalVariables::LoadFiles() {
 }
 
 void GlobalVariables::Update() {
-#ifdef _DEBUG
+#ifdef USE_IMGUI
 	if (!ImGui::Begin("Gloval Variables", nullptr, ImGuiWindowFlags_MenuBar)) {
 
 		ImGui::End();
@@ -220,5 +220,5 @@ void GlobalVariables::Update() {
 	}
 	ImGui::EndMenuBar();
 	ImGui::End();
-#endif// _DEBUG
+#endif// USE_IMGUI
 }

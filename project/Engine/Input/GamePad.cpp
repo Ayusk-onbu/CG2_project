@@ -14,7 +14,7 @@ void GamePad::Update() {
     ZeroMemory(&state_, sizeof(XINPUT_STATE));
     DWORD result = XInputGetState(controllerIndex_, &state_);
     isConnected_ = (result == ERROR_SUCCESS);
-#ifdef _DEBUG
+#ifdef USE_IMGUI
     ImGui::Begin("GamePad");
 	float rightStickX = static_cast<float>(GetRightStickX());
 	ImGui::DragFloat("RightStickX", &rightStickX, 0.01f, -1.0f, 1.0f);

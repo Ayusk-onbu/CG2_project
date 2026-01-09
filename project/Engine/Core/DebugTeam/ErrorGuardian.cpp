@@ -29,7 +29,7 @@ LONG WINAPI ErrorGuardian::ExportDump(EXCEPTION_POINTERS* exception) {
 }
 
 void ErrorGuardian::SetDebugInterface() {
-#ifdef _DEBUG
+#ifdef USE_IMGUI
 	debugController_ = nullptr;
 	if (SUCCEEDED(D3D12GetDebugInterface(IID_PPV_ARGS(&debugController_)))) {
 		//でばっふレイヤーを有効かする
@@ -41,7 +41,7 @@ void ErrorGuardian::SetDebugInterface() {
 }
 
 void ErrorGuardian::SetQueue(Microsoft::WRL::ComPtr <ID3D12Device>& device) {
-#ifdef _DEBUG
+#ifdef USE_IMGUI
 	if (SUCCEEDED(device->QueryInterface(IID_PPV_ARGS(&infoQueue_)))) {
 		//やばいエラー時に止まる
 		infoQueue_->SetBreakOnSeverity(D3D12_MESSAGE_SEVERITY_CORRUPTION, true);

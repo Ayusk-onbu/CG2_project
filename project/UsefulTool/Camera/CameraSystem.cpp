@@ -3,7 +3,7 @@
 
 void CameraSystem::Update() {
 	activeCamera_->Update();
-#ifdef _DEBUG
+#ifdef USE_IMGUI
 	ImGui::Begin("Cameras");
 	for (auto& camera : cameras_) {
 		if (ImGui::Button(camera.first.c_str())) {
@@ -11,7 +11,7 @@ void CameraSystem::Update() {
 		}
 	}
 	ImGui::End();
-#endif// _DEBUG
+#endif// USE_IMGUI
 }
 
 void CameraSystem::SetActiveCamera(std::string name) {
