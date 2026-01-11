@@ -9,6 +9,7 @@ SceneDirector::~SceneDirector() {
 void SceneDirector::Initialize(Scene& firstScene) {
 	LoadModelData();
 	LoadTexture();
+	LoadMusic();
 
 	currentScene_ = &firstScene;
 	currentScene_->FngineSetUp(*p_fngine_);
@@ -78,4 +79,9 @@ void SceneDirector::LoadTexture() {
 	name = TextureManager::GetInstance()->LoadTexture("Purpose.png", "resources/Title");
 	name = TextureManager::GetInstance()->LoadTexture("UI.png", "resources");
 	name = TextureManager::GetInstance()->LoadTexture("titleBack.png", "resources/Title");
+}
+
+void SceneDirector::LoadMusic() {
+	std::string name;
+	name = Music::GetInstance()->LoadSE("loop101204.wav", "resources");
 }

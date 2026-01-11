@@ -18,10 +18,12 @@ Fngine::~Fngine() {
 
 	ModelManager::GetInstance()->ReleaseInstance();
 
+	Music::GetInstance()->UnLoad();
+
 	PSOManager::GetInstance()->ReleaseInstance();
 	//解放処理
 	tachyonSync_.GetCGPU().UnLoad();
-	music_.UnLoad();
+	
 
 #ifdef _DEBUG
 	//debugController->Release();
@@ -227,12 +229,11 @@ void Fngine::Initialize() {
 	scissorRect_.top = 0;
 	scissorRect_.bottom = window_.GetWindowRect().bottom;
 
-	music_.Initialize();
-
 	InputManager::Initialize(window_.GetWindowClass(), window_.GetHwnd());
 	ImGuiManager::GetInstance()->SetImGui(window_.GetHwnd(), d3d12_.GetDevice().Get(), srv_.GetDescriptorHeap().GetHeap().Get());
 	ModelManager::GetInstance()->Initialize(this);
 	TextureManager::GetInstance()->Initialize(*this);
+	Music::GetInstance()->Initialize();
 	Chronos::GetInstance()->Initialize();
 	RandomUtils::GetInstance()->Initialize();
 

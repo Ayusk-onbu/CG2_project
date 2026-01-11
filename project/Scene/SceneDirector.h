@@ -19,6 +19,7 @@ public:
 private:
 	void LoadModelData();
 	void LoadTexture();
+	void LoadMusic();
 private:
 	Fngine* p_fngine_;
 	Scene* currentScene_;

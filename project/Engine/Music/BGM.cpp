@@ -1,26 +1,26 @@
 #include "BGM.h"
 
-void BGM::LoadWAVE(const char* filename) {
-	soundWaveData_ = SoundLoadWave(filename);
-}
-
-void BGM::SetPlayAudioBuf() {
-#pragma region 再生する波形データの設定
+void BGM::Play(const std::string& filename) {
+	data_ = Audio::LoadWave(filename);
+	// 再生
+	HRESULT result;
+	result = xAudio2_->CreateSourceVoice(&pSourceVoice_, &data_.wfex);
+	assert(SUCCEEDED(result));
 	XAUDIO2_BUFFER buf{};
-	buf.pAudioData = soundWaveData_.pBuffer;
-	buf.AudioBytes = soundWaveData_.bufferSize;
+	buf.pAudioData = data_.pBuffer;
+	buf.AudioBytes = data_.bufferSize;
 	buf.Flags = XAUDIO2_END_OF_STREAM;
 	buf.LoopCount = XAUDIO2_LOOP_INFINITE;
-#pragma endregion
-	// 再生
-	PlayAudioWAVE(buf);
+	result = pSourceVoice_->SubmitSourceBuffer(&buf);
+	pSourceVoice_->SetVolume(volume_);
+	result = pSourceVoice_->Start();
 }
 
-//void BGM::SetAudioBuf(XAUDIO2_BUFFER& buf) {
-//#pragma region 再生する波形データの設定
-//	buf.pAudioData = soundWaveData_.pBuffer;
-//	buf.AudioBytes = soundWaveData_.bufferSize;
-//	buf.Flags = XAUDIO2_END_OF_STREAM;
-//	buf.LoopCount = XAUDIO2_LOOP_INFINITE;
-//#pragma endregion
-//}
+void BGM::Stop() {
+	HRESULT result;
+	result = pSourceVoice_->Stop();
+}
+
+void BGM::SetVolume(float volume) {
+	volume_ = volume;
+}
