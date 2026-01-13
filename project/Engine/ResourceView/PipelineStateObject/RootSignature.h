@@ -8,6 +8,7 @@ enum class ROOTTYPE {
 	Normal,
 	Structured,
 	Skinning,
+	CopyImage,
 };
 
 class RootSignature

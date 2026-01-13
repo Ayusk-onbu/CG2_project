@@ -15,7 +15,8 @@ void BlendState::SetBlendMode(BLENDMODE blendMode) {
 	else if (BLENDMODE::None == blendMode_) {
 		D3D12_BLEND_DESC blendDesc = {};
 		blendDesc_ = blendDesc;
-		blendDesc_.RenderTarget[0].BlendEnable = TRUE;
+		blendDesc_.RenderTarget[0].DestBlendAlpha = D3D12_BLEND_ONE;
+		blendDesc_.RenderTarget[0].BlendEnable = FALSE;
 	}
 	else if (BLENDMODE::Additive == blendMode_) {
 		blendDesc_.RenderTarget[0].BlendEnable = TRUE;
@@ -46,7 +47,7 @@ void BlendState::SetBlendMode(BLENDMODE blendMode) {
 void BlendState::Initialize(USECOLOR color) {
 	if (color == USECOLOR::All) {
 		blendDesc_.RenderTarget[0].RenderTargetWriteMask = D3D12_COLOR_WRITE_ENABLE_ALL;
-		SetBlendMode(BLENDMODE::ScreenBlend);
+		SetBlendMode(BLENDMODE::AlphaBlend);
 	}
 }
 

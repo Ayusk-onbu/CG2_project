@@ -47,14 +47,16 @@ void PipelineStateObject::Initialize(
 
 	case PSOTYPE::Line:
 
-	case PSOTYPE::OffScreen:
-
 		// ここはLayoutを外部で設定して適用できるように変更した
 		inputLayoutDesc_.Initialize(Layout_FullMesh, _countof(Layout_FullMesh));
 		break;
 	case PSOTYPE::Skinning:
 
 		inputLayoutDesc_.Initialize(Layout_FullSkinningMesh, _countof(Layout_FullSkinningMesh));
+		break;
+
+	case PSOTYPE::CopyImage:
+		inputLayoutDesc_.Initialize(nullptr, 0);
 		break;
 	}
 

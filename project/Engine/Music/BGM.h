@@ -9,6 +9,10 @@ public:
 	void Stop();
 	void SetVolume(float volume);
 	void Unload() {
+		if (data_.pBuffer == nullptr) {
+			// データがないから解放するものがないので無視
+			return;
+		}
 		// バッファメモリの開放
 		delete[] data_.pBuffer;
 		data_.pBuffer = 0;

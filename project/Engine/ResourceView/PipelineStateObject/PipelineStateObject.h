@@ -16,9 +16,9 @@ enum class PIPELINETYPE {
 
 enum class PSOTYPE {
 	Normal,
-	OffScreen,
 	Line,
 	Skinning,
+	CopyImage,
 };
 
 class PipelineStateObject

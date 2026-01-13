@@ -18,12 +18,12 @@ public:
 	void Initialize();
 	void UnLoad();
 public:
-	BGM& GetBGM() { return bgm_; }
+	BGM& GetBGM() { return *bgm_.get(); }
 	void PlaySE(const std::string& name);
 	std::string LoadSE(const std::string& filename, const std::string& path);
 private:
 	static std::unique_ptr<Music>instance_;
-	BGM bgm_;
+	std::unique_ptr<BGM> bgm_;
 	std::unordered_map<std::string, std::unique_ptr<SE>>SEs_;
 };
 

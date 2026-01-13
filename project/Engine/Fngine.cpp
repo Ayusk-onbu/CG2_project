@@ -23,7 +23,7 @@ Fngine::~Fngine() {
 	PSOManager::GetInstance()->ReleaseInstance();
 	//解放処理
 	tachyonSync_.GetCGPU().UnLoad();
-	
+
 
 #ifdef _DEBUG
 	//debugController->Release();
@@ -161,6 +161,33 @@ void Fngine::SettingShader() {
 		},
 		"SkinningObject3D"
 	);
+
+	PSOManager::GetInstance()->CreateNewPSO
+	(
+		{
+			PIPELINETYPE::Graphics,
+			ROOTTYPE::CopyImage,
+			PSOTYPE::CopyImage,
+		 {
+			L"resources/shaders/CopyImage/CopyImage.VS.hlsl",
+			L"resources/shaders/CopyImage/CopyImage.PS.hlsl",
+			L"",
+			L"vs_6_0",
+			L"ps_6_0",
+			L""
+		 },
+		 {
+			 D3D12_CULL_MODE_BACK,
+			 D3D12_FILL_MODE_SOLID,
+			 FALSE,
+			 0,
+			 0.0f
+		 },
+		false
+		},
+		"CopyImage"
+	);
+	PSOManager::GetInstance()->GetPSO("CopyImage").SetBlendState(BLENDMODE::Multiplicative);
 }
 
 void Fngine::Initialize() {
@@ -198,10 +225,10 @@ void Fngine::Initialize() {
 		Log::ViewFile("CreateCommandList failed!!!\n");
 	}
 	swapChain_.Initialize(window_);
-	dxgi_.AssignTaskToEngineer(command_.GetQueue().GetQueue(), window_,swapChain_);
+	dxgi_.AssignTaskToEngineer(command_.GetQueue().GetQueue(), window_, swapChain_);
 	swapChain_.MakeResource();
 	srv_.InitializeHeap(d3d12_);
-	rtv_.Initialize(&d3d12_,swapChain_);
+	rtv_.Initialize(&d3d12_, swapChain_);
 	dsv_.InitializeHeap(d3d12_);
 	dsv_.MakeResource(d3d12_, kClienWidth_, kClienHeight_);
 	d3d12_.GetDevice()->CreateDepthStencilView(dsv_.GetResource().Get(), &dsv_.GetDSVDesc(), dsv_.GetHeap().GetHeap()->GetCPUDescriptorHandleForHeapStart());
@@ -209,12 +236,11 @@ void Fngine::Initialize() {
 
 
 	dxc_.Initialize();
-	
-	PSOManager::GetInstance()->Initialize(this);
 
+	PSOManager::GetInstance()->Initialize(this);
 	SettingShader();
 
-	osr_.Initialize(d3d12_,srv_, float(kClienWidth_), float(kClienHeight_));
+	osr_.Initialize(d3d12_, srv_, float(kClienWidth_), float(kClienHeight_));
 
 	// こいつらはなに？キモい
 	viewport_.Width = static_cast<float>(window_.GetWindowRect().right);
@@ -244,11 +270,24 @@ void Fngine::Initialize() {
 }
 
 void Fngine::BeginOSRFrame() {
-
+	ResourceBarrier barrierO = {};
+	barrierO.SetBarrier(command_.GetList().GetList().Get(), osr_.GetResource().Get(),
+		D3D12_RESOURCE_STATE_COMMON, D3D12_RESOURCE_STATE_RENDER_TARGET);
+	osr_.Begin(command_);
+	ID3D12DescriptorHeap* descriptorHeaps[] = { srv_.GetDescriptorHeap().GetHeap().Get() };
+	command_.GetList().GetList()->SetDescriptorHeaps(1, descriptorHeaps);
+	/////////////////////////////////////////////////////////////////////////
+	//描画0200
+	command_.GetList().GetList()->RSSetViewports(1, &viewport_);
+	command_.GetList().GetList()->RSSetScissorRects(1, &scissorRect_);
 }
 
 void Fngine::EndOSRFrame() {
-
+	//osr_.End(command_);
+	ResourceBarrier barrier = {};
+	//barrier.SetTransition(command_.GetList().GetList().Get(), D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT);
+	barrier.SetBarrier(command_.GetList().GetList().Get(), osr_.GetResource().Get(),
+		D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT);
 }
 
 void Fngine::BeginFrame() {
@@ -258,13 +297,11 @@ void Fngine::BeginFrame() {
 	barrier.SetBarrier(command_.GetList().GetList().Get(), swapChain_.GetResource(backBufferIndex).Get(),
 		D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET);
 
-	//描画先のRTVを設定する
-	//command_.GetList().GetList()->OMSetRenderTargets(1, &rtv.GetHandle(backBufferIndex), false, nullptr);
 	//描画先のRTVとDSVを設定する
 	D3D12_CPU_DESCRIPTOR_HANDLE dsvHandle = dsv_.GetHeap().GetHeap()->GetCPUDescriptorHandleForHeapStart();
 	command_.GetList().GetList()->OMSetRenderTargets(1, &rtv_.GetHandle(backBufferIndex), false, &dsvHandle);
 	//指定した色で画面全体をクリアする
-	float clearColor[] = { 0.1f,0.25f,0.5f,1.0f };//RGBAの設定
+	float clearColor[] = { 1.0f,1.0f,1.0f,0.0f };//RGBAの設定
 	command_.GetList().GetList()->ClearDepthStencilView(dsvHandle, D3D12_CLEAR_FLAG_DEPTH, 1.0f, 0, 0, nullptr);//
 	command_.GetList().GetList()->ClearRenderTargetView(rtv_.GetHandle(backBufferIndex), clearColor, 0, nullptr);
 
@@ -277,6 +314,13 @@ void Fngine::BeginFrame() {
 }
 
 void Fngine::EndFrame() {
+	command_.GetList().GetList()->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+	command_.GetList().GetList()->SetGraphicsRootSignature(PSOManager::GetInstance()->GetPSO("CopyImage").GetRootSignature().GetRS().Get());
+	command_.GetList().GetList()->SetPipelineState(PSOManager::GetInstance()->GetPSO("CopyImage").GetGPS().Get());
+	//SRVのDescritorTableの先頭を設定。0はrootParameter[0]である
+	command_.GetList().GetList()->SetGraphicsRootDescriptorTable(0, osr_.GetHandleGPU());
+	command_.GetList().GetList()->DrawInstanced(3, 1, 0, 0);
+
 	ImGuiManager::GetInstance()->EndFrame(command_.GetList().GetList());
 	//barrierO.SetTransition(command.GetList().GetList().Get(), D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_COMMON);
 	UINT backBufferIndex = swapChain_.GetSwapChain()->GetCurrentBackBufferIndex();

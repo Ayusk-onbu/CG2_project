@@ -9,7 +9,7 @@ void Music::Initialize() {
 
 void Music::UnLoad() {
 	Audio::Finalize();
-	bgm_.Unload();
+	if(bgm_)bgm_->Unload();
 	for (auto& se : SEs_) {
 		se.second->Unload();
 	}

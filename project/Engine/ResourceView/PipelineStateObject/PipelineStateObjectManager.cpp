@@ -61,6 +61,11 @@ void PipelineStateObjectManager::ImGui() {
                 }
                 ImGui::SameLine(); // 次のボタンを同じ行に配置
 
+                if (ImGui::Button("None")) {
+                    PSOManager::GetInstance()->GetPSO(pso.first.c_str()).SetBlendState(BLENDMODE::None);
+                }
+                ImGui::SameLine(); // 次のボタンを同じ行に配置
+
                 if (ImGui::Button("Add")) {
                     PSOManager::GetInstance()->GetPSO(pso.first.c_str()).SetBlendState(BLENDMODE::Additive);
                 }

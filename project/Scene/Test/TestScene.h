@@ -26,5 +26,6 @@ private:
 	std::unique_ptr<Player3D>player_;
 	std::unique_ptr<SpriteObject>title_;
 	std::unique_ptr<SpriteObject>fade_;
+	std::unique_ptr<Particle>particle_;
 };
 

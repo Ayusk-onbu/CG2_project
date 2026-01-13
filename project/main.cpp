@@ -22,8 +22,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	GlobalVariables::GetInstance()->LoadFiles();
 
 	scene->SetUpFngine(*fngine);
-	scene->Initialize(*new GameScene());
-	
+	scene->Initialize(*new TestScene());
 	
 	MSG msg{};
 
@@ -42,28 +41,12 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			ImGuiManager::GetInstance()->BeginFrame();
 			InputManager::Update();
 			GlobalVariables::GetInstance()->Update();
-#pragma region OffScreenRendering
-			/*ResourceBarrier barrierO = {};
-			barrierO.SetBarrier(command.GetList().GetList().Get(), osr.GetResource().Get(),
-				D3D12_RESOURCE_STATE_COMMON, D3D12_RESOURCE_STATE_RENDER_TARGET);
-			osr.Begin(command);*/
-			//ID3D12DescriptorHeap* descriptorHeaps[] = { SRV::descriptorHeap_.GetHeap().Get() };
-			//command.GetList().GetList()->SetDescriptorHeaps(1, descriptorHeaps);
-			///////////////////////////////////////////////////////////////////////////
-			////描画0200
-			//command.GetList().GetList()->RSSetViewports(1, &viewport);
-			//command.GetList().GetList()->RSSetScissorRects(1, &scissorRect);
 
-			
-
-			//model.SetWVPData(debugCamera.DrawMirrorCamera(worldMatrix, transformSprite.translate, {0.0f,0.0f,-1.0f}), worldMatrix, uvTransformMatrix);
-
-			//model.Draw(command, pso, light, tex);
-
-			//barrierO.SetTransition(command.GetList().GetList().Get(), D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
-#pragma endregion
-			fngine->BeginFrame();
+			fngine->BeginOSRFrame();
 			scene->Run();
+			fngine->EndOSRFrame();
+			fngine->BeginFrame();
+
 			ImGuiManager::GetInstance()->DrawAll();
 			fngine->EndFrame();
 		}

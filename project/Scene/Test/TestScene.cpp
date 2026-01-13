@@ -27,10 +27,15 @@ void TestScene::Initialize() {
 	fade_->SetColor({ 0.0f,0.0f,0.0f,0.0f });
 
 	toGameTimer_ = 0.0f;
+
+	particle_ = std::make_unique<Particle>(p_fngine_);
+	particle_->Initialize(1000);
 }
 
 void TestScene::Update() {
 	//player_->Update();
+
+	particle_->Update();
 
 	if (InputManager::IsJump()) {
 		hasRequestedNextScene_ = true;
@@ -49,7 +54,10 @@ void TestScene::Update() {
 }
 
 void TestScene::Draw() {
+	
+	particle_->Draw();
+	
 	//player_->Draw();
-	title_->Draw();
-	fade_->Draw();
+	//title_->Draw();
+	//fade_->Draw();
 }
