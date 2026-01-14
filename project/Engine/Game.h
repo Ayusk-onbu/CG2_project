@@ -1,5 +1,6 @@
 #pragma once
 #include "Fngine.h"
+#include "WinApp.h"
 #include "D3D12ResourceLeakChecker.h"
 #include "Chronos.h"
 #include "SceneDirector.h"
@@ -22,6 +23,7 @@ public:
 	bool IsEnd() { return endRequest_; }
 private:
 	std::unique_ptr<Fngine> fngine_ = nullptr;
+	std::unique_ptr<WinApp> winApp_ = nullptr;
 	std::unique_ptr<SceneDirector> scene_ = nullptr;
 	bool endRequest_ = false;
 };

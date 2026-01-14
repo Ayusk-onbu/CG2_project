@@ -1,5 +1,4 @@
 #include "Game.h"
-#include "WinApp.h"
 
 // windowsアプリでのエントリーポイント（main関数）
 int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
@@ -7,10 +6,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	
 	std::unique_ptr<Game>game = std::make_unique<Game>();
 	game->Initialize();
-	std::unique_ptr<WinApp> winApp = std::make_unique<WinApp>();
 
 	while (true) {
-		if (winApp->ProcessMessage() || game->IsEnd()) {
+		if (game->IsEnd()) {
 			break;
 		}
 		game->Run();

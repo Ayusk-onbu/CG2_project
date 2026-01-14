@@ -2,6 +2,7 @@
 
 void Game::Initialize() {
 	fngine_ = std::make_unique<Fngine>();
+	winApp_ = std::make_unique<WinApp>();
 	scene_ = std::make_unique<SceneDirector>();
 	fngine_->Initialize();
 	GlobalVariables::GetInstance()->LoadFiles();
@@ -10,6 +11,10 @@ void Game::Initialize() {
 }
 
 void Game::Run() {
+	if (winApp_->ProcessMessage()) {
+		endRequest_ = true;
+	}
+
 	ImGuiManager::GetInstance()->BeginFrame();
 	InputManager::Update();
 	GlobalVariables::GetInstance()->Update();
