@@ -10,12 +10,22 @@ static const D3D12_INPUT_ELEMENT_DESC Layout_FullMesh[] = {
 	{ "NORMAL",   0, DXGI_FORMAT_R32G32B32_FLOAT,    0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 }
 };
 
+static const D3D12_INPUT_ELEMENT_DESC Layout_FullSkinningMesh[] = {
+	{ "POSITION", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
+	{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
+	{ "NORMAL",   0, DXGI_FORMAT_R32G32B32_FLOAT,    0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
+	{ "WEIGHT",   0, DXGI_FORMAT_R32G32B32A32_FLOAT, 1, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0},
+	{ "INDEX",    0, DXGI_FORMAT_R32G32B32A32_SINT,  1, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0}
+};
+
 void PipelineStateObject::Initialize(
 	Fngine* fngine,
 	PIPELINETYPE pipelineType,
 	PSOTYPE psoType,
 	ROOTTYPE rootType,
 	RasterizerSettings rasterSettings,
+	// Depth
+	bool depthFlag,
 	//CompilerするShaderファイルへのパス
 	const std::wstring& vsFilePath,
 	//Compilerに使用するProfile
@@ -37,10 +47,16 @@ void PipelineStateObject::Initialize(
 
 	case PSOTYPE::Line:
 
-	case PSOTYPE::OffScreen:
-
 		// ここはLayoutを外部で設定して適用できるように変更した
 		inputLayoutDesc_.Initialize(Layout_FullMesh, _countof(Layout_FullMesh));
+		break;
+	case PSOTYPE::Skinning:
+
+		inputLayoutDesc_.Initialize(Layout_FullSkinningMesh, _countof(Layout_FullSkinningMesh));
+		break;
+
+	case PSOTYPE::CopyImage:
+		inputLayoutDesc_.Initialize(nullptr, 0);
 		break;
 	}
 
@@ -60,7 +76,7 @@ void PipelineStateObject::Initialize(
 	MargeDesc();
 
 	// depthStencil
-	depthStencil_.InitializeDesc();
+	depthStencil_.InitializeDesc(depthFlag);
 
 	// 
 	SetDesc(fngine->GetD3D12System(), psoType);

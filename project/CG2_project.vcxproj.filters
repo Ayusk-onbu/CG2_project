@@ -169,6 +169,24 @@
     <Filter Include="UsefulTool\GlobalVariables">
       <UniqueIdentifier>{3ebde07e-b7c4-4d82-b881-01ea3b6c8463}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Common\MathUtils\Physics\GJK">
+      <UniqueIdentifier>{6e0c8eda-2e64-46f4-bbb8-f89af464a263}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="UsefulTool\Animation">
+      <UniqueIdentifier>{48994a07-42e4-4474-a1ef-a6eb1683d600}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="UsefulTool\Animation\Keyframe">
+      <UniqueIdentifier>{eb8a8c6f-3ece-45d9-a987-d1bca278c148}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="resources\shaders\SkinningObject3d">
+      <UniqueIdentifier>{768110a9-3e68-4c94-8c11-0ab15faa5fa3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Game3D\Player3D\Player3DCommand">
+      <UniqueIdentifier>{95d85004-aebf-4ac3-ac33-0c8080cdab73}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Game3D\Other">
+      <UniqueIdentifier>{35ecde88-901f-43bb-8144-b5394c6b2065}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -513,6 +531,57 @@
     <ClCompile Include="UsefulTool\GlobalVariables\GlobalVariables.cpp">
       <Filter>UsefulTool\GlobalVariables</Filter>
     </ClCompile>
+    <ClCompile Include="Common\MathUtils\Physics\GJK\GJK.cpp">
+      <Filter>Common\MathUtils\Physics\GJK</Filter>
+    </ClCompile>
+    <ClCompile Include="UsefulTool\Animation\Keyframe\Keyframe.cpp">
+      <Filter>UsefulTool\Animation\Keyframe</Filter>
+    </ClCompile>
+    <ClCompile Include="UsefulTool\Animation\Animation.cpp">
+      <Filter>UsefulTool\Animation</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\Objects\Model\Skeleton.cpp">
+      <Filter>Engine\Objects\Model</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\Objects\Model\Joint.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\Objects\Model\SkinCluster.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="UsefulTool\Camera\CameraController\GameCameraController.cpp">
+      <Filter>UsefulTool\Camera\CameraController</Filter>
+    </ClCompile>
+    <ClCompile Include="Game3D\Player3D\Player3DCommand\Player3DCommand.cpp">
+      <Filter>Game3D\Player3D\Player3DCommand</Filter>
+    </ClCompile>
+    <ClCompile Include="Game3D\Player3D\Player3DCommand\PlayerInputHandler.cpp">
+      <Filter>Game3D\Player3D\Player3DCommand</Filter>
+    </ClCompile>
+    <ClCompile Include="Game3D\Player3D\Player3DState\PlayerStepEvasionState.cpp">
+      <Filter>Game3D\Player3D\PlayerState</Filter>
+    </ClCompile>
+    <ClCompile Include="Game3D\Player3D\Player3DState\PlayerJustEvasionState.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="Game3D\Enemy\EnemyState\BossDashAttackState.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="Game3D\Enemy\EnemyState\BossSpinAttackState.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="Game3D\Enemy\EnemyState\BossRoarState.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="Game3D\Other\Ground.cpp">
+      <Filter>Game3D\Other</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\Game.cpp">
+      <Filter>Engine</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\WinApp.cpp">
+      <Filter>Engine</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="externals\imgui\imconfig.h">
@@ -827,6 +896,30 @@
     <ClInclude Include="UsefulTool\GlobalVariables\GlobalVariables.h">
       <Filter>UsefulTool\GlobalVariables</Filter>
     </ClInclude>
+    <ClInclude Include="Common\MathUtils\Physics\GJK\GJK.h">
+      <Filter>Common\MathUtils\Physics\GJK</Filter>
+    </ClInclude>
+    <ClInclude Include="UsefulTool\Animation\Keyframe\Keyframe.h">
+      <Filter>UsefulTool\Animation\Keyframe</Filter>
+    </ClInclude>
+    <ClInclude Include="UsefulTool\Animation\Animation.h">
+      <Filter>UsefulTool\Animation</Filter>
+    </ClInclude>
+    <ClInclude Include="Game3D\Player3D\Player3DCommand\Player3DCommand.h">
+      <Filter>Game3D\Player3D\Player3DCommand</Filter>
+    </ClInclude>
+    <ClInclude Include="Game3D\Player3D\Player3DCommand\PlayerInputHandler.h">
+      <Filter>Game3D\Player3D\Player3DCommand</Filter>
+    </ClInclude>
+    <ClInclude Include="Game3D\Other\Ground.h">
+      <Filter>Game3D\Other</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Game.h">
+      <Filter>Engine</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\WinApp.h">
+      <Filter>Engine</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Text Include="externals\imgui\LICENSE.txt">
@@ -840,6 +933,10 @@
     <None Include="resources\shaders\Particle\Particle.hlsli">
       <Filter>resources\shaders\Particle</Filter>
     </None>
+    <None Include="resources\shaders\SkinningObject3d\SkinningObject3d.hlsli">
+      <Filter>resources\shaders\SkinningObject3d</Filter>
+    </None>
+    <None Include="resources\shaders\CopyImage\CopyImage.hlsli" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="resources\shaders\Object3d\Object3d.VS.hlsl">
@@ -853,6 +950,12 @@
     </FxCompile>
     <FxCompile Include="resources\shaders\Particle\Particle.VS.hlsl">
       <Filter>resources\shaders\Particle</Filter>
+    </FxCompile>
+    <FxCompile Include="resources\shaders\SkinningObject3d\SkinningObject3d.PS.hlsl">
+      <Filter>resources\shaders\SkinningObject3d</Filter>
+    </FxCompile>
+    <FxCompile Include="resources\shaders\SkinningObject3d\SkinningObject3d.VS.hlsl">
+      <Filter>resources\shaders\SkinningObject3d</Filter>
     </FxCompile>
   </ItemGroup>
 </Project>

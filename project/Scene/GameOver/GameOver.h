@@ -16,7 +16,6 @@ public:// Sceneにまつわる関数
 	void Draw()override;
 private:
 	//SpriteObject sprite_;
-	WorldTransform world_;
-	int textureHandle_ = -1;
+	std::unique_ptr<SpriteObject>sprite_;
 	bool isTrans_ = false;
 };

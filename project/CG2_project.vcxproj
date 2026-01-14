@@ -76,14 +76,14 @@
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_DEBUG;_WINDOWS;USE_IMGUI;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <AdditionalOptions>/utf-8 %(AdditionalOptions)</AdditionalOptions>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <TreatWarningAsError>true</TreatWarningAsError>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
-      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)Engine\Music;$(ProjectDir)Engine\Input;$(ProjectDir)Common;$(ProjectDir)Common\Structure\Vector;$(ProjectDir)Common\Structure\Matrix;$(ProjectDir)Common\MathUtils;$(ProjectDir)Common\Structure\Advanced;$(ProjectDir)Common\Functions;$(ProjectDir)Engine\Core;$(ProjectDir)Engine\Core\Command;$(ProjectDir)Engine\Core\DebugTeam;$(ProjectDir)Engine\ResourceView;$(ProjectDir)Engine\ResourceView\PipelineStateObject;$(ProjectDir)Engine\Objects;$(ProjectDir)Engine\Objects\Model;$(ProjectDir)Engine\Objects\Primitive;$(ProjectDir)Engine\Objects\Particle;$(ProjectDir)UsefulTool\Time;$(ProjectDir)UsefulTool\Camera;$(ProjectDir)UsefulTool\Light;$(ProjectDir)UsefulTool\Light\SpotLight;$(ProjectDir)UsefulTool\Light\PointLight;$(ProjectDir)UsefulTool\OSR;$(ProjectDir)UsefulTool\Easing;$(ProjectDir)UsefulTool\GridLine;$(ProjectDir)UsefulTool\GlobalVariables;$(ProjectDir)Scene;$(ProjectDir)UsefulTool\Random;$(ProjectDir)Common\MathUtils\Phisycs;$(ProjectDir)Common\MathUtils\Physics\Collider;$(ProjectDir)Scene\Game;$(ProjectDir)Scene\Test;$(ProjectDir)Common\MathUtils\Quaternion;$(ProjectDir)Game3D;$(ProjectDir)Game3D\Player3D;$(ProjectDir)Engine\ResourceView\Texture;$(ProjectDir)UsefulTool\Camera\CameraController;$(ProjectDir)Engine;$(ProjectDir)Common\Structure;$(ProjectDir)Game3D\Player3D\Player3DState;$(ProjectDir)Game3D\Enemy;$(ProjectDir)Game3D\Enemy\EnemyState;$(ProjectDir)Game3D\Bullet;$(ProjectDir)Scene\Clear;$(ProjectDir)Scene\GameOver;$(ProjectDir)externals\assimp\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)Engine\Music;$(ProjectDir)Engine\Input;$(ProjectDir)Common;$(ProjectDir)Common\Structure\Vector;$(ProjectDir)Common\Structure\Matrix;$(ProjectDir)Common\MathUtils;$(ProjectDir)Common\Structure\Advanced;$(ProjectDir)Common\Functions;$(ProjectDir)Engine\Core;$(ProjectDir)Engine\Core\Command;$(ProjectDir)Engine\Core\DebugTeam;$(ProjectDir)Engine\ResourceView;$(ProjectDir)Engine\ResourceView\PipelineStateObject;$(ProjectDir)Engine\Objects;$(ProjectDir)Engine\Objects\Model;$(ProjectDir)Engine\Objects\Primitive;$(ProjectDir)Engine\Objects\Particle;$(ProjectDir)UsefulTool\Time;$(ProjectDir)UsefulTool\Camera;$(ProjectDir)UsefulTool\Light;$(ProjectDir)UsefulTool\Light\SpotLight;$(ProjectDir)UsefulTool\Light\PointLight;$(ProjectDir)UsefulTool\OSR;$(ProjectDir)UsefulTool\Easing;$(ProjectDir)UsefulTool\GridLine;$(ProjectDir)UsefulTool\GlobalVariables;$(ProjectDir)UsefulTool\Animation;$(ProjectDir)UsefulTool\Animation\Keyframe;$(ProjectDir)Scene;$(ProjectDir)UsefulTool\Random;$(ProjectDir)Common\MathUtils\Phisycs;$(ProjectDir)Common\MathUtils\Physics\GJK;$(ProjectDir)Common\MathUtils\Physics\Collider;$(ProjectDir)Scene\Game;$(ProjectDir)Scene\Test;$(ProjectDir)Common\MathUtils\Quaternion;$(ProjectDir)Game3D;$(ProjectDir)Game3D\Player3D;$(ProjectDir)Game3D\Player3D\Player3DCommand;$(ProjectDir)Engine\ResourceView\Texture;$(ProjectDir)UsefulTool\Camera\CameraController;$(ProjectDir)Engine;$(ProjectDir)Common\Structure;$(ProjectDir)Game3D\Player3D\Player3DState;$(ProjectDir)Game3D\Enemy;$(ProjectDir)Game3D\Enemy\EnemyState;$(ProjectDir)Game3D\Bullet;$(ProjectDir)Game3D\Other;$(ProjectDir)Scene\Clear;$(ProjectDir)Scene\GameOver;$(ProjectDir)externals\assimp\include</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -91,6 +91,7 @@
       <TreatLinkerWarningAsErrors>true</TreatLinkerWarningAsErrors>
       <AdditionalLibraryDirectories>$(ProjectDir)externals\assimp\lib\Debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>assimp-vc143-mtd.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalOptions>/ignore:4099 %(AdditionalOptions)</AdditionalOptions>
     </Link>
     <PostBuildEvent>
       <Command>copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxcompiler.dll" "$(TargetDir)dxcompiler.dll"
@@ -109,7 +110,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
       <AdditionalOptions>/utf-8 %(AdditionalOptions)</AdditionalOptions>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
-      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)Engine\Music;$(ProjectDir)Engine\Input;$(ProjectDir)Common;$(ProjectDir)Common\Structure\Vector;$(ProjectDir)Common\Structure\Matrix;$(ProjectDir)Common\MathUtils;$(ProjectDir)Common\Structure\Advanced;$(ProjectDir)Common\Functions;$(ProjectDir)Engine\Core;$(ProjectDir)Engine\Core\Command;$(ProjectDir)Engine\Core\DebugTeam;$(ProjectDir)Engine\ResourceView;$(ProjectDir)Engine\ResourceView\PipelineStateObject;$(ProjectDir)Engine\Objects;$(ProjectDir)Engine\Objects\Model;$(ProjectDir)Engine\Objects\Primitive;$(ProjectDir)Engine\Objects\Particle;$(ProjectDir)UsefulTool\Time;$(ProjectDir)UsefulTool\Camera;$(ProjectDir)UsefulTool\Light;$(ProjectDir)UsefulTool\Light\SpotLight;$(ProjectDir)UsefulTool\Light\PointLight;$(ProjectDir)UsefulTool\OSR;$(ProjectDir)UsefulTool\Easing;$(ProjectDir)UsefulTool\GridLine;$(ProjectDir)UsefulTool\GlobalVariables;$(ProjectDir)Scene;$(ProjectDir)UsefulTool\Random;$(ProjectDir)Common\MathUtils\Phisycs;$(ProjectDir)Common\MathUtils\Physics\Collider;$(ProjectDir)Scene\Game;$(ProjectDir)Scene\Test;$(ProjectDir)Common\MathUtils\Quaternion;$(ProjectDir)Game3D;$(ProjectDir)Game3D\Player3D;$(ProjectDir)Engine\ResourceView\Texture;$(ProjectDir)UsefulTool\Camera\CameraController;$(ProjectDir)Engine;$(ProjectDir)Common\Structure;$(ProjectDir)Game3D\Player3D\Player3DState;$(ProjectDir)Game3D\Enemy;$(ProjectDir)Game3D\Enemy\EnemyState;$(ProjectDir)Game3D\Bullet;$(ProjectDir)Scene\Clear;$(ProjectDir)Scene\GameOver;$(ProjectDir)externals\assimp\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)Engine\Music;$(ProjectDir)Engine\Input;$(ProjectDir)Common;$(ProjectDir)Common\Structure\Vector;$(ProjectDir)Common\Structure\Matrix;$(ProjectDir)Common\MathUtils;$(ProjectDir)Common\Structure\Advanced;$(ProjectDir)Common\Functions;$(ProjectDir)Engine\Core;$(ProjectDir)Engine\Core\Command;$(ProjectDir)Engine\Core\DebugTeam;$(ProjectDir)Engine\ResourceView;$(ProjectDir)Engine\ResourceView\PipelineStateObject;$(ProjectDir)Engine\Objects;$(ProjectDir)Engine\Objects\Model;$(ProjectDir)Engine\Objects\Primitive;$(ProjectDir)Engine\Objects\Particle;$(ProjectDir)UsefulTool\Time;$(ProjectDir)UsefulTool\Camera;$(ProjectDir)UsefulTool\Light;$(ProjectDir)UsefulTool\Light\SpotLight;$(ProjectDir)UsefulTool\Light\PointLight;$(ProjectDir)UsefulTool\OSR;$(ProjectDir)UsefulTool\Easing;$(ProjectDir)UsefulTool\GridLine;$(ProjectDir)UsefulTool\GlobalVariables;$(ProjectDir)UsefulTool\Animation;$(ProjectDir)UsefulTool\Animation\Keyframe;$(ProjectDir)Scene;$(ProjectDir)UsefulTool\Random;$(ProjectDir)Common\MathUtils\Phisycs;$(ProjectDir)Common\MathUtils\Physics\GJK;$(ProjectDir)Common\MathUtils\Physics\Collider;$(ProjectDir)Scene\Game;$(ProjectDir)Scene\Test;$(ProjectDir)Common\MathUtils\Quaternion;$(ProjectDir)Game3D;$(ProjectDir)Game3D\Player3D;$(ProjectDir)Game3D\Player3D\Player3DCommand;$(ProjectDir)Engine\ResourceView\Texture;$(ProjectDir)UsefulTool\Camera\CameraController;$(ProjectDir)Engine;$(ProjectDir)Common\Structure;$(ProjectDir)Game3D\Player3D\Player3DState;$(ProjectDir)Game3D\Enemy;$(ProjectDir)Game3D\Enemy\EnemyState;$(ProjectDir)Game3D\Bullet;$(ProjectDir)Game3D\Other;$(ProjectDir)Scene\Clear;$(ProjectDir)Scene\GameOver;$(ProjectDir)externals\assimp\include</AdditionalIncludeDirectories>
       <Optimization>MinSpace</Optimization>
     </ClCompile>
     <Link>
@@ -131,13 +132,13 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>NDEBUG;_WINDOWS;USE_IMGUI;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <AdditionalOptions>/utf-8 %(AdditionalOptions)</AdditionalOptions>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
-      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)Engine\Music;$(ProjectDir)Engine\Input;$(ProjectDir)Common;$(ProjectDir)Common\Structure\Vector;$(ProjectDir)Common\Structure\Matrix;$(ProjectDir)Common\MathUtils;$(ProjectDir)Common\Structure\Advanced;$(ProjectDir)Common\Functions;$(ProjectDir)Engine\Core;$(ProjectDir)Engine\Core\Command;$(ProjectDir)Engine\Core\DebugTeam;$(ProjectDir)Engine\ResourceView;$(ProjectDir)Engine\ResourceView\PipelineStateObject;$(ProjectDir)Engine\Objects;$(ProjectDir)Engine\Objects\Model;$(ProjectDir)Engine\Objects\Primitive;$(ProjectDir)Engine\Objects\Particle;$(ProjectDir)UsefulTool\Time;$(ProjectDir)UsefulTool\Camera;$(ProjectDir)UsefulTool\Light;$(ProjectDir)UsefulTool\Light\SpotLight;$(ProjectDir)UsefulTool\Light\PointLight;$(ProjectDir)UsefulTool\OSR;$(ProjectDir)UsefulTool\Easing;$(ProjectDir)UsefulTool\GridLine;$(ProjectDir)UsefulTool\GlobalVariables;$(ProjectDir)Scene;$(ProjectDir)UsefulTool\Random;$(ProjectDir)Common\MathUtils\Phisycs;$(ProjectDir)Common\MathUtils\Physics\Collider;$(ProjectDir)Scene\Game;$(ProjectDir)Scene\Test;$(ProjectDir)Common\MathUtils\Quaternion;$(ProjectDir)Game3D;$(ProjectDir)Game3D\Player3D;$(ProjectDir)Engine\ResourceView\Texture;$(ProjectDir)UsefulTool\Camera\CameraController;$(ProjectDir)Engine;$(ProjectDir)Common\Structure;$(ProjectDir)Game3D\Player3D\Player3DState;$(ProjectDir)Game3D\Enemy;$(ProjectDir)Game3D\Enemy\EnemyState;$(ProjectDir)Game3D\Bullet;$(ProjectDir)Scene\Clear;$(ProjectDir)Scene\GameOver;$(ProjectDir)externals\assimp\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)Engine\Music;$(ProjectDir)Engine\Input;$(ProjectDir)Common;$(ProjectDir)Common\Structure\Vector;$(ProjectDir)Common\Structure\Matrix;$(ProjectDir)Common\MathUtils;$(ProjectDir)Common\Structure\Advanced;$(ProjectDir)Common\Functions;$(ProjectDir)Engine\Core;$(ProjectDir)Engine\Core\Command;$(ProjectDir)Engine\Core\DebugTeam;$(ProjectDir)Engine\ResourceView;$(ProjectDir)Engine\ResourceView\PipelineStateObject;$(ProjectDir)Engine\Objects;$(ProjectDir)Engine\Objects\Model;$(ProjectDir)Engine\Objects\Primitive;$(ProjectDir)Engine\Objects\Particle;$(ProjectDir)UsefulTool\Time;$(ProjectDir)UsefulTool\Camera;$(ProjectDir)UsefulTool\Light;$(ProjectDir)UsefulTool\Light\SpotLight;$(ProjectDir)UsefulTool\Light\PointLight;$(ProjectDir)UsefulTool\OSR;$(ProjectDir)UsefulTool\Easing;$(ProjectDir)UsefulTool\GridLine;$(ProjectDir)UsefulTool\GlobalVariables;$(ProjectDir)UsefulTool\Animation;$(ProjectDir)UsefulTool\Animation\Keyframe;$(ProjectDir)Scene;$(ProjectDir)UsefulTool\Random;$(ProjectDir)Common\MathUtils\Phisycs;$(ProjectDir)Common\MathUtils\Physics\GJK;$(ProjectDir)Common\MathUtils\Physics\Collider;$(ProjectDir)Scene\Game;$(ProjectDir)Scene\Test;$(ProjectDir)Common\MathUtils\Quaternion;$(ProjectDir)Game3D;$(ProjectDir)Game3D\Player3D;$(ProjectDir)Game3D\Player3D\Player3DCommand;$(ProjectDir)Engine\ResourceView\Texture;$(ProjectDir)UsefulTool\Camera\CameraController;$(ProjectDir)Engine;$(ProjectDir)Common\Structure;$(ProjectDir)Game3D\Player3D\Player3DState;$(ProjectDir)Game3D\Enemy;$(ProjectDir)Game3D\Enemy\EnemyState;$(ProjectDir)Game3D\Bullet;$(ProjectDir)Game3D\Other;$(ProjectDir)Scene\Clear;$(ProjectDir)Scene\GameOver;$(ProjectDir)externals\assimp\include</AdditionalIncludeDirectories>
       <Optimization>Disabled</Optimization>
       <WholeProgramOptimization>false</WholeProgramOptimization>
     </ClCompile>
@@ -156,6 +157,20 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Engine\Objects\Model\Joint.cpp" />
+    <ClCompile Include="Engine\Objects\Model\Skeleton.cpp" />
+    <ClCompile Include="Engine\Objects\Model\SkinCluster.cpp" />
+    <ClCompile Include="Engine\Game.cpp" />
+    <ClCompile Include="Game3D\Enemy\EnemyState\BossDashAttackState.cpp" />
+    <ClCompile Include="Game3D\Enemy\EnemyState\BossRoarState.cpp" />
+    <ClCompile Include="Game3D\Enemy\EnemyState\BossSpinAttackState.cpp" />
+    <ClCompile Include="Game3D\Player3D\Player3DCommand\Player3DCommand.cpp" />
+    <ClCompile Include="Game3D\Player3D\Player3DCommand\PlayerInputHandler.cpp" />
+    <ClCompile Include="Game3D\Player3D\Player3DState\PlayerJustEvasionState.cpp" />
+    <ClCompile Include="Game3D\Player3D\Player3DState\PlayerStepEvasionState.cpp" />
+    <ClCompile Include="Game3D\Other\Ground.cpp" />
+    <ClCompile Include="UsefulTool\Animation\Animation.cpp" />
+    <ClCompile Include="Common\MathUtils\Physics\GJK\GJK.cpp" />
     <ClCompile Include="Common\Structure\Advanced\CameraForGPU.cpp" />
     <ClCompile Include="Engine\Core\DebugTeam\D3D12ResourceLeakChecker.cpp" />
     <ClCompile Include="Engine\Objects\Particle\Particle.cpp" />
@@ -218,13 +233,27 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="Engine\ResourceView\SwapChain.cpp" />
     <ClCompile Include="Engine\ResourceView\Texture\Texture.cpp" />
     <ClCompile Include="Engine\ResourceView\Texture\TextureManager.cpp" />
-    <ClCompile Include="externals\imgui\imgui.cpp" />
-    <ClCompile Include="externals\imgui\imgui_demo.cpp" />
-    <ClCompile Include="externals\imgui\imgui_draw.cpp" />
-    <ClCompile Include="externals\imgui\imgui_impl_dx12.cpp" />
-    <ClCompile Include="externals\imgui\imgui_impl_win32.cpp" />
-    <ClCompile Include="externals\imgui\imgui_tables.cpp" />
-    <ClCompile Include="externals\imgui\imgui_widgets.cpp" />
+    <ClCompile Include="externals\imgui\imgui.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="externals\imgui\imgui_demo.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="externals\imgui\imgui_draw.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="externals\imgui\imgui_impl_dx12.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="externals\imgui\imgui_impl_win32.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="externals\imgui\imgui_tables.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="externals\imgui\imgui_widgets.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="Game3D\Enemy\EnemyState\BossChaseState.cpp" />
     <ClCompile Include="Game3D\Enemy\EnemyState\BossDeathState.cpp" />
     <ClCompile Include="Game3D\Enemy\EnemyState\BossDecisionState.cpp" />
@@ -244,6 +273,8 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="Game3D\Player3D\Player3DState\PlayerState.cpp" />
     <ClCompile Include="Game3D\Player3D\Player3DState\PlayerStopState.cpp" />
     <ClCompile Include="Game3D\Player3D\Player3DState\PlayerWalkState.cpp" />
+    <ClCompile Include="UsefulTool\Animation\Keyframe\Keyframe.cpp" />
+    <ClCompile Include="UsefulTool\Camera\CameraController\GameCameraController.cpp" />
     <ClCompile Include="UsefulTool\GlobalVariables\GlobalVariables.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Game3D\Player3D\PlayerBodyCollider.cpp" />
@@ -270,8 +301,15 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="UsefulTool\OSR\OffScreenRendering.cpp" />
     <ClCompile Include="UsefulTool\Random\RandomUtils.cpp" />
     <ClCompile Include="UsefulTool\Time\Chronos.cpp" />
+    <ClCompile Include="Engine\WinApp.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Engine\Game.h" />
+    <ClInclude Include="Game3D\Player3D\Player3DCommand\Player3DCommand.h" />
+    <ClInclude Include="Game3D\Player3D\Player3DCommand\PlayerInputHandler.h" />
+    <ClInclude Include="Game3D\Other\Ground.h" />
+    <ClInclude Include="UsefulTool\Animation\Animation.h" />
+    <ClInclude Include="Common\MathUtils\Physics\GJK\GJK.h" />
     <ClInclude Include="Common\Structure\Advanced\CameraForGPU.h" />
     <ClInclude Include="Engine\Core\DebugTeam\D3D12ResourceLeakChecker.h" />
     <ClInclude Include="Engine\Objects\Particle\Particle.h" />
@@ -357,6 +395,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="Engine\ResourceView\PipelineStateObject\PipelineStateObjectManager.h" />
     <ClInclude Include="Common\Structure\Advanced\Structured.h" />
     <ClInclude Include="Engine\Objects\Particle\ParticleEmitter.h" />
+    <ClInclude Include="UsefulTool\Animation\Keyframe\Keyframe.h" />
     <ClInclude Include="UsefulTool\GlobalVariables\GlobalVariables.h" />
     <ClInclude Include="UsefulTool\Light\SpotLight\SpotLight.h" />
     <ClInclude Include="UsefulTool\Light\PointLight\PointLight.h" />
@@ -376,6 +415,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="UsefulTool\OSR\OffScreenRendering.h" />
     <ClInclude Include="UsefulTool\Random\RandomUtils.h" />
     <ClInclude Include="UsefulTool\Time\Chronos.h" />
+    <ClInclude Include="Engine\WinApp.h" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="externals\imgui\LICENSE.txt" />
@@ -386,8 +426,10 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <None Include="resources\shaders\CopyImage\CopyImage.hlsli" />
     <None Include="resources\shaders\Object3d\Object3d.hlsli" />
     <None Include="resources\shaders\Particle\Particle.hlsli" />
+    <None Include="resources\shaders\SkinningObject3d\SkinningObject3d.hlsli" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="resources\shaders\Object3d\Object3d.PS.hlsl">
@@ -406,6 +448,16 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </FxCompile>
     <FxCompile Include="resources\shaders\Particle\Particle.VS.hlsl">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Development|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </FxCompile>
+    <FxCompile Include="resources\shaders\SkinningObject3d\SkinningObject3d.PS.hlsl">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Development|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </FxCompile>
+    <FxCompile Include="resources\shaders\SkinningObject3d\SkinningObject3d.VS.hlsl">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Development|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>

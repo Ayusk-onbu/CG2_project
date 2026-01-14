@@ -5,17 +5,23 @@ class BGM
 	: public Audio
 {
 public:
-	void LoadWAVE(const char* filename);
-	void SetPlayAudioBuf();
-	SoundData& GetSoundData() { return soundWaveData_; }
+	void Play(const std::string& filename);
+	void Stop();
+	void SetVolume(float volume);
 	void Unload() {
+		if (data_.pBuffer == nullptr) {
+			// データがないから解放するものがないので無視
+			return;
+		}
 		// バッファメモリの開放
-		delete[] soundWaveData_.pBuffer;
-		soundWaveData_.pBuffer = 0;
-		soundWaveData_.bufferSize = 0;
-		soundWaveData_.wfex = {};
+		delete[] data_.pBuffer;
+		data_.pBuffer = 0;
+		data_.bufferSize = 0;
+		data_.wfex = {};
 	}
 private:
-	SoundData soundWaveData_;
+	IXAudio2SourceVoice* pSourceVoice_ = nullptr;
+	SoundData data_;
+	float volume_ = 1.0f;
 };
 

@@ -13,11 +13,6 @@
 #include "TextureManager.h"
 #include "WorldTransform.h"
 
-struct ModelID {
-	uint32_t handle;
-	std::string name;
-};
-
 enum class ObjectDrawType {
 	SOLID,
 	WIREFRAME,
@@ -31,6 +26,7 @@ public:
 	void DrawBase(ObjectDrawType type = ObjectDrawType::SOLID);
 	void DrawBase(TheOrderCommand& command,PSO& pso,DirectionLight& light,Texture& tex);
 	void DrawBase(TheOrderCommand& command, PSO& pso, DirectionLight& light, D3D12_GPU_DESCRIPTOR_HANDLE& tex);
+	void DrawIndexBase(ObjectDrawType type = ObjectDrawType::SOLID);
 	void DrawIndexBase(TheOrderCommand& command, PSO& pso, DirectionLight& light, Texture& tex);
 	void DrawIndexBase(TheOrderCommand& command, PSO& pso, DirectionLight& light, D3D12_GPU_DESCRIPTOR_HANDLE& tex);
 
@@ -55,9 +51,10 @@ public:
 
 	D3D12_VERTEX_BUFFER_VIEW vertexBufferView_;
 	D3D12_INDEX_BUFFER_VIEW indexBufferView_;
+	SkinCluster skinCluster_;
+
 	WorldTransform worldTransform_;
 	WorldTransform uvTransform_;
-	uint32_t textureHandle_;
-	uint32_t modelHandle_;
+	std::string textureName_;
 };
 

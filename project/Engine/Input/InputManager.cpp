@@ -1,4 +1,5 @@
 #include "InputManager.h"
+#include "InputManager.h"
 #include <cassert>
 
 Key InputManager::key_;
@@ -37,7 +38,7 @@ bool InputManager::IsJump() {
 	if (GetKey().PressedKey(DIK_SPACE)) {
 		isJump = true;
 	}
-	if (GetGamePad(0).IsPressed(XINPUT_GAMEPAD_A)) {
+	if (GetGamePad(0).IsPressed(XINPUT_GAMEPAD_B)) {
 		isJump = true;
 	}
 
@@ -49,8 +50,8 @@ bool InputManager::IsDash() {
 	if (GetKey().PressKey(DIK_LSHIFT)) {
 		isDash = true;
 	}
-	if (0) {
-
+	if (GetGamePad(0).IsPress(XINPUT_GAMEPAD_RIGHT_SHOULDER)) {
+		isDash = true;
 	}
 	return isDash;
 }
@@ -60,8 +61,41 @@ bool InputManager::IsAttack() {
 	if (GetKey().PressKey(DIK_J)) {
 		isAttack = true;
 	}
-	if (0) {
-
+	if (GetGamePad(0).IsPressed(XINPUT_GAMEPAD_X)) {
+		isAttack = true;
 	}
 	return isAttack;
+}
+
+bool InputManager::IsEvasion() {
+	bool isEvasion = false;
+	if (GetKey().PressKey(DIK_K)) {
+		isEvasion = true;
+	}
+	if (GetGamePad(0).IsPress(XINPUT_GAMEPAD_A)) {
+		isEvasion = true;
+	}
+	return isEvasion;
+}
+
+bool InputManager::TrigerEvasion() {
+	bool isEvasion = false;
+	if (GetKey().PressedKey(DIK_K)) {
+		isEvasion = true;
+	}
+	if (GetGamePad(0).IsPressed(XINPUT_GAMEPAD_A)) {
+		isEvasion = true;
+	}
+	return isEvasion;
+}
+
+bool InputManager::IsLockOn() {
+	bool isLockOn = false;
+	if (GetKey().PressKey(DIK_L)) {
+		isLockOn = true;
+	}
+	if (GetGamePad(0).IsPressed(XINPUT_GAMEPAD_RIGHT_THUMB)) {
+		isLockOn = true;
+	}
+	return isLockOn;
 }

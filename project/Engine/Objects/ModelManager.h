@@ -3,23 +3,40 @@
 #include <unordered_map>
 
 
-//class ModelManager
-//{
-//public:
-//	static ModelManager* GetInstance() {
-//		static ModelManager instance;
-//		return &instance;
-//	}
-//public:
-//	void Initialize(Fngine* fngine);
-//	int LoadObj(const std::string& filename, const std::string& directoryPath = "resources");
-//	void DrawModel(ModelID modelId);
-//private:
-//	// 図鑑的な存在
-//	std::vector<std::unordered_map<ModelID, std::unique_ptr<ModelObject>>>models_;
-//	// 出力するのはこっち
-//	std::vector<std::unique_ptr<ModelObject>>drawModels_;
-//	uint32_t modelCount_;
-//	Fngine* pFngine_;
-//};
+class ModelManager
+{
+public:
+	static ModelManager* GetInstance() {
+		if (instance_ == nullptr) {
+			instance_ = std::make_unique<ModelManager>();
+		}
+		return instance_.get();
+	}
+	void ReleaseInstance() { instance_.reset(); }
+public:
+	void Initialize(Fngine* fngine);
+
+	/// <summary>
+	/// データを送る
+	/// </summary>
+	/// <param name="ID"></param>
+	/// <returns></returns>
+	ModelData& LoadModelData(const std::string& ID);
+
+	/// <summary>
+	/// Modelデータをロードする
+	/// </summary>
+	/// <param name="filename">ファイルネーム</param>
+	/// <param name="directoryPath"></param>
+	/// <param name="type">三角面化してないならType::OBJ</param>
+	/// <returns></returns>
+	std::string LoadObj(const std::string& filename, const std::string& directoryPath = "resources",LoadFileType type = LoadFileType::Assimp);
+private:
+	static std::unique_ptr<ModelManager>instance_;
+	// 図鑑的な存在
+	// [ 最初ModelDataだけでいいかと思ったが、表示したいかもだし別にいいかという判断。ただ、オブジェクトプールしたいから将来的に変更の可能性 ]
+	std::unordered_map<std::string, std::unique_ptr<ModelObject>>models_;
+	uint32_t modelCount_;
+	Fngine* pFngine_;
+};
 

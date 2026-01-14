@@ -8,68 +8,56 @@
 // ================================
 
 TestScene::~TestScene() {
-	delete particle_;
-	delete sprite_;
+	
 }
 
 void TestScene::Initialize() {
-	// Initialization code for the game scene
-	CameraSystem::GetInstance()->MakeCamera("DebugCamera", CameraType::Debug);
-	CameraSystem::GetInstance()->SetActiveCamera("DebugCamera");
-	player_.Initialize(p_fngine_);
-	particle_ = new Particle(p_fngine_);
-	particle_->Initialize(7500);
+	// 初期化処理
 
-	sprite_ = new SpriteObject(p_fngine_);
-	sprite_->SetFlip(false,true);
-	sprite_->Initialize(TextureManager::GetInstance()->LoadTexture("resources/uvChecker.png"));
-	sprite_->worldTransform_.set_.Translation({640.0f,360.0f,0.0f});
+	/*player_ = std::make_unique<Player3D>();
+	player_->Initialize(p_fngine_);*/
+	title_ = std::make_unique<SpriteObject>(p_fngine_);
+	title_->Initialize("titleBack");
+	title_->worldTransform_.set_.Translation({640.0f,360.0f,0.0f});
 
-	CameraSystem::GetInstance()->GetActiveCamera()->SetRadius(100.0f);
-	PSOManager::GetInstance()->GetPSO("Structured").SetBlendState(BLENDMODE::Additive);
+	fade_ = std::make_unique<SpriteObject>(p_fngine_);
+	fade_->Initialize("GridLine");
+	fade_->worldTransform_.set_.Translation({ 640.0f,360.0f,0.0f });
+	fade_->worldTransform_.set_.Scale({ 1280.0f / 16.0f,1280.0f / 16.0f ,0.0f });
+	fade_->SetColor({ 0.0f,0.0f,0.0f,0.0f });
+
+	toGameTimer_ = 0.0f;
+
+	particle_ = std::make_unique<Particle>(p_fngine_);
+	particle_->Initialize(1000);
 }
 
 void TestScene::Update() {
+	//player_->Update();
 
-	//if (InputManager::GetKey().PressKey(DIK_0)) {
-	//	hasRequestedNextScene_ = true;
-	//}
-	CameraSystem::GetInstance()->Update();
 	particle_->Update();
-	player_.Update();
 
-	if (InputManager::IsAttack()) {
-		sprite_->SetTextureSize({0.0f,0.0f}, {64.0f,64.0f});
+	if (InputManager::IsJump()) {
+		hasRequestedNextScene_ = true;
 	}
-
-#ifdef _DEBUG
-	ImGui::Begin("BlendMode");
-	if (ImGui::Button("Alpha")) {
-		PSOManager::GetInstance()->GetPSO("Structured").SetBlendState(BLENDMODE::AlphaBlend);
-	}
-	if (ImGui::Button("Add")) {
-		PSOManager::GetInstance()->GetPSO("Structured").SetBlendState(BLENDMODE::Additive);
-	}
-	if (ImGui::Button("Sub")) {
-		PSOManager::GetInstance()->GetPSO("Structured").SetBlendState(BLENDMODE::Subtractive);
-	}
-	if (ImGui::Button("Mul")) {
-		PSOManager::GetInstance()->GetPSO("Structured").SetBlendState(BLENDMODE::Multiplicative);
-	}
-	if (ImGui::Button("Screen")) {
-		PSOManager::GetInstance()->GetPSO("Structured").SetBlendState(BLENDMODE::ScreenBlend);
-	}
-	ImGui::End();
-#endif // _DEBUG
 
 	if (hasRequestedNextScene_) {
-		p_sceneDirector_->RequestChangeScene(new GameScene());
+		toGameTimer_ += 1.0f / 60.0f;
+		float alpha = 0.0f;
+		float endTime = 2.0f;
+		alpha = Easing_Float(0.0f, 1.0f, toGameTimer_, endTime, EASINGTYPE::InSine);
+		fade_->SetColor({ 0.0f,0.0f,0.0f,alpha });
+		if (toGameTimer_ > endTime) {
+			p_sceneDirector_->RequestChangeScene(new GameScene());
+		}
 	}
 }
 
 void TestScene::Draw() {
-	//player_.Draw();
-	particle_->DrawDebug();
-	sprite_->Draw(SPRITE_VIEW_TYPE::Object);
+	
 	particle_->Draw();
+	
+	//player_->Draw();
+	//title_->Draw();
+	//fade_->Draw();
 }

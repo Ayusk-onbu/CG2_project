@@ -5,11 +5,20 @@ class SE
 	: public Audio
 {
 public:
-	void LoadWAVE(const char* filename);
-	void SetAudioBuf();
-	void PlayWave();
+	void Unload() {
+		// バッファメモリの開放
+		delete[] data_.pBuffer;
+		data_.pBuffer = 0;
+		data_.bufferSize = 0;
+		data_.wfex = {};
+	}
+public:
+	void LoadWAVE(const std::string& filename);
+	void Play();
+public:
+	void SetVolume(float volume);
 private:
-	SoundData soundWaveData_;
-	XAUDIO2_BUFFER buf_;
+	SoundData data_;
+	float volume_ = 1.0f;
 };
 

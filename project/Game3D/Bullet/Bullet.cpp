@@ -14,12 +14,11 @@ void BulletCollider::OnCollision(Collider* other)
 void Bullet::Initialize(Fngine* fngine, const Vector3& pos, const Vector3& speed, int MyType, int yourType, float radius, float lifeTime) {
 	fngine_ = fngine;
 	obj_ = std::make_unique<ModelObject>();
-	obj_->Initialize(fngine->GetD3D12System(),"cube.obj");
-	obj_->worldTransform_.Initialize();
+	obj_->modelName_ = "cube";
+	obj_->textureName_ = "GridLine";
+	obj_->Initialize(fngine);
 	obj_->worldTransform_.set_.Translation(pos);
 	obj_->worldTransform_.set_.Scale({ radius,radius,radius });
-	obj_->SetFngine(fngine);
-	obj_->textureHandle_ = TextureManager::GetInstance()->LoadTexture("resources/uvChecker.png");
 
 	collider_ = std::make_unique<BulletCollider>(this);
 	collider_->SetMyType(MyType);
@@ -51,10 +50,10 @@ void Bullet::Update() {
 		// 死ぬ
 		Dead();
 	}
-#ifdef _DEBUG
+#ifdef USE_IMGUI
 	ImGui::Begin("Bullet");
 	ImGui::End();
-#endif// _DEBUG
+#endif// USE_IMGUI
 }
 
 void Bullet::Draw() {

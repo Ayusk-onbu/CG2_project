@@ -1,4 +1,5 @@
 #pragma once
+#include "Structures.h"
 #include <type_traits>
 
 class Camera;
@@ -8,8 +9,7 @@ enum class CameraType : int {
 	None = 0,
 	Normal = 1 << 0,
 	Debug = 1 << 1,
-	
-
+	Game = 1 << 2,
 };
 
 inline CameraType operator|(CameraType lhs, CameraType rhs) {
@@ -37,7 +37,7 @@ class NormalCameraController
 {
 public:
 	void Update(Camera& camera) override;
-	virtual CameraType GetType() { return CameraType::Normal; }
+	CameraType GetType()override { return CameraType::Normal; }
 };
 
 class DebugCameraController
@@ -45,7 +45,17 @@ class DebugCameraController
 {
 public:
 	void Update(Camera& camera) override;
-	virtual CameraType GetType() { return CameraType::Debug; }
+	CameraType GetType()override { return CameraType::Debug; }
 private:
 
+};
+
+class GameCameraController
+	:public CameraController 
+{
+public:
+	void Update(Camera& camera)override;
+	CameraType GetType()override { return CameraType::Game; }
+private:
+	float panSpeed_ = 0.005f;
 };

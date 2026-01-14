@@ -10,6 +10,12 @@ void PlayerDoubleJumpState::Initialize() {
 
 void PlayerDoubleJumpState::Update() {
 
+	if (player_->HasAttackBuffer()) {
+		// 攻撃
+		player_->ChangeState(new PlayerAttackState(0));
+		return;
+	}
+
 	if (player_->GetVerticalVelocity() <= 0.0f) {
 		// 下がり始めたら空中にいる状態にする
 		player_->ChangeState(new PlayerFallState());
@@ -26,4 +32,8 @@ void PlayerDoubleJumpState::Update() {
 	// 空中攻撃とかがあればここから遷移処理
 
 	ImGuiManager::GetInstance()->Text("DoubleJumpState");
+}
+
+void PlayerDoubleJumpState::Exit() {
+
 }

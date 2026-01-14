@@ -6,7 +6,9 @@
 using json = nlohmann::json;
 
 Particle::Particle(Fngine* fngine)
-	: p_fngine_(fngine){}
+	: p_fngine_(fngine){
+
+}
 
 void Particle::Initialize(uint32_t numInstance) {
 
@@ -15,7 +17,7 @@ void Particle::Initialize(uint32_t numInstance) {
 	numMaxInstance_ = numInstance;
 	// [ 使うTextureの設定 ]
 	// 固定なのキモすぎ
-	textureHandle_ = TextureManager::GetInstance()->LoadTexture("resources/circle.png");
+	textureName_ = "circle";
 
 	vertexResource_ = CreateBufferResource(p_fngine_->GetD3D12System().GetDevice().Get(), sizeof(VertexData) * 4);
 	vertexResource_->Map(0, nullptr, reinterpret_cast<void**>(&vertexData_));
@@ -167,14 +169,16 @@ void Particle::Update() {
 
 	}
 	int size = static_cast<int>(info_.size());
+#ifdef USE_IMGUI
 	ImGui::Begin("Particle");
 	ImGui::SliderInt("Num",&size,0,0);
+#endif
 	// 1. 名前の入力フィールド
 	// std::stringのポインタを渡すオーバーロードを使用
 	char buf[128];
 	strncpy_s(buf, sizeof(buf), input_name_buffer.c_str(), _TRUNCATE);
 	buf[sizeof(buf) - 1] = 0; // 確実にNULL終端
-
+#ifdef USE_IMGUI
 	if (ImGui::InputText("Emitter Name", buf, sizeof(buf))) {
 		// 入力が変更されたらstd::stringを更新
 		input_name_buffer = buf;
@@ -189,6 +193,7 @@ void Particle::Update() {
 		AddParticleEmitter(input_name_buffer);
 	}
 	ImGui::End();
+#endif
 }
 
 void Particle::Draw() {
@@ -220,7 +225,7 @@ void Particle::Draw() {
 	//wvp用のCBufferの場所を設定
 	p_fngine_->GetCommand().GetList().GetList()->SetGraphicsRootDescriptorTable(1, instancingBuffer_->GetSRVHandleGPU());
 	//SRVのDescritorTableの先頭を設定。2はrootParameter[2]である
-	p_fngine_->GetCommand().GetList().GetList()->SetGraphicsRootDescriptorTable(2, TextureManager::GetInstance()->GetTexture(textureHandle_).GetHandleGPU());
+	p_fngine_->GetCommand().GetList().GetList()->SetGraphicsRootDescriptorTable(2, TextureManager::GetInstance()->GetTexture(textureName_).GetHandleGPU());
 
 	p_fngine_->GetCommand().GetList().GetList()->DrawIndexedInstanced(6, numInstance, 0, 0, 0);
 }

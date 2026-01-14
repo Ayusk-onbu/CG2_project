@@ -22,8 +22,10 @@ public:
 	void Draw() override;
 
 private:
-	Particle* particle_;
-	Player3D player_;
-	SpriteObject* sprite_;
+	float toGameTimer_ = 0.0f;
+	std::unique_ptr<Player3D>player_;
+	std::unique_ptr<SpriteObject>title_;
+	std::unique_ptr<SpriteObject>fade_;
+	std::unique_ptr<Particle>particle_;
 };
 

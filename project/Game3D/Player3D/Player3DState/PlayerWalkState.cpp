@@ -7,27 +7,7 @@ void PlayerWalkState::Initialize() {
 
 void PlayerWalkState::Update() {
 	bool isMove = false;
-	auto& move = player_->Move();
-	if (InputManager::GetKey().PressKey(DIK_W))
-	{
-		move.z = 1.0f;
-		isMove = true;
-	}
-	if (InputManager::GetKey().PressKey(DIK_S))
-	{
-		move.z = -1.0f;
-		isMove = true;
-	}
-	if (InputManager::GetKey().PressKey(DIK_A))
-	{
-		move.x = -1.0f;
-		isMove = true;
-	}
-	if (InputManager::GetKey().PressKey(DIK_D))
-	{
-		move.x = 1.0f;
-		isMove = true;
-	}
+	isMove = player_->IsMoving();
 
 	if (isMove && InputManager::IsJump()) {
 		// 歩きながらジャンプで回避
@@ -35,11 +15,11 @@ void PlayerWalkState::Update() {
 		return;
 	}
 
-	if (InputManager::IsJump()) {
-		// ジャンプした
-		player_->ChangeState(new PlayerJumpState());
-		return;
-	}
+	//if (InputManager::IsJump()) {
+	//	// ジャンプした
+	//	player_->ChangeState(new PlayerJumpState());
+	//	return;
+	//}
 
 	if (isMove == false) {
 		// 動きが無かったら止まっているとみなす
@@ -47,17 +27,21 @@ void PlayerWalkState::Update() {
 		return;
 	}
 
-	if (InputManager::IsDash()) {
+	if (player_->CanDash()) {
 		// 走る
 		player_->ChangeState(new PlayerDashState());
 		return;
 	}
 
-	if (InputManager::IsAttack()) {
+	if (player_->HasAttackBuffer()) {
 		// 攻撃
-		player_->ChangeState(new PlayerAttackState());
+		player_->ChangeState(new PlayerAttackState(0));
 		return;
 	}
 
 	ImGuiManager::GetInstance()->Text("WalkState");
+}
+
+void PlayerWalkState::Exit() {
+
 }

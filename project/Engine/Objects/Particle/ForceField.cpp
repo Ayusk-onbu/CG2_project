@@ -8,17 +8,17 @@
 
 void GravityForceField::Initialize(Fngine* fngine) {
 	obj_ = std::make_unique<ModelObject>();
-	obj_->Initialize(fngine->GetD3D12System(), "debugBlock.obj");
-	obj_->SetFngine(fngine);
-	obj_->textureHandle_ = 3;
+	obj_->textureName_ = "GridLine";
+	obj_->modelName_ = "debugBlock";
+	obj_->Initialize(fngine);
 }
 
 void GravityForceField::ApplyForce(ParticleData* info) {
 	float deltaTime = 1.0f / 60.0f;
 
 	// 位置情報の取得
-	Vector3 particlePos = info->worldTransform.get_.Translation();
-	Vector3 fieldCenter = worldTransform_.get_.Translation();
+	Vector3 particlePos = info->worldTransform.transform_.translation_;
+	Vector3 fieldCenter = worldTransform_.transform_.translation_;
 
 	// Particleから場中心へのベクトル
 	Vector3 direction = fieldCenter - particlePos;
@@ -37,7 +37,7 @@ void GravityForceField::ApplyForce(ParticleData* info) {
 void GravityForceField::DrawDebug() {
 	Vector3 pos = worldTransform_.get_.Translation();
 	std::string name = "GravityForce" + name_;
-
+#ifdef USE_IMGUI
 	ImGui::Begin(name.c_str());
 	ImGui::DragFloat3("pos", &pos.x);
 	ImGui::DragFloat3("Direction", &direction_.x);
@@ -46,7 +46,7 @@ void GravityForceField::DrawDebug() {
 		isVisible_ = isVisible_ == true ? false : true;
 	}
 	ImGui::End();
-
+#endif
 	worldTransform_.set_.Translation(pos);
 
 	if (isVisible_) {
@@ -65,9 +65,9 @@ void GravityForceField::DrawDebug() {
 
 void PointForceField::Initialize(Fngine* fngine) {
 	obj_ = std::make_unique<ModelObject>();
-	obj_->Initialize(fngine->GetD3D12System(), "bullet.obj");
-	obj_->SetFngine(fngine);
-	obj_->textureHandle_ = 3;
+	obj_->modelName_ = "bullet";
+	obj_->textureName_ = "GridLine";
+	obj_->Initialize(fngine);
 }
 
 void PointForceField::ApplyForce(ParticleData* info) {
@@ -100,7 +100,7 @@ void PointForceField::DrawDebug() {
 
 	Vector3 pos = worldTransform_.get_.Translation();
 	std::string name = "PointForce" + name_;
-
+#ifdef USE_IMGUI
 	ImGui::Begin(name.c_str());
 	ImGui::DragFloat3("pos", &pos.x);
 	ImGui::DragFloat("strength", &strength_);
@@ -109,7 +109,7 @@ void PointForceField::DrawDebug() {
 		isVisible_ = isVisible_ == true ? false : true;
 	}
 	ImGui::End();
-
+#endif
 	worldTransform_.set_.Translation(pos);
 
 	if (isVisible_) {

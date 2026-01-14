@@ -1,12 +1,17 @@
 #include "CameraSystem.h"
+#include "ImGuiManager.h"
 
 void CameraSystem::Update() {
-	/*for (auto& pair : cameras_) {
-		for (auto& camera : pair.second) {
-			camera->Update();
-		}
-	}*/
 	activeCamera_->Update();
+#ifdef USE_IMGUI
+	ImGui::Begin("Cameras");
+	for (auto& camera : cameras_) {
+		if (ImGui::Button(camera.first.c_str())) {
+			SetActiveCamera(camera.first);
+		}
+	}
+	ImGui::End();
+#endif// USE_IMGUI
 }
 
 void CameraSystem::SetActiveCamera(std::string name) {
@@ -23,4 +28,8 @@ void CameraSystem::MakeCamera(std::string name,CameraType cameraType) {
 
 Camera* CameraSystem::GetActiveCamera() {
 	return activeCamera_.get();
+}
+
+void CameraSystem::ImGui() {
+	/*ここからImGuiの処理を施す*/
 }

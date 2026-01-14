@@ -85,9 +85,6 @@ private:
 	D3D12_RECT scissorRect_;
 	SwapChain swapChain_;
 
-	//　将来的にGetInstanceで扱えるようにして方がいい
-	Music music_;
-
 	DirectionLight light_;
 	PointLight pointLight_;
 	SpotLight spotLight_;

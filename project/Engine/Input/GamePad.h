@@ -13,12 +13,12 @@ public:
     bool IsPressed(WORD button);  // トリガー入力判定
 
     BYTE GetLeftTrigger() const;  // 左トリガーの値
-    SHORT GetLeftStickX() const;  // 左スティックのX軸
-    SHORT GetLeftStickY() const;  // 左スティックのY軸
+    float GetLeftStickX() const;  // 左スティックのX軸
+    float GetLeftStickY() const;  // 左スティックのY軸
 
     BYTE GetRightTrigger() const; // 右トリガーの値
-	SHORT GetRightStickX() const; // 右スティックのX軸
-	SHORT GetRightStickY() const; // 右スティックのY軸
+	float GetRightStickX() const; // 右スティックのX軸
+	float GetRightStickY() const; // 右スティックのY軸
 	
 
 private:

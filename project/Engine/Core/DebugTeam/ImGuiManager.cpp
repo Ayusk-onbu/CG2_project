@@ -8,6 +8,7 @@
 // =================================
 
 void ImGuiManager::SetImGui(HWND hwnd, Microsoft::WRL::ComPtr<ID3D12Device> device, Microsoft::WRL::ComPtr <ID3D12DescriptorHeap> srvDescriptorHeap) {
+#ifdef USE_IMGUI
 	IMGUI_CHECKVERSION();
 	ImGui::CreateContext();
 	ImGui::StyleColorsDark();
@@ -19,26 +20,33 @@ void ImGuiManager::SetImGui(HWND hwnd, Microsoft::WRL::ComPtr<ID3D12Device> devi
 		srvDescriptorHeap->GetCPUDescriptorHandleForHeapStart(),
 		srvDescriptorHeap->GetGPUDescriptorHandleForHeapStart()
 	);
+#endif
 }
 
 void ImGuiManager::BeginFrame() {
+#ifdef USE_IMGUI
 	ImGui_ImplDX12_NewFrame();
 	ImGui_ImplWin32_NewFrame();
 	ImGui::NewFrame();
+#endif
 }
 
 void ImGuiManager::EndFrame(Microsoft::WRL::ComPtr <ID3D12GraphicsCommandList> commandList) {
+#ifdef USE_IMGUI
 	// ImGuiについての情報を集める
 	ImGui::Render();
 	// 描画コマンドを実行する
 	ImGui_ImplDX12_RenderDrawData(ImGui::GetDrawData(), commandList.Get());
+#endif
 }
 
 void ImGuiManager::Shutdown()
 {
+#ifdef USE_IMGUI
 	ImGui_ImplDX12_Shutdown();
 	ImGui_ImplWin32_Shutdown();
 	ImGui::DestroyContext();
+#endif
 }
 
 // =================================
@@ -46,7 +54,7 @@ void ImGuiManager::Shutdown()
 // =================================
 
 void ImGuiManager::DrawAll() {
-#ifdef _DEBUG
+#ifdef USE_IMGUI
 	ImGui::Begin("Test");
 
 	if (ImGui::Button("IsDebugImGuiView")) {
@@ -89,77 +97,95 @@ void ImGuiManager::DrawAll() {
 		ImGui::ShowDemoWindow();
 		ImGui::ShowStyleEditor();
 	}
-#endif // _DEBUG
+#endif // USEIMGUI
 }
 
 // ---- [ Text ] ----
 
 void ImGuiManager::Text(const char* text) {
+#ifdef USE_IMGUI
 	imGuiFunctions_.push_back([=]() {
 		ImGui::Text(text);
 	});
+#endif
 }
 
 // ---- [ Vector4 ] ----
 
 void ImGuiManager::DrawSlider(const char* label, Vector4& value, float min, float max) {
+#ifdef USE_IMGUI
 	imGuiFunctions_.push_back([=, &value]() {
 		ImGui::SliderFloat4(label, &value.x, min, max);
 	});
+#endif
 }
 
 void ImGuiManager::DrawDrag(const char* label, Vector4& value) {
+#ifdef USE_IMGUI
 	imGuiFunctions_.push_back([=, &value]() {
 		ImGui::DragFloat4(label, &value.x);
 	});
+#endif
 }
 
 // ---- [ Vector3 ] ----
 
 void ImGuiManager::DrawSlider(const char* label, Vector3& value, float min, float max) {
+#ifdef USE_IMGUI
 	imGuiFunctions_.push_back([=, &value]() {
 		ImGui::SliderFloat3(label, &value.x, min, max);
 	});
+#endif
 }
 
 void ImGuiManager::DrawDrag(const char* label, Vector3& value) {
+#ifdef USE_IMGUI
 	imGuiFunctions_.push_back([=, &value]() {
 		ImGui::DragFloat3(label, &value.x);
 	});
-
+#endif
 }
 
 // ---- [ Vector2 ] ----
 
 void ImGuiManager::DrawSlider(const char* label, Vector2& value, float min, float max) {
+#ifdef USE_IMGUI
 	imGuiFunctions_.push_back([=, &value]() {
 		ImGui::SliderFloat2(label, &value.x, min, max);
 		});
+#endif
 }
 
 void ImGuiManager::DrawDrag(const char* label, Vector2& value) {
+#ifdef USE_IMGUI
 	imGuiFunctions_.push_back([=, &value]() {
 		ImGui::DragFloat2(label, &value.x);
 	});
+#endif
 }
 
 // ---- [ float ] ----
 
 void ImGuiManager::DrawSlider(const char* label, float& value, float min, float max) {
+#ifdef USE_IMGUI
 	imGuiFunctions_.push_back([=, &value]() {
 		ImGui::SliderFloat(label, &value, min, max);
 	});
+#endif
 }
 
 void ImGuiManager::DrawDrag(const char* label, float& value) {
+#ifdef USE_IMGUI
 	imGuiFunctions_.push_back([=, &value]() {
 		ImGui::DragFloat(label, &value);
 	});
+#endif
 }
 
 // ---- [ Matrix4x4 ] ----
 
 void ImGuiManager::DrawSlider(const char* label, Matrix4x4& value, float min, float max) {
+#ifdef USE_IMGUI
 	imGuiFunctions_.push_back([=, &value]() {
 		ImGui::Text(label); // ラベルを表示
 		for (int i = 0; i < 4; ++i) {
@@ -169,9 +195,11 @@ void ImGuiManager::DrawSlider(const char* label, Matrix4x4& value, float min, fl
 			);
 		}
 	});
+#endif
 }
 
 void ImGuiManager::DrawDrag(const char* label, Matrix4x4& value) {
+#ifdef USE_IMGUI
 	imGuiFunctions_.push_back([=, &value]() {
 		ImGui::Text(label); // ラベルを表示
 		for (int i = 0; i < 4; ++i) {
@@ -181,4 +209,5 @@ void ImGuiManager::DrawDrag(const char* label, Matrix4x4& value) {
 			);
 		}
 	});
+#endif
 }

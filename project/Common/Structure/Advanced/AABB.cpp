@@ -25,3 +25,13 @@ Vector3 AABB::center() const {
 	ret.z = (min.z + max.z) / 2.0f;
 	return ret;
 }
+
+void AABB::Initialize() {
+	min.x = -0.5f;
+	min.y = -0.5f;
+	min.z = -0.5f;
+
+	max.x = 0.5f;
+	max.y = 0.5f;
+	max.z = 0.5f;
+}

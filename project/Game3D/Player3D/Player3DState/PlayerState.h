@@ -25,6 +25,7 @@ class PlayerStopState
 public:
 	void Initialize()override;
 	void Update()override;
+	void Exit()override;
 private:
 
 };
@@ -35,6 +36,7 @@ class PlayerWalkState
 public:
 	void Initialize()override;
 	void Update()override;
+	void Exit()override;
 private:
 
 };
@@ -45,9 +47,10 @@ class PlayerJumpState
 public:
 	void Initialize()override;
 	void Update()override;
+	void Exit()override;
 private:
 	// ジャンプの初期速度設定、空中移動、着地判定など
-	float initial_verticalVelocity = 1.0f;
+	float initial_verticalVelocity = 0.50f;
 };
 
 class PlayerFallState
@@ -56,6 +59,7 @@ class PlayerFallState
 public:
 	void Initialize()override;
 	void Update()override;
+	void Exit()override;
 private:
 	// 落ちているときの挙動とかetc...
 
@@ -67,6 +71,7 @@ class PlayerDoubleJumpState
 public:
 	void Initialize()override;
 	void Update()override;
+	void Exit()override;
 private:
 	// 二段ジャンプ時の挙動、残りのジャンプ回数管理など
 	float initial_verticalVelocity = 0.5f;
@@ -83,8 +88,8 @@ private:
 	// 加速に関して
 	float currentSpeedMultiplier_ = 0.0f;// 現在の速度倍率
 	float initial_speedMultiplier_ = 1.0f;// ダッシュ開始時の速度
-	float maxSpeedMultiplier_ = 1.5f;// ダッシュの最大速度
-	float accelerationRate_ = 0.9f;// １秒当たりの速度上昇率
+	float maxSpeedMultiplier_ = 5.0f;// ダッシュの最大速度
+	float accelerationRate_ = 1.2f;// １秒当たりの速度上昇率
 	// スタミナに関して
 	float initial_staminaCost_ = 10.0f;// ダッシュ開始時の固定消費
 	float staminaDrainRate_ = 15.0f;// １秒あたりの継続消費量
@@ -114,32 +119,42 @@ private:
 	float EXHAUSTED_REGEN_THRESHOLD = 70.0f; // 復帰に必要なスタミナの閾値（例: 30%）
 };
 
-// ** 戦闘系のアクション **
+enum class AttackTrajectory {
+	VerticalSrash,   // 縦切り
+	HorizontalSwing, // 横切り
+	SpinAttack,      // 回転切り
+	Thrust,          // 突き
+};
+// 名前、発生時間、持続時間、全体硬直、コンボ受付開始、コンボ受付終了、ダメージ量、次の攻撃のIndex、使う軌跡、攻撃範囲
+struct AttackData {
+	const char* name;   // 名前
+	float startup;      // 発生までの時間
+	float active;       // 持続時間
+	float recovery;     // 全体硬直
+	float comboStart;   // コンボ受付開始
+	float comboEnd;     // コンボ受付終了
+	float damage;       // ダメージ量
+	int nextComboIndex; // 次の攻撃のIndex
+	AttackTrajectory trajectory;// 使う軌跡
+	float range;        // 攻撃範囲
+};
 
 class PlayerAttackState
 	:public PlayerState
 {
 public:
+	PlayerAttackState(int comboIndex) :currentComboIndex_(comboIndex) {}
+public:
 	void Initialize() override;
 	void Update() override;
 	void Exit() override;
 private:
+	Vector3 CalculateAttackOffset(const AttackData& data, float slashTime);
+private:
 	float attackTimer_ = 0.0f;          // 攻撃アニメーションの経過時間
 	float maxAttackDuration_ = 0.5f; // 攻撃アニメーションの持続時間
 	// コンボ受付期間を管理する変数
-	bool canCombo_ = false;
-	float comboWindowStart_ = 0.2f; // 攻撃開始から200ms後
-	float comboWindowEnd_ = 0.4f;   // 攻撃開始から400ms後
-};
-
-class PlayerComboAttackState
-	:public PlayerState
-{
-public:
-	void Initialize()override;
-	void Update()override;
-private:
-	// コンボ段階の管理、次の入力受付、コンボ終了後の遷移
+	int currentComboIndex_;
 };
 
 class PlayerGuardState
@@ -152,24 +167,62 @@ private:
 	// ガード判定の生成、被ダメージ計算、移動制限
 };
 
+// ------------------------
+// EVASION STATE
+// ------------------------
+
 class PlayerEvasionState
 	: public PlayerState
 {
 public:
 	void Initialize() override;
 	void Update() override;
-	void Exit() override {} // Exit時は特に処理なし
+	void Exit() override;
 
 private:
 	float evasionTimer_ = 0.0f;               // 回避の経過時間
 	float EVASION_DURATION = 0.3f;      // 回避の持続時間（0.5秒）
-	float EVASION_SPEED_RATE = 12.0f;        // 一回で進む距離
+	float EVASION_SPEED_RATE = 3.0f;        // 一回で進む距離
 	float initial_verticalVelocity = 0.75f;// 縦に飛ぶ距離
 	float targetAngle_ = 360.0f;          // 回転させたい量
 	float initial_staminaCost_ = 10.0f;// 回避開始時の固定消費
 
 	Vector3 evasionDirection_{ 0.0f, 0.0f, 0.0f }; // 回避する方向のベクトル
 	Quaternion preQuaternion_{};        // 回避する瞬間の回転を保持（将来バグの原因の可能性あり）
+};
+
+class PlayerStepEvasionState
+	: public PlayerState
+{
+public:
+	~PlayerStepEvasionState()override = default;
+public:
+	void Initialize()override;
+	void Update()override;
+	void Exit()override;
+
+private:
+	float evasionTimer_ = 0.0f;// 回避の経過時間
+	const float evasionDuration_ = 0.2f;// 回避の持続時間(ローリングより短い)
+	const float evasionDistance_ = 1.0f;// 回避で進む距離
+	const float initial_staminaCost_ = 5.0f;// 回避時の固定消費コスト
+
+	Vector3 evasionDirection_{ 0.0f, 0.0f,0.0f };// 回避する方向のベクトル
+};
+
+class PlayerJustEvasionState
+	:public PlayerState
+{
+public:
+	void Initialize()override;
+	void Update()override;
+	void Exit()override;
+private:
+	// ジャスト回避成功時の特殊効果（スローモーション、反撃機会など）
+	float evasionTimer_ = 0.0f;
+	const float evasionDuration_ = 0.2f;// 回避の持続時間(ローリングより短い)
+	const float evasionDistance_ = 1.0f;// 回避で進む距離
+	Vector3 evasionDirection_{ 0.0f, 0.0f,0.0f };// 回避する方向のベクトル
 };
 
 class PlayerJustGuardState
@@ -180,16 +233,6 @@ public:
 	void Update()override;
 private:
 	// ジャストガード成功時の特殊演出や反撃準備
-};
-
-class PlayerJustEvasionState
-	:public PlayerState
-{
-public:
-	void Initialize()override;
-	void Update()override;
-private:
-	// ジャスト回避成功時の特殊効果（スローモーション、反撃機会など）
 };
 
 class PlayerAerialComboState
@@ -352,4 +395,3 @@ private:
 	float hurtTimer_ = 0.0f;          // のけぞりの経過時間
 	float MAX_HURT_DURATION = 0.8f;
 };
-

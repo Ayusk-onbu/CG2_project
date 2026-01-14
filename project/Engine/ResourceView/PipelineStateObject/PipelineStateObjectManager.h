@@ -27,6 +27,8 @@ struct PSOKey {
 	// ラスタライザ設定
 	RasterizerSettings rasterizerSettings;
 
+	// Depthの設定
+	bool depthFlag;
 };
 
 class PipelineStateObjectManager
@@ -54,14 +56,19 @@ public:
 	/// </summary>
 	/// <param name="name"></param>
 	PSO& GetPSO(const std::string& name);
+
+	/// <summary>
+	/// 主にBlendModeのImGuiである
+	/// </summary>
+	void ImGui();
 private:
 	static std::unique_ptr<PipelineStateObjectManager>instance_;
 
 	// これここなのかな？
-	void CreateGraphicsPipelineState();
-	void CreateComputePipelineState();
+	//void CreateGraphicsPipelineState();
+	//void CreateComputePipelineState();
 
-	Fngine* p_fngine_;
+	Fngine* p_fngine_ = nullptr;
 	std::unordered_map<std::string, PSO>PSOs_;
 };
 

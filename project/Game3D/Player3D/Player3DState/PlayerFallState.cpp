@@ -21,3 +21,7 @@ void PlayerFallState::Update() {
 
 	ImGuiManager::GetInstance()->Text("FallState");
 }
+
+void PlayerFallState::Exit() {
+
+}

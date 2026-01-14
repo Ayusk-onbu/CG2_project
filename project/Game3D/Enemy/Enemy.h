@@ -15,6 +15,8 @@ public:
 	~BossEnemy() {};
 
 public:
+	bool StartCutscene(float time);
+
 	// State 遷移メソッド (Player3Dと同様)
 	void ChangeState(BossState* newState);
 
@@ -28,6 +30,8 @@ public:
 	Vector3 GetPosition() { return obj_->worldTransform_.GetWorldPos(); }
 
 	void SetMovement(const Vector3& moveAmount) { moveAmount_ = moveAmount; }
+
+	void SetColor(const Vector4& color) { obj_->SetColor(color); }
 
 	// HP / ダメージ処理
 	void TakeDamage(float damage);
@@ -47,6 +51,9 @@ public:
 
 	void SetIsViewAttack(bool flag) { isViewAttack_ = flag; }
 private:
+	void HPBarUpdate();
+
+private:
 	// --- 状態管理 ---
 	BossState* state_ = nullptr;
 	Player3D* target_ = nullptr; // プレイヤーへのポインタ
@@ -58,20 +65,25 @@ private:
 	float hp_ = 500.0f;
 	float maxHp_ = 500.0f;
 
+	std::unique_ptr<SpriteObject>mainHPBar_;
+	std::unique_ptr<SpriteObject>subHPBar_;
+
 	// --- 衝突判定 ---
 	// ボス本体の Collider (Body)
 	std::unique_ptr<BossBodyCollider> bodyCollider_;
 	std::unique_ptr<ModelObject>bodyColliderObj_;
-	float bossBodyRadius = 2.0f;
+	float bossBodyRadius = 4.0f;
 	// 攻撃用の Collider (Attack)
 	std::unique_ptr<AttackCollider> attackCollider_;
 	bool isViewAttack_ = false;
+	// ロックオン
+	bool lockOn_ = false;
 
 	// 弾
 	std::unique_ptr<BulletManager>bullets_;
 
 	// --- AI/行動管理 ---
 	// クールダウン管理用のマップなど
-	// std::map<int, float> cooldownTimers_; 
+	int phase_ = 1;
 };
 

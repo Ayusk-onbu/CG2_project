@@ -3,6 +3,7 @@
 #include "Texture.h"
 #include <string>
 #include <vector>
+#include <map>
 
 class TextureManager {
 public:
@@ -17,12 +18,12 @@ public:
 	void ReleaseInstance() { instance_.reset(); }
 public:
 	void Initialize(Fngine& fngine);
-	int LoadTexture(const char* filePath);
-	Texture& GetTexture(int num) { return textures_[num]; }
+	std::string LoadTexture(const std::string& filename,const std::string& filePath);
+	Texture& GetTexture(const std::string& name);
 private:
 	static std::unique_ptr<TextureManager>instance_;
 	Fngine* p_fngine_ = nullptr;
-	std::vector<Texture>textures_;
+	std::unordered_map<std::string, std::unique_ptr<Texture>>textures_;
 	uint32_t textureCount_ = 0;
 	uint32_t textureMax_ = 100;
 };

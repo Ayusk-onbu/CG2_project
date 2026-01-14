@@ -1,4 +1,5 @@
 #include "Enemy.h"
+#include "EnemyState.h" 
 
 void BossDecisionState::Initialize()
 {
@@ -27,36 +28,49 @@ void BossDecisionState::Initialize()
 	*/
 
 	// 3. **行動の評価と優先順位付け**
+	float dice = RandomUtils::GetInstance()->GetHighRandom().GetFloat(0.0f, 1.0f);
 
 	// --- 3-1. 近接攻撃の範囲内か？ ---
-	if (distance <= MELEE_RANGE)
-	{
+	if (distance <= MELEE_RANGE){
 		// プレイヤーが近すぎる場合、近接攻撃を優先
 		// boss_->IsCooldownReady(ATTACK_MELEE) などのクールダウンチェックが必要
-		boss_->ChangeState(new BossMeleeAttackState());
-		return;
+		if (dice < 0.7f) {
+			boss_->ChangeState(new BossMeleeAttackState());
+			return;
+		}
+		else {
+			boss_->ChangeState(new BossSpinAttackState());
+		}
 	}
-
-	// --- 3-2. 遠距離攻撃の範囲内か？ ---
-	if (distance >= RANGE_ATTACK_MIN_DIST)
-	{
-		// 遠距離攻撃を考慮する距離の場合
-		// 確率（例：40%）で遠距離攻撃 State へ遷移
-		 if (rand() % 10 < 4) { 
-		 	boss_->ChangeState(new BossRangeAttackState());
-		 	return;
-		 }
+	else {
+		if (dice < 0.4f) {
+			// --- 3-2. 遠距離攻撃の範囲内か？ ---
+			if (distance >= RANGE_ATTACK_MIN_DIST){
+				// 遠距離攻撃を考慮する距離の場合
+				// 確率（例：40%）で遠距離攻撃 State へ遷移
+				boss_->ChangeState(new BossRangeAttackState());
+				return;
+			}
+		}
+		else if (dice < 0.6f) {
+			boss_->ChangeState(new BossDashAttackState());
+			return;
+		}
+		else {
+			// 4. **デフォルトの行動：追跡**
+			// どの攻撃条件も満たさない場合、またはクールダウン中の場合は、プレイヤーに近づく
+			boss_->ChangeState(new BossChaseState());
+			return;
+		}
 	}
-
-	// 4. **デフォルトの行動：追跡**
-	// どの攻撃条件も満たさない場合、またはクールダウン中の場合は、プレイヤーに近づく
-	boss_->ChangeState(new BossChaseState());
 }
 
 // DecisionStateは基本的に遷移するだけで、 Update()は実行されない想定ですが、
 // 念のため定義しておきます。
 void BossDecisionState::Update()
 {
+	// どの攻撃条件も満たさないままUpdateに来てしまった場合、プレイヤーに近づく
+	boss_->ChangeState(new BossChaseState());
 	// DecisionStateはInitializeで遷移を完了するため、通常ここには来ません。
 	ImGuiManager::GetInstance()->Text("BossState : Decision");
 }

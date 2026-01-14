@@ -24,6 +24,7 @@ void PlayerDeathState::Update()
 	deathTimer_ += deltaTime;
 
 	// 1. **移動の停止** (Updateでも念のため停止を継続)
+	player_->SetPlayerQuaternion({ player_->GetPlayerQuaternion().x,player_->GetPlayerQuaternion().y + Deg2Rad(15),player_->GetPlayerQuaternion().z,player_->GetPlayerQuaternion().w});
 	
 	// 2. **演出タイマーのチェック**
 	if (deathTimer_ >= MAX_DEATH_DURATION)

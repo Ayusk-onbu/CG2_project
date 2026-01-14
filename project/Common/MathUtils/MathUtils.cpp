@@ -24,6 +24,15 @@ Vector3 Lerp(const Vector3& v1, const Vector3& v2, float t) {
 	};
 }
 
+Quaternion Lerp(const Quaternion& q1, const Quaternion& q2, float t) {
+	return {
+		Lerp(q1.x,q2.x,t),
+		Lerp(q1.y,q2.y,t),
+		Lerp(q1.z,q2.z,t),
+		Lerp(q1.w,q2.w,t)
+	};
+}
+
 Vector3 Slerp(const Vector3& v1, const Vector3& v2, float t) {
 	t = std::clamp(t, 0.0f, 1.0f);
 	Vector3 v1N = Normalize(v1);
@@ -114,3 +123,66 @@ float Distance(const Vector2& a, const Vector2& b) {
 	return sqrtf((a.x - b.x) * (a.x - b.x) + (a.y - b.y) * (a.y - b.y));
 }
 #pragma endregion
+
+// --------------------------------
+// AnimationTimeによる計算
+// --------------------------------
+
+Vector3 CalculateValue(const std::vector<KeyframeVector3>& keyframes, float time) {
+	// キーがあるか確認する
+	assert(!keyframes.empty());
+
+	if (keyframes.size() == 1 || time <= keyframes[0].time) {
+		// キーが１つもしくは、時刻がキーフレーム前なら最初の値とする
+		return keyframes[0].value;
+	}
+
+	for (size_t index = 0; index < keyframes.size() - 1; ++index) {
+		size_t nextIndex = index + 1;
+		// index と nextIndex の二つのkeyframeを取得して範囲内に時刻があるかを判定
+		if (keyframes[index].time <= time && time <= keyframes[nextIndex].time) {
+			// 範囲内を補間する
+			float t = (time - keyframes[index].time) / (keyframes[nextIndex].time - keyframes[index].time);
+			return Lerp(keyframes[index].value, keyframes[nextIndex].value, t);
+		}
+	}
+
+	// ここまできたらドンマイやね
+	return (*keyframes.rbegin()).value;
+}
+
+Quaternion CalculateValue(const std::vector<KeyframeQuaternion>& keyframes, float time) {
+	// キーがあるか確認する
+	assert(!keyframes.empty());
+
+	if (keyframes.size() == 1 || time <= keyframes[0].time) {
+		// キーが１つもしくは、時刻がキーフレーム前なら最初の値とする
+		return keyframes[0].value;
+	}
+
+	for (size_t index = 0; index < keyframes.size() - 1; ++index) {
+		size_t nextIndex = index + 1;
+		// index と nextIndex の二つのkeyframeを取得して範囲内に時刻があるかを判定
+		if (keyframes[index].time <= time && time <= keyframes[nextIndex].time) {
+			// 範囲内を補間する
+			float t = (time - keyframes[index].time) / (keyframes[nextIndex].time - keyframes[index].time);
+			return Quaternion::Slerp(keyframes[index].value, keyframes[nextIndex].value, t);
+		}
+	}
+
+	// ここまできたらドンマイやね
+	return (*keyframes.rbegin()).value;
+}
+
+Matrix4x4 MakeAffineMatrix(const Vector3& scale, const Quaternion& rotate, const Vector3& translate) {
+	Matrix4x4 scaleMat = Matrix4x4::Make::Scale(scale);
+	Matrix4x4 rotationMat = Quaternion::MakeRotateMatrix(rotate);
+	Matrix4x4 translateMat = Matrix4x4::Make::Translate(translate);
+
+	// S * R * T
+	Matrix4x4 localMatrix;
+	localMatrix = Matrix4x4::Multiply(scaleMat, rotationMat);
+	localMatrix = Matrix4x4::Multiply(localMatrix, translateMat);
+
+	return localMatrix;
+}

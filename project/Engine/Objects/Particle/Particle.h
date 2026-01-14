@@ -43,9 +43,9 @@ public:
 	D3D12_VERTEX_BUFFER_VIEW vertexBufferView_;
 	D3D12_INDEX_BUFFER_VIEW indexBufferView_;
 	// 扱うためのData
-	VertexData* vertexData_;
-	uint32_t* indexData_;
-	Material* materialData_;
+	VertexData* vertexData_ = nullptr;
+	uint32_t* indexData_ = nullptr;
+	Material* materialData_ = nullptr;
 	// Fngine
 	Fngine* p_fngine_ = nullptr;
 	// 出す数
@@ -53,7 +53,7 @@ public:
 	// 位置情報
 	std::list<std::unique_ptr<ParticleData>> info_;
 	// Texture
-	int textureHandle_ = 1;
+	std::string textureName_;
 	std::string input_name_buffer = "";
 	// 色
 	Vector4 color_{};

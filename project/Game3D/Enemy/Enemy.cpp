@@ -1,16 +1,23 @@
 #include "Enemy.h"
 #include "CameraSystem.h"
+#include "MathUtils.h"
+
+/*
+* 近接攻撃が避けるの難しいー＞あらかじめ出すか、出すとき特有の演出をいれる
+* 
+* 
+*/
 
 void BossEnemy::Initialize(Fngine* fngine, Player3D* target) {
 
     target_ = target;
 
     obj_ = std::make_unique<ModelObject>();
-    obj_->Initialize(fngine->GetD3D12System(), "cube.obj");
-    obj_->SetFngine(fngine);
-    obj_->textureHandle_ = TextureManager::GetInstance()->LoadTexture("resources/uvChecker.png");
+    obj_->modelName_ = "enemy";
+    obj_->textureName_ = "bullet";
+    obj_->Initialize(fngine);
     obj_->worldTransform_.set_.Translation({ 0.0f,0.0f,30.0f });
-
+    obj_->worldTransform_.set_.Scale({ bossBodyRadius,bossBodyRadius,bossBodyRadius });
     // HPを初期化
     hp_ = maxHp_;
 
@@ -19,11 +26,11 @@ void BossEnemy::Initialize(Fngine* fngine, Player3D* target) {
     bodyCollider_->SetRadius(bossBodyRadius);
 
     bodyColliderObj_ = std::make_unique<ModelObject>();
-    bodyColliderObj_->Initialize(fngine->GetD3D12System(), "cube.obj");
-    bodyColliderObj_->SetFngine(fngine);
+    bodyColliderObj_->modelName_ = "stone";
+    bodyColliderObj_->textureName_ = "GridLine";
+    bodyColliderObj_->Initialize(fngine);
     bodyColliderObj_->worldTransform_.set_.Scale({ bossBodyRadius,bossBodyRadius,bossBodyRadius });
-    bodyColliderObj_->SetColor({ 0.5f,0.0f,0.0f,1.0f });
-    bodyColliderObj_->textureHandle_ = TextureManager::GetInstance()->LoadTexture("resources/uvChecker.png");
+    bodyColliderObj_->SetColor({ 0.27f,0.16f,0.0f,1.0f });
 
     attackCollider_ = std::make_unique<AttackCollider>();
     attackCollider_->SetMyType(COL_None);
@@ -32,6 +39,16 @@ void BossEnemy::Initialize(Fngine* fngine, Player3D* target) {
 
     isViewAttack_ = false;
 
+    // UI関係
+    // [ HP ]
+    mainHPBar_ = std::make_unique<SpriteObject>(fngine);
+    mainHPBar_->Initialize("GridLine", SPRITE_ANCHOR_TYPE::LeftMiddle);
+    mainHPBar_->worldTransform_.set_.Translation({ 640.0f - 480.0f,670.0f,0.0f });
+    subHPBar_ = std::make_unique<SpriteObject>(fngine);
+    subHPBar_->Initialize(mainHPBar_->textureName_, SPRITE_ANCHOR_TYPE::LeftMiddle);
+    subHPBar_->SetColor({ 1.0f,0.0f,0.0f,1.0f });
+    subHPBar_->worldTransform_.set_.Translation(mainHPBar_->worldTransform_.get_.Translation());
+
     bullets_ = std::make_unique<BulletManager>();
     bullets_->SetFngine(fngine);
 
@@ -39,6 +56,28 @@ void BossEnemy::Initialize(Fngine* fngine, Player3D* target) {
 }
 
 void BossEnemy::Update(){
+    if (InputManager::IsLockOn()) {
+        lockOn_ = !lockOn_;
+    }
+    if (lockOn_) {
+        Vector3 enemyPos = obj_->worldTransform_.get_.Translation();
+        Vector3 playerPos = target_->GetPosition();
+        // ベクトルを入手
+        float dx = enemyPos.x - playerPos.x;
+        float dz = enemyPos.z - playerPos.z;
+        // ベクトルから向きたい方向の角度を算出
+        float targetPhiRad = std::atan2(dz, dx);
+        float targetPhiDeg = Rad2Deg(targetPhiRad - 135);
+        // 角度を補間する（しないと位置関係の逆転の際に酔う）
+        //float lockOnPhi = Lerp(CameraSystem::GetInstance()->GetActiveCamera()->GetPhi(), targetPhiDeg, 0.5f);
+        // 適用
+        CameraSystem::GetInstance()->GetActiveCamera()->SetPhi(targetPhiDeg);
+
+        /*CameraSystem::GetInstance()->GetActiveCamera()->SetTargetPos(
+            { obj_->worldTransform_.get_.Translation().x,obj_->worldTransform_.get_.Translation().y ,obj_->worldTransform_.get_.Translation().z });*/
+        //CameraSystem::GetInstance()->GetActiveCamera()->SetRadius(30);
+    }
+
     // 1. フレーム開始時、前フレームの移動量をリセット（新しい移動量が設定されない場合に備えて）
     moveAmount_ = { 0.0f, 0.0f, 0.0f };
 
@@ -51,6 +90,13 @@ void BossEnemy::Update(){
     obj_->worldTransform_.set_.Translation(obj_->worldTransform_.get_.Translation() + moveAmount_);
 
     bullets_->Update();
+
+    if (IsDead()) {
+        obj_->worldTransform_.set_.Rotation({ obj_->worldTransform_.get_.Rotation().x,obj_->worldTransform_.get_.Rotation().y - Deg2Rad(45) ,obj_->worldTransform_.get_.Rotation().z});
+        obj_->worldTransform_.set_.Scale({ obj_->worldTransform_.get_.Scale().x - 0.02f,obj_->worldTransform_.get_.Scale().y - 0.02f ,obj_->worldTransform_.get_.Scale().z - 0.02f });
+    }
+
+    HPBarUpdate();
 
     ImGuiManager::GetInstance()->DrawDrag("Boss : HP",hp_);
     ImGuiManager::GetInstance()->DrawDrag("Boss : mat", obj_->worldTransform_.mat_);
@@ -69,6 +115,9 @@ void BossEnemy::Draw(){
     }
 
     bullets_->Draw();
+
+    subHPBar_->Draw();
+    mainHPBar_->Draw();
 }
 
 void BossEnemy::TakeDamage(float damage) {
@@ -77,6 +126,13 @@ void BossEnemy::TakeDamage(float damage) {
 
     // HPを減らす
     hp_ -= damage;
+
+    // HPで怒り状態に遷移
+    if ((hp_ < maxHp_ * 0.5f) && phase_ == 1) {
+        phase_ = 2;
+        // 咆哮ステートに移行
+        ChangeState(new BossRoarState());
+    }
 
     // HPの下限をチェック
     if (hp_ < 0.0f) {
@@ -91,7 +147,7 @@ void BossEnemy::TakeDamage(float damage) {
     }
     else {
         // のけぞり状態にしたっていい
-        ChangeState(new BossHurtState());
+        //ChangeState(new BossHurtState());
         return;
     }
 }
@@ -174,4 +230,50 @@ Vector3 BossEnemy::GetForwardVector()
     // worldForward = Normalize(worldForward); 
 
     return worldForward;
+}
+
+void BossEnemy::HPBarUpdate() {
+    float hpWidth = hp_ / 16.0f / 500.0f * 960.0f;
+    mainHPBar_->worldTransform_.set_.Scale({ hpWidth,1.0f,0.0f });
+    subHPBar_->worldTransform_.set_.Scale({ Easing_Float(subHPBar_->worldTransform_.get_.Scale().x, hpWidth, 0.2f, 1.0f, EASINGTYPE::InSine),1.0f, 1.0f });
+    if (hp_ > maxHp_ * 0.5f) {
+        mainHPBar_->SetColor({ 0.1f,1.0f,0.2f,1.0f });
+    }
+    else if (hp_ > maxHp_ * 0.2f) {
+        mainHPBar_->SetColor({ 0.65f,0.65f,0.1f,1.0f });
+    }
+    else {
+        mainHPBar_->SetColor({ 0.8f,0.1f,0.1f,1.0f });
+    }
+}
+
+bool BossEnemy::StartCutscene(float time) {
+    bool isEnd = false;
+    // なぜか武器が現れるので無理やり隠す
+    isViewAttack_ = false;
+    // カメラをもとに戻すのが一旦面倒なのでここで隠す
+    Vector3 enemyPos = obj_->worldTransform_.get_.Translation();
+    Vector3 playerPos = target_->GetPosition();
+    // [ ベクトルを入手 ]
+    float dx = enemyPos.x - playerPos.x;
+    float dz = enemyPos.z - playerPos.z;
+    // [ ベクトルから向きたい方向の角度を算出 ]
+    float targetPhiRad = std::atan2(dz, dx);
+    float targetPhiDeg = Rad2Deg(targetPhiRad - 135);
+    // [ 適用 ]
+    CameraSystem::GetInstance()->GetActiveCamera()->SetPhi(targetPhiDeg);
+
+    if (time < 2.0f) {
+        CameraSystem::GetInstance()->GetActiveCamera()->SetTargetPos(obj_->worldTransform_.get_.Translation() +
+            Vector3{ RandomUtils::GetInstance()->GetHighRandom().GetFloat(-0.2f,0.2f), RandomUtils::GetInstance()->GetHighRandom().GetFloat(-0.2f,0.2f),0.0f });
+    }
+    else {
+        CameraSystem::GetInstance()->GetActiveCamera()->SetTargetPos(obj_->worldTransform_.get_.Translation());
+    }
+
+    if (time > 3.0f) {
+        isEnd = true;
+    }
+
+    return isEnd;
 }

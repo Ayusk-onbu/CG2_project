@@ -1,76 +1,24 @@
-#include "Fngine.h"
-#include "D3D12ResourceLeakChecker.h"
-#include "Chronos.h"
-#include "SceneDirector.h"
-#include "MathUtils.h"
-#include "GlobalVariables.h"
+#include "Game.h"
 
+// windowsアプリでのエントリーポイント（main関数）
+int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
+	D3D12ResourceLeakChecker leakCheck;
+	
+	std::unique_ptr<Game>game = std::make_unique<Game>();
+	game->Initialize();
+
+	while (true) {
+		if (game->IsEnd()) {
+			break;
+		}
+		game->Run();
+	}
+
+	game->Finalize();
+	return 0;
+}
 
 //   決まり事
 //   1. 長さはメートル(m)
 //   2. 重さはキログラム(kg)
 //   3. 時間は秒(s)
-
-// windowsアプリでのエントリーポイント（main関数）
-int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
-	D3D12ResourceLeakChecker leakCheck;
-	std::unique_ptr<Fngine> fngine = std::make_unique<Fngine>();
-	fngine->Initialize();
-
-	std::unique_ptr<SceneDirector> scene = std::make_unique<SceneDirector>();
-
-	GlobalVariables::GetInstance()->LoadFiles();
-
-	scene->SetUpFngine(*fngine);
-	scene->Initialize(*new TestScene());
-	
-	
-	MSG msg{};
-
-	//   基礎的な物の処理
-
-	//ウィンドウのｘボタンが押されるまでループ
-	while (msg.message != WM_QUIT) {
-		
-		//Widnowにメッセージが来てたら最優先で処理させる
-		if (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE)) 
-		{
-			TranslateMessage(&msg);
-			DispatchMessage(&msg);
-		}
-		else {
-			ImGuiManager::GetInstance()->BeginFrame();
-			InputManager::Update();
-			GlobalVariables::GetInstance()->Update();
-#pragma region OffScreenRendering
-			/*ResourceBarrier barrierO = {};
-			barrierO.SetBarrier(command.GetList().GetList().Get(), osr.GetResource().Get(),
-				D3D12_RESOURCE_STATE_COMMON, D3D12_RESOURCE_STATE_RENDER_TARGET);
-			osr.Begin(command);*/
-			//ID3D12DescriptorHeap* descriptorHeaps[] = { SRV::descriptorHeap_.GetHeap().Get() };
-			//command.GetList().GetList()->SetDescriptorHeaps(1, descriptorHeaps);
-			///////////////////////////////////////////////////////////////////////////
-			////描画0200
-			//command.GetList().GetList()->RSSetViewports(1, &viewport);
-			//command.GetList().GetList()->RSSetScissorRects(1, &scissorRect);
-
-			
-
-			//model.SetWVPData(debugCamera.DrawMirrorCamera(worldMatrix, transformSprite.translate, {0.0f,0.0f,-1.0f}), worldMatrix, uvTransformMatrix);
-
-			//model.Draw(command, pso, light, tex);
-
-			//barrierO.SetTransition(command.GetList().GetList().Get(), D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
-#pragma endregion
-			fngine->BeginFrame();
-			scene->Run();
-			ImGuiManager::GetInstance()->DrawAll();
-			fngine->EndFrame();
-		}
-		
-	}
-	
-	//COMの初期化を解除
-	CoUninitialize();
-	return 0;
-}

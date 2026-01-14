@@ -5,9 +5,9 @@
 void ParticleEmitter::Initialize(Fngine* fngine) {
     fngine_ = fngine;
     obj_ = std::make_unique<ModelObject>();
-    obj_->Initialize(fngine->GetD3D12System(),"bullet.obj");
-    obj_->SetFngine(fngine);
-    obj_->textureHandle_ = 3;
+    obj_->modelName_ = "bullet";
+    obj_->textureName_ = "bullet";
+    obj_->Initialize(fngine);
 }
 
 void ParticleEmitter::Update(Particle* particleSystem) {
@@ -17,6 +17,7 @@ void ParticleEmitter::Update(Particle* particleSystem) {
     Vector3 pos = worldTransform_.get_.Translation();
     int num = emitNum_;
     std::string name = "ParticleEmiiter" + name_;
+#ifdef USE_IMGUI
     ImGui::Begin(name.c_str());
     ImGui::DragFloat3("pos", &pos.x);
     ImGui::DragFloat("spawnRadius", &spawnRadius_);
@@ -28,6 +29,7 @@ void ParticleEmitter::Update(Particle* particleSystem) {
     ImGui::ColorEdit4("Start color", &startColor_.x);
     ImGui::ColorEdit4("End color", &endColor_.x);
     ImGui::End();
+#endif
     worldTransform_.set_.Translation(pos);
     emitNum_ = num;
 }
