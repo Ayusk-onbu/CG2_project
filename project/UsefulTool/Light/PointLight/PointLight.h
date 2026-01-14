@@ -11,6 +11,14 @@ struct PointLightData {
 	float padding[2];
 };
 
+const uint32_t kMaxPointLights = 100;
+
+struct  MultiPointLightData {
+	uint32_t numLights;
+	float padding[3];
+	PointLightData lights[kMaxPointLights];
+};
+
 class Fngine;
 
 class PointLight
@@ -18,9 +26,10 @@ class PointLight
 public:
 	void Initialize(Fngine* fngine);
 	void Update();
+	void SetHeartPosition();
 	Microsoft::WRL::ComPtr<ID3D12Resource>& GetResource() { return resource_; }
 private:
 	Microsoft::WRL::ComPtr<ID3D12Resource>resource_;
-	PointLightData* data_ = nullptr;
+	MultiPointLightData* data_ = nullptr;
 };
 
