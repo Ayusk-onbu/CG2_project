@@ -22,20 +22,24 @@ void SceneDirector::Initialize(Scene& firstScene) {
 	CameraSystem::GetInstance()->SetActiveCamera("GameCamera");
 }
 
-void SceneDirector::Run() {
+void SceneDirector::Update() {
 	CameraSystem::GetInstance()->Update();
 	p_fngine_->GetCameraForGPU().Update(CameraSystem::GetInstance()->GetActiveCamera()->GetTranslation());
 	//while()
 	if (isGameRunning_) {
 		currentScene_->Update();
 	}
-	currentScene_->Draw();
-
-	ImGuiManager::GetInstance()->DrawSlider("DirectionalLight : pos", p_fngine_->GetLight().directionalLightData_->direction,-1.0f,1.0f);
-	ImGuiManager::GetInstance()->DrawSlider("DirectionalLight : color", p_fngine_->GetLight().directionalLightData_->color, 0.0f, 1.0f);
 	p_fngine_->GetPointLight().Update();
 	p_fngine_->GetSpotLight().Update();
+}
 
+void SceneDirector::Draw() {
+	currentScene_->Draw();
+}
+
+void SceneDirector::ImGui() {
+	ImGuiManager::GetInstance()->DrawSlider("DirectionalLight : pos", p_fngine_->GetLight().directionalLightData_->direction, -1.0f, 1.0f);
+	ImGuiManager::GetInstance()->DrawSlider("DirectionalLight : color", p_fngine_->GetLight().directionalLightData_->color, 0.0f, 1.0f);
 	PSOManager::GetInstance()->ImGui();
 }
 

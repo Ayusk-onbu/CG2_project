@@ -12,7 +12,9 @@ public:
 	~SceneDirector();
 public:
 	void Initialize(Scene& firstScene);
-	void Run();
+	void Update();
+	void Draw();
+	void ImGui();
 	void RequestChangeScene(Scene* newScene);
 public:
 	void SetUpFngine(Fngine& fngine) { p_fngine_ = &fngine; }

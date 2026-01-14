@@ -160,6 +160,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="Engine\Objects\Model\Joint.cpp" />
     <ClCompile Include="Engine\Objects\Model\Skeleton.cpp" />
     <ClCompile Include="Engine\Objects\Model\SkinCluster.cpp" />
+    <ClCompile Include="Engine\Game.cpp" />
     <ClCompile Include="Game3D\Enemy\EnemyState\BossDashAttackState.cpp" />
     <ClCompile Include="Game3D\Enemy\EnemyState\BossRoarState.cpp" />
     <ClCompile Include="Game3D\Enemy\EnemyState\BossSpinAttackState.cpp" />
@@ -300,8 +301,10 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="UsefulTool\OSR\OffScreenRendering.cpp" />
     <ClCompile Include="UsefulTool\Random\RandomUtils.cpp" />
     <ClCompile Include="UsefulTool\Time\Chronos.cpp" />
+    <ClCompile Include="Engine\WinApp.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Engine\Game.h" />
     <ClInclude Include="Game3D\Player3D\Player3DCommand\Player3DCommand.h" />
     <ClInclude Include="Game3D\Player3D\Player3DCommand\PlayerInputHandler.h" />
     <ClInclude Include="Game3D\Other\Ground.h" />
@@ -412,6 +415,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="UsefulTool\OSR\OffScreenRendering.h" />
     <ClInclude Include="UsefulTool\Random\RandomUtils.h" />
     <ClInclude Include="UsefulTool\Time\Chronos.h" />
+    <ClInclude Include="Engine\WinApp.h" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="externals\imgui\LICENSE.txt" />

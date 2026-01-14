@@ -26,6 +26,7 @@ void PointLight::Initialize(Fngine* fngine) {
 
 void PointLight::Update() {
 	// ImGui
+#ifdef USE_IMGUI
 	for (uint32_t i = 0; i < data_->numLights; ++i) {
 		// 1. 各項目用のラベル文字列を生成（変数に保持することで寿命を確保）
 		std::string treeLabel = "PointLight[" + std::to_string(i) + "]";
@@ -48,6 +49,7 @@ void PointLight::Update() {
 			ImGui::TreePop();
 		}
 	}
+#endif//USE_IMGUI
 }
 
 void PointLight::SetHeartPosition() {

@@ -576,6 +576,12 @@
     <ClCompile Include="Game3D\Other\Ground.cpp">
       <Filter>Game3D\Other</Filter>
     </ClCompile>
+    <ClCompile Include="Engine\Game.cpp">
+      <Filter>Engine</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\WinApp.cpp">
+      <Filter>Engine</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="externals\imgui\imconfig.h">
@@ -907,6 +913,12 @@
     </ClInclude>
     <ClInclude Include="Game3D\Other\Ground.h">
       <Filter>Game3D\Other</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Game.h">
+      <Filter>Engine</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\WinApp.h">
+      <Filter>Engine</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

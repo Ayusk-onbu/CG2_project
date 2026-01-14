@@ -57,6 +57,7 @@ void Fngine::SettingShader() {
 		},
 		"Structured"
 	);
+	PSOManager::GetInstance()->GetPSO("Structured").SetBlendState(BLENDMODE::Additive);
 
 	PSOManager::GetInstance()->CreateNewPSO
 	(
