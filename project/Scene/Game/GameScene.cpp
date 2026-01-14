@@ -63,7 +63,7 @@ void GameScene::Update(){
 	else {
 		player_->Update();
 
-		boss_->Update();
+		//boss_->Update();
 
 		ground_->Update();
 

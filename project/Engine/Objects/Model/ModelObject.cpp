@@ -39,9 +39,11 @@ void ModelObject::Initialize(D3D12System& d3d12, const std::string& filename, co
 void ModelObject::Draw(ObjectDrawType type) {
 	fngine_->GetCommand().GetList().GetList()->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 	if (modelData_.indices.size() > 0) {
+		if(modelData_.skinClusterData.size() > 0) {
 		DrawIndexBase();
 		fngine_->GetCommand().GetList().GetList()->DrawIndexedInstanced(UINT(modelData_.indices.size()), 1, 0, 0, 0);
 		return;
+		}
 	}
 	DrawBase(type);
 	fngine_->GetCommand().GetList().GetList()->DrawInstanced(UINT(modelData_.vertices.size()), 1, 0, 0);
