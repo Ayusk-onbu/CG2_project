@@ -28,3 +28,4 @@ private:
 	bool isGameRunning_ = true;
 };
 
+// Load関係を分ける必要ありそう

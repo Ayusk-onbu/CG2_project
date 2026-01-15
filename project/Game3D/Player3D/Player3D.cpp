@@ -68,6 +68,9 @@ void Player3D::Initialize(Fngine* fngine)
 
 	//obj_->skinCluster_.Create(fngine, *skeleton_, obj_->GetModelData());
 
+	fire_ = std::make_unique<Particle>(fngine);
+	fire_->Initialize(200,"Fire");
+
 	// 入力処理の初期化
 	inputHandler_ = std::make_unique<PlayerInputHandler>();
 	inputHandler_->SetPlayer(this);
@@ -136,6 +139,9 @@ void Player3D::Update()
 	skeleton_->Update();
 	obj_->skinCluster_.Update(*skeleton_);*/
 
+	fire_->SetPosition(obj_->worldTransform_.transform_.translation_);
+	fire_->Update();
+
 	ImGui();
 }
 
@@ -152,6 +158,8 @@ void Player3D::Draw()
 		attackColliderObj_->SetWVPData(CameraSystem::GetInstance()->GetActiveCamera()->DrawCamera(attackColliderObj_->worldTransform_.mat_));
 		attackColliderObj_->Draw();
 	}
+
+	fire_->Draw();
 
 	subHPBar_->Draw();
 	mainHPBar_->Draw();
