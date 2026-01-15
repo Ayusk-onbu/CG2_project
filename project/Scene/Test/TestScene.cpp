@@ -14,8 +14,8 @@ TestScene::~TestScene() {
 void TestScene::Initialize() {
 	// 初期化処理
 
-	/*player_ = std::make_unique<Player3D>();
-	player_->Initialize(p_fngine_);*/
+	player_ = std::make_unique<Player3D>();
+	player_->Initialize(p_fngine_);
 	title_ = std::make_unique<SpriteObject>(p_fngine_);
 	title_->Initialize("titleBack");
 	title_->worldTransform_.set_.Translation({640.0f,360.0f,0.0f});
@@ -29,11 +29,11 @@ void TestScene::Initialize() {
 	toGameTimer_ = 0.0f;
 
 	particle_ = std::make_unique<Particle>(p_fngine_);
-	particle_->Initialize(1000);
+	particle_->Initialize(1000,"water");
 }
 
 void TestScene::Update() {
-	//player_->Update();
+	player_->Update();
 
 	particle_->Update();
 
@@ -57,7 +57,7 @@ void TestScene::Draw() {
 	
 	particle_->Draw();
 	
-	//player_->Draw();
+	player_->Draw();
 	//title_->Draw();
 	//fade_->Draw();
 }

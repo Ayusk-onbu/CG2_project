@@ -23,6 +23,10 @@ public:
 
 	virtual void DrawDebug() = 0;
 
+	virtual json SaveData() = 0;
+
+	virtual void LoadData(const json& data) = 0;
+
 	// 場の位置
 	WorldTransform worldTransform_;
 	Type type_;
@@ -51,6 +55,10 @@ public:
 
 	void DrawDebug()override;
 
+	json SaveData()override;
+
+	void LoadData(const json& data)override;
+
 	Vector3 direction_;
 };
 
@@ -69,4 +77,7 @@ public:
 
 	void DrawDebug()override;
 
+	json SaveData()override;
+
+	void LoadData(const json& data)override;
 };

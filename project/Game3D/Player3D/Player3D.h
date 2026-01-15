@@ -6,6 +6,7 @@
 #include "SpriteObject.h"
 #include "Animation.h"
 #include "PlayerInputHandler.h"
+#include "Particle.h"
 
 class Player3D
 {
@@ -184,5 +185,8 @@ private:
 	// アニメーション
 	std::unique_ptr<Animation>animation_ = nullptr;
 	std::unique_ptr<Skeleton>skeleton_ = nullptr;
+
+	// パーティクル
+	std::unique_ptr<Particle>fire_ = nullptr;
 };
 
