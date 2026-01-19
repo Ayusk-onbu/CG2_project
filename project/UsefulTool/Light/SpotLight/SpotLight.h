@@ -14,6 +14,14 @@ struct SpotLightData {
 	float padding[1];
 };
 
+const uint32_t kMaxSpotLights = 10;
+
+struct MultiSpotLightData {
+	uint32_t activeLightCount;// 使用しているライトの数
+	float padding[3];
+	SpotLightData lights[kMaxSpotLights];
+};
+
 class Fngine;
 
 class SpotLight
@@ -21,11 +29,12 @@ class SpotLight
 public:
 	void Initialize(Fngine* fngine);
 	void Update();
+	void SetPosition(int num, const Vector3& pos) { data_->lights[num].position = pos; }
 	Microsoft::WRL::ComPtr<ID3D12Resource>& GetResource() { return resource_; }
 private:
 	Microsoft::WRL::ComPtr<ID3D12Resource>resource_;
-	SpotLightData* data_ = nullptr;
-	float angle_ = 60.0f;
-	float falloff_ = 0.9f;
+	MultiSpotLightData* data_ = nullptr;
+	float angles_[kMaxSpotLights];
+	float falloffs_[kMaxSpotLights];
 };
 

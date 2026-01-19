@@ -70,13 +70,13 @@ void Particle::Initialize(uint32_t numInstance, const std::string& name, const s
 	indexBufferView_.Format = DXGI_FORMAT_R32_UINT;
 
 	// プレーンの初期化
-	vertexData_[0].position = { 0.0f,height_,0.0f,1.0f };
+	vertexData_[0].position = { 0.0f - 0.5f,height_ - 0.5f,0.0f,1.0f };
 	vertexData_[0].texcoord = { 0.0f,1.0f };
-	vertexData_[1].position = { 0.0f,0.0f,0.0f,1.0f };
+	vertexData_[1].position = { 0.0f - 0.5f,0.0f - 0.5f,0.0f,1.0f };
 	vertexData_[1].texcoord = { 0.0f,0.0f };
-	vertexData_[2].position = { width_,height_,0.0f,1.0f };
+	vertexData_[2].position = { width_ - 0.5f,height_ - 0.5f,0.0f,1.0f };
 	vertexData_[2].texcoord = { 1.0f,1.0f };
-	vertexData_[3].position = { width_, 0.0f, 0.0f, 1.0f };
+	vertexData_[3].position = { width_ - 0.5f, 0.0f - 0.5f, 0.0f, 1.0f };
 	vertexData_[3].texcoord = { 1.0f, 0.0f };
 
 	indexData_[0] = 0;indexData_[1] = 1;indexData_[2] = 2;
@@ -275,6 +275,7 @@ void Particle::AddParticleEmitter(std::string name) {
 	newEmitter->emitNum_ = 3;
 	newEmitter->SetMinLifeTime(2.0f);
 	newEmitter->SetMaxLifeTime(10.0f);
+	// Scaleも設定出来ないとつらい
 	newEmitter->name_ = name;
 	emitters_.push_back(std::move(newEmitter));
 }

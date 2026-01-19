@@ -55,7 +55,15 @@ struct SpotLight
     float cosAngle;
     float cosFalloffStart;
 };
-ConstantBuffer<SpotLight> gSpotLight : register(b4);
+
+struct MultiSpotLightData
+{
+    uint numLights;
+    float32_t3 padding;
+    SpotLight lights[10];
+};
+
+ConstantBuffer<MultiSpotLightData> gMultiSpotLight : register(b4);
 
 struct PixelShaderOutPut
 {
@@ -76,18 +84,6 @@ PixelShaderOutPut main(VertexShaderOutput input)
     float32_t3 halfVector = normalize(-gDirectionalLight.direction + toEye);
     float NDotH = dot(normalize(input.normal), halfVector);
     float specularDirectionalLightPow = pow(saturate(NDotH), gMaterial.shininess);
-    
-    // Spot Light
-    float32_t attenuationDistance = length(gSpotLight.position - input.worldPosition);
-    float32_t attenuationFactor = pow(saturate(-attenuationDistance / gSpotLight.distance + 1.0f), gSpotLight.decay);
-    
-    float32_t3 spotLightDirectionOnSurface = normalize(input.worldPosition - gSpotLight.position);
-    float32_t3 halfVectorSpot = normalize(-spotLightDirectionOnSurface + toEye);
-    float NDotHSpot = dot(normalize(input.normal), halfVectorSpot);
-    float specularSpotLightPow = pow(saturate(NDotHSpot), gMaterial.shininess);
-    
-    float32_t cosAngle = dot(spotLightDirectionOnSurface, gSpotLight.direction);
-    float32_t falloffFactor = saturate((cosAngle - gSpotLight.cosAngle) / (gSpotLight.cosFalloffStart - gSpotLight.cosAngle));
     
     if (gMaterial.enableLighting != 0)
     {
@@ -121,20 +117,40 @@ PixelShaderOutPut main(VertexShaderOutput input)
             float specularPointLightPow = pow(saturate(NDotHPoint), gMaterial.shininess);
     
             totalPointDiffuse +=
-            gMaterial.color.rgb * textureColor.rgb * light.color.rgb * cos * light.intensity * factor;
+            gMaterial.color.rgb * textureColor.rgb * light.color.rgb * 1.0f/*cos*/ * light.intensity * factor;
         
             totalPointSpecular +=
             light.color.rgb * light.intensity * specularPointLightPow * float32_t3(1.0f, 1.0f, 1.0f) * factor;
         }
         
-        //
-        float32_t3 diffuseSpotLight =
-        gMaterial.color.rgb * textureColor.rgb * gSpotLight.color.rgb * cos * gSpotLight.intensity * attenuationFactor * falloffFactor;
-        //
-        float32_t3 specularSpotLight =
-        gSpotLight.color.rgb * gSpotLight.intensity * specularSpotLightPow * float32_t3(1.0f, 1.0f, 1.0f) * attenuationFactor * falloffFactor;
+        // Spot Light
+        // [ Total ]
+        float32_t3 totalSpotDiffuse = float32_t3(0.0f, 0.0f, 0.0f);
+        float32_t3 totalSpotSpecular = float32_t3(0.0f, 0.0f, 0.0f);
         
-        output.color.rgb = diffuseDirectionalLight + specularDirectionalLight + totalPointDiffuse + totalPointSpecular + diffuseSpotLight + specularSpotLight;
+        for (uint32_t i = 0; i < gMultiSpotLight.numLights; ++i)
+        {
+            SpotLight light = gMultiSpotLight.lights[i];
+            
+            float32_t attenuationDistance = length(light.position - input.worldPosition);
+            float32_t attenuationFactor = pow(saturate(-attenuationDistance / light.distance + 1.0f), light.decay);
+    
+            float32_t3 spotLightDirectionOnSurface = normalize(input.worldPosition - light.position);
+            float32_t3 halfVectorSpot = normalize(-spotLightDirectionOnSurface + toEye);
+            float NDotHSpot = dot(normalize(input.normal), halfVectorSpot);
+            float specularSpotLightPow = pow(saturate(NDotHSpot), gMaterial.shininess);
+    
+            float32_t cosAngle = dot(spotLightDirectionOnSurface, light.direction);
+            float32_t falloffFactor = saturate((cosAngle - light.cosAngle) / (light.cosFalloffStart - light.cosAngle));
+            
+            totalSpotDiffuse +=
+            gMaterial.color.rgb * textureColor.rgb * light.color.rgb * cos * light.intensity * attenuationFactor * falloffFactor;
+            
+            totalSpotSpecular +=
+            light.color.rgb * light.intensity * specularSpotLightPow * float32_t3(1.0f, 1.0f, 1.0f) * attenuationFactor * falloffFactor;
+        }
+        
+        output.color.rgb = diffuseDirectionalLight + specularDirectionalLight + totalPointDiffuse + totalPointSpecular + totalSpotDiffuse + totalSpotSpecular;
         output.color.a = gMaterial.color.a * textureColor.a;
     }else{
         output.color = gMaterial.color * textureColor;

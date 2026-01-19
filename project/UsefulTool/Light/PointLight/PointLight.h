@@ -11,7 +11,7 @@ struct PointLightData {
 	float padding[2];
 };
 
-const uint32_t kMaxPointLights = 100;
+const uint32_t kMaxPointLights = 1;
 
 struct  MultiPointLightData {
 	uint32_t numLights;
@@ -27,6 +27,7 @@ public:
 	void Initialize(Fngine* fngine);
 	void Update();
 	void SetHeartPosition();
+	void SetPosition(int num, const Vector3& pos) { data_->lights[num].position = pos; }
 	Microsoft::WRL::ComPtr<ID3D12Resource>& GetResource() { return resource_; }
 private:
 	Microsoft::WRL::ComPtr<ID3D12Resource>resource_;

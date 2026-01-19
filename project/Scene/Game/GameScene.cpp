@@ -15,7 +15,6 @@ GameScene::GameScene()
 
 GameScene::~GameScene() {
 	
-	Log::ViewFile("Path GameScene ~");
 }
 
 void GameScene::Initialize() {
@@ -70,7 +69,6 @@ void GameScene::Update(){
 		CollisionCheck();
 
 		ToScene();
-
 	}
 }
 

@@ -8,6 +8,7 @@ void PointLight::Initialize(Fngine* fngine) {
 	resource_->Map(0, nullptr, reinterpret_cast<void**>(&data_));
 	// Lightの数を登録
 	data_->numLights = 100;
+	data_->numLights = data_->numLights < kMaxPointLights ? data_->numLights : kMaxPointLights;
 	for (uint32_t i = 0; i < kMaxPointLights; ++i) {
 		// ライトの色を設定
 		data_->lights[i].color = {1.0f,0.2f,0.4f,1.0f};
@@ -21,7 +22,7 @@ void PointLight::Initialize(Fngine* fngine) {
 		data_->lights[i].decay = 2.0f;
 	}
 
-	SetHeartPosition();
+	//SetHeartPosition();
 }
 
 void PointLight::Update() {
@@ -55,7 +56,7 @@ void PointLight::Update() {
 void PointLight::SetHeartPosition() {
 	data_->numLights = 100; // 100個使用
 	int index = 0;
-	float spacing = 3.0f; // ライトの間隔
+	float spacing = 1.0f; // ライトの間隔
 
 	for (int y = 0; y < 10; ++y) {
 		for (int x = 0; x < 10; ++x) {
@@ -71,16 +72,16 @@ void PointLight::SetHeartPosition() {
 
 			if (formula <= 0.0f) {
 				// ハートの内側：赤く光らせる
-				data_->lights[index].color = { 1.0f, 0.0f, 0.0f, 1.0f };
+				data_->lights[index].color = { 1.0f, 0.6f, 0.6f, 1.0f };
 				data_->lights[index].intensity = 1.0f;
 			}
 			else {
 				// ハートの外側：暗くして見えなくする
-				data_->lights[index].color = { 0.1f, 0.1f, 0.1f, 1.0f };
+				data_->lights[index].color = { 0.6f, 0.2f, 0.2f, 1.0f };
 				data_->lights[index].intensity = 0.0f;
 			}
 
-			data_->lights[index].radius = 5.0f;
+			data_->lights[index].radius = 10.0f;
 			data_->lights[index].decay = 2.0f;
 			index++;
 		}
