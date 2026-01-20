@@ -39,7 +39,7 @@ struct MultiPointLightData
 {
     uint numLights;
     float32_t3 padding;
-    PointLight lights[10];
+    PointLight lights[100];
 };
 
 ConstantBuffer<MultiPointLightData> gMultiPointLight : register(b3);
@@ -60,7 +60,7 @@ struct MultiSpotLightData
 {
     uint numLights;
     float32_t3 padding;
-    SpotLight lights[10];
+    SpotLight lights[100];
 };
 
 ConstantBuffer<MultiSpotLightData> gMultiSpotLight : register(b4);

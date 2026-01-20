@@ -11,7 +11,7 @@ struct PointLightData {
 	float padding[2];
 };
 
-const uint32_t kMaxPointLights = 1;
+const uint32_t kMaxPointLights = 100;
 
 struct  MultiPointLightData {
 	uint32_t numLights;

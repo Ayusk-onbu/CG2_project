@@ -121,7 +121,6 @@ void ObjectBase::DrawIndexBase(ObjectDrawType type) {
 	fngine_->GetCommand().GetList().GetList()->SetGraphicsRootConstantBufferView(6, fngine_->GetSpotLight().GetResource()->GetGPUVirtualAddress());
 	// MatrixPalatteの設定
 	fngine_->GetCommand().GetList().GetList()->SetGraphicsRootDescriptorTable(7, skinCluster_.paletteSrvHandle_.second);
-
 }
 
 void ObjectBase::DrawIndexBase(TheOrderCommand& command, PSO& pso, DirectionLight& light, Texture& tex) {

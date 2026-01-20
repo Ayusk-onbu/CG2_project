@@ -22,39 +22,42 @@ void PointLight::Initialize(Fngine* fngine) {
 		data_->lights[i].decay = 2.0f;
 	}
 
-	//SetHeartPosition();
+	SetHeartPosition();
 }
 
 void PointLight::Update() {
 	// ImGui
 #ifdef USE_IMGUI
-	for (uint32_t i = 0; i < data_->numLights; ++i) {
-		// 1. 各項目用のラベル文字列を生成（変数に保持することで寿命を確保）
-		std::string treeLabel = "PointLight[" + std::to_string(i) + "]";
-		// Treeなどを使い、ライトごとに開閉できるようにすると見やすくなります
-		if (ImGui::TreeNode(treeLabel.c_str())) {
+	if (ImGui::TreeNode("PointLights")) {
+		for (uint32_t i = 0; i < data_->numLights; ++i) {
+			// 1. 各項目用のラベル文字列を生成（変数に保持することで寿命を確保）
+			std::string treeLabel = "PointLight[" + std::to_string(i) + "]";
+			// Treeなどを使い、ライトごとに開閉できるようにすると見やすくなります
+			if (ImGui::TreeNode(treeLabel.c_str())) {
 
-			std::string colorLabel = "Color##" + std::to_string(i);
-			std::string posLabel = "Position##" + std::to_string(i);
-			std::string intLabel = "Intensity##" + std::to_string(i);
-			std::string radLabel = "Radius##" + std::to_string(i);
-			std::string decLabel = "Decay##" + std::to_string(i);
+				std::string colorLabel = "Color##" + std::to_string(i);
+				std::string posLabel = "Position##" + std::to_string(i);
+				std::string intLabel = "Intensity##" + std::to_string(i);
+				std::string radLabel = "Radius##" + std::to_string(i);
+				std::string decLabel = "Decay##" + std::to_string(i);
 
-			// 2. 生成したラベルを使用して描画
-			ImGui::SliderFloat4(colorLabel.c_str(), &data_->lights[i].color.x, 0.0f, 1.0f);
-			ImGui::DragFloat3(posLabel.c_str(), &data_->lights[i].position.x);
-			ImGui::SliderFloat(intLabel.c_str(), &data_->lights[i].intensity, 0.0f, 1.0f);
-			ImGui::DragFloat(radLabel.c_str(), &data_->lights[i].radius);
-			ImGui::DragFloat(decLabel.c_str(), &data_->lights[i].decay);
+				// 2. 生成したラベルを使用して描画
+				ImGui::SliderFloat4(colorLabel.c_str(), &data_->lights[i].color.x, 0.0f, 1.0f);
+				ImGui::DragFloat3(posLabel.c_str(), &data_->lights[i].position.x);
+				ImGui::SliderFloat(intLabel.c_str(), &data_->lights[i].intensity, 0.0f, 1.0f);
+				ImGui::DragFloat(radLabel.c_str(), &data_->lights[i].radius);
+				ImGui::DragFloat(decLabel.c_str(), &data_->lights[i].decay);
 
-			ImGui::TreePop();
+				ImGui::TreePop();
+			}
 		}
+		ImGui::TreePop();
 	}
 #endif//USE_IMGUI
 }
 
 void PointLight::SetHeartPosition() {
-	data_->numLights = 100; // 100個使用
+	data_->numLights = 100; // 10個使用
 	int index = 0;
 	float spacing = 1.0f; // ライトの間隔
 
@@ -78,10 +81,10 @@ void PointLight::SetHeartPosition() {
 			else {
 				// ハートの外側：暗くして見えなくする
 				data_->lights[index].color = { 0.6f, 0.2f, 0.2f, 1.0f };
-				data_->lights[index].intensity = 0.0f;
+				data_->lights[index].intensity = 0.2f;
 			}
 
-			data_->lights[index].radius = 10.0f;
+			data_->lights[index].radius = 1.0f;
 			data_->lights[index].decay = 2.0f;
 			index++;
 		}
