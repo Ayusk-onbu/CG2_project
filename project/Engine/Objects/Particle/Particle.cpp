@@ -185,14 +185,23 @@ void Particle::Draw() {
 	p_fngine_->GetCommand().GetList().GetList()->SetGraphicsRootDescriptorTable(2, TextureManager::GetInstance()->GetTexture(textureName_).GetHandleGPU());
 
 	p_fngine_->GetCommand().GetList().GetList()->DrawIndexedInstanced(6, numInstance, 0, 0, 0);
+
+	DrawDebug();
 }
 
 void Particle::DrawDebug() {
+#ifdef USE_IMGUI
 	// DrawDebugの描画
 	// [ Emitter ]
 	for (const auto& emitter : emitters_) {
 		emitter->DrawDebug();
 	}
+
+	// [ ForceField ]
+	for (const auto& filed : forceFields_) {
+		filed->DrawDebug();
+	}
+#endif//USE_IMGUI
 }
 
 void Particle::ImGui() {
@@ -244,11 +253,28 @@ void Particle::ImGui() {
 	if (ImGui::Button("FieldClear")) {
 		forceFields_.clear();
 	}
-	ImGui::End();
-	// [ ForceField ]
-	for (const auto& filed : forceFields_) {
-		filed->DrawDebug();
+
+	if (ImGui::TreeNode("ForceField")) {
+		for (const auto& field : forceFields_) {
+			if (ImGui::TreeNode(field->GetName().c_str())) {
+				field->DrawImGui();
+				ImGui::TreePop();
+			}
+		}
+		ImGui::TreePop();
 	}
+
+	if (ImGui::TreeNode("Emitters")) {
+		for (const auto& emitter : emitters_) {
+			if (ImGui::TreeNode(emitter->name_.c_str())) {
+				emitter->DrawImGui();
+				ImGui::TreePop();
+			}
+		}
+		ImGui::TreePop();
+	}
+
+	ImGui::End();
 #endif
 }
 

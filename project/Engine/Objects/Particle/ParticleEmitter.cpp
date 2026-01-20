@@ -18,29 +18,6 @@ void ParticleEmitter::Update(Particle* particleSystem) {
 	for (uint32_t i = 0;i < emitNum_;++i) {
 		Emit(particleSystem);
 	}
-
-	// *** 調整 ***
-#ifdef USE_IMGUI
-	// [ 位置情報の更新 ]
-	Vector3 pos = worldTransform_.get_.Translation();
-	int num = emitNum_;
-	std::string name = "ParticleEmiiter" + name_;
-	ImGui::Begin(name.c_str());
-	ImGui::DragFloat3("pos", &pos.x);
-	ImGui::DragFloat("spawnRadius", &spawnRadius_,0.01f,0.0f);
-	spawnRadius_ = std::clamp(spawnRadius_, 0.0f, 1000.0f);
-	ImGui::DragFloat("minLife", &minLifeTime_, 1.0f, 0.0f);
-	ImGui::DragFloat("maxLife", &maxLifeTime_);
-	maxLifeTime_ = minLifeTime_ > maxLifeTime_ ? minLifeTime_ : maxLifeTime_;
-	ImGui::DragFloat3("minSpeed", &minVelocity_.x, 0.01f);
-	ImGui::DragFloat3("maxSpeed", &maxVelocity_.x, 0.01f);
-	ImGui::SliderInt("emitNum", &num, 0, 100);
-	ImGui::ColorEdit4("Start color", &startColor_.x);
-	ImGui::ColorEdit4("End color", &endColor_.x);
-	ImGui::End();
-	emitNum_ = num;
-	worldTransform_.set_.Translation(pos);
-#endif
 }
 
 void ParticleEmitter::Emit(Particle* particleSystem) {
@@ -96,6 +73,28 @@ void ParticleEmitter::DrawDebug() {
 	obj_->SetWVPData(CameraSystem::GetInstance()->GetActiveCamera()->DrawCamera(obj_->worldTransform_.mat_));
 	obj_->Draw(ObjectDrawType::WIREFRAME);
 #endif// _DEBUG
+}
+
+void ParticleEmitter::DrawImGui() {
+	// *** 調整 ***
+#ifdef USE_IMGUI
+	// [ 位置情報の更新 ]
+	Vector3 pos = worldTransform_.get_.Translation();
+	int num = emitNum_;
+	ImGui::DragFloat3("pos", &pos.x);
+	ImGui::DragFloat("spawnRadius", &spawnRadius_, 0.01f, 0.0f);
+	spawnRadius_ = std::clamp(spawnRadius_, 0.0f, 1000.0f);
+	ImGui::DragFloat("minLife", &minLifeTime_, 1.0f, 0.0f);
+	ImGui::DragFloat("maxLife", &maxLifeTime_);
+	maxLifeTime_ = minLifeTime_ > maxLifeTime_ ? minLifeTime_ : maxLifeTime_;
+	ImGui::DragFloat3("minSpeed", &minVelocity_.x, 0.01f);
+	ImGui::DragFloat3("maxSpeed", &maxVelocity_.x, 0.01f);
+	ImGui::SliderInt("emitNum", &num, 0, 100);
+	ImGui::ColorEdit4("Start color", &startColor_.x);
+	ImGui::ColorEdit4("End color", &endColor_.x);
+	emitNum_ = num;
+	worldTransform_.set_.Translation(pos);
+#endif
 }
 
 json ParticleEmitter::SaveData() {

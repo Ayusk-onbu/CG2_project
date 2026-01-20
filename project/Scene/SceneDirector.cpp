@@ -31,6 +31,7 @@ void SceneDirector::Update() {
 	}
 	p_fngine_->GetPointLight().Update();
 	p_fngine_->GetSpotLight().Update();
+	p_fngine_->GetAreaLight().Update();
 }
 
 void SceneDirector::Draw() {

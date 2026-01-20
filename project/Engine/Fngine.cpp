@@ -267,6 +267,7 @@ void Fngine::Initialize() {
 	light_.Initialize(d3d12_);
 	pointLight_.Initialize(this);
 	spotLight_.Initialize(this);
+	areaLight_.Initialize(this);
 	cameraForGPU_.Initialize(this);
 }
 

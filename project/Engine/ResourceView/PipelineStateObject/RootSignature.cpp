@@ -9,19 +9,25 @@ void RootSignature::CreateRootSignature(D3D12System& d3d12, ROOTTYPE type) {
 		descriptionRootSignature.Flags =
 			D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT;
 
-		// SRVの設定で必ず定義しなくてはいけないモノっぽい
-		D3D12_DESCRIPTOR_RANGE descriptorRange[1] = {};
-		// 何で始まるのか　今回はt0からなので0
-		descriptorRange[0].BaseShaderRegister = 0;
-		// SRVのテーブルは何個あるのか　今回はTextureのみなので1
-		descriptorRange[0].NumDescriptors = 1;
-		// デスクリプタの数はいくつなのか 今回はTextureなのでSRVだよね
-		descriptorRange[0].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
-		// デーブル内でのオフセット（どこから開始するのか）
-		descriptorRange[0].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
+		D3D12_DESCRIPTOR_RANGE rangeT0[1] = {};
+		rangeT0[0].BaseShaderRegister = 0; // t0
+		rangeT0[0].NumDescriptors = 1;
+		rangeT0[0].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
+		rangeT0[0].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
 
+		D3D12_DESCRIPTOR_RANGE rangeT1[1] = {};
+		rangeT1[0].BaseShaderRegister = 1; // t1 (LTC1)
+		rangeT1[0].NumDescriptors = 1;
+		rangeT1[0].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
+		rangeT1[0].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
+
+		D3D12_DESCRIPTOR_RANGE rangeT2[1] = {};
+		rangeT2[0].BaseShaderRegister = 2; // t2 (LTC2)
+		rangeT2[0].NumDescriptors = 1;
+		rangeT2[0].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
+		rangeT2[0].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
 		//RootParameterの作成。複数設定できるので配列(CBufferの数に応じて増やす)
-		D3D12_ROOT_PARAMETER rootParameters[7] = {};
+		D3D12_ROOT_PARAMETER rootParameters[10] = {};
 
 		// Pixel Shader のConstantBuffer<>のb0に設定しているやつについて
 		rootParameters[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;//Use CBV
@@ -44,8 +50,8 @@ void RootSignature::CreateRootSignature(D3D12System& d3d12, ROOTTYPE type) {
 		// Pixel Shader のDesciptorTable(SRV)のt0に設定しているやつについて
 		rootParameters[2].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;//Use DescriptorTable
 		rootParameters[2].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;// PixelShader Use
-		rootParameters[2].DescriptorTable.pDescriptorRanges = descriptorRange;//Tableの中身の配列を指定
-		rootParameters[2].DescriptorTable.NumDescriptorRanges = _countof(descriptorRange);//Tableで利用する数
+		rootParameters[2].DescriptorTable.pDescriptorRanges = rangeT0;//Tableの中身の配列を指定
+		rootParameters[2].DescriptorTable.NumDescriptorRanges = _countof(rangeT0);//Tableで利用する数
 
 		// Pixel Shader のConstantBuffer<>のb1に設定しているやつについて
 		rootParameters[3].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;//Use CBV
@@ -65,7 +71,24 @@ void RootSignature::CreateRootSignature(D3D12System& d3d12, ROOTTYPE type) {
 		// Pixel Shader のConstantBuffer<>のb4に設定しているやつについて(CameraPosition)
 		rootParameters[6].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;//Use CBV
 		rootParameters[6].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;//Use PixelShader
-		rootParameters[6].Descriptor.ShaderRegister = 4;//レジスタ番号3(hlslのやつ)とバインド
+		rootParameters[6].Descriptor.ShaderRegister = 4;//レジスタ番号4(hlslのやつ)とバインド
+
+		// Pixel Shader のConstantBuffer<>のb5に設定しているやつについて(CameraPosition)
+		rootParameters[7].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;//Use CBV
+		rootParameters[7].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;//Use PixelShader
+		rootParameters[7].Descriptor.ShaderRegister = 5;//レジスタ番号5(hlslのやつ)とバインド
+
+		// [3] LTC1 Texture (t1) - 新設
+		rootParameters[8].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
+		rootParameters[8].DescriptorTable.pDescriptorRanges = rangeT1;
+		rootParameters[8].DescriptorTable.NumDescriptorRanges = 1;
+		rootParameters[8].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
+
+		// [4] LTC2 Texture (t2) - 新設
+		rootParameters[9].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
+		rootParameters[9].DescriptorTable.pDescriptorRanges = rangeT2;
+		rootParameters[9].DescriptorTable.NumDescriptorRanges = 1;
+		rootParameters[9].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
 
 		descriptionRootSignature.pParameters = rootParameters;//ルートパラメータ配列へのポインタ
 		descriptionRootSignature.NumParameters = _countof(rootParameters);//配列の長さ

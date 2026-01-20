@@ -18,7 +18,7 @@ void Player3D::ApplyGlobalVariables() {
 void Player3D::Initialize(Fngine* fngine)
 {
 	obj_ = std::make_unique<ModelObject>();
-	obj_->modelName_ = "player";
+	obj_->modelName_ = "walk";
 	obj_->textureName_ = "ulthimaSky";
 	obj_->Initialize(fngine);
 	obj_->worldTransform_.set_.Scale({ 1.0f,1.0f,1.0f });
@@ -59,14 +59,14 @@ void Player3D::Initialize(Fngine* fngine)
 
 	ApplyGlobalVariables();
 
-	//animation_ = std::make_unique<Animation>();
-	//animation_->LoadAnimationFile("resources/Human", "walk.gltf");
-	//animation_->SetIsLoop(true);
+	animation_ = std::make_unique<Animation>();
+	animation_->LoadAnimationFile("resources/Human", "walk.gltf");
+	animation_->SetIsLoop(true);
 
-	//skeleton_ = std::make_unique<Skeleton>();
-	//skeleton_->CreateSkeleton(obj_->GetNode());
+	skeleton_ = std::make_unique<Skeleton>();
+	skeleton_->CreateSkeleton(obj_->GetNode());
 
-	//obj_->skinCluster_.Create(fngine, *skeleton_, obj_->GetModelData());
+	obj_->skinCluster_.Create(fngine, *skeleton_, obj_->GetModelData());
 
 	fire_ = std::make_unique<Particle>(fngine);
 	fire_->Initialize(200,"Fire");
@@ -134,10 +134,10 @@ void Player3D::Update()
 		obj_->worldTransform_.set_.Scale({ obj_->worldTransform_.get_.Scale().x - 0.01f,obj_->worldTransform_.get_.Scale().y - 0.01f ,obj_->worldTransform_.get_.Scale().z - 0.01f });
 	}
 
-	/*animation_->TimeFlow();
+	animation_->TimeFlow();
 	animation_->ApplyAnimation(*skeleton_.get());
 	skeleton_->Update();
-	obj_->skinCluster_.Update(*skeleton_);*/
+	obj_->skinCluster_.Update(*skeleton_);
 
 	fire_->SetPosition(obj_->worldTransform_.transform_.translation_);
 	fire_->Update();

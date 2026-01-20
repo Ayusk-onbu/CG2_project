@@ -35,18 +35,6 @@ void GravityForceField::ApplyForce(ParticleData* info) {
 }
 
 void GravityForceField::DrawDebug() {
-	std::string name = "GravityForce" + name_;
-#ifdef USE_IMGUI
-	ImGui::Begin(name.c_str());
-	ImGui::DragFloat3("pos", &worldTransform_.transform_.translation_.x);
-	ImGui::DragFloat3("Direction", &direction_.x);
-	ImGui::DragFloat("radius", &radius_);
-	if (ImGui::Button("IsView")) {
-		isVisible_ = isVisible_ == true ? false : true;
-	}
-	ImGui::End();
-#endif
-
 	if (isVisible_) {
 		// 方向と大きさが分かるようにする
 		obj_->worldTransform_.transform_.translation_ = worldTransform_.transform_.translation_;
@@ -55,6 +43,17 @@ void GravityForceField::DrawDebug() {
 		obj_->SetWVPData(CameraSystem::GetInstance()->GetActiveCamera()->DrawCamera(obj_->worldTransform_.mat_));
 		obj_->Draw(ObjectDrawType::WIREFRAME);
 	}
+}
+
+void GravityForceField::DrawImGui() {
+#ifdef USE_IMGUI
+	ImGui::DragFloat3("pos", &worldTransform_.transform_.translation_.x);
+	ImGui::DragFloat3("Direction", &direction_.x);
+	ImGui::DragFloat("radius", &radius_);
+	if (ImGui::Button("IsView")) {
+		isVisible_ = isVisible_ == true ? false : true;
+	}
+#endif
 }
 
 json GravityForceField::SaveData() {
@@ -124,19 +123,6 @@ void PointForceField::ApplyForce(ParticleData* info) {
 }
 
 void PointForceField::DrawDebug() {
-
-#ifdef USE_IMGUI
-	std::string name = "PointForce" + name_;
-	ImGui::Begin(name.c_str());
-	ImGui::DragFloat3("pos", &worldTransform_.transform_.translation_.x);
-	ImGui::DragFloat("strength", &strength_);
-	ImGui::DragFloat("radius", &radius_);
-	if (ImGui::Button("IsView")) {
-		isVisible_ = isVisible_ == true ? false : true;
-	}
-	ImGui::End();
-#endif
-
 	if (isVisible_) {
 		// 吸引は青、斥力は赤
 		Vector4 color = (strength_ > 0) ? Vector4{ 0.0f,0.2f,1.0f,1.0f } : Vector4{ 1.0f,0.2f,0.0f,1.0f };
@@ -148,6 +134,17 @@ void PointForceField::DrawDebug() {
 		obj_->SetWVPData(CameraSystem::GetInstance()->GetActiveCamera()->DrawCamera(obj_->worldTransform_.mat_));
 		obj_->Draw(ObjectDrawType::WIREFRAME);
 	}
+}
+
+void PointForceField::DrawImGui() {
+#ifdef USE_IMGUI
+	ImGui::DragFloat3("pos", &worldTransform_.transform_.translation_.x);
+	ImGui::DragFloat("strength", &strength_);
+	ImGui::DragFloat("radius", &radius_);
+	if (ImGui::Button("IsView")) {
+		isVisible_ = isVisible_ == true ? false : true;
+	}
+#endif
 }
 
 json PointForceField::SaveData() {

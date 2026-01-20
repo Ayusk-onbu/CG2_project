@@ -26,6 +26,12 @@ void ObjectBase::DrawBase(ObjectDrawType type) {
 	fngine_->GetCommand().GetList().GetList()->SetGraphicsRootConstantBufferView(5, fngine_->GetPointLight().GetResource()->GetGPUVirtualAddress());
 	// SpotLight用のCBufferの設定
 	fngine_->GetCommand().GetList().GetList()->SetGraphicsRootConstantBufferView(6, fngine_->GetSpotLight().GetResource()->GetGPUVirtualAddress());
+	// AreaLight用のCBufferの設定
+	fngine_->GetCommand().GetList().GetList()->SetGraphicsRootConstantBufferView(7, fngine_->GetAreaLight().GetResource()->GetGPUVirtualAddress());
+	// t1: LTC1 (AreaLightクラスが持っているハンドルを個別に渡す)
+	fngine_->GetCommand().GetList().GetList()->SetGraphicsRootDescriptorTable(8, fngine_->GetAreaLight().GetLTC1GPUHandle());
+	// t2: LTC2
+	fngine_->GetCommand().GetList().GetList()->SetGraphicsRootDescriptorTable(9, fngine_->GetAreaLight().GetLTC2GPUHandle());
 }
 
 void ObjectBase::DrawBase(TheOrderCommand& command, PSO& pso, DirectionLight& light, Texture& tex) {
@@ -47,6 +53,12 @@ void ObjectBase::DrawBase(TheOrderCommand& command, PSO& pso, DirectionLight& li
 	fngine_->GetCommand().GetList().GetList()->SetGraphicsRootConstantBufferView(5, fngine_->GetPointLight().GetResource()->GetGPUVirtualAddress());
 	// SpotLight用のCBufferの設定
 	fngine_->GetCommand().GetList().GetList()->SetGraphicsRootConstantBufferView(6, fngine_->GetSpotLight().GetResource()->GetGPUVirtualAddress());
+	// AreaLight用のCBufferの設定
+	fngine_->GetCommand().GetList().GetList()->SetGraphicsRootConstantBufferView(7, fngine_->GetAreaLight().GetResource()->GetGPUVirtualAddress());
+	// t1: LTC1 (AreaLightクラスが持っているハンドルを個別に渡す)
+	fngine_->GetCommand().GetList().GetList()->SetGraphicsRootDescriptorTable(8, fngine_->GetAreaLight().GetLTC1GPUHandle());
+	// t2: LTC2
+	fngine_->GetCommand().GetList().GetList()->SetGraphicsRootDescriptorTable(9, fngine_->GetAreaLight().GetLTC2GPUHandle());
 }
 
 void ObjectBase::DrawBase(TheOrderCommand& command, PSO& pso, DirectionLight& light, D3D12_GPU_DESCRIPTOR_HANDLE& tex) {
@@ -68,6 +80,12 @@ void ObjectBase::DrawBase(TheOrderCommand& command, PSO& pso, DirectionLight& li
 	fngine_->GetCommand().GetList().GetList()->SetGraphicsRootConstantBufferView(5, fngine_->GetPointLight().GetResource()->GetGPUVirtualAddress());
 	// SpotLight用のCBufferの設定
 	fngine_->GetCommand().GetList().GetList()->SetGraphicsRootConstantBufferView(6, fngine_->GetSpotLight().GetResource()->GetGPUVirtualAddress());
+	// AreaLight用のCBufferの設定
+	fngine_->GetCommand().GetList().GetList()->SetGraphicsRootConstantBufferView(7, fngine_->GetAreaLight().GetResource()->GetGPUVirtualAddress());
+	// t1: LTC1 (AreaLightクラスが持っているハンドルを個別に渡す)
+	fngine_->GetCommand().GetList().GetList()->SetGraphicsRootDescriptorTable(8, fngine_->GetAreaLight().GetLTC1GPUHandle());
+	// t2: LTC2
+	fngine_->GetCommand().GetList().GetList()->SetGraphicsRootDescriptorTable(9, fngine_->GetAreaLight().GetLTC2GPUHandle());
 }
 
 void ObjectBase::DrawIndexBase(ObjectDrawType type) {
@@ -103,6 +121,7 @@ void ObjectBase::DrawIndexBase(ObjectDrawType type) {
 	fngine_->GetCommand().GetList().GetList()->SetGraphicsRootConstantBufferView(6, fngine_->GetSpotLight().GetResource()->GetGPUVirtualAddress());
 	// MatrixPalatteの設定
 	fngine_->GetCommand().GetList().GetList()->SetGraphicsRootDescriptorTable(7, skinCluster_.paletteSrvHandle_.second);
+
 }
 
 void ObjectBase::DrawIndexBase(TheOrderCommand& command, PSO& pso, DirectionLight& light, Texture& tex) {
