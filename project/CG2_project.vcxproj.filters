@@ -187,6 +187,9 @@
     <Filter Include="Game3D\Other">
       <UniqueIdentifier>{35ecde88-901f-43bb-8144-b5394c6b2065}</UniqueIdentifier>
     </Filter>
+    <Filter Include="UsefulTool\Light\AreaLight">
+      <UniqueIdentifier>{f95926ee-e817-4388-aca0-c293baf7ca99}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -582,6 +585,12 @@
     <ClCompile Include="Engine\WinApp.cpp">
       <Filter>Engine</Filter>
     </ClCompile>
+    <ClCompile Include="UsefulTool\Light\AreaLight\AreaLight.cpp">
+      <Filter>UsefulTool\Light\AreaLight</Filter>
+    </ClCompile>
+    <ClCompile Include="UsefulTool\Light\AreaLight\ltc_matrix.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="externals\imgui\imconfig.h">
@@ -919,6 +928,9 @@
     </ClInclude>
     <ClInclude Include="Engine\WinApp.h">
       <Filter>Engine</Filter>
+    </ClInclude>
+    <ClInclude Include="UsefulTool\Light\AreaLight\AreaLight.h">
+      <Filter>UsefulTool\Light\AreaLight</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

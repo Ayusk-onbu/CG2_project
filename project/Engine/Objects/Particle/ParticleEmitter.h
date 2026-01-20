@@ -23,6 +23,8 @@ public:
 
 	void DrawDebug();
 
+	void DrawImGui();
+
 	void SetMinLifeTime(float time) { minLifeTime_ = time; }
 
 	void SetMaxLifeTime(float time) { maxLifeTime_ = time; }

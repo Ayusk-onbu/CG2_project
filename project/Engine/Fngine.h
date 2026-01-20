@@ -25,6 +25,7 @@
 #include "DirectionLight.h"
 #include "PointLight.h"
 #include "SpotLight.h"
+#include "AreaLight.h"
 #include "CameraForGPU.h"
 #include "ImGuiManager.h"
 #include "Structures.h"
@@ -57,6 +58,7 @@ public:
 	DirectionLight& GetLight() { return light_; }
 	PointLight& GetPointLight() { return pointLight_; }
 	SpotLight& GetSpotLight() { return spotLight_; }
+	AreaLight& GetAreaLight() { return areaLight_; }
 	CameraForGPU& GetCameraForGPU() { return cameraForGPU_; }
 private:
 	void SettingShader();
@@ -88,6 +90,8 @@ private:
 	DirectionLight light_;
 	PointLight pointLight_;
 	SpotLight spotLight_;
+	AreaLight areaLight_;
+
 	CameraForGPU cameraForGPU_;
 };
 

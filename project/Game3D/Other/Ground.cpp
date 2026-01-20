@@ -12,6 +12,7 @@ void Ground::Update() {
 }
 
 void Ground::Draw() {
+	ImGuiManager::GetInstance()->DrawDrag("Ground:Shininess", obj_->materialData_->shininess);
 	obj_->LocalToWorld();
 	obj_->SetWVPData(CameraSystem::GetInstance()->GetActiveCamera()->DrawCamera(obj_->worldTransform_.mat_));
 	obj_->Draw();

@@ -23,6 +23,10 @@ public:
 
 	virtual void DrawDebug() = 0;
 
+	virtual void DrawImGui() = 0;
+
+	virtual std::string GetName() = 0;
+
 	virtual json SaveData() = 0;
 
 	virtual void LoadData(const json& data) = 0;
@@ -55,6 +59,10 @@ public:
 
 	void DrawDebug()override;
 
+	void DrawImGui()override;
+
+	std::string GetName()override { return "GravityForce" + name_; }
+
 	json SaveData()override;
 
 	void LoadData(const json& data)override;
@@ -76,6 +84,10 @@ public:
 	void ApplyForce(ParticleData* info) override;
 
 	void DrawDebug()override;
+
+	void DrawImGui()override;
+
+	std::string GetName()override { return "PointForce" + name_; }
 
 	json SaveData()override;
 
