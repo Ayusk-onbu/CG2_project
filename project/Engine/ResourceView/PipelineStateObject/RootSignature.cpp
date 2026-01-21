@@ -215,8 +215,20 @@ void RootSignature::CreateRootSignature(D3D12System& d3d12, ROOTTYPE type) {
 		// デーブル内でのオフセット（どこから開始するのか）
 		descriptorRange[0].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
 
+		D3D12_DESCRIPTOR_RANGE rangeT1[1] = {};
+		rangeT1[0].BaseShaderRegister = 1; // t1 (LTC1)
+		rangeT1[0].NumDescriptors = 1;
+		rangeT1[0].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
+		rangeT1[0].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
+
+		D3D12_DESCRIPTOR_RANGE rangeT2[1] = {};
+		rangeT2[0].BaseShaderRegister = 2; // t2 (LTC2)
+		rangeT2[0].NumDescriptors = 1;
+		rangeT2[0].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
+		rangeT2[0].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
+
 		//RootParameterの作成。複数設定できるので配列(CBufferの数に応じて増やす)
-		D3D12_ROOT_PARAMETER rootParameters[8] = {};
+		D3D12_ROOT_PARAMETER rootParameters[11] = {};
 
 		// Pixel Shader のConstantBuffer<>のb0に設定しているやつについて
 		rootParameters[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;//Use CBV
@@ -262,14 +274,31 @@ void RootSignature::CreateRootSignature(D3D12System& d3d12, ROOTTYPE type) {
 		rootParameters[6].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;//Use PixelShader
 		rootParameters[6].Descriptor.ShaderRegister = 4;//レジスタ番号3(hlslのやつ)とバインド
 
+		// Pixel Shader のConstantBuffer<>のb5に設定しているやつについて(CameraPosition)
+		rootParameters[7].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;//Use CBV
+		rootParameters[7].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;//Use PixelShader
+		rootParameters[7].Descriptor.ShaderRegister = 5;//レジスタ番号5(hlslのやつ)とバインド
+
+		// [3] LTC1 Texture (t1) - 新設
+		rootParameters[8].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
+		rootParameters[8].DescriptorTable.pDescriptorRanges = rangeT1;
+		rootParameters[8].DescriptorTable.NumDescriptorRanges = 1;
+		rootParameters[8].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
+
+		// [4] LTC2 Texture (t2) - 新設
+		rootParameters[9].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
+		rootParameters[9].DescriptorTable.pDescriptorRanges = rangeT2;
+		rootParameters[9].DescriptorTable.NumDescriptorRanges = 1;
+		rootParameters[9].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
+
 		// 今回StructuredBuffer（SRV）なので　DescriptorTable
-		rootParameters[7].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
+		rootParameters[10].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
 		// 使うShaderの種類
-		rootParameters[7].ShaderVisibility = D3D12_SHADER_VISIBILITY_VERTEX;
+		rootParameters[10].ShaderVisibility = D3D12_SHADER_VISIBILITY_VERTEX;
 		// StructuredBufferの t0 なので 0
-		rootParameters[7].Descriptor.ShaderRegister = 0;
-		rootParameters[7].DescriptorTable.pDescriptorRanges = descriptorRange;
-		rootParameters[7].DescriptorTable.NumDescriptorRanges = _countof(descriptorRange);
+		rootParameters[10].Descriptor.ShaderRegister = 0;
+		rootParameters[10].DescriptorTable.pDescriptorRanges = descriptorRange;
+		rootParameters[10].DescriptorTable.NumDescriptorRanges = _countof(descriptorRange);
 
 		descriptionRootSignature.pParameters = rootParameters;//ルートパラメータ配列へのポインタ
 		descriptionRootSignature.NumParameters = _countof(rootParameters);//配列の長さ

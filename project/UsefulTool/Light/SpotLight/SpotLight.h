@@ -36,5 +36,10 @@ private:
 	MultiSpotLightData* data_ = nullptr;
 	float angles_[kMaxSpotLights];
 	float falloffs_[kMaxSpotLights];
+
+	float timer_ = 0.0f;                       // 時間の経過
+	float speedOffset_[kMaxSpotLights];        // ライトごとの回転速度の差
+	float radiusOffset_[kMaxSpotLights];       // ライトごとの円の半径
+	Vector3 basePosition_[kMaxSpotLights];     // ライトの基準位置
 };
 

@@ -3,10 +3,10 @@
 #include <string>
 #include <format>
 #include <filesystem>
-#include <fstream>//ファイルに書いたり読んだりするライブラリ
+#include <fstream>
 #include <sstream>
-#include <chrono>//時間を扱うライブラリ
-#include <dxgidebug.h>//0103 ReportLiveobject
+#include <chrono>
+#include <dxgidebug.h>
 #include <cmath>
 #include <wrl.h>
 #include "Window.h"
