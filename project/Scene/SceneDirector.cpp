@@ -7,15 +7,18 @@ SceneDirector::~SceneDirector() {
 }
 
 void SceneDirector::Initialize(Scene& firstScene) {
+	// Loadは何か他のクラスにまとめるべきなのではないのであろうか
 	LoadModelData();
 	LoadTexture();
 	LoadMusic();
 
+	// 最初のシーンの初期化処理
 	currentScene_ = &firstScene;
 	currentScene_->FngineSetUp(*p_fngine_);
 	currentScene_->Initialize();
 	currentScene_->GetSceneDirector(this);
 
+	// 使うカメラの作成
 	CameraSystem::GetInstance()->MakeCamera("NormalCamera", CameraType::Normal);
 	CameraSystem::GetInstance()->MakeCamera("DebugCamera", CameraType::Debug);
 	CameraSystem::GetInstance()->MakeCamera("GameCamera", CameraType::Game);
@@ -23,19 +26,50 @@ void SceneDirector::Initialize(Scene& firstScene) {
 }
 
 void SceneDirector::Update() {
+	// 更新処理
+
+	// [ カメラ ]
 	CameraSystem::GetInstance()->Update();
+	// [ カメラの情報をGPUへ ]
 	p_fngine_->GetCameraForGPU().Update(CameraSystem::GetInstance()->GetActiveCamera()->GetTranslation());
-	//while()
-	if (isGameRunning_) {
-		currentScene_->Update();
+
+	bool pauseNow = PauseSystem::GetInstance()->Update(currentScene_->CanPause());
+
+	// [ *** ポーズ中じゃない *** ]
+	if (pauseNow == false) {
+		// [ ゲーム ]
+		if (isGameRunning_) {
+			// [ シーン ]
+			currentScene_->Update();
+		}
 	}
+	// [ *** ポーズ中 *** ]
+	else if (pauseNow == true) {
+		currentScene_->PauseUpdate();
+	}
+
+	// [ ライト ] 
 	p_fngine_->GetPointLight().Update();
 	p_fngine_->GetSpotLight().Update();
 	p_fngine_->GetAreaLight().Update();
 }
 
 void SceneDirector::Draw() {
-	currentScene_->Draw();
+	// 描画処理
+	bool pauseNow = PauseSystem::GetInstance()->GetIsPause();
+	
+	// [ ポーズ中じゃない ]
+	if (pauseNow == false) {
+		// [ ゲーム ]
+		if (isGameRunning_) {
+			// [ シーン ]
+			currentScene_->Draw();
+		}
+	}
+	// [ ポーズ中 ]
+	else if (pauseNow == true) {
+		currentScene_->PauseDraw();
+	}
 }
 
 void SceneDirector::ImGui() {
@@ -46,8 +80,15 @@ void SceneDirector::ImGui() {
 
 void SceneDirector::RequestChangeScene(Scene* newScene) {
 	if (currentScene_) {
+		// 今使っているsceneを削除
 		delete currentScene_;
 	}
+
+	// そんなことは起きないと思うけど一応
+	// ポーズが切れるようにする
+	PauseSystem::GetInstance()->SetPause(false);
+
+	// 新しいsceneを取得
 	currentScene_ = newScene;
 	currentScene_->FngineSetUp(*p_fngine_);
 	currentScene_->Initialize();

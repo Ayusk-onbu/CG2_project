@@ -20,6 +20,9 @@ public:
 	void Initialize() override;
 	void Update() override;
 	void Draw() override;
+	void PauseUpdate()override;
+	void PauseDraw()override;
+	bool CanPause()const override { return true; }
 
 private:
 	float toGameTimer_ = 0.0f;

@@ -190,6 +190,9 @@
     <Filter Include="UsefulTool\Light\AreaLight">
       <UniqueIdentifier>{f95926ee-e817-4388-aca0-c293baf7ca99}</UniqueIdentifier>
     </Filter>
+    <Filter Include="UsefulTool\Pause">
+      <UniqueIdentifier>{33b6d334-057f-48c5-b851-9205c5554712}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -589,7 +592,10 @@
       <Filter>UsefulTool\Light\AreaLight</Filter>
     </ClCompile>
     <ClCompile Include="UsefulTool\Light\AreaLight\ltc_matrix.cpp">
-      <Filter>ソース ファイル</Filter>
+      <Filter>UsefulTool\Light\AreaLight</Filter>
+    </ClCompile>
+    <ClCompile Include="UsefulTool\Pause\PauseSystem.cpp">
+      <Filter>UsefulTool\Pause</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -931,6 +937,9 @@
     </ClInclude>
     <ClInclude Include="UsefulTool\Light\AreaLight\AreaLight.h">
       <Filter>UsefulTool\Light\AreaLight</Filter>
+    </ClInclude>
+    <ClInclude Include="UsefulTool\Pause\PauseSystem.h">
+      <Filter>UsefulTool\Pause</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -61,3 +61,11 @@ void TestScene::Draw() {
 	//title_->Draw();
 	//fade_->Draw();
 }
+
+void TestScene::PauseUpdate() {
+
+}
+
+void TestScene::PauseDraw() {
+	Draw();
+}

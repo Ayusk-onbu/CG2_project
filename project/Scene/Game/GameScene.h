@@ -19,8 +19,14 @@ public:// Sceneにまつわる関数
 	void Initialize()override;
 	void Update()override;
 	void Draw()override;
+	void PauseUpdate()override;
+	void PauseDraw()override;
+	bool CanPause()const override { return true; }
 private:
 	void CollisionCheck();
+private:// ポーズ関係
+	float startPauseTimer_ = 0.0f;
+	std::unique_ptr<SpriteObject>pause_;
 private:
 	void ToScene();
 	void ToClearScene();
