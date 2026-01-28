@@ -190,6 +190,12 @@
     <Filter Include="UsefulTool\Light\AreaLight">
       <UniqueIdentifier>{f95926ee-e817-4388-aca0-c293baf7ca99}</UniqueIdentifier>
     </Filter>
+    <Filter Include="UsefulTool\Pause">
+      <UniqueIdentifier>{33b6d334-057f-48c5-b851-9205c5554712}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="UsefulTool\UI">
+      <UniqueIdentifier>{724fa077-e05d-49b1-a456-bb02c087a621}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -589,6 +595,21 @@
       <Filter>UsefulTool\Light\AreaLight</Filter>
     </ClCompile>
     <ClCompile Include="UsefulTool\Light\AreaLight\ltc_matrix.cpp">
+      <Filter>UsefulTool\Light\AreaLight</Filter>
+    </ClCompile>
+    <ClCompile Include="UsefulTool\Pause\PauseSystem.cpp">
+      <Filter>UsefulTool\Pause</Filter>
+    </ClCompile>
+    <ClCompile Include="UsefulTool\UI\UIElement.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="UsefulTool\UI\UIContainer.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="UsefulTool\UI\UIHAnimation\UIHAnimation.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="UsefulTool\UI\UIHEditor\UIHEditor.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
   </ItemGroup>
@@ -931,6 +952,21 @@
     </ClInclude>
     <ClInclude Include="UsefulTool\Light\AreaLight\AreaLight.h">
       <Filter>UsefulTool\Light\AreaLight</Filter>
+    </ClInclude>
+    <ClInclude Include="UsefulTool\Pause\PauseSystem.h">
+      <Filter>UsefulTool\Pause</Filter>
+    </ClInclude>
+    <ClInclude Include="UsefulTool\UI\UIElement.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="UsefulTool\UI\UIContainer.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="UsefulTool\UI\UIHAnimation\UIHAnimation.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="UsefulTool\UI\UIHEditor\UIHEditor.h">
+      <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

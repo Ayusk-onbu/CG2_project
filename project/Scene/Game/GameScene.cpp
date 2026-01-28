@@ -47,6 +47,12 @@ void GameScene::Initialize() {
 	playUI_->worldTransform_.set_.Scale({ 0.65f, 0.65f,0.0f });
 	playUI_->SetColor({ 1.0f,1.0f,1.0f,1.0f });
 
+	// ポーズ関係のUI
+	pause_ = std::make_unique<SpriteObject>(p_fngine_);
+	pause_->Initialize("GridLine");
+	pause_->worldTransform_.set_.Scale({ 1280.0f / 16.0f, 720.0f / 16.0f, 0.0f });
+	pause_->worldTransform_.set_.Translation({ 640.0f, 360.0f, 0.0f });
+	pause_->SetColor({ 0.2f, 0.2f, 0.2f, 0.5f });
 }
 
 void GameScene::Update(){
@@ -166,4 +172,16 @@ void GameScene::FirstFade(float time) {
 	float alpha = 1.0f;
 	alpha = Easing_Float(1.0f, 0.0f, toGameTimer_, 3.0f, EASINGTYPE::None);
 	purposeUI_->SetColor({ 1.0f,1.0f,1.0f,alpha });
+}
+
+void GameScene::PauseUpdate() {
+
+}
+
+void GameScene::PauseDraw() {
+	ground_->Draw();
+	boss_->Draw();
+	player_->Draw();
+
+	pause_->Draw();
 }

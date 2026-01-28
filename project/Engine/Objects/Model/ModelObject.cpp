@@ -44,6 +44,11 @@ void ModelObject::Draw(ObjectDrawType type) {
 			fngine_->GetCommand().GetList().GetList()->DrawIndexedInstanced(UINT(modelData_.indices.size()), 1, 0, 0, 0);
 			return;
 		}
+		if (type == ObjectDrawType::Animation) {
+			DrawIndexBase();
+			fngine_->GetCommand().GetList().GetList()->DrawIndexedInstanced(UINT(modelData_.indices.size()), 1, 0, 0, 0);
+			return;
+		}
 		DrawBase(type);
 		fngine_->GetCommand().GetList().GetList()->IASetIndexBuffer(&indexBufferView_);
 		fngine_->GetCommand().GetList().GetList()->DrawIndexedInstanced(UINT(modelData_.indices.size()), 1, 0, 0, 0);
@@ -98,7 +103,18 @@ ModelData ModelObject::LoadFiles(const std::string& fileName, const std::string&
 
 	for (uint32_t meshIndex = 0;meshIndex < scene->mNumMeshes;++meshIndex) {
 		aiMesh* mesh = scene->mMeshes[meshIndex];
+
+		if (mesh->HasNormals() == false) {
+			mesh->mNormals = new aiVector3D[mesh->mNumVertices];
+		}
 		assert(mesh->HasNormals());// 法線を持っているかのチェック
+
+		if(!mesh->HasTextureCoords(0)) {
+			mesh->mTextureCoords[0] = new aiVector3D[mesh->mNumVertices];
+			for (uint32_t i = 0; i < mesh->mNumVertices; ++i) {
+				mesh->mTextureCoords[0][i] = aiVector3D(0.0f, 0.0f, 0.0f);
+			}
+		}
 		assert(mesh->HasTextureCoords(0));// Texcoordを持っているかのチェック
 		// ここからmeshの中身（Face）の解析
 		// 頂点数分のメモリを確保する

@@ -33,6 +33,7 @@
 #include "InputManager.h"
 #include "CameraSystem.h"
 #include "RandomUtils.h"
+#include "PauseSystem.h"
 #include "Music.h"
 #include "Easing.h"
 #include "externals/DirectXTex/DirectXTex.h"

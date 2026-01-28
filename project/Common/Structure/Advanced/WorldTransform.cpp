@@ -70,6 +70,9 @@ void WorldTransform::LocalToWorld() {
 	mat_ = Matrix4x4::Multiply(scaleMat, rotationMat);
 	mat_ = Matrix4x4::Multiply(mat_, translateMat);
 	//mat_ = Matrix4x4::Make::Affine(get_.Scale(), get_.Rotation(), get_.Translation());
+	if (parent_) {
+		mat_ = Matrix4x4::Multiply(mat_, *parent_);
+	}
 
 	isDirty_ = false;
 	get_.parent_->isDirty_ = false;

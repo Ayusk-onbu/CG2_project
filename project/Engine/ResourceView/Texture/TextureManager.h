@@ -20,6 +20,7 @@ public:
 	void Initialize(Fngine& fngine);
 	std::string LoadTexture(const std::string& filename,const std::string& filePath);
 	Texture& GetTexture(const std::string& name);
+	std::unordered_map<std::string, std::unique_ptr<Texture>>& GetData() { return textures_; }
 private:
 	static std::unique_ptr<TextureManager>instance_;
 	Fngine* p_fngine_ = nullptr;

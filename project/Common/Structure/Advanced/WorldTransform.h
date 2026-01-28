@@ -35,6 +35,7 @@ public:
 	Get get_;
 	Set set_;
 
+	Matrix4x4* parent_ = nullptr;
 	Transform transform_;
 	Matrix4x4 mat_;
 	bool isDirty_ = false;

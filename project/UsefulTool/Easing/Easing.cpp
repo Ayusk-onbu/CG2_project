@@ -89,8 +89,6 @@ float Easing_Float(
     else if (easeType == EASINGTYPE::OutBounce) { x = OutBounce(x); }
     else if (easeType == EASINGTYPE::InOutBounce) { x = InOutBounce(x); }
 
-    // IF文を else if で連結して処理効率を向上させています。
-
     // magNumによる調整
     // magNumが 1 の場合は影響なし
     x = std::powf(x, magNum);
@@ -143,4 +141,194 @@ Vector4 Easing_Vector4(const Vector4& startValue, const Vector4& endValue, float
 	ret.z = float(startValue.z * (1 - x) + endValue.z * x);
 	ret.w = float(startValue.w * (1 - x) + endValue.w * x);
 	return ret;
+}
+
+float Easing(const float& startValue, const float& endValue, float nowFrame, const float& endFrame, EASINGTYPE easeType, float magNum) {
+    // 進行度を 0 から 1 の範囲で計算
+    float x = nowFrame / endFrame;
+
+    // 選択されたイージングタイプに応じて x の値を変換
+    if (easeType == EASINGTYPE::None) { /* x = x; */ }
+    else if (easeType == EASINGTYPE::InSine) { x = InSine(x); }
+    else if (easeType == EASINGTYPE::OutSine) { x = OutSine(x); }
+    else if (easeType == EASINGTYPE::InOutSine) { x = InOutSine(x); }
+    else if (easeType == EASINGTYPE::InQuad) { x = InQuad(x); }
+    else if (easeType == EASINGTYPE::OutQuad) { x = OutQuad(x); }
+    else if (easeType == EASINGTYPE::InOutQuad) { x = InOutQuad(x); }
+    else if (easeType == EASINGTYPE::InCubic) { x = InCubic(x); }
+    else if (easeType == EASINGTYPE::OutCubic) { x = OutCubic(x); }
+    else if (easeType == EASINGTYPE::InOutCubic) { x = InOutCubic(x); }
+    else if (easeType == EASINGTYPE::InQuart) { x = InQuart(x); }
+    else if (easeType == EASINGTYPE::OutQuart) { x = OutQuart(x); }
+    else if (easeType == EASINGTYPE::InOutQuart) { x = InOutQuart(x); }
+    else if (easeType == EASINGTYPE::InQuint) { x = InQuint(x); }
+    else if (easeType == EASINGTYPE::OutQuint) { x = OutQuint(x); }
+    else if (easeType == EASINGTYPE::InOutQuint) { x = InOutQuint(x); }
+    else if (easeType == EASINGTYPE::InExpo) { x = InExpo(x); }
+    else if (easeType == EASINGTYPE::OutExpo) { x = OutExpo(x); }
+    else if (easeType == EASINGTYPE::InOutExpo) { x = InOutExpo(x); }
+    else if (easeType == EASINGTYPE::InCirc) { x = InCirc(x); }
+    else if (easeType == EASINGTYPE::OutCirc) { x = OutCirc(x); }
+    else if (easeType == EASINGTYPE::InOutCirc) { x = InOutCirc(x); }
+    else if (easeType == EASINGTYPE::InBack) { x = InBack(x); }
+    else if (easeType == EASINGTYPE::OutBack) { x = OutBack(x); }
+    else if (easeType == EASINGTYPE::InOutBack) { x = InOutBack(x); }
+    else if (easeType == EASINGTYPE::InElastic) { x = InElastic(x); }
+    else if (easeType == EASINGTYPE::OutElastic) { x = OutElastic(x); }
+    else if (easeType == EASINGTYPE::InOutElastic) { x = InOutElastic(x); }
+    else if (easeType == EASINGTYPE::InBounce) { x = InBounce(x); }
+    else if (easeType == EASINGTYPE::OutBounce) { x = OutBounce(x); }
+    else if (easeType == EASINGTYPE::InOutBounce) { x = InOutBounce(x); }
+
+    // magNumによる調整
+    // magNumが 1 の場合は影響なし
+    x = std::powf(x, magNum);
+
+    // 線形補間 (Lerp) を適用して結果の値を計算
+    // (startValue * (1 - x) + endValue * x)
+    return startValue * (1.0f - x) + endValue * x;
+}
+Vector2 Easing(const Vector2& startValue, const Vector2& endValue, float nowFrame, const float& endFrame, EASINGTYPE easeType, float magNum) {
+    // 進行度を 0 から 1 の範囲で計算
+    float x = nowFrame / endFrame;
+
+    // 選択されたイージングタイプに応じて x の値を変換
+    if (easeType == EASINGTYPE::None) { /* x = x; */ }
+    else if (easeType == EASINGTYPE::InSine) { x = InSine(x); }
+    else if (easeType == EASINGTYPE::OutSine) { x = OutSine(x); }
+    else if (easeType == EASINGTYPE::InOutSine) { x = InOutSine(x); }
+    else if (easeType == EASINGTYPE::InQuad) { x = InQuad(x); }
+    else if (easeType == EASINGTYPE::OutQuad) { x = OutQuad(x); }
+    else if (easeType == EASINGTYPE::InOutQuad) { x = InOutQuad(x); }
+    else if (easeType == EASINGTYPE::InCubic) { x = InCubic(x); }
+    else if (easeType == EASINGTYPE::OutCubic) { x = OutCubic(x); }
+    else if (easeType == EASINGTYPE::InOutCubic) { x = InOutCubic(x); }
+    else if (easeType == EASINGTYPE::InQuart) { x = InQuart(x); }
+    else if (easeType == EASINGTYPE::OutQuart) { x = OutQuart(x); }
+    else if (easeType == EASINGTYPE::InOutQuart) { x = InOutQuart(x); }
+    else if (easeType == EASINGTYPE::InQuint) { x = InQuint(x); }
+    else if (easeType == EASINGTYPE::OutQuint) { x = OutQuint(x); }
+    else if (easeType == EASINGTYPE::InOutQuint) { x = InOutQuint(x); }
+    else if (easeType == EASINGTYPE::InExpo) { x = InExpo(x); }
+    else if (easeType == EASINGTYPE::OutExpo) { x = OutExpo(x); }
+    else if (easeType == EASINGTYPE::InOutExpo) { x = InOutExpo(x); }
+    else if (easeType == EASINGTYPE::InCirc) { x = InCirc(x); }
+    else if (easeType == EASINGTYPE::OutCirc) { x = OutCirc(x); }
+    else if (easeType == EASINGTYPE::InOutCirc) { x = InOutCirc(x); }
+    else if (easeType == EASINGTYPE::InBack) { x = InBack(x); }
+    else if (easeType == EASINGTYPE::OutBack) { x = OutBack(x); }
+    else if (easeType == EASINGTYPE::InOutBack) { x = InOutBack(x); }
+    else if (easeType == EASINGTYPE::InElastic) { x = InElastic(x); }
+    else if (easeType == EASINGTYPE::OutElastic) { x = OutElastic(x); }
+    else if (easeType == EASINGTYPE::InOutElastic) { x = InOutElastic(x); }
+    else if (easeType == EASINGTYPE::InBounce) { x = InBounce(x); }
+    else if (easeType == EASINGTYPE::OutBounce) { x = OutBounce(x); }
+    else if (easeType == EASINGTYPE::InOutBounce) { x = InOutBounce(x); }
+
+    // magNumによる調整
+    // magNumが 1 の場合は影響なし
+    x = std::powf(x, magNum);
+
+    // 線形補間 (Lerp) を適用して結果の値を計算
+    Vector2 ret;
+    ret.x = float(startValue.x * (1 - x) + endValue.x * x);
+    ret.y = float(startValue.y * (1 - x) + endValue.y * x);
+    return ret;
+}
+Vector3 Easing(const Vector3& startValue, const Vector3& endValue, float nowFrame, const float& endFrame, EASINGTYPE easeType, float magNum) {
+    // 進行度を 0 から 1 の範囲で計算
+    float x = nowFrame / endFrame;
+
+    // 選択されたイージングタイプに応じて x の値を変換
+    if (easeType == EASINGTYPE::None) { /* x = x; */ }
+    else if (easeType == EASINGTYPE::InSine) { x = InSine(x); }
+    else if (easeType == EASINGTYPE::OutSine) { x = OutSine(x); }
+    else if (easeType == EASINGTYPE::InOutSine) { x = InOutSine(x); }
+    else if (easeType == EASINGTYPE::InQuad) { x = InQuad(x); }
+    else if (easeType == EASINGTYPE::OutQuad) { x = OutQuad(x); }
+    else if (easeType == EASINGTYPE::InOutQuad) { x = InOutQuad(x); }
+    else if (easeType == EASINGTYPE::InCubic) { x = InCubic(x); }
+    else if (easeType == EASINGTYPE::OutCubic) { x = OutCubic(x); }
+    else if (easeType == EASINGTYPE::InOutCubic) { x = InOutCubic(x); }
+    else if (easeType == EASINGTYPE::InQuart) { x = InQuart(x); }
+    else if (easeType == EASINGTYPE::OutQuart) { x = OutQuart(x); }
+    else if (easeType == EASINGTYPE::InOutQuart) { x = InOutQuart(x); }
+    else if (easeType == EASINGTYPE::InQuint) { x = InQuint(x); }
+    else if (easeType == EASINGTYPE::OutQuint) { x = OutQuint(x); }
+    else if (easeType == EASINGTYPE::InOutQuint) { x = InOutQuint(x); }
+    else if (easeType == EASINGTYPE::InExpo) { x = InExpo(x); }
+    else if (easeType == EASINGTYPE::OutExpo) { x = OutExpo(x); }
+    else if (easeType == EASINGTYPE::InOutExpo) { x = InOutExpo(x); }
+    else if (easeType == EASINGTYPE::InCirc) { x = InCirc(x); }
+    else if (easeType == EASINGTYPE::OutCirc) { x = OutCirc(x); }
+    else if (easeType == EASINGTYPE::InOutCirc) { x = InOutCirc(x); }
+    else if (easeType == EASINGTYPE::InBack) { x = InBack(x); }
+    else if (easeType == EASINGTYPE::OutBack) { x = OutBack(x); }
+    else if (easeType == EASINGTYPE::InOutBack) { x = InOutBack(x); }
+    else if (easeType == EASINGTYPE::InElastic) { x = InElastic(x); }
+    else if (easeType == EASINGTYPE::OutElastic) { x = OutElastic(x); }
+    else if (easeType == EASINGTYPE::InOutElastic) { x = InOutElastic(x); }
+    else if (easeType == EASINGTYPE::InBounce) { x = InBounce(x); }
+    else if (easeType == EASINGTYPE::OutBounce) { x = OutBounce(x); }
+    else if (easeType == EASINGTYPE::InOutBounce) { x = InOutBounce(x); }
+
+    // magNumによる調整
+    // magNumが 1 の場合は影響なし
+    x = std::powf(x, magNum);
+
+    // 線形補間 (Lerp) を適用して結果の値を計算
+    Vector3 ret;
+    ret.x = float(startValue.x * (1 - x) + endValue.x * x);
+    ret.y = float(startValue.y * (1 - x) + endValue.y * x);
+    ret.z = float(startValue.z * (1 - x) + endValue.z * x);
+    return ret;
+}
+Vector4 Easing(const Vector4& startValue, const Vector4& endValue, float nowFrame, const float& endFrame, EASINGTYPE easeType, float magNum) {
+    // 進行度を 0 から 1 の範囲で計算
+    float x = nowFrame / endFrame;
+
+    // 選択されたイージングタイプに応じて x の値を変換
+    if (easeType == EASINGTYPE::None) { /* x = x; */ }
+    else if (easeType == EASINGTYPE::InSine) { x = InSine(x); }
+    else if (easeType == EASINGTYPE::OutSine) { x = OutSine(x); }
+    else if (easeType == EASINGTYPE::InOutSine) { x = InOutSine(x); }
+    else if (easeType == EASINGTYPE::InQuad) { x = InQuad(x); }
+    else if (easeType == EASINGTYPE::OutQuad) { x = OutQuad(x); }
+    else if (easeType == EASINGTYPE::InOutQuad) { x = InOutQuad(x); }
+    else if (easeType == EASINGTYPE::InCubic) { x = InCubic(x); }
+    else if (easeType == EASINGTYPE::OutCubic) { x = OutCubic(x); }
+    else if (easeType == EASINGTYPE::InOutCubic) { x = InOutCubic(x); }
+    else if (easeType == EASINGTYPE::InQuart) { x = InQuart(x); }
+    else if (easeType == EASINGTYPE::OutQuart) { x = OutQuart(x); }
+    else if (easeType == EASINGTYPE::InOutQuart) { x = InOutQuart(x); }
+    else if (easeType == EASINGTYPE::InQuint) { x = InQuint(x); }
+    else if (easeType == EASINGTYPE::OutQuint) { x = OutQuint(x); }
+    else if (easeType == EASINGTYPE::InOutQuint) { x = InOutQuint(x); }
+    else if (easeType == EASINGTYPE::InExpo) { x = InExpo(x); }
+    else if (easeType == EASINGTYPE::OutExpo) { x = OutExpo(x); }
+    else if (easeType == EASINGTYPE::InOutExpo) { x = InOutExpo(x); }
+    else if (easeType == EASINGTYPE::InCirc) { x = InCirc(x); }
+    else if (easeType == EASINGTYPE::OutCirc) { x = OutCirc(x); }
+    else if (easeType == EASINGTYPE::InOutCirc) { x = InOutCirc(x); }
+    else if (easeType == EASINGTYPE::InBack) { x = InBack(x); }
+    else if (easeType == EASINGTYPE::OutBack) { x = OutBack(x); }
+    else if (easeType == EASINGTYPE::InOutBack) { x = InOutBack(x); }
+    else if (easeType == EASINGTYPE::InElastic) { x = InElastic(x); }
+    else if (easeType == EASINGTYPE::OutElastic) { x = OutElastic(x); }
+    else if (easeType == EASINGTYPE::InOutElastic) { x = InOutElastic(x); }
+    else if (easeType == EASINGTYPE::InBounce) { x = InBounce(x); }
+    else if (easeType == EASINGTYPE::OutBounce) { x = OutBounce(x); }
+    else if (easeType == EASINGTYPE::InOutBounce) { x = InOutBounce(x); }
+
+    // magNumによる調整
+    // magNumが 1 の場合は影響なし
+    x = std::powf(x, magNum);
+
+    // 線形補間 (Lerp) を適用して結果の値を計算
+    Vector4 ret;
+    ret.x = float(startValue.x * (1 - x) + endValue.x * x);
+    ret.y = float(startValue.y * (1 - x) + endValue.y * x);
+    ret.z = float(startValue.z * (1 - x) + endValue.z * x);
+    ret.w = float(startValue.w * (1 - x) + endValue.w * x);
+    return ret;
 }

@@ -2,6 +2,7 @@
 #include "CameraSystem.h"
 #include "GlobalVariables.h"
 #include <algorithm>
+#include "AABB.h"
 
 /*
 * 強攻撃を増やしたい
