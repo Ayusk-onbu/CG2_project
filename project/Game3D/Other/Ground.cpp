@@ -26,12 +26,14 @@ void ConvenienceModel::Initialize(Fngine* fngine,const std::string& modelName,co
 }
 
 void ConvenienceModel::Update() {
+#ifdef USE_IMGUI
 	if (ImGui::TreeNode(obj_->modelName_.c_str())) {
 		ImGui::DragFloat3("Scale", &obj_->worldTransform_.transform_.scale_.x);
 		ImGui::DragFloat3("Rotate", &obj_->worldTransform_.transform_.rotation_.x);
 		ImGui::DragFloat3("Pos", &obj_->worldTransform_.transform_.translation_.x);
 		ImGui::TreePop();
 	}
+#endif//USEIMGUI
 }
 
 void ConvenienceModel::Draw() {
@@ -66,6 +68,7 @@ void AnimModel::Update() {
 }
 
 void AnimModel::DrawImGui() {
+#ifdef USE_IMGUI
 	if (ImGui::TreeNode(obj_->modelName_.c_str())) {
 		ImGui::DragFloat3("Scale", &obj_->worldTransform_.transform_.scale_.x);
 		ImGui::DragFloat3("Rotate", &obj_->worldTransform_.transform_.rotation_.x);
@@ -84,6 +87,7 @@ void AnimModel::DrawImGui() {
 		}
 		ImGui::TreePop();
 	}
+#endif//USE_IMGUI
 }
 
 void AnimModel::Draw() {
@@ -125,6 +129,7 @@ void Anim2Model::Update() {
 }
 
 void Anim2Model::DrawImGui() {
+#ifdef USE_IMGUI
 	if (ImGui::TreeNode(obj_->modelName_.c_str())) {
 		ImGui::DragFloat3("Scale", &obj_->worldTransform_.transform_.scale_.x);
 		ImGui::DragFloat3("Rotate", &obj_->worldTransform_.transform_.rotation_.x);
@@ -143,6 +148,7 @@ void Anim2Model::DrawImGui() {
 		}
 		ImGui::TreePop();
 	}
+#endif//USE_IMGUI
 }
 
 void Anim2Model::Draw() {

@@ -142,6 +142,7 @@ void UIElement::Load(const json& j) {
 }
 
 void UIElement::DrawImGuiElement() {
+#ifdef USE_IMGUI
 
 	static char nameBuffer[128];
 	ImGui::InputText("Name", nameBuffer, sizeof(nameBuffer));
@@ -237,13 +238,16 @@ void UIElement::DrawImGuiElement() {
 		}
 		ImGui::TreePop();
 	}
+#endif//USE_IMGUI
 }
 
 void UIElement::DrawImGui() {
+#ifdef USE_IMGUI
 	if (ImGui::TreeNode(("UIElement : " + name_).c_str())) {
 
 		DrawImGuiElement();
 		
 		ImGui::TreePop();
 	}
+#endif//USE_IMGUI
 }

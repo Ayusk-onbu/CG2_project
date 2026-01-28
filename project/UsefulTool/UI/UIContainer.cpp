@@ -84,6 +84,7 @@ void UIContainer::Save(json& j)const {
 }
 
 void UIContainer::DrawImGui() {
+#ifdef USE_IMGUI
 	if (ImGui::TreeNode(("UIContainer : " + name_).c_str())) {
 
 		DrawImGuiElement();
@@ -134,6 +135,7 @@ void UIContainer::DrawImGui() {
 
 		ImGui::TreePop();
 	}
+#endif//USE_IMGUI
 }
 
 void UIContainer::AddElement() {

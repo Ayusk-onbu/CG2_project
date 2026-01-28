@@ -73,8 +73,8 @@ void BossEnemy::Update(){
         // 適用
         CameraSystem::GetInstance()->GetActiveCamera()->SetPhi(targetPhiDeg);
 
-        /*CameraSystem::GetInstance()->GetActiveCamera()->SetTargetPos(
-            { obj_->worldTransform_.get_.Translation().x,obj_->worldTransform_.get_.Translation().y ,obj_->worldTransform_.get_.Translation().z });*/
+        CameraSystem::GetInstance()->GetActiveCamera()->SetTargetPos(
+            { obj_->worldTransform_.get_.Translation().x,obj_->worldTransform_.get_.Translation().y ,obj_->worldTransform_.get_.Translation().z });
         //CameraSystem::GetInstance()->GetActiveCamera()->SetRadius(30);
     }
 

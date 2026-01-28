@@ -42,7 +42,7 @@ void TestScene::Initialize() {
 }
 
 void TestScene::Update() {
-	player_->Update();
+	//player_->Update();
 
 	//particle_->Update();
 
@@ -64,12 +64,12 @@ void TestScene::Update() {
 
 void TestScene::Draw() {
 	
-	ground_->Draw();
+	//ground_->Draw();
 	//particle_->Draw();
 
-	player_->Draw();
-	//title_->Draw();
-	//fade_->Draw();
+	//player_->Draw();
+	title_->Draw();
+	fade_->Draw();
 }
 
 void TestScene::PauseUpdate() {

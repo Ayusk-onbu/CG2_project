@@ -12,8 +12,8 @@ const char* UIEditor::easingNames[] = {
 
 
 void UIEditor::Update() {
+#ifdef USE_IMGUI
     if (!targetElement_ || !activeAnimation_) return;
-
     // 再生ロジック
     if (isPlaying_) {
         // 前フレームからの経過時間を加算
@@ -40,9 +40,11 @@ void UIEditor::Update() {
     DrawAnimationEditor();
 
     ImGui::End();
+#endif//USE_IMGUI
 }
 
 void UIEditor::DrawAnimationEditor() {
+#ifdef USE_IMGUI
     if (ImGui::TreeNode("Animation")) {
         ImGui::Text(activeAnimation_->name.c_str());
         // アニメーション取得
@@ -145,10 +147,12 @@ void UIEditor::DrawAnimationEditor() {
 
         ImGui::TreePop();
     }
+#endif//USE_IMGUI
 }
 
 template<typename T>
 void UIEditor::DrawTrackInfo(const char* label, UIHAnimationTrack<T>& track) {
+#ifdef USE_IMGUI
     if (ImGui::TreeNode(label)) {
         // トラック内の全キーフレームをループ
         auto& keys = track.GetKeyframes(); // UIHAnimationTrackにGetterを追加しておく
@@ -176,10 +180,12 @@ void UIEditor::DrawTrackInfo(const char* label, UIHAnimationTrack<T>& track) {
         }
         ImGui::TreePop();
     }
+#endif//USE_IMGUI
 }
 
 template<typename T>
 void UIEditor::DrawTimelineTrack(const char* label, UIHAnimationTrack<T>& track, float maxTime) {
+#ifdef USE_IMGUI
     ImGui::Text("%s", label);
 
     // タイムラインの背景描画（横棒）
@@ -203,5 +209,6 @@ void UIEditor::DrawTimelineTrack(const char* label, UIHAnimationTrack<T>& track,
     }
 
     ImGui::Dummy(canvas_size); // 描画領域を確保
+#endif//USE_IMGUI
 }
 
