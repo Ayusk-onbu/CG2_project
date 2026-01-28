@@ -1,6 +1,7 @@
 #include "SceneDirector.h"
 #include "CameraSystem.h"
 #include "ModelManager.h"
+#include "UIAnimation.h"
 
 SceneDirector::~SceneDirector() {
 	delete currentScene_;
@@ -11,6 +12,7 @@ void SceneDirector::Initialize(Scene& firstScene) {
 	LoadModelData();
 	LoadTexture();
 	LoadMusic();
+	UIHAnimationManager::GetInstance()->Load();
 
 	// 最初のシーンの初期化処理
 	currentScene_ = &firstScene;
@@ -22,7 +24,7 @@ void SceneDirector::Initialize(Scene& firstScene) {
 	CameraSystem::GetInstance()->MakeCamera("NormalCamera", CameraType::Normal);
 	CameraSystem::GetInstance()->MakeCamera("DebugCamera", CameraType::Debug);
 	CameraSystem::GetInstance()->MakeCamera("GameCamera", CameraType::Game);
-	CameraSystem::GetInstance()->SetActiveCamera("GameCamera");
+	CameraSystem::GetInstance()->SetActiveCamera("DebugCamera");
 }
 
 void SceneDirector::Update() {
@@ -126,6 +128,7 @@ void SceneDirector::LoadTexture() {
 	name = TextureManager::GetInstance()->LoadTexture("Purpose.png", "resources/Title");
 	name = TextureManager::GetInstance()->LoadTexture("UI.png", "resources");
 	name = TextureManager::GetInstance()->LoadTexture("titleBack.png", "resources/Title");
+	name = TextureManager::GetInstance()->LoadTexture("monsterBall.png", "resources");
 }
 
 void SceneDirector::LoadMusic() {

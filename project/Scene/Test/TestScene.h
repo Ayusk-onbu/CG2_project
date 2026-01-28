@@ -4,6 +4,8 @@
 #include "Quaternion.h"
 #include "Player3D.h"
 #include "Particle.h"
+#include "UIContainer.h"
+#include "Ground.h"
 
 class TestScene
 	: public Scene
@@ -25,10 +27,15 @@ public:
 	bool CanPause()const override { return true; }
 
 private:
+	UIContainer container_;
+	UIHAnimation animation_;
+
 	float toGameTimer_ = 0.0f;
 	std::unique_ptr<Player3D>player_;
 	std::unique_ptr<SpriteObject>title_;
 	std::unique_ptr<SpriteObject>fade_;
 	std::unique_ptr<Particle>particle_;
+
+	std::unique_ptr<ConvenienceModel>ground_;
 };
 

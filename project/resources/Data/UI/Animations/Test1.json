@@ -1,0 +1,35 @@
+{
+    "alphaTrack": [],
+    "name": "Test1",
+    "posTrack": [
+        {
+            "easeType": 29,
+            "time": 0.0,
+            "value": [
+                640.0,
+                360.0,
+                0.0
+            ]
+        }
+    ],
+    "scaleTrack": [
+        {
+            "easeType": 29,
+            "time": 0.0,
+            "value": [
+                50.0,
+                30.0,
+                1.0
+            ]
+        },
+        {
+            "easeType": 0,
+            "time": 1.0,
+            "value": [
+                6.0,
+                4.0,
+                1.0
+            ]
+        }
+    ]
+}

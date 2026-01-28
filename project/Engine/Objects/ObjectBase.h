@@ -16,6 +16,7 @@
 enum class ObjectDrawType {
 	SOLID,
 	WIREFRAME,
+	Animation,
 };
 
 class Fngine;

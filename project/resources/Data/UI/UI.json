@@ -1,0 +1,79 @@
+{
+    "anchor": [
+        0.0,
+        0.0
+    ],
+    "children": [
+        {
+            "anchor": [
+                0.0,
+                0.0
+            ],
+            "color": [
+                1.0,
+                0.0,
+                0.0,
+                1.0
+            ],
+            "fadeInAnimation": "FadeInFromLeft",
+            "fadeOutAnimation": "",
+            "isVisible": true,
+            "name": "element : right",
+            "pos": [
+                -400.0,
+                -244.0,
+                0.0
+            ],
+            "relativePos": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "rot": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "scale": [
+                14.0,
+                14.0,
+                1.0
+            ],
+            "stayAnimation": "",
+            "texture": "Legends_Ground"
+        }
+    ],
+    "color": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+    ],
+    "fadeInAnimation": "Test1",
+    "fadeOutAnimation": "",
+    "isVisible": true,
+    "name": "UIContainer",
+    "pos": [
+        640.0,
+        360.0,
+        0.0
+    ],
+    "relativePos": [
+        0.0,
+        0.0,
+        0.0
+    ],
+    "rot": [
+        0.0,
+        0.0,
+        0.0
+    ],
+    "scale": [
+        50.0,
+        30.0,
+        1.0
+    ],
+    "stayAnimation": "",
+    "texture": "Legends_Ground",
+    "type": "Container"
+}

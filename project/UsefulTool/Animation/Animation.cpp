@@ -145,7 +145,7 @@ void Animation::ApplyAnimation(Skeleton& skeleton) {
 			joint.transform.LocalToWorld();
 		}
 	}
-	ImGuiManager::GetInstance()->DrawDrag("Animation Time", animationTime_);
+	//ImGuiManager::GetInstance()->DrawDrag("Animation Time", animationTime_);
 }
 
 void Animation::TimeFlow() { 

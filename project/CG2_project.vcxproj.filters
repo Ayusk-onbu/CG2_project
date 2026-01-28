@@ -193,6 +193,9 @@
     <Filter Include="UsefulTool\Pause">
       <UniqueIdentifier>{33b6d334-057f-48c5-b851-9205c5554712}</UniqueIdentifier>
     </Filter>
+    <Filter Include="UsefulTool\UI">
+      <UniqueIdentifier>{724fa077-e05d-49b1-a456-bb02c087a621}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -597,6 +600,18 @@
     <ClCompile Include="UsefulTool\Pause\PauseSystem.cpp">
       <Filter>UsefulTool\Pause</Filter>
     </ClCompile>
+    <ClCompile Include="UsefulTool\UI\UIElement.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="UsefulTool\UI\UIContainer.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="UsefulTool\UI\UIHAnimation\UIHAnimation.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="UsefulTool\UI\UIHEditor\UIHEditor.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="externals\imgui\imconfig.h">
@@ -940,6 +955,18 @@
     </ClInclude>
     <ClInclude Include="UsefulTool\Pause\PauseSystem.h">
       <Filter>UsefulTool\Pause</Filter>
+    </ClInclude>
+    <ClInclude Include="UsefulTool\UI\UIElement.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="UsefulTool\UI\UIContainer.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="UsefulTool\UI\UIHAnimation\UIHAnimation.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="UsefulTool\UI\UIHEditor\UIHEditor.h">
+      <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
