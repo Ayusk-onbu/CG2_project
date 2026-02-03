@@ -53,6 +53,26 @@ void BossEnemy::Initialize(Fngine* fngine, Player3D* target) {
     bullets_->SetFngine(fngine);
 
     ChangeState(new BossDecisionState);
+
+    // [ 炎 ]
+    for (int i = 0;i < 4;i++) {
+        std::unique_ptr<Particle> fire = std::make_unique<Particle>(fngine);
+        fire->Initialize(400, "Fire");
+        if (i == 0) {
+            fire->SetPosition({-20.0f,0.0f,20.0f});
+        }
+        else if (i == 1) {
+            fire->SetPosition({ 20.0f,0.0f,20.0f });
+        }
+        else if (i == 2) {
+            fire->SetPosition({ -20.0f,0.0f,-20.0f });
+        }
+        else if (i == 3) {
+            fire->SetPosition({ 20.0f,0.0f,-20.0f });
+        }
+		fire_.push_back(std::move(fire));
+    }
+	
 }
 
 void BossEnemy::Update(){
@@ -98,8 +118,16 @@ void BossEnemy::Update(){
 
     HPBarUpdate();
 
-    ImGuiManager::GetInstance()->DrawDrag("Boss : HP",hp_);
-    ImGuiManager::GetInstance()->DrawDrag("Boss : mat", obj_->worldTransform_.mat_);
+    for (auto& fire : fire_) {
+        if (hp_ <= maxHp_ / 2.0f) {
+            if (fire->name_ != "FireMax") {
+                fire->name_ = "FireMax";
+                fire->LoadParticle();
+            }
+        }
+
+        fire->Update();
+    }
 }
 
 void BossEnemy::Draw(){
@@ -118,6 +146,10 @@ void BossEnemy::Draw(){
 
     subHPBar_->Draw();
     mainHPBar_->Draw();
+
+    for (auto& fire : fire_) {
+        fire->Draw();
+    }
 }
 
 void BossEnemy::TakeDamage(float damage) {

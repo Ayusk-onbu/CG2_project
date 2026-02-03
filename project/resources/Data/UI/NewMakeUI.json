@@ -1,0 +1,37 @@
+{
+    "anchor": [
+        0.0,
+        0.0
+    ],
+    "children": [],
+    "color": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+    ],
+    "isVisible": true,
+    "name": "NewMakeUI",
+    "pos": [
+        0.0,
+        0.0,
+        0.0
+    ],
+    "relativePos": [
+        0.0,
+        0.0,
+        0.0
+    ],
+    "rot": [
+        0.0,
+        0.0,
+        0.0
+    ],
+    "scale": [
+        1.0,
+        1.0,
+        1.0
+    ],
+    "texture": "GridLine",
+    "type": "Container"
+}

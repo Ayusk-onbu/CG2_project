@@ -61,7 +61,6 @@ UIHAnimation& UIHAnimationManager::GetAnimation(const std::string& name) {
 	if (it == animations_.end()) {
 		// ここでなにもないデータを渡す
 		/*UIHAnimation ret;
-
 		return ret;*/
 	}
 	return it->second;

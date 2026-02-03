@@ -1,0 +1,26 @@
+{
+    "colorTrack": [],
+    "name": "PlayGuideFadeInAnim",
+    "posTrack": [],
+    "rotateTrack": [],
+    "scaleTrack": [
+        {
+            "easeType": 29,
+            "time": 0.0,
+            "value": [
+                3.0,
+                3.0,
+                1.0
+            ]
+        },
+        {
+            "easeType": 1,
+            "time": 1.0099999904632568,
+            "value": [
+                66.0,
+                39.0,
+                1.0
+            ]
+        }
+    ]
+}

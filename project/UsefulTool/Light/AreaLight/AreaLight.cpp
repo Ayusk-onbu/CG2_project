@@ -33,7 +33,7 @@ void AreaLight::Initialize(Fngine* fngine) {
 	device->CreateShaderResourceView(ltc2Resource_.Get(), &srvDesc, ltc2CPUHandle_);
 
 	data_->color = { 1.0f,1.0f,1.0f,1.0f };
-	data_->intensity = 5.0f;
+	data_->intensity = 0.0f;
 	data_->twoSided = 1;
 
 	data_->points[0] = { -0.5f,  0.5f, 0.0f, 0.0f };

@@ -1,0 +1,35 @@
+{
+    "colorTrack": [],
+    "name": "TitleStay",
+    "posTrack": [
+        {
+            "easeType": 0,
+            "time": 0.0,
+            "value": [
+                0.0,
+                0.0,
+                0.0
+            ]
+        },
+        {
+            "easeType": 0,
+            "time": 1.003000020980835,
+            "value": [
+                0.0,
+                30.0,
+                0.0
+            ]
+        },
+        {
+            "easeType": 0,
+            "time": 2.0,
+            "value": [
+                0.0,
+                0.0,
+                0.0
+            ]
+        }
+    ],
+    "rotateTrack": [],
+    "scaleTrack": []
+}

@@ -7,22 +7,53 @@ void PointLight::Initialize(Fngine* fngine) {
 	//書き込むためのアドレスを取得
 	resource_->Map(0, nullptr, reinterpret_cast<void**>(&data_));
 	// Lightの数を登録
-	data_->numLights = 100;
+	data_->numLights = 80;
 	data_->numLights = data_->numLights < kMaxPointLights ? data_->numLights : kMaxPointLights;
 	for (uint32_t i = 0; i < kMaxPointLights; ++i) {
-		// ライトの色を設定
-		data_->lights[i].color = {1.0f,0.2f,0.4f,1.0f};
-		// 位置の設定
-		data_->lights[i].position = { 0.0f + i * 0.5f,1.5f,0.0f };
-		// 輝度の設定
+
+		float x = 0.0f, z = 0.0f;
+
+		if (i < 20) {
+			// 1. 手前の辺 (Z = -20, X: -20 -> 20)
+			x = -20.0f + (i * 1.0f);
+			z = -20.0f;
+		}
+		else if (i < 40) {
+			// 2. 右の辺 (X = 20, Z: -20 -> 20)
+			x = 20.0f;
+			z = -20.0f + ((i - 20) * 1.0f);
+		}
+		else if (i < 60) {
+			// 3. 奥の辺 (Z = 20, X: 20 -> -20)
+			x = 20.0f - ((i - 40) * 1.0f);
+			z = 20.0f;
+		}
+		else {
+			// 4. 左の辺 (X = -20, Z: 20 -> -20)
+			x = -20.0f;
+			z = 20.0f - ((i - 60) * 1.0f);
+		}
+
+		// パラメータの設定
+		data_->lights[i].color = { 1.0f, 0.2f, 0.4f, 1.0f };
+		data_->lights[i].position = { x, 0.5f, z }; // Y座標は0.0f固定
 		data_->lights[i].intensity = 1.0f;
-		// 影響範囲の設定
 		data_->lights[i].radius = 3.0f;
-		// 減衰率の設定
 		data_->lights[i].decay = 2.0f;
+
+		//// ライトの色を設定
+		//data_->lights[i].color = {1.0f,0.2f,0.4f,1.0f};
+		//// 位置の設定
+		//data_->lights[i].position = { 0.0f + i * 0.5f,1.5f,0.0f };
+		//// 輝度の設定
+		//data_->lights[i].intensity = 1.0f;
+		//// 影響範囲の設定
+		//data_->lights[i].radius = 3.0f;
+		//// 減衰率の設定
+		//data_->lights[i].decay = 2.0f;
 	}
 
-	SetHeartPosition();
+	//SetHeartPosition();
 }
 
 void PointLight::Update() {

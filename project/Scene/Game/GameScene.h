@@ -8,6 +8,7 @@
 #include "SpriteObject.h"
 #include "Particle.h"
 #include "Ground.h"
+#include "UIContainer.h"
 
 class GameScene 
 	:public Scene
@@ -26,7 +27,9 @@ private:
 	void CollisionCheck();
 private:// ポーズ関係
 	float startPauseTimer_ = 0.0f;
-	std::unique_ptr<SpriteObject>pause_;
+	//std::unique_ptr<SpriteObject>pause_;
+	std::unique_ptr<UIContainer>pause_;
+	std::unique_ptr<UIContainer>playGuide_;
 private:
 	void ToScene();
 	void ToClearScene();
@@ -49,6 +52,7 @@ private:
 	std::unique_ptr<BossEnemy>boss_;
 	std::unique_ptr<CollisionManager>collisionManager_;
 	std::unique_ptr<Ground>ground_;
+	std::unique_ptr<ConvenienceModel>skySphere_;
 };
 
 

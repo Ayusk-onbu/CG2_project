@@ -209,8 +209,8 @@ void UIElement::DrawImGuiElement() {
 		ImGui::TreePop();
 	}
 
+	ImGui::Text(("Now Animation : " + playState_.currentAnimName).c_str());
 	auto names = UIHAnimationManager::GetInstance()->GetAnimationNames();
-
 	// 現在選択されているアニメーション名を表示するプレースホルダ
 	static std::string currentName = "None";
 	if (ImGui::BeginCombo("Animations", currentName.c_str())) {

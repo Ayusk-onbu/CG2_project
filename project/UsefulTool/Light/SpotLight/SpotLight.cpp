@@ -6,7 +6,7 @@ void SpotLight::Initialize(Fngine* fngine) {
 	//書き込むためのアドレスを取得
 	resource_->Map(0, nullptr, reinterpret_cast<void**>(&data_));
 	
-	data_->activeLightCount = 10;
+	data_->activeLightCount = 1;
 
 	for (uint32_t i = 0;i < kMaxSpotLights; ++i) {
 		angles_[i] = 60.0f;
@@ -30,40 +30,40 @@ void SpotLight::Initialize(Fngine* fngine) {
 
 void SpotLight::Update() {
 
-	// デルタタイム（固定値でも可）分だけタイマーを進める
-	timer_ += 0.03f;
+	//// デルタタイム（固定値でも可）分だけタイマーを進める 
+	//timer_ += 0.03f;
 
-	for (uint32_t i = 0; i < data_->activeLightCount; ++i) {
-		// --- 1. 激しい円運動 ---
-		float phase = timer_ * speedOffset_[i];
-		data_->lights[i].position.x = basePosition_[i].x + std::sin(phase) * radiusOffset_[i];
-		data_->lights[i].position.z = basePosition_[i].z + std::cos(phase) * radiusOffset_[i];
+	//for (uint32_t i = 0; i < data_->activeLightCount; ++i) {
+	//	// --- 1. 激しい円運動 ---
+	//	float phase = timer_ * speedOffset_[i];
+	//	data_->lights[i].position.x = basePosition_[i].x + std::sin(phase) * radiusOffset_[i];
+	//	data_->lights[i].position.z = basePosition_[i].z + std::cos(phase) * radiusOffset_[i];
 
-		// --- 2. 常に中心（ステージ）を向くような演出 ---
-		// 座標(0,0,0)を狙うように方向を計算
-		Vector3 target = { 0.0f, 0.0f, 0.0f };
-		data_->lights[i].direction.x = target.x - data_->lights[i].position.x;
-		data_->lights[i].direction.y = target.y - data_->lights[i].position.y;
-		data_->lights[i].direction.z = target.z - data_->lights[i].position.z;
+	//	// --- 2. 常に中心（ステージ）を向くような演出 ---
+	//	// 座標(0,0,0)を狙うように方向を計算
+	//	Vector3 target = { 0.0f, 0.0f, 0.0f };
+	//	data_->lights[i].direction.x = target.x - data_->lights[i].position.x;
+	//	data_->lights[i].direction.y = target.y - data_->lights[i].position.y;
+	//	data_->lights[i].direction.z = target.z - data_->lights[i].position.z;
 
-		// --- 3. 虹色に変化するカラー演出 ---
-		// インデックスごとに位相をずらしてカラフルに
-		data_->lights[i].color.x = std::sin(phase * 0.5f) * 0.5f + 0.5f;
-		data_->lights[i].color.y = std::sin(phase * 0.5f + 2.0f) * 0.5f + 0.5f;
-		data_->lights[i].color.z = std::sin(phase * 0.5f + 4.0f) * 0.5f + 0.5f;
+	//	// --- 3. 虹色に変化するカラー演出 ---
+	//	// インデックスごとに位相をずらしてカラフルに
+	//	data_->lights[i].color.x = std::sin(phase * 0.5f) * 0.5f + 0.5f;
+	//	data_->lights[i].color.y = std::sin(phase * 0.5f + 2.0f) * 0.5f + 0.5f;
+	//	data_->lights[i].color.z = std::sin(phase * 0.5f + 4.0f) * 0.5f + 0.5f;
 
-		// --- 4. ビートに合わせて点滅（ストロボ効果） ---
-		//if (std::sin(timer_ * 10.0f) > 0.8f) {
-		//	data_->lights[i].intensity = 15.0f; // 瞬間的に明るく
-		//}
-		//else {
-		//	data_->lights[i].intensity = 5.0f;
-		//}
+	//	// --- 4. ビートに合わせて点滅（ストロボ効果） ---
+	//	//if (std::sin(timer_ * 10.0f) > 0.8f) {
+	//	//	data_->lights[i].intensity = 15.0f; // 瞬間的に明るく
+	//	//}
+	//	//else {
+	//	//	data_->lights[i].intensity = 5.0f;
+	//	//}
 
-		// 角度計算の更新
-		data_->lights[i].cosAngle = std::cosf(Deg2Rad(angles_[i]));
-		data_->lights[i].cosFalloffStartAngle = std::cosf(Deg2Rad(angles_[i] * falloffs_[i]));
-	}
+	//	// 角度計算の更新
+	//	data_->lights[i].cosAngle = std::cosf(Deg2Rad(angles_[i]));
+	//	data_->lights[i].cosFalloffStartAngle = std::cosf(Deg2Rad(angles_[i] * falloffs_[i]));
+	//}
 
 #ifdef USE_IMGUI
 	ImGui::Begin("SpotLight Manager");

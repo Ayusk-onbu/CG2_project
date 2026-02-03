@@ -7,7 +7,7 @@ void Game::Initialize() {
 	fngine_->Initialize();
 	GlobalVariables::GetInstance()->LoadFiles();
 	scene_->SetUpFngine(*fngine_);
-	scene_->Initialize(*new TestScene());
+	scene_->Initialize(*new TitleScene());
 }
 
 void Game::Run() {
@@ -21,11 +21,11 @@ void Game::Run() {
 
 	fngine_->BeginOSRFrame();
 	scene_->Update();
+	scene_->ImGui();
 	scene_->Draw();
 	fngine_->EndOSRFrame();
 
 	fngine_->BeginFrame();
-	scene_->ImGui();
 	ImGuiManager::GetInstance()->DrawAll();
 	fngine_->EndFrame();
 }

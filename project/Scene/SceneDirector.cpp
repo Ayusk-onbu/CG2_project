@@ -24,7 +24,7 @@ void SceneDirector::Initialize(Scene& firstScene) {
 	CameraSystem::GetInstance()->MakeCamera("NormalCamera", CameraType::Normal);
 	CameraSystem::GetInstance()->MakeCamera("DebugCamera", CameraType::Debug);
 	CameraSystem::GetInstance()->MakeCamera("GameCamera", CameraType::Game);
-	CameraSystem::GetInstance()->SetActiveCamera("DebugCamera");
+	CameraSystem::GetInstance()->SetActiveCamera("GameCamera");
 }
 
 void SceneDirector::Update() {
@@ -78,6 +78,32 @@ void SceneDirector::ImGui() {
 	ImGuiManager::GetInstance()->DrawSlider("DirectionalLight : pos", p_fngine_->GetLight().directionalLightData_->direction, -1.0f, 1.0f);
 	ImGuiManager::GetInstance()->DrawSlider("DirectionalLight : color", p_fngine_->GetLight().directionalLightData_->color, 0.0f, 1.0f);
 	PSOManager::GetInstance()->ImGui();
+#ifdef USE_IMGUI
+	if (ImGui::TreeNode("SceneDirector")) {
+
+		if (ImGui::Button("TestScene")) {
+			RequestChangeScene(new TestScene());
+		}
+		ImGui::SameLine();
+		if (ImGui::Button("TitleScene")) {
+			RequestChangeScene(new TitleScene());
+		}
+		ImGui::SameLine();
+		if (ImGui::Button("GameScene")) {
+			RequestChangeScene(new GameScene());
+		}
+		ImGui::SameLine();
+		if (ImGui::Button("GameOverScene")) {
+			RequestChangeScene(new GameOverScene());
+		}
+		ImGui::SameLine();
+		if (ImGui::Button("GameClearScene")) {
+			RequestChangeScene(new ClearScene());
+		}
+
+		ImGui::TreePop();
+	}
+#endif//USE_IMGUI
 }
 
 void SceneDirector::RequestChangeScene(Scene* newScene) {
@@ -113,6 +139,7 @@ void SceneDirector::LoadModelData() {
 	name = ModelManager::GetInstance()->LoadObj("bullet.obj", "resources", LoadFileType::OBJ);
 	name = ModelManager::GetInstance()->LoadObj("debugBlock.obj", "resources", LoadFileType::OBJ);
 	name = ModelManager::GetInstance()->LoadObj("plane.gltf", "resources");
+	name = ModelManager::GetInstance()->LoadObj("ulthimaSky.obj", "resources", LoadFileType::OBJ);
 }
 
 void SceneDirector::LoadTexture() {
@@ -127,8 +154,10 @@ void SceneDirector::LoadTexture() {
 	name = TextureManager::GetInstance()->LoadTexture("GameOver.png", "resources");
 	name = TextureManager::GetInstance()->LoadTexture("Purpose.png", "resources/Title");
 	name = TextureManager::GetInstance()->LoadTexture("UI.png", "resources");
-	name = TextureManager::GetInstance()->LoadTexture("titleBack.png", "resources/Title");
+	name = TextureManager::GetInstance()->LoadTexture("TitleBack.png", "resources/Title");
+	name = TextureManager::GetInstance()->LoadTexture("Title.png", "resources/Title");
 	name = TextureManager::GetInstance()->LoadTexture("monsterBall.png", "resources");
+	name = TextureManager::GetInstance()->LoadTexture("PlayGuide.png", "resources/Game");
 }
 
 void SceneDirector::LoadMusic() {

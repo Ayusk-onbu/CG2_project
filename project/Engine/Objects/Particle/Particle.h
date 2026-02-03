@@ -46,7 +46,7 @@ public:
 private:
 	// パーティクルを保存
 	void SaveParticle();
-
+public:
 	void LoadParticle();
 private:
 	// *** 外部情報 ***

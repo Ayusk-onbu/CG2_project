@@ -47,16 +47,26 @@ void GameScene::Initialize() {
 	playUI_->worldTransform_.set_.Scale({ 0.65f, 0.65f,0.0f });
 	playUI_->SetColor({ 1.0f,1.0f,1.0f,1.0f });
 
+	skySphere_ = std::make_unique<ConvenienceModel>();
+	skySphere_->Initialize(p_fngine_, "ulthimaSky", "ulthimaSky");
+
+
 	// ポーズ関係のUI
-	pause_ = std::make_unique<SpriteObject>(p_fngine_);
-	pause_->Initialize("GridLine");
-	pause_->worldTransform_.set_.Scale({ 1280.0f / 16.0f, 720.0f / 16.0f, 0.0f });
-	pause_->worldTransform_.set_.Translation({ 640.0f, 360.0f, 0.0f });
-	pause_->SetColor({ 0.2f, 0.2f, 0.2f, 0.5f });
+	pause_ = std::make_unique<UIContainer>();
+	pause_->Initialize(p_fngine_);
+	pause_->LoadbyFile("PauseBackUI");
+
+	playGuide_ = std::make_unique<UIContainer>();
+	playGuide_->Initialize(p_fngine_);
+	playGuide_->LoadbyFile("PlayGuide");
+	playGuide_->Play({ {"PlayGuide","PlayGuideFadeInAnim"} }, false);
 }
 
 void GameScene::Update(){
 	float deltaTime = 1.0f / 60.0f;
+	if (playGuide_->IsEnd() == true) {
+		playGuide_->Play({ {"PlayGuide","PlayGuideFadeInAnim"} }, false);
+	}
 	if (notGame_) {
 		toGameTimer_ += deltaTime;
 		FirstFade(toGameTimer_);
@@ -79,6 +89,7 @@ void GameScene::Update(){
 }
 
 void GameScene::Draw() {
+	skySphere_->Draw();
 	ground_->Draw();
 	boss_->Draw();
 	player_->Draw();
@@ -175,7 +186,11 @@ void GameScene::FirstFade(float time) {
 }
 
 void GameScene::PauseUpdate() {
+	playGuide_->UpdateAnimation(1.0f / 60.0f);
 
+	if (InputManager::GetGamePad(0).IsPressed(XINPUT_GAMEPAD_Y)) {
+		p_sceneDirector_->RequestChangeScene(new TitleScene());
+	}
 }
 
 void GameScene::PauseDraw() {
@@ -184,4 +199,5 @@ void GameScene::PauseDraw() {
 	player_->Draw();
 
 	pause_->Draw();
+	playGuide_->Draw();
 }

@@ -19,7 +19,7 @@ void Player3D::ApplyGlobalVariables() {
 void Player3D::Initialize(Fngine* fngine)
 {
 	obj_ = std::make_unique<ModelObject>();
-	obj_->modelName_ = "walk";
+	obj_->modelName_ = "player";
 	obj_->textureName_ = "ulthimaSky";
 	obj_->Initialize(fngine);
 	obj_->worldTransform_.set_.Scale({ 1.0f,1.0f,1.0f });
@@ -60,17 +60,14 @@ void Player3D::Initialize(Fngine* fngine)
 
 	ApplyGlobalVariables();
 
-	animation_ = std::make_unique<Animation>();
+	/*animation_ = std::make_unique<Animation>();
 	animation_->LoadAnimationFile("resources/Human", "walk.gltf");
 	animation_->SetIsLoop(true);
 
 	skeleton_ = std::make_unique<Skeleton>();
 	skeleton_->CreateSkeleton(obj_->GetNode());
 
-	obj_->skinCluster_.Create(fngine, *skeleton_, obj_->GetModelData());
-
-	fire_ = std::make_unique<Particle>(fngine);
-	fire_->Initialize(200,"Fire");
+	obj_->skinCluster_.Create(fngine, *skeleton_, obj_->GetModelData());*/
 
 	// 入力処理の初期化
 	inputHandler_ = std::make_unique<PlayerInputHandler>();
@@ -114,6 +111,14 @@ void Player3D::Update()
 		// ※ここの性で攻撃すると空中に止まるよ
 		pos.y += move_.y * verticalVelocity_;
 	}
+	// ここで移動範囲の制限を掛ける
+	float minX = -20.0f;
+	float maxX = 20.0f;
+	float minZ = -20.0f;
+	float maxZ = 20.0f;
+	pos.x = std::clamp(pos.x, minX, maxX);
+	pos.z = std::clamp(pos.z, minZ, maxZ);
+
 	obj_->worldTransform_.set_.Translation(pos);
 
 	// 一旦地面との当たり判定（地面を０とする）
@@ -135,13 +140,10 @@ void Player3D::Update()
 		obj_->worldTransform_.set_.Scale({ obj_->worldTransform_.get_.Scale().x - 0.01f,obj_->worldTransform_.get_.Scale().y - 0.01f ,obj_->worldTransform_.get_.Scale().z - 0.01f });
 	}
 
-	animation_->TimeFlow();
+	/*animation_->TimeFlow();
 	animation_->ApplyAnimation(*skeleton_.get());
 	skeleton_->Update();
-	obj_->skinCluster_.Update(*skeleton_);
-
-	fire_->SetPosition(obj_->worldTransform_.transform_.translation_);
-	fire_->Update();
+	obj_->skinCluster_.Update(*skeleton_);*/
 
 	ImGui();
 }
@@ -160,8 +162,7 @@ void Player3D::Draw()
 		attackColliderObj_->Draw();
 	}
 
-	fire_->Draw();
-
+	
 	subHPBar_->Draw();
 	mainHPBar_->Draw();
 	staminaBar_->Draw();

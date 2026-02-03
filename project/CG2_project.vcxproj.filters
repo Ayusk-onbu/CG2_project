@@ -196,6 +196,9 @@
     <Filter Include="UsefulTool\UI">
       <UniqueIdentifier>{724fa077-e05d-49b1-a456-bb02c087a621}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Scene\Title">
+      <UniqueIdentifier>{e9ce9545-e7f4-41b8-b0d8-c20c352e9e5a}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -612,6 +615,9 @@
     <ClCompile Include="UsefulTool\UI\UIHEditor\UIHEditor.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
+    <ClCompile Include="Scene\Title\TitleScene.cpp">
+      <Filter>Scene\Title</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="externals\imgui\imconfig.h">
@@ -967,6 +973,9 @@
     </ClInclude>
     <ClInclude Include="UsefulTool\UI\UIHEditor\UIHEditor.h">
       <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="Scene\Title\TitleScene.h">
+      <Filter>Scene\Title</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -2,6 +2,7 @@
 
 UIContainer::UIContainer() {
 	name_ = "UIContainer";
+	isAllPlaying_ = true;
 }
 
 void UIContainer::UpdateAnimation(float deltaTime) {
@@ -11,11 +12,27 @@ void UIContainer::UpdateAnimation(float deltaTime) {
 	}
 }
 
-void UIContainer::Play(){
-	UIElement::PlayAnimation("Test1");
-	for (auto& element : elements_) {
-		element->PlayAnimation("Test1");
+void UIContainer::Play(const std::unordered_map<std::string, std::string>& animMap, bool isLoop){
+	if (isAllPlaying_ == false)return;
+	
+	if (animMap.count(this->name_)) {
+		UIElement::PlayAnimation(animMap.at(this->name_),isLoop);
 	}
+
+	for (auto& element : elements_) {
+		if (animMap.count(element->name_)) {
+			element->PlayAnimation(animMap.at(element->name_), isLoop);
+		}
+	}
+}
+
+bool UIContainer::AllEnded()const {
+	for (const auto& element : elements_) {
+		if (!element->IsEnd()) {
+			return false;
+		}
+	}
+	return true;
 }
 
 void UIContainer::Draw() {
@@ -132,7 +149,22 @@ void UIContainer::DrawImGui() {
 		if (ImGui::Button("Delete")) {
 			elements_.clear();
 		}
-
+		ImGui::SameLine();
+		if (ImGui::Button(isAllPlaying_ ? "AllStop" : "AllPlay")) {
+			isAllPlaying_ = !isAllPlaying_;
+			if (isAllPlaying_) {
+				playState_.isPlaying = true;
+				for (auto& element : elements_) {
+					element->playState_.isPlaying = true;
+				}
+			}
+			else {
+				playState_.isPlaying = false;
+				for (auto& element : elements_) {
+					element->playState_.isPlaying = false;
+				}
+			}
+		}
 		ImGui::TreePop();
 	}
 #endif//USE_IMGUI

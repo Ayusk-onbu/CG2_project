@@ -29,6 +29,8 @@ public:
 	virtual void Load(const json& j);
 
 	SpriteObject& GetObj() { return *obj_.get(); }
+
+	bool IsEnd() { return playState_.currentTime >= playState_.duration; }
 public:
 	void PlayAnimation(const std::string& name, bool loop = false);
 	void UpdateAnimation(float deltaTime);
@@ -67,7 +69,7 @@ public:
 	// 画面のどこか
 	Vector2 anchor_ = { 0.0f,0.0f };
 	// 自身の中心はどこか
-	Vector2 pivot_ = { 0.5f, 0.5f };
+	SPRITE_ANCHOR_TYPE pivot_ = SPRITE_ANCHOR_TYPE::Middle;
 
 	Vector3 relativePos_;
 	// 自身のNumber

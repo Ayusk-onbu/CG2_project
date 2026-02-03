@@ -82,6 +82,9 @@ private:
 	// 弾
 	std::unique_ptr<BulletManager>bullets_;
 
+	// 炎
+	std::vector<std::unique_ptr<Particle>>fire_;
+
 	// --- AI/行動管理 ---
 	// クールダウン管理用のマップなど
 	int phase_ = 1;

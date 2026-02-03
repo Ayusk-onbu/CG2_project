@@ -33,7 +33,7 @@ PSO& PipelineStateObjectManager::GetPSO(const std::string& name) {
 }
 
 void PipelineStateObjectManager::ImGui() {
-#ifdef _DEBUG
+#ifdef USE_IMGUI
     ImGui::Begin("PSO Manager"); // メインウィンドウの開始
 
     // Tab Bar の開始: この中で各タブを定義します。

@@ -15,7 +15,7 @@ void ClearScene::Update() {
 	}
 
 	if (isTrans_) {
-		p_sceneDirector_->RequestChangeScene(new TestScene);
+		p_sceneDirector_->RequestChangeScene(new TitleScene);
 	}
 }
 
