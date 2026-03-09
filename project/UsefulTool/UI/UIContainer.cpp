@@ -14,14 +14,21 @@ void UIContainer::UpdateAnimation(float deltaTime) {
 
 void UIContainer::Play(const std::unordered_map<std::string, std::string>& animMap, bool isLoop){
 	if (isAllPlaying_ == false)return;
-	
 	if (animMap.count(this->name_)) {
-		UIElement::PlayAnimation(animMap.at(this->name_),isLoop);
+		UIElement::PlayAnimation(animMap.at(this->name_), isLoop);
 	}
 
 	for (auto& element : elements_) {
-		if (animMap.count(element->name_)) {
-			element->PlayAnimation(animMap.at(element->name_), isLoop);
+
+		UIContainer* childContainer = dynamic_cast<UIContainer*>(element.get());
+
+		if (childContainer) {
+			childContainer->Play(animMap, isLoop);
+		}
+		else {
+			if (animMap.count(element->name_)) {
+				element->PlayAnimation(animMap.at(element->name_), isLoop);
+			}
 		}
 	}
 }

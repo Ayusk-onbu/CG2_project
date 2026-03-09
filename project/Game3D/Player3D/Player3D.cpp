@@ -19,7 +19,7 @@ void Player3D::ApplyGlobalVariables() {
 void Player3D::Initialize(Fngine* fngine)
 {
 	obj_ = std::make_unique<ModelObject>();
-	obj_->modelName_ = "player";
+	obj_->modelName_ = "walk";
 	obj_->textureName_ = "ulthimaSky";
 	obj_->Initialize(fngine);
 	obj_->worldTransform_.set_.Scale({ 1.0f,1.0f,1.0f });
@@ -60,14 +60,14 @@ void Player3D::Initialize(Fngine* fngine)
 
 	ApplyGlobalVariables();
 
-	/*animation_ = std::make_unique<Animation>();
+	animation_ = std::make_unique<Animation>();
 	animation_->LoadAnimationFile("resources/Human", "walk.gltf");
 	animation_->SetIsLoop(true);
 
 	skeleton_ = std::make_unique<Skeleton>();
 	skeleton_->CreateSkeleton(obj_->GetNode());
 
-	obj_->skinCluster_.Create(fngine, *skeleton_, obj_->GetModelData());*/
+	obj_->skinCluster_.Create(fngine, *skeleton_, obj_->GetModelData());
 
 	// 入力処理の初期化
 	inputHandler_ = std::make_unique<PlayerInputHandler>();
@@ -140,10 +140,10 @@ void Player3D::Update()
 		obj_->worldTransform_.set_.Scale({ obj_->worldTransform_.get_.Scale().x - 0.01f,obj_->worldTransform_.get_.Scale().y - 0.01f ,obj_->worldTransform_.get_.Scale().z - 0.01f });
 	}
 
-	/*animation_->TimeFlow();
+	animation_->TimeFlow();
 	animation_->ApplyAnimation(*skeleton_.get());
 	skeleton_->Update();
-	obj_->skinCluster_.Update(*skeleton_);*/
+	obj_->skinCluster_.Update(*skeleton_);
 
 	ImGui();
 }
@@ -171,6 +171,7 @@ void Player3D::Draw()
 void Player3D::ImGui() {
 	ImGuiManager::GetInstance()->DrawDrag("Player : Pos", obj_->worldTransform_.get_.Translation());
 	ImGuiManager::GetInstance()->DrawDrag("Player : Scale", obj_->worldTransform_.get_.Scale());
+	ImGuiManager::GetInstance()->DrawDrag("PlayerUV : Pos", obj_->uvTransform_.get_.Translation());
 	ImGuiManager::GetInstance()->DrawDrag("stamina", stamina_);
 	ImGuiManager::GetInstance()->DrawDrag("player : HP", hp_);
 	ImGuiManager::GetInstance()->DrawDrag("Player : Speed", speed_);

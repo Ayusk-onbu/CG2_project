@@ -33,7 +33,7 @@ public:
 	bool IsEnd() { return playState_.currentTime >= playState_.duration; }
 public:
 	void PlayAnimation(const std::string& name, bool loop = false);
-	void UpdateAnimation(float deltaTime);
+	virtual void UpdateAnimation(float deltaTime);
 	void SetParent(UIContainer* other) { parent_ = other; }
 private:
 	void ApplyTransform();

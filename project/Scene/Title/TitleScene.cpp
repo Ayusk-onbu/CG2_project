@@ -9,10 +9,11 @@ void TitleScene::Initialize() {
 	// [ タイトル画面 ]
 	titles_ = std::make_unique<UIContainer>();
 	titles_->Initialize(p_fngine_);
-	titles_->LoadbyFile("Titles");
+	titles_->LoadbyFile("TestContainer");
 	std::unordered_map<std::string, std::string>animMap = {
-		{"Titles","None"},
-		{"element : Title","FadeInTitleScale"}
+		{"TestContainer","TitleStay"},
+		{"container : firstContainer","RandS"},
+		{"element : firstElement","RandS"}
 	};
 	titles_->Play(animMap);
 	// [ フェード ]
@@ -30,8 +31,9 @@ void TitleScene::Update() {
 	titles_->UpdateAnimation(1.0f / 60.0f);
 	if (titles_->AllEnded()) {
 		std::unordered_map<std::string, std::string>animMap = {
-		{"Titles","None"},
-		{"element : Title","TitleStay"}
+		{"TestContainer","Stay"},
+		{"container : firstContainer","TitleStay"},
+		{"element : firstElement","RandS"}
 		};
 		titles_->Play(animMap);
 	}
