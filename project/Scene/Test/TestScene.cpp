@@ -70,6 +70,7 @@ void TestScene::PauseDraw() {
 }
 
 void TestScene::NodeImGui() {
+#ifdef USE_IMGUI
     if (ImGui::IsKeyPressed(ImGuiKey_P)) {
         nodes_.push_back(Spline::Node<Vector3>({ 0.0f,0.0f,0.0f }));
     }
@@ -212,4 +213,5 @@ void TestScene::NodeImGui() {
     }
 
     ImGui::End();
+#endif // USE_IMGUI
 }
