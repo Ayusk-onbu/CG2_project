@@ -7,6 +7,9 @@
 #include "UIContainer.h"
 #include "Ground.h"
 
+import Hermite;
+using namespace MathUtils;
+
 class TestScene
 	: public Scene
 {
@@ -27,6 +30,11 @@ public:
 	bool CanPause()const override { return true; }
 
 private:
+	void NodeImGui();
+	int draggedNodeIndex = -1;
+	int draggedHandleType = 0; // 0:Position, 1:TangentIn, 2:TangentOut
+	std::vector<Spline::Node<Vector3>>nodes_;
+	
 	UIContainer container_;
 	UIHAnimation animation_;
 
