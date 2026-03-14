@@ -4,10 +4,6 @@
 #include <algorithm>
 #include "AABB.h"
 
-/*
-* 強攻撃を増やしたい
-*/
-
 Player3D::~Player3D() {
 	delete state_;
 }
@@ -94,6 +90,12 @@ void Player3D::Update()
 		state_->Update();
 	}
 
+	if (InputManager::GetKey().PressedKey(DIK_9)) {
+		motionController_.Play("Test3",obj_->worldTransform_.get_.Translation());
+	}
+	if (motionController_.IsPlaying()) {
+		obj_->worldTransform_.set_.Translation(motionController_.Update(1.0f / 60.0f, move_));
+	}
 	UpdateStaminaRecovery();
 
 	// カメラに対してにする処理

@@ -199,6 +199,9 @@
     <Filter Include="Scene\Title">
       <UniqueIdentifier>{e9ce9545-e7f4-41b8-b0d8-c20c352e9e5a}</UniqueIdentifier>
     </Filter>
+    <Filter Include="UsefulTool\Motion">
+      <UniqueIdentifier>{499c004e-274f-4edb-bce2-7620acbe3c43}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -623,6 +626,12 @@
     </ClCompile>
     <ClCompile Include="Common\MathUtils\Spline\Hermite.cpp">
       <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="UsefulTool\Motion\MotionManager.ixx">
+      <Filter>UsefulTool\Motion</Filter>
+    </ClCompile>
+    <ClCompile Include="UsefulTool\Motion\MotionManager.cpp">
+      <Filter>UsefulTool\Motion</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

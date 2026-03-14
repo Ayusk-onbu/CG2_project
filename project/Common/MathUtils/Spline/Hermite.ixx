@@ -1,9 +1,15 @@
+module;
+
+#include <json.hpp>
+
 export module Hermite;
 
 import <vector>;
 
+using json = nlohmann::json;
+
 export namespace MathUtils {
-    namespace Spline {
+    export namespace Spline {
 		// Hermite補間
         template<typename T>
 		T HermiteInterpolation(T p0, T m0, T p1, T m1, float t) {
@@ -74,6 +80,32 @@ export namespace MathUtils {
                 nodes[i + 1].TangentIn,// 次の点に入るハンドル
                 localT
             );
+        }
+
+        template<typename T>
+        json SerializeNodes(const std::vector<Node<T>>& nodes) {
+            json j = json::array();
+            for (const auto& node : nodes) {
+                j.push_back({
+                    {"posX", node.position.x}, {"posY", node.position.y}, {"posZ", node.position.z},
+                    {"inX", node.TangentIn.x}, {"inY", node.TangentIn.y}, {"inZ", node.TangentIn.z},
+                    {"outX", node.TangentOut.x}, {"outY", node.TangentOut.y}, {"outZ", node.TangentOut.z}
+                });
+            }
+            return j;
+        }
+
+        template<typename T>
+        std::vector<Node<T>> DeserializeNodes(const json& j) {
+            std::vector<Node<T>> nodes;
+            for (const auto& item : j) {
+                Node<T> node(T{ item["posX"], item["posY"], item["posZ"] });
+                node.TangentIn = T{ item["inX"], item["inY"], item["inZ"] };
+                node.TangentOut = T{ item["outX"], item["outY"], item["outZ"] };
+                node.isBroken = false;
+                nodes.push_back(node);
+            }
+            return nodes;
         }
 	}
 }

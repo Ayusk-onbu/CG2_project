@@ -8,6 +8,8 @@
 #include "PlayerInputHandler.h"
 #include "Particle.h"
 
+import MotionManager;
+
 class Player3D
 {
 public:
@@ -186,5 +188,6 @@ private:
 	std::unique_ptr<Animation>animation_ = nullptr;
 	std::unique_ptr<Skeleton>skeleton_ = nullptr;
 
+	MotionController motionController_;
 };
 

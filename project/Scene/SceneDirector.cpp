@@ -3,6 +3,8 @@
 #include "ModelManager.h"
 #include "UIAnimation.h"
 
+import MotionManager;
+
 SceneDirector::~SceneDirector() {
 	delete currentScene_;
 }
@@ -13,6 +15,7 @@ void SceneDirector::Initialize(Scene& firstScene) {
 	LoadTexture();
 	LoadMusic();
 	UIHAnimationManager::GetInstance()->Load();
+	MotionManager::GetInstance()->LoadMotions("resources/Data/Motion/Hermite/");
 
 	// 最初のシーンの初期化処理
 	currentScene_ = &firstScene;
