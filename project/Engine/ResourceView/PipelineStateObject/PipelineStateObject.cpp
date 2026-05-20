@@ -283,3 +283,227 @@ Microsoft::WRL::ComPtr <ID3D12PipelineState>& PipelineStateObject::GetGPS() {
 		return graphicsPipelineState_;
 	}
 }
+
+void PipelineStateObject::InitializeDirectly(
+	Fngine* engine,
+	Microsoft::WRL::ComPtr<ID3D12RootSignature> rootSignature,
+	const D3D12_INPUT_ELEMENT_DESC* inputElement, UINT numInputElement,
+	BLENDMODE startBlendMode,
+	std::wstring vsPath, std::wstring psPath,
+	D3D12_PRIMITIVE_TOPOLOGY_TYPE topologyType,
+	RasterizerSettings rasterizerSettings,
+	DepthSettings depthSettings
+	) 
+{
+	//////////////////////
+	///
+	/// 【 共通処理 】
+	///
+	//////////////////////
+
+	// DXCを取得
+	dxc_ = &engine->GetDXC();
+
+	// 作成されたrootSignatureの情報を取得
+	rootSignature_.GetRS() = std::move(rootSignature);
+
+	inputLayoutDesc_.Initialize(inputElement, numInputElement);
+
+	//
+	blendState_.Initialize(USECOLOR::All);
+
+	// ラスタライザ <= まだ
+	rasterizer_.SetDesc(rasterizerSettings);
+
+	vertexShaderBlob_ = CompileShader(vsPath, L"vs_6_0",
+		dxc_->GetUtils().Get(), dxc_->GetCompiler().Get(), dxc_->GetIncludeHandle().Get());
+	assert(vertexShaderBlob_ != nullptr);
+
+	pixelShaderBlob_ = CompileShader(psPath, L"ps_6_0",
+		dxc_->GetUtils().Get(), dxc_->GetCompiler().Get(), dxc_->GetIncludeHandle().Get());
+	assert(pixelShaderBlob_ != nullptr);
+
+	depthStencil_.InitializeDesc(depthSettings.depthEnable,
+								depthSettings.writeMask,
+								depthSettings.comparisonFunc);
+
+	graphicsPipelineStateDesc_.pRootSignature = rootSignature_.GetRS().Get();//RootSignature
+	graphicsPipelineStateDesc_.InputLayout = inputLayoutDesc_.GetDesc();//InputLayout
+	graphicsPipelineStateDesc_.RasterizerState = rasterizer_.GetDesc();//RasterizerState
+	graphicsPipelineStateDesc_.VS = { vertexShaderBlob_->GetBufferPointer(),
+	vertexShaderBlob_->GetBufferSize() };// VertexShader
+	graphicsPipelineStateDesc_.PS = { pixelShaderBlob_->GetBufferPointer(),
+	pixelShaderBlob_->GetBufferSize() };//PixelShader
+
+	//書きこむRTVの情報
+	graphicsPipelineStateDesc_.NumRenderTargets = 1;
+	graphicsPipelineStateDesc_.RTVFormats[0] = DXGI_FORMAT_R8G8B8A8_UNORM_SRGB;
+	
+	//利用するトボロジ（形状）のタイプ。三角形
+	graphicsPipelineStateDesc_.PrimitiveTopologyType = topologyType;
+
+	//どのように画面に色を打ち込むかの設定
+	graphicsPipelineStateDesc_.SampleDesc.Count = 1;
+	graphicsPipelineStateDesc_.SampleMask = D3D12_DEFAULT_SAMPLE_MASK;
+	//DepthStencil
+	graphicsPipelineStateDesc_.DepthStencilState = depthStencil_.GetDesc();
+	graphicsPipelineStateDesc_.DSVFormat = depthSettings.formats;
+
+	// ---  --------------- ------------ ------ //
+	//  BlendState                              //
+	//  -------- -------- -------  -- --------- //
+	blendState_.SetBlendMode(startBlendMode);
+	graphicsPipelineStateDesc_.BlendState = blendState_.GetDesc();//BlendState
+
+	auto d3d12 = engine->GetD3D12System();
+
+	//実際に生成
+	HRESULT hr;
+	hr = d3d12.GetDevice()->CreateGraphicsPipelineState(&graphicsPipelineStateDesc_,
+		IID_PPV_ARGS(&graphicsPipelineState_));
+	assert(SUCCEEDED(hr));
+
+	blendState_.SetBlendMode(BLENDMODE::Additive);//BlendStateの設定
+	graphicsPipelineStateDesc_.BlendState = blendState_.GetDesc();//BlendState
+
+	//実際に生成
+	hr = d3d12.GetDevice()->CreateGraphicsPipelineState(&graphicsPipelineStateDesc_,
+		IID_PPV_ARGS(&graphicsPipelineState_Add));
+	assert(SUCCEEDED(hr));
+
+	blendState_.SetBlendMode(BLENDMODE::Subtractive);//BlendStateの設定
+	graphicsPipelineStateDesc_.BlendState = blendState_.GetDesc();//BlendState
+
+	//実際に生成
+	hr = d3d12.GetDevice()->CreateGraphicsPipelineState(&graphicsPipelineStateDesc_,
+		IID_PPV_ARGS(&graphicsPipelineState_Sub));
+	assert(SUCCEEDED(hr));
+
+	blendState_.SetBlendMode(BLENDMODE::ScreenBlend);//BlendStateの設定
+	graphicsPipelineStateDesc_.BlendState = blendState_.GetDesc();//BlendState
+
+	//実際に生成
+	hr = d3d12.GetDevice()->CreateGraphicsPipelineState(&graphicsPipelineStateDesc_,
+		IID_PPV_ARGS(&graphicsPipelineState_Scr));
+	assert(SUCCEEDED(hr));
+
+	blendState_.SetBlendMode(BLENDMODE::Multiplicative);//BlendStateの設定
+	graphicsPipelineStateDesc_.BlendState = blendState_.GetDesc();//BlendState
+
+	//実際に生成
+	hr = d3d12.GetDevice()->CreateGraphicsPipelineState(&graphicsPipelineStateDesc_,
+		IID_PPV_ARGS(&graphicsPipelineState_Mul));
+	assert(SUCCEEDED(hr));
+}
+
+void PipelineStateObject::InitializeDirectlyCompute(
+	Fngine* engine,
+	Microsoft::WRL::ComPtr<ID3D12RootSignature> rootSignature,
+	const D3D12_INPUT_ELEMENT_DESC* inputElement, UINT numInputElement,
+	std::wstring csPath
+) 
+{
+	//////////////////////
+	///
+	/// 【 共通処理 】
+	///
+	//////////////////////
+
+	// DXCを取得
+	dxc_ = &engine->GetDXC();
+
+	// 作成されたrootSignatureの情報を取得
+	rootSignature_.GetRS() = std::move(rootSignature);
+
+	inputLayoutDesc_.Initialize(inputElement, numInputElement);
+
+	// CSなら
+	computeShaderBlob_ = CompileShader(csPath, L"cs_6_0",
+		dxc_->GetUtils().Get(), dxc_->GetCompiler().Get(), dxc_->GetIncludeHandle().Get());
+	assert(computeShaderBlob_ != nullptr);
+	 
+	// ルートシグネチャの情報を取得
+	computePipelineStateDesc_.pRootSignature = rootSignature_.GetRS().Get();
+	computePipelineStateDesc_.CS = {
+		computeShaderBlob_->GetBufferPointer(),
+		computeShaderBlob_->GetBufferSize()
+	};
+
+	auto d3d12 = engine->GetD3D12System();
+
+	//実際に生成
+	HRESULT hr;
+	// 作成書をもとにPSOを生成
+	hr = d3d12.GetDevice()->CreateComputePipelineState(&computePipelineStateDesc_,
+		IID_PPV_ARGS(&computePipelineState_));
+	assert(SUCCEEDED(hr));
+}
+
+///////////////////////
+///
+///  PSO Builder
+///
+///////////////////////
+
+PSOBuilder::PSOBuilder(Fngine* fngine, const std::string& psoName)
+	: fngine_(fngine), name_(psoName) {
+}
+
+PSOBuilder& PSOBuilder::SetPipelineType(const std::string& typeName) {
+	pipelineType_ = typeName;
+	return *this;
+}
+
+PSOBuilder& PSOBuilder::SetShaders(const std::wstring& vsPath, const std::wstring& psPath) {
+	vsPath_ = vsPath; psPath_ = psPath;
+	return *this;
+}
+
+PSOBuilder& PSOBuilder::SetComputeShader(const std::wstring& csPath) {
+	csPath_ = csPath;
+	return *this;
+}
+
+PSOBuilder& PSOBuilder::SetInputLayout(const D3D12_INPUT_ELEMENT_DESC* pElements, UINT numElements) {
+	//inputElements_.assign(pElements, pElements + numElements);
+	pInputElements_ = pElements;
+	numInputElements_ = numElements;
+	return *this;
+}
+
+PSOBuilder& PSOBuilder::SetBlendMode(BLENDMODE mode) {
+	blendMode_ = mode;
+	return *this;
+}
+
+PSOBuilder& PSOBuilder::SetTopologyType(const D3D12_PRIMITIVE_TOPOLOGY_TYPE& type) {
+	topologyType_ = type;
+	return *this;
+}
+
+PSOBuilder& PSOBuilder::SetRasterizerSettings(const RasterizerSettings& settings) {
+	rasterizerSettings_ = settings;
+	return *this;
+}
+
+PSOBuilder& PSOBuilder::SetDepthSettings(const DepthSettings& settings) {
+	depthSettings_ = settings;
+	return *this;
+}
+
+void PSOBuilder::Build() {
+	// 1. RootSignatureをビルド
+	auto rootSignature = rsBuilder_.Build(fngine_->GetD3D12System().GetDevice().Get());
+
+	PSO newPSO;
+
+	if (pipelineType_ == "Graphics") {
+		newPSO.InitializeDirectly(fngine_, rootSignature, pInputElements_, numInputElements_, blendMode_, vsPath_, psPath_, topologyType_, rasterizerSettings_, depthSettings_);
+	}
+	else if (pipelineType_ == "Compute") {
+		newPSO.InitializeDirectlyCompute(fngine_, rootSignature, pInputElements_, numInputElements_, csPath_);
+	}
+
+	// 3. マネージャーのマップに登録
+	PipelineStateObjectManager::GetInstance()->RegisterPSO(name_, std::move(newPSO));
+}

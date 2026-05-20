@@ -2,11 +2,13 @@
 #include "CameraSystem.h"
 #include "ModelManager.h"
 #include "UIAnimation.h"
+#include "../Engine/Objects/Primitive/Box/PrimitiveBox.h"
 
 import MotionManager;
 
 SceneDirector::~SceneDirector() {
 	delete currentScene_;
+	PrimitiveBox::GetInstance()->ReleaseInstance();
 }
 
 void SceneDirector::Initialize(Scene& firstScene) {
@@ -28,6 +30,8 @@ void SceneDirector::Initialize(Scene& firstScene) {
 	CameraSystem::GetInstance()->MakeCamera("DebugCamera", CameraType::Debug);
 	CameraSystem::GetInstance()->MakeCamera("GameCamera", CameraType::Game);
 	CameraSystem::GetInstance()->SetActiveCamera("GameCamera");
+
+	PrimitiveBox::GetInstance()->Initialize(p_fngine_, 500);
 }
 
 void SceneDirector::Update() {
@@ -69,6 +73,8 @@ void SceneDirector::Draw() {
 		if (isGameRunning_) {
 			// [ シーン ]
 			currentScene_->Draw();
+
+			PrimitiveBox::GetInstance()->DrawInstanced();
 		}
 	}
 	// [ ポーズ中 ]
@@ -145,6 +151,8 @@ void SceneDirector::LoadModelData() {
 	name = ModelManager::GetInstance()->LoadObj("ulthimaSky.obj", "resources", LoadFileType::OBJ);
 	name = ModelManager::GetInstance()->LoadObj("Map.obj", "resources/Data/Map");
 	name = ModelManager::GetInstance()->LoadObj("Naira_ExportTest.gltf", "resources/Model/Character/Test");
+
+	ModelManager::GetInstance()->AddObject("Cube", ModelManager::GetInstance()->LoadModelData("AnimatedCube").vertices, ModelManager::GetInstance()->LoadModelData("AnimatedCube").indices);
 }
 
 void SceneDirector::LoadTexture() {

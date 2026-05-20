@@ -309,37 +309,6 @@ void Fngine::SettingShader() {
 		},
 		"SkinningCS"
 	);
-
-	PSOManager::GetInstance()->CreateNewPSO
-	(
-		{
-			PIPELINETYPE::Graphics,
-			ROOTTYPE::SkyBox,
-			PSOTYPE::SkyBox,
-		 {
-			L"resources/shaders/SkyBox/SkyBox.VS.hlsl",
-			L"resources/shaders/SkyBox/SkyBox.PS.hlsl",
-			L"",
-			L"vs_6_0",
-			L"ps_6_0",
-			L""
-		 },
-		 {
-			 D3D12_CULL_MODE_BACK,
-			 D3D12_FILL_MODE_SOLID,
-			 FALSE,
-			 0,
-			 0.0f
-		 },
-		 {
-			true,
-			D3D12_DEPTH_WRITE_MASK_ZERO,
-			D3D12_COMPARISON_FUNC_LESS_EQUAL,
-			DXGI_FORMAT_D24_UNORM_S8_UINT
-		}
-		},
-		"SkyBox"
-	);
 }
 
 void Fngine::Initialize() {
@@ -391,6 +360,8 @@ void Fngine::Initialize() {
 
 	PSOManager::GetInstance()->Initialize(this);
 	SettingShader();
+
+	PSOManager::GetInstance()->LoadAllPSOsFromDirectory("resources/Data/PSO");
 
 	osr_.Initialize(d3d12_, srv_, float(kClienWidth_), float(kClienHeight_));
 
@@ -469,8 +440,8 @@ void Fngine::BeginFrame() {
 
 void Fngine::EndFrame() {
 	command_.GetList().GetList()->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-	command_.GetList().GetList()->SetGraphicsRootSignature(PSOManager::GetInstance()->GetPSO("CopyImage").GetRootSignature().GetRS().Get());
-	command_.GetList().GetList()->SetPipelineState(PSOManager::GetInstance()->GetPSO("CopyImage").GetGPS().Get());
+	command_.GetList().GetList()->SetGraphicsRootSignature(PSOManager::GetInstance()->GetPSO("Vignette").GetRootSignature().GetRS().Get());
+	command_.GetList().GetList()->SetPipelineState(PSOManager::GetInstance()->GetPSO("Vignette").GetGPS().Get());
 	//SRVのDescritorTableの先頭を設定。0はrootParameter[0]である
 	command_.GetList().GetList()->SetGraphicsRootDescriptorTable(0, osr_.GetHandleGPU());
 	command_.GetList().GetList()->DrawInstanced(3, 1, 0, 0);

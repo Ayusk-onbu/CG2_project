@@ -36,7 +36,17 @@ private:
 	// 図鑑的な存在
 	// [ 最初ModelDataだけでいいかと思ったが、表示したいかもだし別にいいかという判断。ただ、オブジェクトプールしたいから将来的に変更の可能性 ]
 	std::unordered_map<std::string, std::unique_ptr<ModelObject>>models_;
+
 	uint32_t modelCount_;
 	Fngine* pFngine_;
+
+public:
+	ObjectData& LoadObjectData(const std::string& ID);
+
+	void AddObject(const std::string& ID,const std::vector<VertexData>& vertices, const std::vector<uint32_t>& indices);
+
+private:
+	std::unordered_map<std::string, std::unique_ptr<ObjectData>>objects_;
+
 };
 

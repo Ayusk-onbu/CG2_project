@@ -31,3 +31,26 @@ ModelData& ModelManager::LoadModelData(const std::string& ID) {
 	}
 	return it->second->GetModelData();
 }
+
+ObjectData& ModelManager::LoadObjectData(const std::string& ID) {
+	auto it = objects_.find(ID);
+	if (it == objects_.end()) {
+		Log::ViewFile("Not Found Model Data");
+		return *objects_.begin()->second;
+	}
+	return *it->second;
+}
+
+void ModelManager::AddObject(const std::string& ID, const std::vector<VertexData>& vertices, const std::vector<uint32_t>& indices) {
+	auto it = objects_.find(ID);
+	if (it == objects_.end()) {
+		Log::View("The : " + ID + "Object -> Not already Exists");
+		std::unique_ptr<ObjectData>object = std::make_unique<ObjectData>();
+		object->MakeObjectData(pFngine_, vertices, indices);
+		objects_.emplace(ID, std::move(object));
+	}
+	else {
+		Log::View("The : " + ID + "Object -> Already Exists");
+		return;
+	}
+}

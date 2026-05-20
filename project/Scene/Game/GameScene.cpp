@@ -3,7 +3,6 @@
 #include "CameraSystem.h"
 #include "SceneDirector.h"
 
-
 GameScene::GameScene()
 	: player_(std::make_unique<Player>()),
 	  boss_(std::make_unique<BossEnemy>()),
@@ -93,8 +92,8 @@ void GameScene::Update(){
 }
 
 void GameScene::Draw() {
-	skySphere_->Draw();
-	//skyBox_->Draw();
+	//skySphere_->Draw();
+	skyBox_->Draw();
 	gameMap_->Draw();
 
 	//boss_->Draw();

@@ -1,6 +1,31 @@
 #include "PipelineStateObjectManager.h"
 #include "ImGuiManager.h"
 
+#include <filesystem>
+
+#include <json.hpp>
+
+namespace fs = std::filesystem;
+using json = nlohmann::json;
+
+static const D3D12_INPUT_ELEMENT_DESC Layout_FullMesh[] = {
+    { "POSITION", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
+    { "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
+    { "NORMAL",   0, DXGI_FORMAT_R32G32B32_FLOAT,    0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 }
+};
+
+static const D3D12_INPUT_ELEMENT_DESC Layout_FullSkinningMesh[] = {
+    { "POSITION", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
+    { "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
+    { "NORMAL",   0, DXGI_FORMAT_R32G32B32_FLOAT,    0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
+    { "WEIGHT",   0, DXGI_FORMAT_R32G32B32A32_FLOAT, 1, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0},
+    { "INDEX",    0, DXGI_FORMAT_R32G32B32A32_SINT,  1, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0}
+};
+
+static const D3D12_INPUT_ELEMENT_DESC Layout_SkyBox[] = {
+    { "POSITION", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
+};
+
 std::unique_ptr<PipelineStateObjectManager> PipelineStateObjectManager::instance_ = nullptr;
 
 void PipelineStateObjectManager::Initialize(Fngine* fngine) { 
@@ -87,4 +112,228 @@ void PipelineStateObjectManager::ImGui() {
 
     ImGui::End(); // メインウィンドウの終了
 #endif // _DEBUG
+}
+
+//////////////////////////////////////////////////////////.
+///
+/// ここからJsonファイルからデータを読み込む際に使う関数群
+///
+//////////////////////////////////////////////////////////
+
+//   =====================================
+// 【 RootSignatureの何で使用するかの設定 】
+//   =====================================
+D3D12_SHADER_VISIBILITY ParseVisibility(const std::string& str) {
+    if (str == "Vertex") return D3D12_SHADER_VISIBILITY_VERTEX;
+    if (str == "Pixel") return D3D12_SHADER_VISIBILITY_PIXEL;
+    return D3D12_SHADER_VISIBILITY_ALL;
+}
+
+//   ===================================
+// 【 最初のBlendModeを何にするかの設定 】
+//   ===================================
+BLENDMODE ParseBlendMode(const std::string& str) {
+    if (str == "Add") return BLENDMODE::Additive;
+    else if (str == "None") return BLENDMODE::None;
+    else if (str == "Multiply") return BLENDMODE::Multiplicative;
+    else if (str == "Screen") return BLENDMODE::ScreenBlend;
+    else if (str == "Subtract") return BLENDMODE::Subtractive;
+    return BLENDMODE::AlphaBlend;
+}
+
+//   =======================================
+// 【 PrimitiveTopologyTypeで使用するの設定 】
+//   =======================================
+D3D12_PRIMITIVE_TOPOLOGY_TYPE ParseTopologyType(const std::string& str) {
+    if (str == "Point")    return D3D12_PRIMITIVE_TOPOLOGY_TYPE_POINT;
+    if (str == "Line")     return D3D12_PRIMITIVE_TOPOLOGY_TYPE_LINE;
+    if (str == "Patch")    return D3D12_PRIMITIVE_TOPOLOGY_TYPE_PATCH;
+    return D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE; // デフォルト
+}
+
+//   ========================================
+// 【 DXGIフォーマットの変換 (InputLayout用) 】
+//   ========================================
+DXGI_FORMAT ParseFormat(const std::string& str) {
+    if (str == "R32G32B32A32_FLOAT") return DXGI_FORMAT_R32G32B32A32_FLOAT;
+    if (str == "R32G32B32_FLOAT")    return DXGI_FORMAT_R32G32B32_FLOAT;
+    if (str == "R32G32_FLOAT")       return DXGI_FORMAT_R32G32_FLOAT;
+    if (str == "R32_FLOAT")          return DXGI_FORMAT_R32_FLOAT;
+    if (str == "R32G32B32A32_SINT")  return DXGI_FORMAT_R32G32B32A32_SINT;
+    return DXGI_FORMAT_D24_UNORM_S8_UINT;
+}
+
+//   ===================
+// 【ラスタライザの設定 】
+//   ===================
+RasterizerSettings ParseRasterizer(const json& j) {
+    RasterizerSettings settings{};
+    if (j.contains("cullMode")) {
+        std::string mode = j["cullMode"];
+        if (mode == "BACK")  settings.CullMode = D3D12_CULL_MODE_BACK;
+        if (mode == "FRONT") settings.CullMode = D3D12_CULL_MODE_FRONT;
+        if (mode == "NONE")  settings.CullMode = D3D12_CULL_MODE_NONE;
+    }
+    if (j.contains("fillMode")) {
+        settings.FillMode = (j["fillMode"] == "WIREFRAME") ? D3D12_FILL_MODE_WIREFRAME : D3D12_FILL_MODE_SOLID;
+    }
+    return settings;
+}
+
+// 深度ステンシル設定の変換
+D3D12_DEPTH_WRITE_MASK ParseDepthWriteMask(const std::string& str) {
+    if (str == "Zero") return D3D12_DEPTH_WRITE_MASK_ZERO;
+    return D3D12_DEPTH_WRITE_MASK_ALL;
+}
+
+D3D12_COMPARISON_FUNC ParseComparisonFunc(const std::string& str) {
+    if (str == "Never")        return D3D12_COMPARISON_FUNC_NEVER;
+    if (str == "Less")         return D3D12_COMPARISON_FUNC_LESS;
+    if (str == "Equal")        return D3D12_COMPARISON_FUNC_EQUAL;
+    if (str == "LessEqual")    return D3D12_COMPARISON_FUNC_LESS_EQUAL;
+    if (str == "Greater")      return D3D12_COMPARISON_FUNC_GREATER;
+    if (str == "NotEqual")     return D3D12_COMPARISON_FUNC_NOT_EQUAL;
+    if (str == "GreaterEqual") return D3D12_COMPARISON_FUNC_GREATER_EQUAL;
+    return D3D12_COMPARISON_FUNC_ALWAYS;
+}
+
+// 指定したフォルダ内のすべてのJSONファイルを読み込む
+void PipelineStateObjectManager::LoadAllPSOsFromDirectory(const std::string& directoryPath) {
+    // フォルダが存在するかチェック
+    if (!fs::exists(directoryPath) || !fs::is_directory(directoryPath)) {
+        Log::ViewFile("Directory not found: " + directoryPath);
+        return;
+    }
+
+    // フォルダ内のファイルを1つずつ巡回
+    for (const auto& entry : fs::directory_iterator(directoryPath)) {
+        // 通常のファイル、かつ拡張子が「.json」のものを探す
+        if (entry.is_regular_file() && entry.path().extension() == ".json") {
+
+            std::string filePath = entry.path().string();               // フルパス (例: "Resources/PSO/SpritePSO.json")
+            std::string psoName = entry.path().stem().string();       // ファイル名のみ (例: "SpritePSO")
+
+            // ファイル名を設定名として、1ファイルずつ読み込む！
+            LoadPSOsFromJson(filePath, psoName);
+        }
+    }
+}
+
+void PipelineStateObjectManager::LoadPSOsFromJson(const std::string& filepath, const std::string& psoName) {
+    std::ifstream file(filepath);
+    if (!file.is_open()) {
+        Log::ViewFile("Failed to open PSO json: " + filepath);
+        return;
+    }
+
+    json psoJson;
+    file >> psoJson;
+
+    std::string type = psoJson["pipelineType"]; // "Graphics" or "Compute"
+
+    // ビルダーを起動！
+    PSOBuilder builder(p_fngine_, psoName);
+    builder.SetPipelineType(type);
+
+    // --- 1. シェーダーのセット ---
+    if (type == "Graphics") {
+        //   ============================
+        // 【 シェーダーのPath情報を取得 】
+        //   ============================
+        // VSのPathを取得
+        std::string vsRaw = psoJson["shaders"]["vs"];
+        std::wstring vsPath = ConvertString(vsRaw);
+        // PSのPathを取得
+        std::string psRaw = psoJson["shaders"]["ps"];
+        std::wstring psPath = ConvertString(psRaw);
+        // データを転送
+        builder.SetShaders(vsPath, psPath);
+        // ※ あとはProfileをどうするか
+
+        //   ================
+        // 【 Topologyの設定 】
+        //   ================
+        builder.SetTopologyType(ParseTopologyType(psoJson.value("primitiveTopologyType", "Triangle")));
+
+        //   ===================
+        // 【 InputLayoutの設定 】
+        //   ===================
+        static std::vector<D3D12_INPUT_ELEMENT_DESC> inputElements;
+        static std::vector<std::string> semanticNamePool; // 寿命を関数末尾まで引き伸ばすため
+
+        inputElements.clear();
+        semanticNamePool.clear();
+
+        if (psoJson.contains("inputLayout")) {
+            // vectorの再確保によるアドレス移動を防ぐため事前にリザーブ
+            semanticNamePool.reserve(psoJson["inputLayout"].size());
+
+            for (const auto& element : psoJson["inputLayout"]) {
+                // プールに実体をコピーして保管 <=  ...?
+                semanticNamePool.push_back(element["semanticName"].get<std::string>());
+
+                D3D12_INPUT_ELEMENT_DESC elDesc{};
+                // プールに保管された安全な文字列ポインタを渡す！
+                elDesc.SemanticName = semanticNamePool.back().c_str();
+                elDesc.SemanticIndex = element.value("semanticIndex", 0);
+                elDesc.Format = ParseFormat(element["format"]);
+                elDesc.InputSlot = element.value("inputSlot", 0);
+                elDesc.AlignedByteOffset = D3D12_APPEND_ALIGNED_ELEMENT;
+                elDesc.InputSlotClass = D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA;
+
+                inputElements.push_back(elDesc);
+            }
+            builder.SetInputLayout(inputElements.data(), static_cast<UINT>(inputElements.size()));
+        }
+
+        // Blend, Cull...
+        builder.SetBlendMode(ParseBlendMode(psoJson.value("blendMode", "AlphaBlend")));
+
+        builder.SetRasterizerSettings(ParseRasterizer(psoJson["rasterizer"]));
+
+        DepthSettings depthSettings;
+        if (psoJson.contains("depthStencilState")) {
+            const auto& ds = psoJson["depthStencilState"];
+            if (ds.contains("depthEnable"))    depthSettings.depthEnable = ds["depthEnable"];
+            if (ds.contains("depthWriteMask")) depthSettings.writeMask = ParseDepthWriteMask(ds["depthWriteMask"]);
+            if (ds.contains("depthFunc"))      depthSettings.comparisonFunc = ParseComparisonFunc(ds["depthFunc"]);
+            if (ds.contains("format"))         depthSettings.formats = ParseFormat(ds["format"]);
+        }
+        builder.SetDepthSettings(depthSettings);
+    }
+    else if (type == "Compute") {
+        // CSの設定 (Builder側に SetComputeShader 等を追加しておく)
+        std::string csRaw = psoJson["shaders"]["cs"];
+        std::wstring cs = ConvertString(csRaw);
+        builder.SetComputeShader(cs);
+    }
+
+    // RootSignatureの組み立て
+    if (psoJson.contains("rootSignature")) {
+        for (const auto& param : psoJson["rootSignature"]) {
+            std::string paramType = param["type"];
+            UINT reg = param["register"];
+            D3D12_SHADER_VISIBILITY vis = ParseVisibility(param["visibility"]);
+
+            if (paramType == "CBV") {
+                builder.AddCBV(reg, vis);
+            }
+            else if (paramType == "SRVTable") {
+                builder.AddSRVTable(reg, param["count"], vis);
+            }
+            else if (paramType == "UAVTable") {
+                builder.AddUAVTable(reg, param["count"], vis);
+            }
+        }
+    }
+
+    // サンプラーの処理
+    if (psoJson.contains("staticSamplers")) {
+        for (const auto& samp : psoJson["staticSamplers"]) {
+            builder.AddStaticSampler(samp["register"]);
+        }
+    }
+
+    // --- 3. 構築してマネージャーに登録！ ---
+    builder.Build();
 }

@@ -31,19 +31,16 @@ public:
 		if (instanceDataList_.empty()) return;
 
 		// 1. CPU -> GPUへのデータ転送（Map）
-		TForGPU* mappedData = instancingBuffer_;
+		TForGPU* mappedData = instancingBuffer_->GetMappedData();
 		for (size_t i = 0; i < instanceDataList_.size(); ++i) {
 			// ここで ObjectData から ForGPU への変換を行う
-			// （例：Transformから行列を作ってForGPUに詰めるなど）
 			mappedData[i] = ConvertToGPUData(instanceDataList_[i]);
 		}
-		instancingBuffer_->Unmap();
+		//instancingBuffer_->Unmap();
 
 		// 2. コマンドリストへの登録
-		auto commandList = p_engine_->GetCommand().GetList().GetList();
-
-		if (usePSOName_ == "") {
-
+		if (SetCommand) {
+			SetCommand();
 		}
 
 		// 次のフレームのためにリストをクリア
@@ -52,8 +49,9 @@ public:
 protected:
 	// CPUデータからGPUデータへの変換ルール
 	virtual TForGPU ConvertToGPUData(const TObjectData& data) = 0;
-
-private:
+	using CallBack = std::function<void()>;
+	CallBack SetCommand = nullptr;
+protected:
 	Fngine* p_engine_ = nullptr;
 	std::unique_ptr<Structured<TForGPU>> instancingBuffer_;
 	std::vector<TObjectData> instanceDataList_; // 描画待ちデータのリスト

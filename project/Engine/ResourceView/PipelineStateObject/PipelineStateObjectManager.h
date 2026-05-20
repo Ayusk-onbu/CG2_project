@@ -22,6 +22,15 @@ public:
 	/// <param name="name　キー"></param>
 	void CreateNewPSO(const PSOKey& key, const std::string& name);
 
+	void LoadAllPSOsFromDirectory(const std::string& directoryPath);
+
+	void LoadPSOsFromJson(const std::string& filepath, const std::string& psoName);
+
+	void RegisterPSO(const std::string& name, PSO&& newPSO) {
+		// 保管庫（マップ）に、名前をキーにして「引っ越し（move）」しながら登録する
+		PSOs_.emplace(name, std::move(newPSO));
+	}
+
 	/// <summary>
 	/// 
 	/// </summary>

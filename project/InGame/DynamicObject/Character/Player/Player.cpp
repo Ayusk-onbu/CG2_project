@@ -1,4 +1,5 @@
 #include "Player.h"
+#include "../Engine/Objects/Primitive/Box/PrimitiveBox.h"
 
 Player::Player() {
 	controller_ = std::make_unique<PlayerController>();
@@ -45,6 +46,8 @@ void Player::Update(float deltaTime) {
 	collider_->SetWorldPosition(obj_->worldTransform_.get_.Translation());
 	MeshCollider* meshCollider = dynamic_cast<MeshCollider*>(collider_.get());
 	meshCollider->SetWorldMatrix(obj_->worldTransform_.mat_);
+
+	PrimitiveBox::GetInstance()->AddInstance({ {obj_->worldTransform_}, {1.0f,1.0f,1.0f,1.0f} });
 }
 
 void Player::Draw() {

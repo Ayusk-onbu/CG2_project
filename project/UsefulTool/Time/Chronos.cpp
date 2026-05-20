@@ -63,20 +63,27 @@ void Chronos::FixedUpdate() {
 	if (!isFixedFPS_) {
 		return;
 	}
-	// 今の時間を入手
+
+	// 今回のフレームの目標時刻
+	auto targetTime = referenceTime_ + kMinTime_;
 	auto now = std::chrono::steady_clock::now();
 
-	// １Frameにかかった時間を計算
-	auto elapsed = std::chrono::duration_cast<std::chrono::microseconds>(now - referenceTime_);
+	if (now < targetTime) {
+		// 【1】スリープの誤差を考慮し、目標時刻の2ミリ秒前まではSleepで待機（CPU使用率削減）
+		auto sleepTime = targetTime - now - std::chrono::milliseconds(2);
+		if (sleepTime > std::chrono::microseconds(0)) {
+			std::this_thread::sleep_for(sleepTime);
+		}
 
-	// 待つ
-	if (elapsed < kMinCheckTime_) {
-		while (std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::steady_clock::now() - referenceTime_) < kMinTime_) {
-			std::this_thread::sleep_for(std::chrono::microseconds(1));
+		// 【2】残りのわずかな時間はスピンロック（空ループ）で1マイクロ秒単位で正確に待つ
+		while (std::chrono::steady_clock::now() < targetTime) {
+			// 何もしない（ビジーウェイト）
 		}
 	}
 
-	referenceTime_ = std::chrono::steady_clock::now();
+	// 基準時間を更新
+	// ※現在時刻で上書きすると微小なズレが蓄積するため、理想は targetTime を次の基準にする
+	referenceTime_ = std::chrono::steady_clock::now(); 
 }
 
 void Chronos::ChangeIsFixed() {

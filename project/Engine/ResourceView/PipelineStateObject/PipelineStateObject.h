@@ -57,6 +57,24 @@ public:
 
 	void Initialize(Fngine* fngine, const PSOKey& key);
 
+	void InitializeDirectly(
+		Fngine* engine, 
+		Microsoft::WRL::ComPtr<ID3D12RootSignature> rootSignature,
+		const D3D12_INPUT_ELEMENT_DESC* inputElement, UINT numInputElement,
+		BLENDMODE startBlendMode,
+		std::wstring vsPath, std::wstring psPath,
+		D3D12_PRIMITIVE_TOPOLOGY_TYPE topologyType,
+		RasterizerSettings rasterizerSettings,
+		DepthSettings depthSettings
+		);
+
+	void InitializeDirectlyCompute(
+		Fngine* engine,
+		Microsoft::WRL::ComPtr<ID3D12RootSignature> rootSignature,
+		const D3D12_INPUT_ELEMENT_DESC* inputElement, UINT numInputElement,
+		std::wstring csPath
+	);
+
 	void Compile(
 		//CompilerするShaderファイルへのパス
 		const std::wstring& vsFilePath,
@@ -128,3 +146,44 @@ private:
 };
 
 using PSO = PipelineStateObject;
+
+class PSOBuilder {
+public:
+	PSOBuilder(Fngine* fngine, const std::string& psoName);
+
+	// 各種設定をチェーンで繋ぐための関数群
+	PSOBuilder& SetPipelineType(const std::string& typeName);
+	PSOBuilder& SetShaders(const std::wstring& vsPath, const std::wstring& psPath);
+	PSOBuilder& SetComputeShader(const std::wstring& csPath);
+	PSOBuilder& SetInputLayout(const D3D12_INPUT_ELEMENT_DESC* pElements, UINT numElements);
+	PSOBuilder& SetBlendMode(BLENDMODE mode);
+	PSOBuilder& SetTopologyType(const D3D12_PRIMITIVE_TOPOLOGY_TYPE& type);
+	PSOBuilder& SetRasterizerSettings(const RasterizerSettings& settings);
+	PSOBuilder& SetDepthSettings(const DepthSettings& settings);
+
+	// RootSignatureの設定もここにパススルーする
+	PSOBuilder& AddCBV(UINT reg, D3D12_SHADER_VISIBILITY vis) { rsBuilder_.AddCBV(reg, vis); return *this; }
+	PSOBuilder& AddSRVTable(UINT reg, UINT num, D3D12_SHADER_VISIBILITY vis) { rsBuilder_.AddSRVTable(reg, num, vis); return *this; }
+	PSOBuilder& AddUAVTable(UINT reg, UINT num, D3D12_SHADER_VISIBILITY vis) { rsBuilder_.AddUAVTable(reg, num, vis); return *this; }
+	PSOBuilder& AddStaticSampler(UINT reg) { rsBuilder_.AddStaticSampler(reg); return *this; }
+
+	// 最後にこれを呼ぶとManagerに登録される
+	void Build();
+
+private:
+	Fngine* fngine_;
+	std::string name_;
+
+	// 詰め込むデータ群 (現状のPSOKeyに入っていたようなもの)
+	std::string pipelineType_;
+	std::wstring vsPath_, psPath_, csPath_;
+	const D3D12_INPUT_ELEMENT_DESC* pInputElements_ = nullptr;
+	std::vector<D3D12_INPUT_ELEMENT_DESC>inputElements_;
+	UINT numInputElements_ = 0;
+	BLENDMODE blendMode_ = BLENDMODE::AlphaBlend;
+	D3D12_PRIMITIVE_TOPOLOGY_TYPE topologyType_;
+	RasterizerSettings rasterizerSettings_;
+	DepthSettings depthSettings_;
+
+	RootSignatureBuilder rsBuilder_;
+};

@@ -246,7 +246,6 @@ void RootSignature::CreateRootSignature(D3D12System& d3d12, ROOTTYPE type) {
 		rangeT2[0].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
 		rangeT2[0].OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
 
-		// ★ エラーの原因はここ！ここが TYPE_CBV になっている可能性があります。
 		rootParameters[2].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
 		rootParameters[2].DescriptorTable.NumDescriptorRanges = 1;
 		rootParameters[2].DescriptorTable.pDescriptorRanges = rangeT2;
@@ -413,4 +412,89 @@ void RootSignature::CreateRootSignature(D3D12System& d3d12, ROOTTYPE type) {
 			IID_PPV_ARGS(&rootSignature_));
 		assert(SUCCEEDED(hr));
 	}
+	else if (type == ROOTTYPE::PrimitiveBox) {
+
+	}
+}
+
+void RootSignatureBuilder::AddCBV(UINT shaderRegister, D3D12_SHADER_VISIBILITY visibility) {
+	D3D12_ROOT_PARAMETER param{};
+	param.ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;// CBV
+	param.Descriptor.ShaderRegister = shaderRegister;// レジスタの番号
+	param.Descriptor.RegisterSpace = 0;// どのスペースに作るか
+	param.ShaderVisibility = visibility;// どのシェーダーで使うか
+	parameters_.push_back(param);// 登録
+}
+
+void RootSignatureBuilder::AddSRVTable(UINT baseShaderRegister, UINT numDescriptors, D3D12_SHADER_VISIBILITY visibility) {
+	// Rangeを動的に生成してプールに突っ込む
+	auto range = std::make_unique<D3D12_DESCRIPTOR_RANGE>();
+	range->RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;// SRV
+	range->BaseShaderRegister = baseShaderRegister;// 使用するレジスタの番号
+	range->NumDescriptors = numDescriptors;// 長さ
+	range->RegisterSpace = 0;// どのスペースを使用するか
+	range->OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;// 
+
+	D3D12_ROOT_PARAMETER param{};
+	param.ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;// DescriptorTable 使用
+	param.DescriptorTable.NumDescriptorRanges = 1;
+	param.DescriptorTable.pDescriptorRanges = range.get(); // プール内のポインタを指す
+	param.ShaderVisibility = visibility;// 使用するシェーダー
+
+	rangePool_.push_back(std::move(range));
+	parameters_.push_back(param);
+}
+
+void RootSignatureBuilder::AddUAVTable(UINT baseShaderRegister, UINT numDescriptors, D3D12_SHADER_VISIBILITY visibility) {
+	auto range = std::make_unique<D3D12_DESCRIPTOR_RANGE>();
+	range->RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_UAV; // UAV
+	range->NumDescriptors = numDescriptors;
+	range->BaseShaderRegister = baseShaderRegister;
+	range->RegisterSpace = 0;
+	range->OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
+
+	D3D12_ROOT_PARAMETER param{};
+	param.ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
+	param.DescriptorTable.NumDescriptorRanges = 1;
+	param.DescriptorTable.pDescriptorRanges = range.get();
+	param.ShaderVisibility = visibility;// 使用するシェーダーの種類
+
+	rangePool_.push_back(std::move(range));
+	parameters_.push_back(param);
+}
+
+void RootSignatureBuilder::AddStaticSampler(UINT shaderRegister, D3D12_FILTER filter) {
+	D3D12_STATIC_SAMPLER_DESC sampler{};
+	sampler.Filter = filter;
+	sampler.AddressU = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
+	sampler.AddressV = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
+	sampler.AddressW = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
+	sampler.ComparisonFunc = D3D12_COMPARISON_FUNC_NEVER;
+	sampler.MaxLOD = D3D12_FLOAT32_MAX;
+	sampler.ShaderRegister = shaderRegister;
+	sampler.ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
+	samplers_.push_back(sampler);
+}
+
+Microsoft::WRL::ComPtr<ID3D12RootSignature> RootSignatureBuilder::Build(ID3D12Device* device) {
+	D3D12_ROOT_SIGNATURE_DESC desc{};
+	desc.Flags = D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT;
+	desc.NumParameters = static_cast<UINT>(parameters_.size());
+	desc.pParameters = parameters_.data();
+	desc.NumStaticSamplers = static_cast<UINT>(samplers_.size());
+	desc.pStaticSamplers = samplers_.data();
+
+	Microsoft::WRL::ComPtr<ID3DBlob> signatureBlob;
+	Microsoft::WRL::ComPtr<ID3DBlob> errorBlob;
+	HRESULT hr = D3D12SerializeRootSignature(&desc, D3D_ROOT_SIGNATURE_VERSION_1, &signatureBlob, &errorBlob);
+	if (FAILED(hr)) {
+		OutputDebugStringA((char*)errorBlob->GetBufferPointer());
+		assert(false);
+	}
+
+	Microsoft::WRL::ComPtr<ID3D12RootSignature> rootSignature;
+	hr = device->CreateRootSignature(0, signatureBlob->GetBufferPointer(), signatureBlob->GetBufferSize(), IID_PPV_ARGS(&rootSignature));
+	assert(SUCCEEDED(hr));
+
+	return rootSignature;
 }

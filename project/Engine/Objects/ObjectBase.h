@@ -21,6 +21,64 @@ enum class ObjectDrawType {
 
 class Fngine;
 
+class ObjectData
+{
+public:
+	void MakeObjectData(Fngine* fngine,const std::vector<VertexData>& vertices, const std::vector<uint32_t>& indices);
+
+	/////////////////////////
+	/// 
+	/// Vertex Resource
+	///
+	/////////////////////////
+public:
+	// Resourceの取得 (ComPtrの参照を返すことで、Mapや直接の操作が可能です)
+	Microsoft::WRL::ComPtr<ID3D12Resource>& GetVertexResource() { return vertexResource_; }
+
+	// BufferViewの取得
+	const D3D12_VERTEX_BUFFER_VIEW& GetVertexBufferView() const { return vertexBufferView_; }
+
+	void SetVertexBufferView(const D3D12_VERTEX_BUFFER_VIEW& view) {
+		vertexBufferView_ = view;
+	}
+
+	// Dataポインタの取得
+	VertexData* GetVertexData() const { return vertexData_; }
+
+private:
+	Microsoft::WRL::ComPtr <ID3D12Resource> vertexResource_;
+	D3D12_VERTEX_BUFFER_VIEW vertexBufferView_;
+	VertexData* vertexData_;
+
+	/////////////////////////
+	/// 
+	/// Index Resource
+	///
+	/////////////////////////
+public:
+	// Resourceの取得
+	Microsoft::WRL::ComPtr<ID3D12Resource>& GetIndexResource() { return indexResource_; }
+
+	// BufferViewの取得
+	const D3D12_INDEX_BUFFER_VIEW& GetIndexBufferView() const { return indexBufferView_; }
+
+	void SetIndexBufferView(const D3D12_INDEX_BUFFER_VIEW& view) {
+		indexBufferView_ = view;
+	}
+
+	// Dataポインタの取得
+	uint32_t* GetIndexData() const { return indexData_; }
+
+	// Indexの数を取得
+	uint32_t GetIndexCount() const { return indexCount_; }
+
+private:
+	Microsoft::WRL::ComPtr <ID3D12Resource> indexResource_;
+	D3D12_INDEX_BUFFER_VIEW indexBufferView_;
+	uint32_t* indexData_;
+	uint32_t indexCount_;
+};
+
 class ObjectBase
 {
 public:
