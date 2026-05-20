@@ -440,8 +440,8 @@ void Fngine::BeginFrame() {
 
 void Fngine::EndFrame() {
 	command_.GetList().GetList()->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-	command_.GetList().GetList()->SetGraphicsRootSignature(PSOManager::GetInstance()->GetPSO("Vignette").GetRootSignature().GetRS().Get());
-	command_.GetList().GetList()->SetPipelineState(PSOManager::GetInstance()->GetPSO("Vignette").GetGPS().Get());
+	command_.GetList().GetList()->SetGraphicsRootSignature(PSOManager::GetInstance()->GetPSO("BoxFilter").GetRootSignature().GetRS().Get());
+	command_.GetList().GetList()->SetPipelineState(PSOManager::GetInstance()->GetPSO("BoxFilter").GetGPS().Get());
 	//SRVのDescritorTableの先頭を設定。0はrootParameter[0]である
 	command_.GetList().GetList()->SetGraphicsRootDescriptorTable(0, osr_.GetHandleGPU());
 	command_.GetList().GetList()->DrawInstanced(3, 1, 0, 0);
