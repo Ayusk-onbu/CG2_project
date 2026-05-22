@@ -15,13 +15,6 @@ public:
 public:
 	void Initialize(Fngine* fngine);
 
-	/// <summary>
-	/// PSOを作成する関数
-	/// </summary>
-	/// <param name="key　セッティングの内容"></param>
-	/// <param name="name　キー"></param>
-	void CreateNewPSO(const PSOKey& key, const std::string& name);
-
 	void LoadAllPSOsFromDirectory(const std::string& directoryPath);
 
 	void LoadPSOsFromJson(const std::string& filepath, const std::string& psoName);

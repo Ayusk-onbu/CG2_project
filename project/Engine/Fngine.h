@@ -67,8 +67,6 @@ public:
 
 	void ChangOSRsDSVHandleType(DSV_HANDLE_TYPE type);
 private:
-	void SettingShader();
-private:
 
 	int32_t kClienWidth_ = 1280;
 	int32_t kClienHeight_ = 720;

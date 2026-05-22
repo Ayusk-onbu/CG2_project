@@ -9,54 +9,9 @@
 
 class Fngine;
 
-enum class PIPELINETYPE {
-	Graphics,// これは VS, PS, (GS, DS, HS etc...)
-	Compute  // CS のみに活用
-};
-
-enum class PSOTYPE {
-	Normal,
-	Line,
-	Skinning,
-	CopyImage,
-	SkyBox,
-};
-
-struct ShaderCompileSettings {
-	// グラフィックス用のシェーダー
-	std::wstring vsFilePath;
-	std::wstring psFilePath;
-	// ( GS, HS, DS も追加して良い )
-
-	// コンピュート用シェーダー
-	std::wstring csFilePath;
-
-	// プロファイル
-	const wchar_t* vsProfile = L"vs_6_0";
-	const wchar_t* psProfile = L"ps_6_0";
-	const wchar_t* csProfile = L"cs_6_0";
-};
-
-struct PSOKey {
-	PIPELINETYPE pipelineType;// pipelineのType設定
-	ROOTTYPE rootSignatureType;// rootSignatureのType設定
-	PSOTYPE psoType;
-
-	ShaderCompileSettings shaderCompileSettings;
-
-	// ラスタライザ設定
-	RasterizerSettings rasterizerSettings;
-
-	DepthSettings depthSettings;
-};
-
 class PipelineStateObject
 {
 public:
-	//void Initialize(Fngine* fngine, PSOTYPE type);
-
-	void Initialize(Fngine* fngine, const PSOKey& key);
-
 	void InitializeDirectly(
 		Fngine* engine, 
 		Microsoft::WRL::ComPtr<ID3D12RootSignature> rootSignature,
@@ -95,16 +50,9 @@ public:
 		IDxcCompiler3* dxcCompiler,
 		IDxcIncludeHandler* includeHandler);
 
-	/// <summary>
-	/// PSOのDescに情報をまとめる
-	/// </summary>
-	void MargeDesc();
-
 	// --------------------------------
 	// Set 
 	// --------------------------------
-
-	void SetDesc(D3D12System& d3d12, const PSOKey& key);
 
 	RootSignature GetRootSignature() { return rootSignature_; }
 	InputLayout GetInputLayout() { return inputLayoutDesc_; }
@@ -129,8 +77,6 @@ private:
 
 	// ブレンドモード
 	BLENDMODE blendMode_ = BLENDMODE::AlphaBlend;
-
-	PIPELINETYPE pipelineType_ = PIPELINETYPE::Graphics;
 
 	D3D12_GRAPHICS_PIPELINE_STATE_DESC graphicsPipelineStateDesc_ = {};
 	Microsoft::WRL::ComPtr <ID3D12PipelineState> graphicsPipelineState_ = nullptr;

@@ -47,7 +47,6 @@ void Player::Update(float deltaTime) {
 	MeshCollider* meshCollider = dynamic_cast<MeshCollider*>(collider_.get());
 	meshCollider->SetWorldMatrix(obj_->worldTransform_.mat_);
 
-	PrimitiveBox::GetInstance()->AddInstance({ {obj_->worldTransform_}, {1.0f,1.0f,1.0f,1.0f} });
 }
 
 void Player::Draw() {

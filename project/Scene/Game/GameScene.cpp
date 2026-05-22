@@ -200,7 +200,7 @@ void GameScene::PauseUpdate() {
 
 void GameScene::PauseDraw() {
 	gameMap_->Draw();
-	boss_->Draw();
+	//boss_->Draw();
 	player_->Draw();
 
 	pause_->Draw();

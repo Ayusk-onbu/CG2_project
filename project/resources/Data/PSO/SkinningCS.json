@@ -1,0 +1,35 @@
+{
+      "pipelineType": "Compute",
+      "primitiveTopologyType": "Triangle",
+      "shaders": {
+        "cs": "resources/shaders/CS/Skinning.CS.hlsl"
+      },
+      "inputLayout": [
+        { "semanticName": "POSITION", "semanticIndex": 0, "format": "R32G32B32A32_FLOAT", "inputSlot": 0 },
+        { "semanticName": "TEXCOORD", "semanticIndex": 0, "format": "R32G32_FLOAT", "inputSlot": 0 },
+        { "semanticName": "NORMAL", "semanticIndex": 0, "format": "R32G32B32_FLOAT", "inputSlot": 0 },
+        { "semanticName": "WEIGHT", "semanticIndex": 0, "format": "R32G32B32A32_FLOAT", "inputSlot": 1 },
+        { "semanticName": "INDEX", "semanticIndex": 0, "format": "R32G32B32A32_SINT", "inputSlot": 1 }
+      ],
+      "rasterizer": {
+        "fillMode": "Solid",
+        "cullMode": "None"
+      },
+      "depthStencilState": {
+        "depthEnable": false,
+        "depthWriteMask": "All",
+        "depthFunc": "LessEqual",
+        "format": "D24"
+      },
+      "blendMode": "AlphaBlend",
+      "rootSignature": [
+       { "type": "SRVTable", "register": 0, "count": 1, "visibility": "All" },
+       { "type": "SRVTable", "register": 1, "count": 1, "visibility": "All" },
+       { "type": "SRVTable", "register": 2, "count": 1, "visibility": "All" },
+       { "type": "UAVTable", "register": 0, "count": 1, "visibility": "All" },
+       { "type": "CBV", "register": 0, "visibility": "All" }
+      ],
+      "staticSamplers":[
+        {"register":0}
+      ]
+}
