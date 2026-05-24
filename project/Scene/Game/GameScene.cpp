@@ -51,6 +51,9 @@ void GameScene::Initialize() {
 	skySphere_ = std::make_unique<ConvenienceModel>();
 	skySphere_->Initialize(p_fngine_, "ulthimaSky", "ulthimaSky");
 
+	rotationBox_ = std::make_unique<AnimModel>();
+	rotationBox_->Initialize(p_fngine_, "AnimatedCube", "GridLine", "resources/AnimatedCube/", "AnimatedCube.gltf");
+
 	skyBox_->Initialize(p_fngine_, "rostock_laage_airport_4k");
 
 	// ポーズ関係のUI
@@ -80,7 +83,7 @@ void GameScene::Update(){
 	}
 	else {
 		player_->Update(deltaTime);
-
+		rotationBox_->Update();
 		//boss_->Update();
 
 		gameMap_->Update();
@@ -95,6 +98,8 @@ void GameScene::Draw() {
 	//skySphere_->Draw();
 	skyBox_->Draw();
 	gameMap_->Draw();
+
+	rotationBox_->Draw();
 
 	//boss_->Draw();
 	player_->Draw();

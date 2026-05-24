@@ -58,6 +58,8 @@ private:
 	std::unique_ptr<GameMap>gameMap_;
 	std::unique_ptr<ConvenienceModel>skySphere_;
 	std::unique_ptr<SkyBox>skyBox_;
+
+	std::unique_ptr<AnimModel>rotationBox_;
 };
 
 
