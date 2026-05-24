@@ -31,7 +31,7 @@ void PrimitiveBox::Initialize(Fngine* engine, uint32_t numInstance) {
 		//wvp用のCBufferの場所を設定
 		commandList->SetGraphicsRootDescriptorTable(1, instancingBuffer_->GetSRVHandleGPU());
 		//SRVのDescritorTableの先頭を設定。2はrootParameter[2]である
-		commandList->SetGraphicsRootDescriptorTable(2, TextureManager::GetInstance()->GetTexture("GridLine").GetHandleGPU());
+		commandList->SetGraphicsRootDescriptorTable(2, TextureManager::GetInstance()->GetTexture("circle").GetHandleGPU());
 
 		commandList->DrawIndexedInstanced(object.GetIndexCount(), UINT(instanceDataList_.size()), 0, 0, 0);
 	};

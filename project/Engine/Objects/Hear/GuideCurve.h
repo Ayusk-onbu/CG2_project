@@ -31,10 +31,13 @@ namespace GuideCurve {
 }
 
 namespace Strands {
-	/*
-	* どのくらいの半径にどのくらいランダムに散らすかのオフセット
-	* 周囲のある一定距離にあるガイドをいくつ、さらにどのくらいの割合参照するか
-	*/
+	// GPUのバッファ用のデータ
+	struct StrandVertex {
+		Vector3 position;
+		float radius;
+		Vector3 color;
+	};
+
 	struct ChildStrand {
 		uint32_t parentGuideIds[3]; // 影響を受ける親ガイド（近傍3本程度）
 		float weights[3];           // 各親ガイドからの影響度（合計1.0）
@@ -42,11 +45,17 @@ namespace Strands {
 		float lengthScale;          // 親に対して少し短くしたり長くしたりする係数
 	};
 
+	struct Strand {
+		ChildStrand bindData;
+		std::vector<StrandVertex> vertices;
+	};
 
-	/*
-	* 作った頭皮マップの情報から根元を決めるその点から近い三点をガイドとして参照する
-	* そのガイドまでの距離に応じてWeightづけを行う(合計1.0になるようにかなたぶん)
-	*/
+	std::vector<Strand> GenerateStrandOneGuide(
+		const GuideCurve::GuideHear& guide,
+		int numStrands,
+		float spreadRadius);
+
+	std::vector<StrandVertex> FlattenStrands(const std::vector<Strand>& strands);
 }
 
 /*

@@ -157,6 +157,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Engine\Objects\Hear\Strands.cpp" />
     <ClCompile Include="Engine\Objects\Primitive\SkyBox.cpp" />
     <ClCompile Include="InGame\DynamicObject\Character\Character.cpp" />
     <ClCompile Include="Common\MathUtils\Physics\BVH\BVH.cpp" />

@@ -13,8 +13,8 @@ SceneDirector::~SceneDirector() {
 
 void SceneDirector::Initialize(Scene& firstScene) {
 	// Loadは何か他のクラスにまとめるべきなのではないのであろうか
-	LoadModelData();
 	LoadTexture();
+	LoadModelData();
 	LoadMusic();
 	UIHAnimationManager::GetInstance()->Load();
 	MotionManager::GetInstance()->LoadMotions("resources/Data/Motion/Hermite/");
@@ -149,10 +149,10 @@ void SceneDirector::LoadModelData() {
 	name = ModelManager::GetInstance()->LoadObj("debugBlock.obj", "resources", LoadFileType::OBJ);
 	name = ModelManager::GetInstance()->LoadObj("plane.gltf", "resources");
 	name = ModelManager::GetInstance()->LoadObj("ulthimaSky.obj", "resources", LoadFileType::OBJ);
-	name = ModelManager::GetInstance()->LoadObj("Map.obj", "resources/Data/Map");
+	name = ModelManager::GetInstance()->LoadObj("Map_City.obj", "resources/Data/Map");
 	name = ModelManager::GetInstance()->LoadObj("Naira_ExportTest.gltf", "resources/Model/Character/Test");
 
-	ModelManager::GetInstance()->AddObject("Cube", ModelManager::GetInstance()->LoadModelData("AnimatedCube").vertices, ModelManager::GetInstance()->LoadModelData("AnimatedCube").indices);
+	ModelManager::GetInstance()->AddObject("Cube", ModelManager::GetInstance()->LoadModelData("plane").vertices, ModelManager::GetInstance()->LoadModelData("plane").indices);
 }
 
 void SceneDirector::LoadTexture() {

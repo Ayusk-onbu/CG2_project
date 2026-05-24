@@ -1,6 +1,13 @@
 #pragma once
 #include "Character.h"
 
+struct HitEffectInfo {
+	WorldTransform transform;
+	float lifeTime;
+	Vector4 color;
+	float currentTime;
+};
+
 class Player : public Character
 {
 public:
@@ -29,6 +36,15 @@ public:
 
 private:
 	
+///////////////////////////
+/// 
+/// 一時的なParticleの存在
+///
+//////////////////////////
+public:
+	void MakeHitEffect();
 
+private:
+	std::vector<HitEffectInfo>hitEffect_;
+	float hitEffectCoolTimer_ = 0.0f;
 };
-

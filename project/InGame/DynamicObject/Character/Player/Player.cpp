@@ -34,6 +34,9 @@ void Player::Initialize(Fngine* fngine) {
 
 	myCollider->onCollisionCallBack = [this](Collider* other, const Vector3& pushOut) {
 		OnCollisionGround(other, pushOut);
+		if (other->GetMyType() == COL_Static_Map) {
+			MakeHitEffect();
+		}
 	};
 }
 
@@ -47,9 +50,42 @@ void Player::Update(float deltaTime) {
 	MeshCollider* meshCollider = dynamic_cast<MeshCollider*>(collider_.get());
 	meshCollider->SetWorldMatrix(obj_->worldTransform_.mat_);
 
+	for (auto& effect : hitEffect_) {
+		// エフェクトの更新
+		effect.currentTime += deltaTime;
+		effect.color.w = 1.0f - (effect.currentTime / effect.lifeTime); // 徐々に透明にする
+		effect.color.w -= 0.01f; // 徐々に透明にする
+
+		PrimitiveBox::GetInstance()->AddInstance({
+			effect.transform,
+			effect.color
+		});
+	}
+	hitEffect_.erase(std::remove_if(hitEffect_.begin(), hitEffect_.end(),
+		[](const HitEffectInfo& effect) { return effect.currentTime >= effect.lifeTime; }),
+		hitEffect_.end());
 }
 
 void Player::Draw() {
 	obj_->LocalToWorld();
 	Character::Draw();
+}
+
+void Player::MakeHitEffect() {
+	hitEffectCoolTimer_ -= 1.0f / 60.0f;
+	if (hitEffectCoolTimer_ > 0.0f)return;
+	auto rand = RandomUtils::GetInstance();
+	for (int i = 0; i < 5; ++i) {
+		HitEffectInfo info;
+		info.transform.Initialize();
+		info.transform.set_.Scale({ 0.05f,0.3f + 0.5f * rand->GetHighRandom().GetFloat(0.0f,1.0f),1.0f});
+		info.transform.set_.Rotation({ 0.0f,180.0f, ((float)rand->GetHighRandom().GetInt(0,360)) });
+		info.transform.set_.Translation({ obj_->worldTransform_.GetWorldPos().x,obj_->worldTransform_.GetWorldPos().y + 0.2f,obj_->worldTransform_.GetWorldPos().z });
+		info.transform.LocalToWorld();
+		info.lifeTime = 1.0f;
+		info.currentTime = 0.0f;
+		info.color = Vector4(1.0f, 0.5f, 0.5f, 1.0f);
+		hitEffect_.push_back(info);
+	}
+	hitEffectCoolTimer_ = 0.2f;
 }

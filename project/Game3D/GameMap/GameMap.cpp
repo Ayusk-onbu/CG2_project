@@ -3,7 +3,7 @@
 void GameMap::Initialize(Fngine* engine) {
 	obj_ = std::make_unique<ModelObject>();
 	obj_->textureName_ = "GridLine";
-	obj_->modelName_ = "Map";
+	obj_->modelName_ = "Map_City";
 	obj_->Initialize(engine);
 
 	obj_->materialData_->environmentCoefficient = 0.01f;

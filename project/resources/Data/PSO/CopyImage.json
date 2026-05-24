@@ -17,7 +17,7 @@
         "depthFunc": "LessEqual",
         "format": "D24"
       },
-      "blendMode": "AlphaBlend",
+      "blendMode": "Multiply",
       "rootSignature": [
         { "type": "SRVTable", "register": 0, "count": 1, "visibility": "Pixel" }
       ],
