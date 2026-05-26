@@ -17,6 +17,9 @@ public:
 	// GPU側のSRV Descriptor Handleを取得
 	D3D12_GPU_DESCRIPTOR_HANDLE GetSRVHandleGPU()const { return srvHandleGPU_; }
 
+    // リソースの取得
+	ID3D12Resource* GetResource() const { return resource_.Get(); } // バリア処理用に公開しておく
+
 	// 要素数を取得
 	uint32_t GetNumElements()const { return numElements_; }
 private:
@@ -42,6 +45,8 @@ void Structured<T>::Initialize(uint32_t numElements) {
 
 	// アドレスを取得
 	resource_->Map(0, nullptr, reinterpret_cast<void**>(&mappedData_));
+
+	resource_->SetName(L"StructuredBuffer");
 
 	// SRVの作成
 	srvDesc_.Format = DXGI_FORMAT_UNKNOWN;

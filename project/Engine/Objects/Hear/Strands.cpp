@@ -93,3 +93,8 @@ namespace Strands {
 		return flatVertices;
 	}
 }
+
+/*
+* Structured<Strands::StrandVertex> hairVertexBuffer(p_fngine);
+hairVertexBuffer.Initialize(50);
+*/

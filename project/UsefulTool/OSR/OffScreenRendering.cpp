@@ -43,12 +43,14 @@ void OffScreenRendering::Initialize(D3D12System& d3d12, SRV& srv, float width, f
 		&heapProperties,
 		D3D12_HEAP_FLAG_NONE,
 		&renderingDesc,
-		D3D12_RESOURCE_STATE_COMMON,
+		D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE,
 		&clearValue,
 		IID_PPV_ARGS(&offScreenTexture_));
 	assert(SUCCEEDED(hr));
 
 	offRTV_.Initialize(&d3d12, offScreenTexture_, fmt, dimension);
+
+	offScreenTexture_->SetName(L"オフスクリーン");
 
 	//////////////////// ここまでがRTVの設定 ///////////////////////////
 

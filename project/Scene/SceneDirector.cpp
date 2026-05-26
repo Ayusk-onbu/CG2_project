@@ -3,12 +3,14 @@
 #include "ModelManager.h"
 #include "UIAnimation.h"
 #include "../Engine/Objects/Primitive/Box/PrimitiveBox.h"
+#include "../Engine/Objects/Primitive/Ring/Ring.h"
 
 import MotionManager;
 
 SceneDirector::~SceneDirector() {
 	delete currentScene_;
 	PrimitiveBox::GetInstance()->ReleaseInstance();
+	PrimitiveRing::GetInstance()->ReleaseInstance();
 }
 
 void SceneDirector::Initialize(Scene& firstScene) {
@@ -32,6 +34,7 @@ void SceneDirector::Initialize(Scene& firstScene) {
 	CameraSystem::GetInstance()->SetActiveCamera("GameCamera");
 
 	PrimitiveBox::GetInstance()->Initialize(p_fngine_, 500);
+	PrimitiveRing::GetInstance()->Initialize(p_fngine_, 1000);
 }
 
 void SceneDirector::Update() {
@@ -75,6 +78,7 @@ void SceneDirector::Draw() {
 			currentScene_->Draw();
 
 			PrimitiveBox::GetInstance()->DrawInstanced();
+			PrimitiveRing::GetInstance()->DrawInstanced();
 		}
 	}
 	// [ ポーズ中 ]
@@ -153,6 +157,7 @@ void SceneDirector::LoadModelData() {
 	name = ModelManager::GetInstance()->LoadObj("Naira_ExportTest.gltf", "resources/Model/Character/Test");
 
 	ModelManager::GetInstance()->AddObject("Cube", ModelManager::GetInstance()->LoadModelData("plane").vertices, ModelManager::GetInstance()->LoadModelData("plane").indices);
+	ModelManager::GetInstance()->AddObject("Ring", MakeObjectVertices(RingData{ 32, 1.0f, 0.5f }), MakeObjectIndices(RingData{ 32, 1.0f, 0.5f }));
 }
 
 void SceneDirector::LoadTexture() {

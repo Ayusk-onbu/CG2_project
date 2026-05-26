@@ -173,6 +173,17 @@ D3D12_COMPARISON_FUNC ParseComparisonFunc(const std::string& str) {
     return D3D12_COMPARISON_FUNC_ALWAYS;
 }
 
+// テクスチャアドレスモードの変換
+D3D12_TEXTURE_ADDRESS_MODE ParseAddressMode(const std::string& str) {
+    if (str == "Wrap")   return D3D12_TEXTURE_ADDRESS_MODE_WRAP;
+    if (str == "Clamp")  return D3D12_TEXTURE_ADDRESS_MODE_CLAMP;
+    if (str == "Mirror") return D3D12_TEXTURE_ADDRESS_MODE_MIRROR;
+    if (str == "Border") return D3D12_TEXTURE_ADDRESS_MODE_BORDER;
+
+    // 省略時やスペルミス時は一番安全な Wrap にしておく
+    return D3D12_TEXTURE_ADDRESS_MODE_WRAP;
+}
+
 // 指定したフォルダ内のすべてのJSONファイルを読み込む
 void PipelineStateObjectManager::LoadAllPSOsFromDirectory(const std::string& directoryPath) {
     // フォルダが存在するかチェック
@@ -306,7 +317,10 @@ void PipelineStateObjectManager::LoadPSOsFromJson(const std::string& filepath, c
     // サンプラーの処理
     if (psoJson.contains("staticSamplers")) {
         for (const auto& samp : psoJson["staticSamplers"]) {
-            builder.AddStaticSampler(samp["register"]);
+            D3D12_TEXTURE_ADDRESS_MODE u = ParseAddressMode(samp.value("addressU", "Wrap"));
+            D3D12_TEXTURE_ADDRESS_MODE v = ParseAddressMode(samp.value("addressV", "Wrap"));
+            D3D12_TEXTURE_ADDRESS_MODE w = ParseAddressMode(samp.value("addressW", "Wrap"));
+            builder.AddStaticSampler(samp["register"],u,v,w);
         }
     }
 

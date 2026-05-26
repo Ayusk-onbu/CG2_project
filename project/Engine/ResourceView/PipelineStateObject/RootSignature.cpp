@@ -463,12 +463,14 @@ void RootSignatureBuilder::AddUAVTable(UINT baseShaderRegister, UINT numDescript
 	parameters_.push_back(param);
 }
 
-void RootSignatureBuilder::AddStaticSampler(UINT shaderRegister, D3D12_FILTER filter) {
+void RootSignatureBuilder::AddStaticSampler(UINT shaderRegister, D3D12_FILTER filter,
+	D3D12_TEXTURE_ADDRESS_MODE u,D3D12_TEXTURE_ADDRESS_MODE v,D3D12_TEXTURE_ADDRESS_MODE w)
+{
 	D3D12_STATIC_SAMPLER_DESC sampler{};
 	sampler.Filter = filter;
-	sampler.AddressU = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
-	sampler.AddressV = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
-	sampler.AddressW = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
+	sampler.AddressU = u;
+	sampler.AddressV = v;
+	sampler.AddressW = w;
 	sampler.ComparisonFunc = D3D12_COMPARISON_FUNC_NEVER;
 	sampler.MaxLOD = D3D12_FLOAT32_MAX;
 	sampler.ShaderRegister = shaderRegister;

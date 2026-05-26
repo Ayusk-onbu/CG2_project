@@ -114,7 +114,7 @@ void Fngine::Initialize() {
 void Fngine::BeginOSRFrame() {
 	ResourceBarrier barrierO = {};
 	barrierO.SetBarrier(command_.GetList().GetList().Get(), osr_.GetResource().Get(),
-		D3D12_RESOURCE_STATE_COMMON, D3D12_RESOURCE_STATE_RENDER_TARGET);
+		D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_RENDER_TARGET);
 	osr_.Begin(command_);
 	ID3D12DescriptorHeap* descriptorHeaps[] = { srv_.GetDescriptorHeap().GetHeap().Get() };
 	command_.GetList().GetList()->SetDescriptorHeaps(1, descriptorHeaps);
@@ -129,7 +129,7 @@ void Fngine::EndOSRFrame() {
 	ResourceBarrier barrier = {};
 	//barrier.SetTransition(command_.GetList().GetList().Get(), D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT);
 	barrier.SetBarrier(command_.GetList().GetList().Get(), osr_.GetResource().Get(),
-		D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT);
+		D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
 }
 
 void Fngine::BeginFrame() {

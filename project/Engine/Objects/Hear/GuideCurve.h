@@ -36,6 +36,7 @@ namespace Strands {
 		Vector3 position;
 		float radius;
 		Vector3 color;
+		float padding;
 	};
 
 	struct ChildStrand {

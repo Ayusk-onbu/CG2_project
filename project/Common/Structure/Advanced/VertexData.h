@@ -9,6 +9,11 @@ struct VertexData {
 	Vector3 normal;//法線ベクトル
 };
 
+struct RingVertexData {
+	Vector4 position;
+	Vector2 texcoord;
+};
+
 struct SkyBoxVertexData {
 	Vector4 position;
 };

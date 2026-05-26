@@ -47,7 +47,10 @@ public:
 	void AddUAVTable(UINT baseShaderRegister, UINT numDescriptors, D3D12_SHADER_VISIBILITY visibility);
 
 	// 静的サンプラーの追加
-	void AddStaticSampler(UINT shaderRegister, D3D12_FILTER filter = D3D12_FILTER_MIN_MAG_MIP_LINEAR);
+	void AddStaticSampler(UINT shaderRegister, D3D12_FILTER filter = D3D12_FILTER_MIN_MAG_MIP_LINEAR,
+		D3D12_TEXTURE_ADDRESS_MODE u = D3D12_TEXTURE_ADDRESS_MODE_WRAP,
+		D3D12_TEXTURE_ADDRESS_MODE v = D3D12_TEXTURE_ADDRESS_MODE_WRAP,
+		D3D12_TEXTURE_ADDRESS_MODE w = D3D12_TEXTURE_ADDRESS_MODE_WRAP);
 
 	// 最終的に RootSignature を生成して返す
 	Microsoft::WRL::ComPtr<ID3D12RootSignature> Build(ID3D12Device* device);

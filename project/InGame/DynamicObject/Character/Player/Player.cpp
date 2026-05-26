@@ -1,5 +1,6 @@
 #include "Player.h"
 #include "../Engine/Objects/Primitive/Box/PrimitiveBox.h"
+#include "../Engine/Objects/Primitive/Ring/Ring.h"
 
 Player::Player() {
 	controller_ = std::make_unique<PlayerController>();
@@ -54,16 +55,32 @@ void Player::Update(float deltaTime) {
 		// エフェクトの更新
 		effect.currentTime += deltaTime;
 		effect.color.w = 1.0f - (effect.currentTime / effect.lifeTime); // 徐々に透明にする
-		effect.color.w -= 0.01f; // 徐々に透明にする
 
-		PrimitiveBox::GetInstance()->AddInstance({
+		/*PrimitiveRing::GetInstance()->AddInstance({
 			effect.transform,
 			effect.color
-		});
+		});*/
 	}
 	hitEffect_.erase(std::remove_if(hitEffect_.begin(), hitEffect_.end(),
 		[](const HitEffectInfo& effect) { return effect.currentTime >= effect.lifeTime; }),
 		hitEffect_.end());
+
+	WorldTransform testTransform;
+	testTransform.Initialize();
+	testTransform.set_.Scale({2.0f,2.0f,2.0f});
+	testTransform.set_.Rotation({ 0.0f,180.0f, 0.0f});
+	testTransform.set_.Translation({ obj_->worldTransform_.GetWorldPos().x,obj_->worldTransform_.GetWorldPos().y + 1.2f,obj_->worldTransform_.GetWorldPos().z });
+	testTransform.LocalToWorld();
+
+	PrimitiveRing::GetInstance()->AddInstance({
+		testTransform,
+		obj_->worldTransform_,
+		{1.0f,0.0f,0.0f,1.0f}
+	});
+
+	// この処理はここに書きたくない
+	/*CameraSystem::GetInstance()->GetActiveCamera()->SetTargetPos(
+		{ obj_->worldTransform_.get_.Translation().x,obj_->worldTransform_.get_.Translation().y + 1.0f ,obj_->worldTransform_.get_.Translation().z });*/
 }
 
 void Player::Draw() {
