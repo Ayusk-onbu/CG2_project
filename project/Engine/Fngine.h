@@ -38,6 +38,7 @@
 #include "Easing.h"
 #include "../UsefulTool/ISingleton.h"
 #include "externals/DirectXTex/DirectXTex.h"
+#include "Constant.h"
 
 #define pi float(3.14159265358979323846f)
 
@@ -97,5 +98,15 @@ private:
 	AreaLight areaLight_;
 
 	CameraForGPU cameraForGPU_;
+
+//////////////////
+/// 
+/// PostEffect用の物(他に引っ越すことを計画中)少なくともここは使いにくい
+/// 
+/////////////////
+public:
+	void SetUsePostEffect(const std::string& name) { usePostEffectName_ = name; }
+private:
+	std::string usePostEffectName_;
 };
 

@@ -157,11 +157,15 @@ void Fngine::BeginFrame() {
 }
 
 void Fngine::EndFrame() {
+
+	usePostEffectName_ = "GaussianFilter";
+
 	command_.GetList().GetList()->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-	command_.GetList().GetList()->SetGraphicsRootSignature(PSOManager::GetInstance()->GetPSO("CopyImage").GetRootSignature().GetRS().Get());
-	command_.GetList().GetList()->SetPipelineState(PSOManager::GetInstance()->GetPSO("CopyImage").GetGPS().Get());
+	command_.GetList().GetList()->SetGraphicsRootSignature(PSOManager::GetInstance()->GetPSO(usePostEffectName_).GetRootSignature().GetRS().Get());
+	command_.GetList().GetList()->SetPipelineState(PSOManager::GetInstance()->GetPSO(usePostEffectName_).GetGPS().Get());
 	//SRVのDescritorTableの先頭を設定。0はrootParameter[0]である
 	command_.GetList().GetList()->SetGraphicsRootDescriptorTable(0, osr_.GetHandleGPU());
+	
 	command_.GetList().GetList()->DrawInstanced(3, 1, 0, 0);
 
 	ImGuiManager::GetInstance()->EndFrame(command_.GetList().GetList());

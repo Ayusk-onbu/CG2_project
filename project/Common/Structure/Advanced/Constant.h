@@ -8,7 +8,7 @@ public:
     ConstantBuffer(Fngine* fngine) : p_fngine_(fngine) {}
 
     void Initialize() {
-        // 定数バッファは256バイトの倍数にする必要がある（重要！）
+        // 定数バッファは256バイトの倍数にする必要がある
         size_t size = (sizeof(T) + 255) & ~255;
 
         // Uploadヒープで作成 (ResourceFunc.h の関数を想定)
