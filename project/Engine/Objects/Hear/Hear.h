@@ -17,6 +17,7 @@ private:
 	GuideCurve::GuideHear guide_;
 
 	std::unique_ptr<Structured<Strands::StrandVertex>> hairAABBBuffer_;
+	std::unique_ptr<Structured<D3D12_RAYTRACING_INSTANCE_DESC>> instanceBuffer;
 
 	Fngine* engine_ = nullptr;
 };

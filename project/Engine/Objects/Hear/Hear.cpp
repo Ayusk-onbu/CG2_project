@@ -4,16 +4,21 @@
 //void Hear::Initialize(Fngine* engine) {
 //	engine_ = engine;
 //
+//	//   ==============
+//	// 【 ガイドの作成 】
+//	//   ==============
 //	for (int i = 0; i < 5; ++i) {
 //		GuideCurve::ControllerPoint p;
-//		// 直線敵なガイドを作成
+//		// 直線的なガイドを作成
 //		p.position = Vector3(0.0f, 2.0f - (i * 0.5f), 0.0f);
 //		p.radius = 0.05f;
 //		p.color = Vector3(0.2f, 0.1f, 0.05f);
 //		guide_.points_.push_back(p);
 //	}
 //
-//	// ガイドからストランドを生成
+//	//   ============================
+//	// 【 ガイドからストランドを生成 】
+//	//   ============================
 //	int numStrands = 10;
 //	float spreadRadius = 0.1f;
 //	std::vector<Strands::Strand> generateStrands = Strands::GenerateStrandOneGuide(guide_, numStrands, spreadRadius);
@@ -30,38 +35,69 @@
 //		flatVertices.data(),
 //		sizeof(Strands::StrandVertex) * flatVertices.size()
 //	);
+//// -----------------------------------------------
+//
+//	// 【 RayTracingを使用するために4にキャスト 】
+//	Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList4>dxrCmdList;
+//	engine->GetCommand().GetList().GetList().As(&dxrCmdList);
+//
+//// -----------------------------------------------
 //
 //	//   ===================
 //	// 【 DXR用のAABBの作成 】
 //	//   ===================
+//#pragma region BLASの作成のセット
 //
-//	Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList4>dxrCmdList;
-//	engine->GetCommand().GetList().GetList().As(&dxrCmdList);// 4にキャスト（じゃないとRayTracingが使えない）
-//
-//	// 1. ジオメトリの設定
+//	//   ==============================
+//	// 【 BLASの構造体を作るための情報 】
+//	//   ==============================
+//	// ジオメトリの設定
 //	D3D12_RAYTRACING_GEOMETRY_DESC geometryDesc{};
+//	// ジオメトリの種類
 //	geometryDesc.Type = D3D12_RAYTRACING_GEOMETRY_TYPE_PROCEDURAL_PRIMITIVE_AABBS; // AABBを指定
+//	// ジオメトリのフラグ
 //	geometryDesc.Flags = D3D12_RAYTRACING_GEOMETRY_FLAG_NONE;
 //
-//	// AABBデータがどこにあるかを設定
+//	// 【 AABBの数を設置場所 】
 //	geometryDesc.AABBs.AABBCount = hairAABBBuffer_->GetNumElements(); // 40個
 //	geometryDesc.AABBs.AABBs.StartAddress = hairAABBBuffer_->GetResource()->GetGPUVirtualAddress(); // ※GetResource()があると仮定
 //	geometryDesc.AABBs.AABBs.StrideInBytes = sizeof(D3D12_RAYTRACING_AABB);
-//
-//	// 2. ビルドの入力設定
+//	 
+//	//   ======================
+//	// 【 BLASを作るための情報 】
+//	//   ======================
 //	D3D12_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_INPUTS buildInputs{};
+//	// Type : 構築する加速度構造体の種類
 //	buildInputs.Type = D3D12_RAYTRACING_ACCELERATION_STRUCTURE_TYPE_BOTTOM_LEVEL; // BLASを指定
+//	// Flags : フラグ
 //	buildInputs.Flags = D3D12_RAYTRACING_ACCELERATION_STRUCTURE_BUILD_FLAG_PREFER_FAST_TRACE; // レイの追跡を高速化
+//	/*switch (Type) {
+//		case D3D12_RAYTRACING_ACCELERATION_STRUCTURE_TOP_LEVEL
+//			DescsLayout に基づいてレイアウトされたインスタンスの数
+//		case D3D12_RAYTRACING_ACCELERATION_STRUCTURE_BOTTOM_LEVEL
+//			pGeometryDescs または ppGeometryDescs によって参照される要素の数
+//	}*/
 //	buildInputs.NumDescs = 1;
+//
+//	// BLASの構造体を作るための情報をセッティング
 //	buildInputs.pGeometryDescs = &geometryDesc;
+//#pragma endregion
 //
-//	// GPUに必要サイズを計算してもらう
-//	D3D12_RAYTRACING_ACCELERATION_STRUCTURE_PREBUILD_INFO prebuildInfo{};
+//// -----------------------------------------------
+//
 //	auto pDevice = engine->GetD3D12System().GetDevice().Get();
-//
 //	Microsoft::WRL::ComPtr <ID3D12Device5> pDevice5 = nullptr;
 //	HRESULT hr = pDevice->QueryInterface(IID_PPV_ARGS(&pDevice5));
+//
+//// -----------------------------------------------
+//
+//	//   =====================================================
+//	// 【 GPUにBLASをビルドするのに必要サイズを計算してもらう 】
+//	//   =====================================================
+//	D3D12_RAYTRACING_ACCELERATION_STRUCTURE_PREBUILD_INFO prebuildInfo{};
+//
 //	if (SUCCEEDED(hr)) {
+//		// ビルドした後に必要なサイズ、ビルドするのにかかるサイズ、其のあとに調整するときにかかるサイズ
 //		pDevice5->GetRaytracingAccelerationStructurePrebuildInfo(&buildInputs, &prebuildInfo);
 //	}
 //	else {
@@ -77,10 +113,13 @@
 //		pDevice, prebuildInfo.ResultDataMaxSizeInBytes, true
 //	);
 //
-//	// 4. ビルド命令の発行
+//	// ビルド命令の発行
 //	D3D12_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_DESC buildDesc{};
+//	// ビルドの構築設定
 //	buildDesc.Inputs = buildInputs;
+//	// ビルドする場所
 //	buildDesc.ScratchAccelerationStructureData = scratchBuffer->GetGPUVirtualAddress();
+//	// ビルド後の保存場所
 //	buildDesc.DestAccelerationStructureData = blasResultBuffer->GetGPUVirtualAddress();
 //
 //	// コマンドリストに積む（実際の計算はGPU側で行われます）
@@ -111,11 +150,11 @@
 //
 //	// --- 2. 君の Structured クラスにデータを載せる ---
 //	// ※今後、複数のキャラクターや髪の束を増やす時は要素数を増やせばOK
-//	Structured<D3D12_RAYTRACING_INSTANCE_DESC> instanceBuffer(engine);
-//	instanceBuffer.Initialize(1);
+//	instanceBuffer = std::make_unique<Structured<D3D12_RAYTRACING_INSTANCE_DESC>>(engine);
+//	instanceBuffer->Initialize(1);
 //
 //	std::memcpy(
-//		instanceBuffer.GetMappedData(),
+//		instanceBuffer->GetMappedData(),
 //		&instanceDesc,
 //		sizeof(D3D12_RAYTRACING_INSTANCE_DESC)
 //	);
@@ -227,6 +266,10 @@
 //	Microsoft::WRL::ComPtr<ID3D12Resource>& sbtBuffer,
 //	D3D12_DISPATCH_RAYS_DESC& dispatchDesc) // 後で描画に使う設定をここに書き込む
 //{
+//	//   =======
+//	// 【 RTPSO 】<- レイトレーシング専用PSO(ルールブック)
+//	//   =======
+//
 //	// 1. PSOから「シェーダー識別子を取り出すためのインターフェース」をクエリする
 //	Microsoft::WRL::ComPtr<ID3D12StateObjectProperties> rtpsoProps;
 //	rtpso->QueryInterface(IID_PPV_ARGS(&rtpsoProps));
@@ -247,6 +290,8 @@
 //	UINT rayGenSectionSize = AlignTo(rayGenRecordSize, D3D12_RAYTRACING_SHADER_TABLE_BYTE_ALIGNMENT);
 //	UINT missSectionSize = AlignTo(missRecordSize, D3D12_RAYTRACING_SHADER_TABLE_BYTE_ALIGNMENT);
 //	UINT hitGroupSectionSize = AlignTo(hitGroupRecordSize, D3D12_RAYTRACING_SHADER_TABLE_BYTE_ALIGNMENT);
+//
+//	// SBT <- レイが何に当たった時にどのシェーダーを呼び出すかを紐付けるメモリテーブル。
 //
 //	UINT totalSBTSize = rayGenSectionSize + missSectionSize + hitGroupSectionSize;
 //
