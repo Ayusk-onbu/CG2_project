@@ -163,6 +163,7 @@ void Player3D::Update()
 		pos.z += move_.z * speed_ * deltaTime * speedMultiplier_;
 		// ※ここの性で攻撃すると空中に止まるよ
 		pos.y += move_.y * verticalVelocity_;
+		pos.y = 0.0f;
 	}
 
 	obj_->worldTransform_.set_.Translation(pos);

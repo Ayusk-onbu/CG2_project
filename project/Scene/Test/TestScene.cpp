@@ -36,7 +36,7 @@ void TestScene::Initialize() {
 
 void TestScene::Update() {
 
-	//player_->Update();
+	player_->Update();
 
 	testPlayer_->Update(1.0f / 60.0f);
 

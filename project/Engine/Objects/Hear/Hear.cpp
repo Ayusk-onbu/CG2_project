@@ -104,6 +104,9 @@
 //		// そもそもこのパソコン（グラボ）がレイトレ非対応の可能性あり
 //	}
 //
+//// -----------------------------------------------
+//
+//	// 作業用のBuffer
 //	Microsoft::WRL::ComPtr<ID3D12Resource> scratchBuffer = CreateBufferResource(
 //		pDevice, prebuildInfo.ScratchDataSizeInBytes, true
 //	);
@@ -113,7 +116,11 @@
 //		pDevice, prebuildInfo.ResultDataMaxSizeInBytes, true
 //	);
 //
-//	// ビルド命令の発行
+//// -----------------------------------------------
+//
+//	//   ==================
+//	// 【 ビルド命令の発行 】
+//	//   ==================
 //	D3D12_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_DESC buildDesc{};
 //	// ビルドの構築設定
 //	buildDesc.Inputs = buildInputs;
@@ -122,8 +129,12 @@
 //	// ビルド後の保存場所
 //	buildDesc.DestAccelerationStructureData = blasResultBuffer->GetGPUVirtualAddress();
 //
-//	// コマンドリストに積む（実際の計算はGPU側で行われます）
+//// -----------------------------------------------
+//
+//	// コマンドリストに積む
 //	dxrCmdList->BuildRaytracingAccelerationStructure(&buildDesc, 0, nullptr);
+//
+//// -----------------------------------------------
 //
 //	// ビルドが完全に終わるまで、後続の処理が待つようにバリアを張る
 //	D3D12_RESOURCE_BARRIER uavBarrier{};
@@ -131,20 +142,27 @@
 //	uavBarrier.UAV.pResource = blasResultBuffer.Get();
 //	dxrCmdList->ResourceBarrier(1, &uavBarrier);
 //
-//	//   ===========
-//	// 【TLASの作成 】
-//	//   ===========
+//// -----------------------------------------------
+//
+//#pragma region TLASの作成のセット
+//	//   ==============================
+//	// 【 TLASの構造体を作るための情報 】
+//	//   ==============================
 //	// --- 1. 配置図（Instance Desc）を1個作る ---
 //	D3D12_RAYTRACING_INSTANCE_DESC instanceDesc{};
 //
 //	// 3x4の行列で位置と向きを指定（今回は回転なし・原点配置の単位行列）
-//	instanceDesc.Transform[0][0] = 1.0f; instanceDesc.Transform[1][1] = 1.0f; instanceDesc.Transform[2][2] = 1.0f;
-//
-//	instanceDesc.InstanceID = 0;                          // シェーダー側で識別するためのID
-//	instanceDesc.InstanceMask = 0xFF;                     // すべてのレイにヒットするようにマスクを全通しに
-//	instanceDesc.InstanceContributionToHitGroupIndex = 0; // ヒットグループのオフセット
+//	instanceDesc.Transform[0][0] = 1.0f;
+//	instanceDesc.Transform[1][1] = 1.0f;
+//	instanceDesc.Transform[2][2] = 1.0f;
+//	// シェーダー側で識別するためのID
+//	instanceDesc.InstanceID = 0;
+//	// どのレイにヒットするかのマスク設定
+//	instanceDesc.InstanceMask = 0xFF;
+//	// ヒットグループのオフセット
+//	instanceDesc.InstanceContributionToHitGroupIndex = 0;
+//	// オブジェクトの設定
 //	instanceDesc.Flags = D3D12_RAYTRACING_INSTANCE_FLAG_NONE;
-//
 //	// さっき作った「BLAS」のGPUアドレスをここに紐付ける！
 //	instanceDesc.AccelerationStructure = blasResultBuffer->GetGPUVirtualAddress();
 //
@@ -159,36 +177,58 @@
 //		sizeof(D3D12_RAYTRACING_INSTANCE_DESC)
 //	);
 //
-//	// --- 3. TLASの入力設定 ---
+//	//   ======================
+//	// 【 TLASを作るための情報 】
+//	//   ======================
 //	D3D12_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_INPUTS tlasInputs{};
-//	tlasInputs.Type = D3D12_RAYTRACING_ACCELERATION_STRUCTURE_TYPE_TOP_LEVEL; // TLASを指定
-//	tlasInputs.Flags = D3D12_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_FLAG_PREFER_FAST_TRACE;
+//	// TLASを指定
+//	tlasInputs.Type = D3D12_RAYTRACING_ACCELERATION_STRUCTURE_TYPE_TOP_LEVEL;
+//	// 作り方の指定
+//	tlasInputs.Flags = D3D12_RAYTRACING_ACCELERATION_STRUCTURE_BUILD_FLAG_PREFER_FAST_TRACE;
+//	// BLASの総数
 //	tlasInputs.NumDescs = 1; // インスタンス（配置図）の数
-//	tlasInputs.DescsLayout = D3D12_ELEMENT_LAYOUT_ARRAY;
-//	tlasInputs.InstanceProd = instanceBuffer.GetResource()->GetGPUVirtualAddress(); // 配置図のGPUアドレス
-//	// --- 4. 必要サイズをGPUに問い合わせ ---
+//	// dataの並び方
+//	tlasInputs.DescsLayout = D3D12_ELEMENTS_LAYOUT_ARRAY;
+//	// BLASのGPUアドレス
+//	tlasInputs.InstanceDescs = instanceBuffer->GetResource()->GetGPUVirtualAddress();
+//#pragma endregion
+//
+//// -----------------------------------------------
+//
+//	//   =====================================================
+//	// 【 GPUにTLASをビルドするのに必要サイズを計算してもらう 】
+//	//   =====================================================
 //	D3D12_RAYTRACING_ACCELERATION_STRUCTURE_PREBUILD_INFO tlasPrebuildInfo{};
 //	pDevice5->GetRaytracingAccelerationStructurePrebuildInfo(&tlasInputs, &tlasPrebuildInfo);
 //
-//	// --- 5. バッファの確保 ---
-//	// TLAS用のスクラッチバッファ
+//// -----------------------------------------------
+//
+//	// TLAS用のスクラッチバッファ（作業場所の確保）
 //	Microsoft::WRL::ComPtr<ID3D12Resource> tlasScratchBuffer = CreateBufferResource(
 //		pDevice, tlasPrebuildInfo.ScratchDataSizeInBytes, true
 //	);
 //
-//	// 最終的なTLASを格納するバッファ（これがレイトレの「世界」そのものになります）
+//	// 最終的なTLASを格納するバッファ（これがレイトレの「世界」そのもの）
 //	Microsoft::WRL::ComPtr<ID3D12Resource> tlasResultBuffer = CreateBufferResource(
 //		pDevice, tlasPrebuildInfo.ResultDataMaxSizeInBytes, true
 //	);
 //
-//	// --- 6. 命令の発行 ---
+//// -----------------------------------------------
+//
+//	//   ==================
+//	// 【 ビルド命令の発行 】
+//	//   ==================
 //	D3D12_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_DESC tlasBuildDesc{};
 //	tlasBuildDesc.Inputs = tlasInputs;
 //	tlasBuildDesc.ScratchAccelerationStructureData = tlasScratchBuffer->GetGPUVirtualAddress();
 //	tlasBuildDesc.DestAccelerationStructureData = tlasResultBuffer->GetGPUVirtualAddress();
 //
+//// -----------------------------------------------
+//
 //	// コマンドリストに積む
 //	dxrCmdList->BuildRaytracingAccelerationStructure(&tlasBuildDesc, 0, nullptr);
+//
+//// -----------------------------------------------
 //
 //	// ビルド完了を待つUAVバリア
 //	D3D12_RESOURCE_BARRIER tlasBarrier{};
@@ -199,7 +239,6 @@
 //
 //void Hear::Update(float deltaTime) {
 //	
-//
 //}
 //
 //Microsoft::WRL::ComPtr<ID3D12StateObject> CreateHairRaytracingPSO(
@@ -208,29 +247,37 @@
 //	const void* shaderByteCode,
 //	SIZE_T shaderByteCodeSize)
 //{
-//	// 1. お助けクラス（Descヘルパー）を初期化（コレクション型）
+//// -----------------------------------------------
+//
+//	// お助けクラス（Descヘルパー）を初期化
 //	CD3DX12_STATE_OBJECT_DESC pipelineDesc(D3D12_STATE_OBJECT_TYPE_RAYTRACING_PIPELINE);
 //
-//	// 2. DXILライブラリ（コンパイル済みシェーダー）の登録
+//// -----------------------------------------------
+//
+//	// DXILライブラリ（コンパイル済みシェーダー）の登録
 //	auto libSubobject = pipelineDesc.CreateSubobject<CD3DX12_DXIL_LIBRARY_SUBOBJECT>();
 //	libSubobject->SetDXILLibrary(&CD3DX12_SHADER_BYTECODE(shaderByteCode, shaderByteCodeSize));
 //
-//	// 使用するシェーダー関数名をDXRに登録
+//	// 使用するシェーダー関数名をDXRに登録 -> ShaderImportで登録
 //	libSubobject->DefineExport(L"HairIntersectionShader");
 //	libSubobject->DefineExport(L"HairClosestHitShader");
-//	// ※今回は省略していますが、本来は RayGeneration や Miss シェーダーの名前もここに並べます
 //
-//	// 3. 【最重要】ヒットグループの作成
-//	// 髪の毛は三角形ではないので「PROCEDURAL_PRIMITIVE」を指定します
+//// -----------------------------------------------
+//
+//	// 【最重要】ヒットグループの作成
 //	auto hitGroupSubobject = pipelineDesc.CreateSubobject<CD3DX12_HIT_GROUP_SUBOBJECT>();
+//	// 髪の毛は三角形ではないので「PROCEDURAL_PRIMITIVE」を指定します
 //	hitGroupSubobject->SetHitGroupType(D3D12_HIT_GROUP_TYPE_PROCEDURAL_PRIMITIVE);
-//	hitGroupSubobject->SetHitGroupExport(L"HairHitGroup"); // このヒットグループの名前
+//	// このヒットグループの名前を設定
+//	hitGroupSubobject->SetHitGroupExport(L"HairHitGroup");
 //
 //	// 交差シェーダーとヒットシェーダーをこのグループに紐付ける
 //	hitGroupSubobject->SetIntersectionShaderImport(L"HairIntersectionShader");
 //	hitGroupSubobject->SetClosestHitShaderImport(L"HairClosestHitShader");
 //
-//	// 4. シェーダー設定（データサイズの申告）
+//// -----------------------------------------------
+//
+//	// シェーダー間を行き来するデータ量の設定（データサイズの申告）
 //	auto shaderConfigSubobject = pipelineDesc.CreateSubobject<CD3DX12_RAYTRACING_SHADER_CONFIG_SUBOBJECT>();
 //
 //	// ペイロードサイズ: RayPayload（float3 color = 12バイト）
@@ -239,14 +286,20 @@
 //	UINT attributeSize = sizeof(float) * 2;
 //	shaderConfigSubobject->Config(payloadSize, attributeSize);
 //
-//	// 5. グローバルルートシグネチャの紐付け
+//// -----------------------------------------------
+//
+//	// グローバルルートシグネチャの紐付け
 //	auto globalRootSigSubobject = pipelineDesc.CreateSubobject<CD3DX12_GLOBAL_ROOT_SIGNATURE_SUBOBJECT>();
 //	globalRootSigSubobject->SetRootSignature(globalRootSignature);
 //
-//	// 6. パイプライン設定（レイの再帰の深さ）
+//// -----------------------------------------------
+//
+//	// パイプライン設定（レイの再帰の深さ）
 //	auto pipelineConfigSubobject = pipelineDesc.CreateSubobject<CD3DX12_RAYTRACING_PIPELINE_CONFIG_SUBOBJECT>();
 //	// 一次レイ（カメラからの光線）だけなら「1」でOK。鏡や影を作るなら増やします
 //	pipelineConfigSubobject->Config(1);
+//
+//// -----------------------------------------------
 //
 //	// --- ついにビルド！ ---
 //	Microsoft::WRL::ComPtr<ID3D12StateObject> rtpso;
