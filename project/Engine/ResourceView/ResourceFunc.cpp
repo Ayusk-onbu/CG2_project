@@ -26,7 +26,7 @@ Microsoft::WRL::ComPtr<ID3D12Resource> CreateBufferResource(ID3D12Device* device
 	resourceDesc.Flags = isUAV ? D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS : D3D12_RESOURCE_FLAG_NONE;
 	// make initial resource state
 	D3D12_RESOURCE_STATES initialState = isUAV ? D3D12_RESOURCE_STATE_COMMON : D3D12_RESOURCE_STATE_GENERIC_READ;
-	
+	//D3D12_RESOURCE_STATE_RAYTRACING_ACCELERATION_STRUCTURE
 	// リソースの作成
 	HRESULT hr = device->CreateCommittedResource(
 		&heapProps,

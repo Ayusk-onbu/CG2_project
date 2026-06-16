@@ -40,6 +40,9 @@ public:
 	D3D12_GPU_DESCRIPTOR_HANDLE& GetHandleGPU() { return textureSrvHandleGPU_; }
 	Microsoft::WRL::ComPtr <ID3D12Resource> GetResource() {return offScreenTexture_;}
 	void ChangeDSVHandleType(TheOrderCommand& command,DSV_HANDLE_TYPE type);
+
+	Microsoft::WRL::ComPtr <ID3D12Resource>GetDSVResource() { return dsv_.GetResource(); }
+	D3D12_GPU_DESCRIPTOR_HANDLE GetDSVDepthHandleGPU() { return dsv_.GetSRVHandleGPU(); }
 private:
 	
 private:
@@ -51,30 +54,3 @@ private:
 	D3D12_CPU_DESCRIPTOR_HANDLE textureSrvHandleCPU_;
 	D3D12_GPU_DESCRIPTOR_HANDLE textureSrvHandleGPU_;
 };
-
-//// コマンドリストを取得 (例: d3d12.GetCommandList())
-//ID3D12GraphicsCommandList* commandList = d3d12.GetCommandList();
-//
-//// D3D12_RESOURCE_STATE_COMMON (または現在の状態) から D3D12_RESOURCE_STATE_RENDER_TARGET へ遷移
-//D3D12_RESOURCE_BARRIER barrier = {};
-//barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
-//barrier.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
-//barrier.Transition.pResource = renderTargetTexture_.Get();
-//barrier.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
-//barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_COMMON; // もしくはテクスチャの現在の状態
-//barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_RENDER_TARGET;
-//commandList->ResourceBarrier(1, &barrier);
-//// レンダーターゲットをクリアする色 (例: 青)
-//FLOAT clearColor[] = { 0.0f, 0.0f, 0.5f, 1.0f }; // R, G, B, A
-//
-//// コマンドリストにレンダーターゲットを設定
-//// 深度ステンシルバッファを使用する場合は、DSVハンドルもここに渡す
-//commandList->OMSetRenderTargets(1, &offscreenRTVHandle_, FALSE, nullptr); // FALSE は単一 RTV の場合
-//
-//// レンダーターゲットをクリア
-//commandList->ClearRenderTargetView(offscreenRTVHandle_, clearColor, 0, nullptr);
-//// D3D12_RESOURCE_STATE_RENDER_TARGET から D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE へ遷移
-//// ポストプロセスなどでこのテクスチャをシェーダーから読み込む場合
-//barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_RENDER_TARGET;
-//barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE; // または D3D12_RESOURCE_STATE_GENERIC_READ
-//commandList->ResourceBarrier(1, &barrier);

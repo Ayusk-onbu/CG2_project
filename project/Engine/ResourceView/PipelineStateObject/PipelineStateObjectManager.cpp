@@ -184,6 +184,13 @@ D3D12_TEXTURE_ADDRESS_MODE ParseAddressMode(const std::string& str) {
     return D3D12_TEXTURE_ADDRESS_MODE_WRAP;
 }
 
+D3D12_FILTER ParseFilter(const std::string& str) {
+    if (str == "Point") return D3D12_FILTER_MIN_MAG_MIP_POINT;
+    if (str == "Linear") return D3D12_FILTER_MIN_MAG_MIP_LINEAR;
+    if (str == "Anisotropic") return D3D12_FILTER_ANISOTROPIC;
+    return D3D12_FILTER_MIN_MAG_MIP_LINEAR; // デフォルトはリニア
+}
+
 // 指定したフォルダ内のすべてのJSONファイルを読み込む
 void PipelineStateObjectManager::LoadAllPSOsFromDirectory(const std::string& directoryPath) {
     // フォルダが存在するかチェック
@@ -320,7 +327,8 @@ void PipelineStateObjectManager::LoadPSOsFromJson(const std::string& filepath, c
             D3D12_TEXTURE_ADDRESS_MODE u = ParseAddressMode(samp.value("addressU", "Wrap"));
             D3D12_TEXTURE_ADDRESS_MODE v = ParseAddressMode(samp.value("addressV", "Wrap"));
             D3D12_TEXTURE_ADDRESS_MODE w = ParseAddressMode(samp.value("addressW", "Wrap"));
-            builder.AddStaticSampler(samp["register"],u,v,w);
+			D3D12_FILTER filter = ParseFilter(samp.value("filter", "Linear"));
+            builder.AddStaticSampler(samp["register"], filter, u, v, w);
         }
     }
 

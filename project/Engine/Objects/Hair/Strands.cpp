@@ -24,21 +24,21 @@ namespace Strands {
 			strand.bindData.offset = Vector2(std::cosf(Deg2Rad(angle)) * r, std::sinf(Deg2Rad(angle)) * r);
 
 			// 長さもランダム
-			strand.bindData.lengthScale = 0.8f + rand->GetHighRandom().GetFloat(0.0f, 1.0f) * 0.3f;
+			strand.bindData.lengthScale = 0.5f + rand->GetHighRandom().GetFloat(0.0f, 1.0f) * 0.8f;
 
 			// 頂点の計算
-			int numPoints = static_cast<int>(guide.points_.size());
+			int numPoints = static_cast<int>(guide.points.size());
 			for (int i = 0; i < numPoints; ++i) {
-				const auto& gPoint = guide.points_[i];
+				const auto& gPoint = guide.points[i];
 				StrandVertex sVertex;
 
 				// 垂直な平面(ローカルの計算)
 				Vector3 tangent;
 				if (i < numPoints - 1) {
-					tangent = Normalize(guide.points_[i + 1].position - gPoint.position);
+					tangent = Normalize(guide.points[i + 1].position - gPoint.position);
 				}
 				else {
-					tangent = Normalize(gPoint.position - guide.points_[i - 1].position);
+					tangent = Normalize(gPoint.position - guide.points[i - 1].position);
 				}
 
 				// 接線に垂直なベクトルを作成
@@ -59,7 +59,7 @@ namespace Strands {
 				sVertex.position = gPoint.position + offset3D;
 
 				// 毛先の計算
-				float tipTaper = 1.0f - ((float)i / (numPoints - 1));
+				float tipTaper = 1.0f - ((float)i / (numPoints) / 2.0f);
 				sVertex.radius = gPoint.radius * tipTaper;
 
 				sVertex.color = gPoint.color;

@@ -132,6 +132,7 @@ public:
 
 	void SetCurrentHp(float hp) { currentHp_ = hp; }
 
+    void SetBaseSpeed(float speed) { baseSpeed_ = speed; }
     float GetCurrentSpeed() const;
 
 private:

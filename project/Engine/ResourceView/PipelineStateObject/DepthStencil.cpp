@@ -13,7 +13,7 @@ void DepthStencil::InitializeDesc(BOOL is, D3D12_DEPTH_WRITE_MASK mask, D3D12_CO
 	SetFunc(func);
 }
 
-void DepthStencil::MakeResource(D3D12System& d3d12, int32_t width, int32_t height) {
+void DepthStencil::MakeResource(D3D12System& d3d12, int32_t width, int32_t height, SRV& srv) {
 	// リソース作成
 	depthStencilResource_ = CreateDepthStencilTextureResource(d3d12.GetDevice().Get(), width, height);
 
@@ -36,6 +36,19 @@ void DepthStencil::MakeResource(D3D12System& d3d12, int32_t width, int32_t heigh
 		&dsvDesc_,
 		GetCPUHandle(DSV_HANDLE_TYPE::ReadOnly)
 	);
+
+	D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc{};
+	srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
+	srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+	srvDesc.Format = DXGI_FORMAT_R24_UNORM_X8_TYPELESS;
+	srvDesc.Texture2D.MipLevels = 1;
+
+	srvHandleCPU_ = srv.GetCPUDescriptorHandle();
+	srvHandleGPU_ = srv.GetGPUDescriptorHandle();
+
+	d3d12.GetDevice()->CreateShaderResourceView(
+		depthStencilResource_.Get(), &srvDesc, srvHandleCPU_
+	);
 }
 
 //DepthStencilTexture(奥行きの根幹をなすもの大量に読み書きするらしい)
@@ -47,7 +60,10 @@ Microsoft::WRL::ComPtr < ID3D12Resource> DepthStencil::CreateDepthStencilTexture
 	resourceDesc.Height = height;//Textures height
 	resourceDesc.MipLevels = 1;//mipmaps sum
 	resourceDesc.DepthOrArraySize = 1;//奥行き or Textureの配列数
-	resourceDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;//DepthStencilとして利用可能なフォーマット
+	
+	//resourceDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;//DepthStencilとして利用可能なフォーマット
+	resourceDesc.Format = DXGI_FORMAT_R24G8_TYPELESS;
+
 	resourceDesc.SampleDesc.Count = 1;//サンプリングカウント固定
 	resourceDesc.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE2D;//2次元
 	resourceDesc.Flags = D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL;//DepthStencilとして使う通知

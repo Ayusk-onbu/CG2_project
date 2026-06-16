@@ -42,6 +42,8 @@
 
 #define pi float(3.14159265358979323846f)
 
+class Hair;
+
 class Fngine
 {
 public:
@@ -99,6 +101,11 @@ private:
 
 	CameraForGPU cameraForGPU_;
 
+
+public:
+	// 髪の毛
+	std::unique_ptr<Hair> hair_ = nullptr;
+
 //////////////////
 /// 
 /// PostEffect用の物(他に引っ越すことを計画中)少なくともここは使いにくい
@@ -108,5 +115,7 @@ public:
 	void SetUsePostEffect(const std::string& name) { usePostEffectName_ = name; }
 private:
 	std::string usePostEffectName_;
+
+	std::unique_ptr<ConstantBuffer<OutlineForGPU>> outlineForGPU_;
 };
 

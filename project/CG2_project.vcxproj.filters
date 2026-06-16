@@ -675,16 +675,28 @@
     <ClCompile Include="Engine\Objects\Primitive\Box\PrimitiveBox.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="Engine\Objects\Hear\Strands.cpp">
+    <ClCompile Include="Engine\Objects\Hair\Strands.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
     <ClCompile Include="Engine\Objects\Primitive\Ring\Ring.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="Engine\Objects\Hear\Hear.cpp">
+    <ClCompile Include="Engine\Objects\Hair\Hair.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
     <ClCompile Include="Engine\Objects\DrawManager.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\Objects\Hair\IHair.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="InGame\DynamicObject\Character\Brain\IStatePattern\IStatePattern.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="InGame\DynamicObject\AttackInfo\AttackInfo.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="InGame\DynamicObject\Character\Brain\ActionInfo\ActionInfo.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
   </ItemGroup>
@@ -1097,7 +1109,7 @@
     <ClInclude Include="Engine\Objects\Primitive\SkyBox.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="Engine\Objects\Hear\GuideCurve.h">
+    <ClInclude Include="Engine\Objects\Hair\GuideCurve.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
     <ClInclude Include="Engine\Objects\Primitive\Box\PrimitiveBox.h">
@@ -1109,10 +1121,22 @@
     <ClInclude Include="Engine\Objects\Primitive\Ring\Ring.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="Engine\Objects\Hear\Hear.h">
+    <ClInclude Include="Engine\Objects\Hair\Hair.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
     <ClInclude Include="Engine\Objects\DrawManager.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Objects\Hair\IHair.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="InGame\DynamicObject\Character\Brain\IStatePattern\IStatePattern.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="InGame\DynamicObject\AttackInfo\AttackInfo.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="InGame\DynamicObject\Character\Brain\ActionInfo\ActionInfo.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
   </ItemGroup>
@@ -1135,6 +1159,7 @@
     <None Include="resources\shaders\SkyBox\SkyBox.hlsli" />
     <None Include="resources\shaders\Ring\Ring.hlsli" />
     <None Include="packages.config" />
+    <None Include="resources\shaders\Hair\Hair.hlsli" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="resources\shaders\Object3d\Object3d.VS.hlsl">

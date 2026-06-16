@@ -156,7 +156,7 @@ void SceneDirector::LoadModelData() {
 	name = ModelManager::GetInstance()->LoadObj("Map_City.obj", "resources/Data/Map");
 	name = ModelManager::GetInstance()->LoadObj("Naira_ExportTest.gltf", "resources/Model/Character/Test");
 
-	ModelManager::GetInstance()->AddObject("Cube", ModelManager::GetInstance()->LoadModelData("plane").vertices, ModelManager::GetInstance()->LoadModelData("plane").indices);
+	ModelManager::GetInstance()->AddObject("Cube", ModelManager::GetInstance()->LoadModelData("bullet").vertices, ModelManager::GetInstance()->LoadModelData("bullet").indices);
 	ModelManager::GetInstance()->AddObject("Ring", MakeObjectVertices(RingData{ 32, 1.0f, 0.5f }), MakeObjectIndices(RingData{ 32, 1.0f, 0.5f }));
 }
 

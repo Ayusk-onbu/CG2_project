@@ -2,6 +2,9 @@
 #include "TextureManager.h"
 #include "ModelManager.h"
 #include "Chronos.h"
+#include "Hair/IHair.h"
+
+#include <d3dx12.h>
 
 #pragma comment(lib, "d3d12.lib")
 #pragma comment(lib,"dxgi.lib")
@@ -71,7 +74,7 @@ void Fngine::Initialize() {
 	srv_.InitializeHeap(d3d12_);
 	rtv_.Initialize(&d3d12_, swapChain_);
 	dsv_.InitializeHeap(d3d12_);
-	dsv_.MakeResource(d3d12_, kClienWidth_, kClienHeight_);
+	dsv_.MakeResource(d3d12_, kClienWidth_, kClienHeight_,srv_);
 	//d3d12_.GetDevice()->CreateDepthStencilView(dsv_.GetResource().Get(), &dsv_.GetDSVDesc(), dsv_.GetHeap().GetHeap()->GetCPUDescriptorHandleForHeapStart());
 	tachyonSync_.GetCGPU().Initialize(d3d12_.GetDevice());
 
@@ -80,8 +83,6 @@ void Fngine::Initialize() {
 
 	PSOManager::GetInstance()->Initialize(this);
 	PSOManager::GetInstance()->LoadAllPSOsFromDirectory("resources/Data/PSO");
-
-	osr_.Initialize(d3d12_, srv_, float(kClienWidth_), float(kClienHeight_));
 
 	// こいつらはなに？キモい
 	viewport_.Width = static_cast<float>(window_.GetWindowRect().right);
@@ -109,6 +110,12 @@ void Fngine::Initialize() {
 	spotLight_.Initialize(this);
 	areaLight_.Initialize(this);
 	cameraForGPU_.Initialize(this);
+
+	outlineForGPU_ = std::make_unique<ConstantBuffer<OutlineForGPU>>(this);
+	outlineForGPU_->Initialize();
+
+	osr_.Initialize(d3d12_, srv_, float(kClienWidth_), float(kClienHeight_));
+	hair_ = std::make_unique<Hair>();
 }
 
 void Fngine::BeginOSRFrame() {
@@ -126,6 +133,11 @@ void Fngine::BeginOSRFrame() {
 
 void Fngine::EndOSRFrame() {
 	//osr_.End(command_);
+
+	hair_->PreHair(osr_.GetResource().Get(), D3D12_RESOURCE_STATE_RENDER_TARGET,osr_.GetDSVResource().Get());
+	hair_->Render(osr_.GetDSVDepthHandleGPU());
+	hair_->PostHair(osr_.GetResource().Get(), D3D12_RESOURCE_STATE_RENDER_TARGET, osr_.GetDSVResource().Get());
+
 	ResourceBarrier barrier = {};
 	//barrier.SetTransition(command_.GetList().GetList().Get(), D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT);
 	barrier.SetBarrier(command_.GetList().GetList().Get(), osr_.GetResource().Get(),
@@ -158,15 +170,40 @@ void Fngine::BeginFrame() {
 
 void Fngine::EndFrame() {
 
-	usePostEffectName_ = "GaussianFilter";
+	usePostEffectName_ = "DepthBasedOutline";
+	if (usePostEffectName_ == "DepthBasedOutline"){
+		auto transitionDepth = CD3DX12_RESOURCE_BARRIER::Transition(
+			osr_.GetDSVResource().Get(),
+			D3D12_RESOURCE_STATE_DEPTH_WRITE,                  // 元の状態
+			D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE      // レイトレ(Compute)で読める状態
+		);
+		command_.GetList().GetList()->ResourceBarrier(1, &transitionDepth);
+
+		outlineForGPU_->GetMappedData()->viewProjInverse = Matrix4x4::Inverse(CameraSystem::GetInstance()->GetActiveCamera()->GetViewProjectionMatrix());
+	}
 
 	command_.GetList().GetList()->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 	command_.GetList().GetList()->SetGraphicsRootSignature(PSOManager::GetInstance()->GetPSO(usePostEffectName_).GetRootSignature().GetRS().Get());
 	command_.GetList().GetList()->SetPipelineState(PSOManager::GetInstance()->GetPSO(usePostEffectName_).GetGPS().Get());
 	//SRVのDescritorTableの先頭を設定。0はrootParameter[0]である
 	command_.GetList().GetList()->SetGraphicsRootDescriptorTable(0, osr_.GetHandleGPU());
-	
+	if(usePostEffectName_ == "DepthBasedOutline")
+	{
+		command_.GetList().GetList()->SetGraphicsRootDescriptorTable(1, osr_.GetDSVDepthHandleGPU());
+		command_.GetList().GetList()->SetGraphicsRootConstantBufferView(2, outlineForGPU_->GetGPUVirtualAddress());
+	}
+
 	command_.GetList().GetList()->DrawInstanced(3, 1, 0, 0);
+
+	if (usePostEffectName_ == "DepthBasedOutline")
+	{
+		auto depthTransition = CD3DX12_RESOURCE_BARRIER::Transition(
+			osr_.GetDSVResource().Get(),
+			D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE,
+			D3D12_RESOURCE_STATE_DEPTH_WRITE
+		);
+		command_.GetList().GetList()->ResourceBarrier(1, &depthTransition);
+	}
 
 	ImGuiManager::GetInstance()->EndFrame(command_.GetList().GetList());
 	//barrierO.SetTransition(command.GetList().GetList().Get(), D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_COMMON);

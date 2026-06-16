@@ -111,7 +111,7 @@ public:
 	PSOBuilder& AddCBV(UINT reg, D3D12_SHADER_VISIBILITY vis) { rsBuilder_.AddCBV(reg, vis); return *this; }
 	PSOBuilder& AddSRVTable(UINT reg, UINT num, D3D12_SHADER_VISIBILITY vis) { rsBuilder_.AddSRVTable(reg, num, vis); return *this; }
 	PSOBuilder& AddUAVTable(UINT reg, UINT num, D3D12_SHADER_VISIBILITY vis) { rsBuilder_.AddUAVTable(reg, num, vis); return *this; }
-	PSOBuilder& AddStaticSampler(UINT reg,D3D12_TEXTURE_ADDRESS_MODE u = D3D12_TEXTURE_ADDRESS_MODE_WRAP,D3D12_TEXTURE_ADDRESS_MODE v = D3D12_TEXTURE_ADDRESS_MODE_WRAP,D3D12_TEXTURE_ADDRESS_MODE w = D3D12_TEXTURE_ADDRESS_MODE_WRAP) { rsBuilder_.AddStaticSampler(reg, D3D12_FILTER_MIN_MAG_MIP_LINEAR,u,v,w); return *this; }
+	PSOBuilder& AddStaticSampler(UINT reg, D3D12_FILTER filter = D3D12_FILTER_MIN_MAG_MIP_LINEAR,D3D12_TEXTURE_ADDRESS_MODE u = D3D12_TEXTURE_ADDRESS_MODE_WRAP,D3D12_TEXTURE_ADDRESS_MODE v = D3D12_TEXTURE_ADDRESS_MODE_WRAP,D3D12_TEXTURE_ADDRESS_MODE w = D3D12_TEXTURE_ADDRESS_MODE_WRAP) { rsBuilder_.AddStaticSampler(reg, filter,u,v,w); return *this; }
 
 	// 最後にこれを呼ぶとManagerに登録される
 	void Build();

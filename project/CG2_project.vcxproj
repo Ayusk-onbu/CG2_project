@@ -159,10 +159,14 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Engine\Objects\DrawManager.cpp" />
-    <ClCompile Include="Engine\Objects\Hear\Hear.cpp" />
-    <ClCompile Include="Engine\Objects\Hear\Strands.cpp" />
+    <ClCompile Include="Engine\Objects\Hair\Hair.cpp" />
+    <ClCompile Include="Engine\Objects\Hair\IHair.cpp" />
+    <ClCompile Include="Engine\Objects\Hair\Strands.cpp" />
     <ClCompile Include="Engine\Objects\Primitive\Ring\Ring.cpp" />
     <ClCompile Include="Engine\Objects\Primitive\SkyBox.cpp" />
+    <ClCompile Include="InGame\DynamicObject\AttackInfo\AttackInfo.cpp" />
+    <ClCompile Include="InGame\DynamicObject\Character\Brain\ActionInfo\ActionInfo.cpp" />
+    <ClCompile Include="InGame\DynamicObject\Character\Brain\IStatePattern\IStatePattern.cpp" />
     <ClCompile Include="InGame\DynamicObject\Character\Character.cpp" />
     <ClCompile Include="Common\MathUtils\Physics\BVH\BVH.cpp" />
     <ClCompile Include="Common\MathUtils\Physics\PhysicsTriangle\PhysicsTriangle.cpp" />
@@ -336,11 +340,15 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Engine\Objects\DrawManager.h" />
-    <ClInclude Include="Engine\Objects\Hear\GuideCurve.h" />
-    <ClInclude Include="Engine\Objects\Hear\Hear.h" />
+    <ClInclude Include="Engine\Objects\Hair\GuideCurve.h" />
+    <ClInclude Include="Engine\Objects\Hair\Hair.h" />
+    <ClInclude Include="Engine\Objects\Hair\IHair.h" />
     <ClInclude Include="Engine\Objects\Primitive\Base\PrimitiveBaseModelData.h" />
     <ClInclude Include="Engine\Objects\Primitive\Ring\Ring.h" />
     <ClInclude Include="Engine\Objects\Primitive\SkyBox.h" />
+    <ClInclude Include="InGame\DynamicObject\AttackInfo\AttackInfo.h" />
+    <ClInclude Include="InGame\DynamicObject\Character\Brain\ActionInfo\ActionInfo.h" />
+    <ClInclude Include="InGame\DynamicObject\Character\Brain\IStatePattern\IStatePattern.h" />
     <ClInclude Include="InGame\DynamicObject\Character\Character.h" />
     <ClInclude Include="Common\MathUtils\Physics\BVH\BVH.h" />
     <ClInclude Include="Common\MathUtils\Physics\PhysicsTriangle\PhysicsTriangle.h" />
@@ -489,6 +497,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
   <ItemGroup>
     <None Include="packages.config" />
     <None Include="resources\shaders\CopyImage\Fullscreen.hlsli" />
+    <None Include="resources\shaders\Hair\Hair.hlsli" />
     <None Include="resources\shaders\Object3d\Object3d.hlsli" />
     <None Include="resources\shaders\Particle\Particle.hlsli" />
     <None Include="resources\shaders\Ring\Ring.hlsli" />

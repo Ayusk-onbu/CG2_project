@@ -29,6 +29,7 @@ public:
 	virtual void Update(float deltaTime);
 	virtual void Draw();
 	
+	Matrix4x4 GetMatrix() const { return obj_->worldTransform_.mat_; }
 protected:
 	std::unique_ptr<ModelObject> obj_;
 

@@ -66,7 +66,7 @@ void OffScreenRendering::Initialize(D3D12System& d3d12, SRV& srv, float width, f
 
 
 	dsv_.InitializeHeap(d3d12);
-	dsv_.MakeResource(d3d12,int32_t(width),int32_t(height)); 
+	dsv_.MakeResource(d3d12,int32_t(width),int32_t(height),srv); 
 	//d3d12.GetDevice()->CreateDepthStencilView(dsv_.GetResource().Get(), &dsv_.GetDSVDesc(), dsv_.GetHeap().GetHeap()->GetCPUDescriptorHandleForHeapStart());
 
 	//pso_.Initialize(, PSOTYPE::Normal);

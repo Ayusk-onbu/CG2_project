@@ -13,5 +13,6 @@ using KeyframeVector3 = Keyframe<Vector3>;
 using KeyframeVector2 = Keyframe<Vector2>;
 using KeyframeQuaternion = Keyframe<Quaternion>;
 using KeyframeFloat = Keyframe<float>;
+using KeyframeString = Keyframe<std::string>;
 
 

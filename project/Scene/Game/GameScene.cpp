@@ -2,6 +2,7 @@
 #include "ImGuiManager.h"
 #include "CameraSystem.h"
 #include "SceneDirector.h"
+#include "Hair/IHair.h"
 
 GameScene::GameScene()
 	: player_(std::make_unique<Player>()),
@@ -91,6 +92,8 @@ void GameScene::Update(){
 		CollisionCheck();
 
 		ToScene();
+
+		p_fngine_->hair_->Update(deltaTime, player_->GetMatrix());
 	}
 }
 

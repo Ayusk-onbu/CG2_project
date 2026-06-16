@@ -51,8 +51,8 @@ Texture& TextureManager::GetTexture(const std::string& name) {
 }
 
 void TextureManager::BeginLoad() {
-	//HRESULT hr = p_fngine_->GetCommand().GetList().GetAllocator()->Reset();
-	//assert(SUCCEEDED(hr));
+	/*HRESULT hr = p_fngine_->GetCommand().GetList().GetAllocator()->Reset();
+	assert(SUCCEEDED(hr));*/
 
 	// 最初のフレームなのでOpen既になっているらしく、Resetするとエラーになるのでしていない
 }

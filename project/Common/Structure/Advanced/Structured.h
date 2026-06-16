@@ -113,6 +113,8 @@ public:
 
     ID3D12Resource* GetResource() const { return resource_.Get(); } // バリア処理用に公開しておく
 
+    // 要素数を取得
+    uint32_t GetNumElements()const { return numElements_; }
 private:
     Fngine* p_fngine_ = nullptr;
     Microsoft::WRL::ComPtr<ID3D12Resource> resource_;

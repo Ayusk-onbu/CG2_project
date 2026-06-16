@@ -1,4 +1,5 @@
 #include "Game.h"
+#include "Hair/IHair.h"
 
 void Game::Initialize() {
 	fngine_ = std::make_unique<Fngine>();
@@ -8,6 +9,8 @@ void Game::Initialize() {
 	GlobalVariables::GetInstance()->LoadFiles();
 	scene_->SetUpFngine(*fngine_);
 	scene_->Initialize(*new GameScene());
+
+	fngine_->hair_->Initialize(fngine_.get());
 }
 
 void Game::Run() {

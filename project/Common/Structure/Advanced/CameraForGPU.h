@@ -6,6 +6,10 @@ struct CameraForGPUData {
 	Vector3 worldPosition;
 };
 
+struct OutlineForGPU {
+	Matrix4x4 viewProjInverse;
+};
+
 class Fngine;
 
 class CameraForGPU {

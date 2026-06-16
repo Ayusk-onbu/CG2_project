@@ -9,6 +9,8 @@ Player::Player() {
 void Player::Initialize(Fngine* fngine) {
 	Character::Initialize(fngine, "Naira_ExportTest", "ulthimaSky");
 
+	status_.SetBaseSpeed(5.0f);
+
 	skeleton_ = std::make_unique<Skeleton>();
 	skeleton_->CreateSkeleton(obj_->GetNode());
 
@@ -72,11 +74,11 @@ void Player::Update(float deltaTime) {
 	testTransform.set_.Translation({ obj_->worldTransform_.GetWorldPos().x,obj_->worldTransform_.GetWorldPos().y + 1.2f,obj_->worldTransform_.GetWorldPos().z });
 	testTransform.LocalToWorld();
 
-	PrimitiveRing::GetInstance()->AddInstance({
-		testTransform,
-		obj_->worldTransform_,
-		{1.0f,0.0f,0.0f,1.0f}
-	});
+	//PrimitiveRing::GetInstance()->AddInstance({
+	//	testTransform,
+	//	obj_->worldTransform_,
+	//	{1.0f,0.0f,0.0f,1.0f}
+	//});
 
 	// この処理はここに書きたくない
 	/*CameraSystem::GetInstance()->GetActiveCamera()->SetTargetPos(
