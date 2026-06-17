@@ -198,7 +198,16 @@ bool RayCapsuleIntersectionTest(Ray ray, float3 p0, float3 p1, float radius, out
         attr.uv.y = u / L; // 線分の長さに対する当たった位置の比率 (0.0〜1.0)
         
         // ローカル空間での法線（芯から外側へ向かうベクトル）
-        attr.normal = normalize(distVec);
+        float distLengthSq = dot(distVec, distVec);
+        if (distLengthSq > 0.000001f)
+        {
+            attr.normal = distVec / sqrt(distLengthSq); // normalizeと同等
+        }
+        else
+        {
+    // 中心を貫いた場合は、カメラ方向に向いた適当な法線を返す
+            attr.normal = -ray.Direction;
+        }
         
         return true;
     }
@@ -215,7 +224,18 @@ void HairIntersectionShader()
     ray.Direction = ObjectRayDirection();
 
     // プリミティブIDから、対応するC++の頂点バッファのインデックスを特定
-    uint index = PrimitiveIndex() * 2;
+   
+    uint segmentsPerStrand = 32 - 1;
+
+    // 何本目の髪の毛か
+    uint strandId = PrimitiveIndex() / segmentsPerStrand;
+    // その髪の毛の何番目のセグメントか
+    uint segmentId = PrimitiveIndex() % segmentsPerStrand;
+
+    // 実際の頂点バッファの開始インデックス
+    uint index = (strandId * 32) + segmentId;
+    
+    // uint index = PrimitiveIndex() * 1;
     StrandVertex v0 = HairVertices[index];
     StrandVertex v1 = HairVertices[index + 1];
     
@@ -276,7 +296,18 @@ void MyMissShader(inout RayPayload payload)
 void HairClosestHitShader(inout RayPayload payload, in HairAttribute attribute)
 {
     // 当たった節の頂点データを引き直す
-    uint32_t index = PrimitiveIndex() * 2;
+    //uint32_t index = PrimitiveIndex() * 1;
+    
+    uint segmentsPerStrand = 32 - 1;
+
+// 何本目の髪の毛か
+    uint strandId = PrimitiveIndex() / segmentsPerStrand;
+// その髪の毛の何番目のセグメントか
+    uint segmentId = PrimitiveIndex() % segmentsPerStrand;
+
+// 実際の頂点バッファの開始インデックス
+    uint index = (strandId * 32) + segmentId;
+    
     StrandVertex v0 = HairVertices[index];
     StrandVertex v1 = HairVertices[index + 1];
 

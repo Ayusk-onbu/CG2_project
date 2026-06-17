@@ -9,15 +9,12 @@ void main(uint3 dispatchThreadID : SV_DispatchThreadID)
 {
     uint strandIdx = dispatchThreadID.x;
     
-    if (strandIdx >= gHairConfig.numStrands * gHairConfig.pointPerStrand) // もしくは相当する総ストランド数
-    {
-        return;
-    }
+    if (strandIdx >= gHairConfig.numStrands)return;
     
     // この髪の毛の頂点の開始位置
     uint vertexStartIndex = strandIdx * gHairConfig.pointPerStrand;
     
-    // この髪の毛のAABBの書き込み開始位置（1本につき15個のAABBを出力）
+    // この髪の毛のAABBの書き込み開始位置
     uint aabbStartIndex = strandIdx * (gHairConfig.pointPerStrand - 1);
 
     // -------------------------------------------------------------
@@ -42,23 +39,38 @@ void main(uint3 dispatchThreadID : SV_DispatchThreadID)
 
         // ※DXRの仕様上、万が一minとmaxが完全に同じ値（サイズゼロの箱）になると
         // 加速構造のビルドでクラッシュか不具合が起きるため、微小な厚みを持たせる安全弁
-        //float3 boxSize = maxPos - minPos;
-        //if (boxSize.x < 0.001)
-        //{
-        //    minPos.x -= 0.0005;
-        //    maxPos.x += 0.0005;
-        //}
-        //if (boxSize.y < 0.001)
-        //{
-        //    minPos.y -= 0.0005;
-        //    maxPos.y += 0.0005;
-        //}
-        //if (boxSize.z < 0.001)
-        //{
-        //    minPos.z -= 0.0005;
-        //    maxPos.z += 0.0005;
-        //}
+        float3 boxSize = maxPos - minPos;
+        
+        if (boxSize.x < 0.001)
+        {
 
+            minPos.x -= 0.0005;
+
+            maxPos.x += 0.0005;
+
+        }
+
+        if (boxSize.y < 0.001)
+        {
+
+            minPos.y -= 0.0005;
+
+            maxPos.y += 0.0005;
+
+        }
+
+        if (boxSize.z < 0.001)
+        {
+
+            minPos.z -= 0.0005;
+
+            maxPos.z += 0.0005;
+
+        }
+        
+        //float3 padding = (boxSize < 0.001f) ? float3(0.0005f, 0.0005f, 0.0005f) : float3(0.0f, 0.0f, 0.0f);
+        //minPos -= padding;
+        //maxPos += padding;
         // 最終的なAABBデータをバッファへ書き込み
         RaytracingAABB aabb;
         aabb.minPositionX = minPos.x;
