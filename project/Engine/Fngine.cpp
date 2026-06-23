@@ -104,6 +104,7 @@ void Fngine::Initialize() {
 	Music::GetInstance()->Initialize();
 	Chronos::GetInstance()->Initialize();
 	RandomUtils::GetInstance()->Initialize();
+	//EditorManager::GetInstance()->Initialize();
 
 	light_.Initialize(d3d12_);
 	pointLight_.Initialize(this);
@@ -170,7 +171,7 @@ void Fngine::BeginFrame() {
 
 void Fngine::EndFrame() {
 
-	usePostEffectName_ = "DepthBasedOutline";
+	usePostEffectName_ = "RadialBlur";
 	if (usePostEffectName_ == "DepthBasedOutline"){
 		auto transitionDepth = CD3DX12_RESOURCE_BARRIER::Transition(
 			osr_.GetDSVResource().Get(),

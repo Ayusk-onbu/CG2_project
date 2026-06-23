@@ -3,6 +3,7 @@
 #include <wrl.h>
 #pragma region ImGui系
 #include "externals/imgui/imgui.h"
+#include "externals/imgui/ImGuizmo.h"
 #include "externals/imgui/imgui_impl_dx12.h"
 #include "externals/imgui/imgui_impl_win32.h"
 extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
@@ -59,6 +60,17 @@ public:
 	void DrawSlider(const char* label, Matrix4x4& value, float min, float max);
 	void DrawDrag(const char* label, Matrix4x4& value);
 	
+	//---- [ Gizmo ] ----
+	//void DrawGizmo(Matrix4x4& view, Matrix4x4& projection, Matrix4x4& objectMatrix, ImGuizmo::OPERATION operation, ImGuizmo::MODE mode);
+	void DrawGizmo(
+		Matrix4x4& view,
+		Matrix4x4& projection,
+		Vector3& translation,
+		Vector3& rotation,
+		Vector3& scale,
+		ImGuizmo::OPERATION operation = ImGuizmo::TRANSLATE,
+		ImGuizmo::MODE mode = ImGuizmo::LOCAL
+	);
 private:
 	std::vector<std::function<void()>> imGuiFunctions_{};
 

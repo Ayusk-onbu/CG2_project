@@ -41,9 +41,9 @@ void DebugCameraController::Update(Camera& camera)
 	camera.GetTranslation().y = camera.targetPos_.y + camera.GetRadius() * std::sin(theta);
 	camera.GetTranslation().z = camera.targetPos_.z + camera.GetRadius() * std::cos(theta) * std::sin(phi);
 	//viewProjectionMatrix_ = Matrix4x4::Inverse(Matrix4x4::Make::Affine(scale_, rotation_, translation_));
-	camera.GetViewProjectionMatrix() = (Matrix4x4::Make::LookAt(camera.GetTranslation(), camera.targetPos_, camera.up_, camera.xAxis_, camera.yAxis_, camera.zAxis_));
+	camera.worldMat_ = (Matrix4x4::Make::LookAt(camera.GetTranslation(), camera.targetPos_, camera.up_, camera.xAxis_, camera.yAxis_, camera.zAxis_));
 	
-	camera.GetViewProjectionMatrix() = Matrix4x4::Multiply(camera.GetViewProjectionMatrix(), Matrix4x4::Make::PerspectiveFov(
+	camera.GetViewProjectionMatrix() = Matrix4x4::Multiply(camera.worldMat_, Matrix4x4::Make::PerspectiveFov(
 		camera.GetProjection().fovY, camera.GetProjection().aspectRatio,
 		camera.GetProjection().nearClip, camera.GetProjection().farClip));
 

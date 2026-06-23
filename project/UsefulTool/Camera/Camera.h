@@ -35,7 +35,15 @@ public:
 	Vector3& GetTranslation() { return translation_; }
 	Matrix4x4& GetViewProjectionMatrix(){ return viewProjectionMatrix_; }
 	Projection& GetProjection() { return projection_; }
-
+	Matrix4x4 GetViewMatrix() const {return Matrix4x4::Inverse(worldMat_);}
+	Matrix4x4 GetProjectionMatrix() const {
+		return Matrix4x4::Make::PerspectiveFov(
+			projection_.fovY,
+			projection_.aspectRatio,
+			projection_.nearClip,
+			projection_.farClip
+		);
+	}
 public:
 	void SetTheta(const float& theta) { theta_ = theta; }
 	void SetPhi(const float& phi) { phi_ = phi; }

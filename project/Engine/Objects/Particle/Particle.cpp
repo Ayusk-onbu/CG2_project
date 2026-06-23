@@ -138,7 +138,7 @@ void Particle::Update() {
 		info->color = Easing_Vector4(info->startColor, info->endColor, info->currentTime, info->lifeTime, EASINGTYPE::None);
 
 		PrimitiveBox::GetInstance()->AddInstance({ {info->worldTransform}, {info->color} });
-		PrimitiveRing::GetInstance()->AddInstance({ {info->worldTransform},{info->worldTransform}, {info->color} });
+		//PrimitiveRing::GetInstance()->AddInstance({ {info->worldTransform},{info->worldTransform}, {info->color} });
 
 		// [ *** 死亡判定 ***]
 		if (info->lifeTime <= info->currentTime) {
@@ -191,7 +191,7 @@ void Particle::Draw() {
 
 		p_fngine_->GetCommand().GetList().GetList()->DrawIndexedInstanced(6, numInstance, 0, 0, 0);
 
-		DrawDebug();
+		//DrawDebug();
 	}
 
 }
