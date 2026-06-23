@@ -99,6 +99,9 @@ void SceneDirector::Draw() {
 void SceneDirector::ImGui() {
 	ImGuiManager::GetInstance()->DrawSlider("DirectionalLight : pos", p_fngine_->GetLight().directionalLightData_->direction, -1.0f, 1.0f);
 	ImGuiManager::GetInstance()->DrawSlider("DirectionalLight : color", p_fngine_->GetLight().directionalLightData_->color, 0.0f, 1.0f);
+	ImGuiManager::GetInstance()->DrawSlider("Dissolve : threshold", p_fngine_->dissolveForGPU_->GetMappedData()->threshold, 0.0f, 1.0f);
+	ImGuiManager::GetInstance()->DrawSlider("Dissolve : edgeMin", p_fngine_->dissolveForGPU_->GetMappedData()->edgeMin, 0.0f, 1.0f);
+	ImGuiManager::GetInstance()->DrawSlider("Dissolve : edgeMax", p_fngine_->dissolveForGPU_->GetMappedData()->edgeMax, 0.0f, 1.0f);
 	PSOManager::GetInstance()->ImGui();
 #ifdef USE_IMGUI
 	if (ImGui::TreeNode("SceneDirector")) {
