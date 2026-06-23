@@ -115,6 +115,9 @@ void Fngine::Initialize() {
 	outlineForGPU_ = std::make_unique<ConstantBuffer<OutlineForGPU>>(this);
 	outlineForGPU_->Initialize();
 
+	dissolveForGPU_ = std::make_unique<ConstantBuffer<DissolveConfigForGPU>>(this);
+	dissolveForGPU_->Initialize();
+
 	osr_.Initialize(d3d12_, srv_, float(kClienWidth_), float(kClienHeight_));
 	hair_ = std::make_unique<Hair>();
 }
@@ -171,7 +174,8 @@ void Fngine::BeginFrame() {
 
 void Fngine::EndFrame() {
 
-	usePostEffectName_ = "RadialBlur";
+	usePostEffectName_ = "Dissolve";
+	// Pre 
 	if (usePostEffectName_ == "DepthBasedOutline"){
 		auto transitionDepth = CD3DX12_RESOURCE_BARRIER::Transition(
 			osr_.GetDSVResource().Get(),
@@ -193,9 +197,14 @@ void Fngine::EndFrame() {
 		command_.GetList().GetList()->SetGraphicsRootDescriptorTable(1, osr_.GetDSVDepthHandleGPU());
 		command_.GetList().GetList()->SetGraphicsRootConstantBufferView(2, outlineForGPU_->GetGPUVirtualAddress());
 	}
+	else if (usePostEffectName_ == "Dissolve") {
+		command_.GetList().GetList()->SetGraphicsRootDescriptorTable(1, TextureManager::GetInstance()->GetTexture("noise0").GetHandleGPU());
+		command_.GetList().GetList()->SetGraphicsRootConstantBufferView(2, dissolveForGPU_->GetGPUVirtualAddress());
+	}
 
 	command_.GetList().GetList()->DrawInstanced(3, 1, 0, 0);
 
+	// Post
 	if (usePostEffectName_ == "DepthBasedOutline")
 	{
 		auto depthTransition = CD3DX12_RESOURCE_BARRIER::Transition(

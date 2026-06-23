@@ -118,5 +118,7 @@ private:
 	std::string usePostEffectName_;
 
 	std::unique_ptr<ConstantBuffer<OutlineForGPU>> outlineForGPU_;
+public:
+	std::unique_ptr<ConstantBuffer<DissolveConfigForGPU>> dissolveForGPU_;
 };
 
