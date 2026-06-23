@@ -30,6 +30,8 @@ public:
 	virtual void Draw();
 	
 	Matrix4x4 GetMatrix() const { return obj_->worldTransform_.mat_; }
+
+	ModelObject* GetObj() { return obj_.get(); }
 protected:
 	std::unique_ptr<ModelObject> obj_;
 

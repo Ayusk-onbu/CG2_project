@@ -299,13 +299,11 @@ void HairClosestHitShader(inout RayPayload payload, in HairAttribute attribute)
     //uint32_t index = PrimitiveIndex() * 1;
     
     uint segmentsPerStrand = 32 - 1;
-
-// 何本目の髪の毛か
+    // 何本目の髪の毛か
     uint strandId = PrimitiveIndex() / segmentsPerStrand;
-// その髪の毛の何番目のセグメントか
+    // その髪の毛の何番目のセグメントか
     uint segmentId = PrimitiveIndex() % segmentsPerStrand;
-
-// 実際の頂点バッファの開始インデックス
+    // 実際の頂点バッファの開始インデックス
     uint index = (strandId * 32) + segmentId;
     
     StrandVertex v0 = HairVertices[index];
@@ -317,15 +315,31 @@ void HairClosestHitShader(inout RayPayload payload, in HairAttribute attribute)
     // 固定値 (0,1,0) を廃止し、この節の「本物の傾きベクトル」を計算して接線 T とする！
     float32_t3 T = normalize(v1.position - v0.position);
 
-    // ライティング計算
-    float32_t3 lightDirection = normalize(float32_t3(1.0f, 1.0f, -1.0f));
-    float32_t dotLT = dot(lightDirection, T);
-    
-    // 髪の毛特有のチューブ状の拡散光（Kajiya-Kayモデルの基盤）
+    // 2. 各種ベクトルの準備
+    float32_t3 L = normalize(float32_t3(1.0f, 1.0f, -1.0f)); // ライト方向
+    float32_t3 V = normalize(-WorldRayDirection()); // 視線方向 (レイの逆向き)
+    float32_t3 H = normalize(L + V); // ハーフベクトル（LとVの中間）
+
+    // 3. Diffuse (拡散反射) - 既存の処理
+    float32_t dotLT = dot(L, T);
     float32_t diffuse = sqrt(max(0.0f, 1.0f - dotLT * dotLT));
+
+    // 4. Specular (鏡面反射: Kajiya-Kayモデル)
+    float32_t dotTH = dot(T, H);
+    // TとHのなす角のサイン波を求める (ピタゴラスの定理 sin^2 + cos^2 = 1 より)
+    float32_t sinTH = sqrt(max(0.0f, 1.0f - dotTH * dotTH));
     
-    // 影で真っ黒にならないように、ほんのり環境光を足す
+    // ハイライトの鋭さ（数値が大きいほど細く鋭いハイライトになる。例: 20〜100程度）
+    float32_t shininess = 60.0f;
+    float32_t specularIntensity = pow(sinTH, shininess);
+
+    // ハイライトの色（とりあえず分かりやすいように純白）
+    float32_t3 specularColor = float32_t3(1.0f, 1.0f, 1.0f);
+
+    // 5. 環境光と最終合成
     float32_t3 envColor = float32_t3(0.05f, 0.05f, 0.05f);
     
-    payload.color = baseColor * diffuse + envColor;
+    // DiffuseにSpecularを加算する
+    //payload.color = (baseColor * diffuse) + (specularColor * specularIntensity) + envColor;
+    payload.color = baseColor;
 }

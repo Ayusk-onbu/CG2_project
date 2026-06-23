@@ -28,6 +28,8 @@ void ImGuiManager::BeginFrame() {
 	ImGui_ImplDX12_NewFrame();
 	ImGui_ImplWin32_NewFrame();
 	ImGui::NewFrame();
+
+	ImGuizmo::BeginFrame();
 #endif
 }
 
@@ -211,3 +213,109 @@ void ImGuiManager::DrawDrag(const char* label, Matrix4x4& value) {
 	});
 #endif
 }
+
+void ImGuiManager::DrawGizmo(Matrix4x4& view, Matrix4x4& projection, Vector3& translation, Vector3& rotation, Vector3& scale, ImGuizmo::OPERATION operation, ImGuizmo::MODE mode) {
+#ifdef USE_IMGUI
+	Matrix4x4 viewCopy = view;
+	Matrix4x4 projCopy = projection;
+
+	// 後で一括描画（遅延実行）した際、呼び出し元のSRT変数を直接書き換えるためにポインタを保持
+	Vector3* pTrans = &translation;
+	Vector3* pRot = &rotation;
+	Vector3* pScale = &scale;
+
+	imGuiFunctions_.push_back([=]() {
+		ImGuiIO& io = ImGui::GetIO();
+
+		ImGui::SetNextWindowPos(ImVec2(0, 0));
+		ImGui::SetNextWindowSize(io.DisplaySize);
+		ImGui::Begin("##GizmoFullscreenWindow", nullptr,
+			ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoScrollbar |
+			ImGuiWindowFlags_NoInputs | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoBackground);
+
+		ImGuizmo::SetDrawlist();
+		ImGuizmo::SetRect(0, 0, io.DisplaySize.x, io.DisplaySize.y);
+
+		// --- 単位変換の準備（エンジンがラジアン管理の場合） ---
+		const float kRadToDeg = 180.0f / 3.14159265f;
+		const float kDegToRad = 3.14159265f / 180.0f;
+
+		// ImGuizmo用に一時的にデグリー（度数）に変換した回転角を作る
+		Vector3 rotDeg = { pRot->x * kRadToDeg, pRot->y * kRadToDeg, pRot->z * kRadToDeg };
+
+		// 1. 現在のSRTから、ギズモ用の一時的なワールド行列を合成（Recompose）する
+		Matrix4x4 objectMatrix = {};
+		ImGuizmo::RecomposeMatrixFromComponents(
+			reinterpret_cast<float*>(pTrans),
+			reinterpret_cast<float*>(&rotDeg),
+			reinterpret_cast<float*>(pScale),
+			reinterpret_cast<float*>(&objectMatrix)
+		);
+
+		// 2. ギズモの描画とマウス操作を実行（戻り値が true の時はマウスで動かされた瞬間）
+		if (ImGuizmo::Manipulate(
+			reinterpret_cast<const float*>(&viewCopy),
+			reinterpret_cast<const float*>(&projCopy),
+			operation,
+			mode,
+			reinterpret_cast<float*>(&objectMatrix)
+		)) {
+			// 3. マウス操作で変化した行列を、SRT成分に分解（Decompose）して元の変数に書き戻す！
+			ImGuizmo::DecomposeMatrixToComponents(
+				reinterpret_cast<float*>(&objectMatrix),
+				reinterpret_cast<float*>(pTrans),
+				reinterpret_cast<float*>(&rotDeg),
+				reinterpret_cast<float*>(pScale)
+			);
+
+			// 分解されたデグリー角をラジアンに戻して、オブジェクトの実際の変数に適用
+			pRot->x = rotDeg.x * kDegToRad;
+			pRot->y = rotDeg.y * kDegToRad;
+			pRot->z = rotDeg.z * kDegToRad;
+		}
+
+		ImGui::End();
+		});
+#endif
+}
+
+//void ImGuiManager::DrawGizmo(Matrix4x4& view, Matrix4x4& projection, Matrix4x4& objectMatrix, ImGuizmo::OPERATION operation, ImGuizmo::MODE mode) {
+//#ifdef USE_IMGUI
+//	// 【対策1】カメラ行列はその時点の「値」を確実にコピーして保持する
+//	Matrix4x4 viewCopy = view;
+//	Matrix4x4 projCopy = projection;
+//
+//	// オブジェクトの行列のポインタを保持
+//	Matrix4x4* pObjectMat = &objectMatrix;
+//
+//	imGuiFunctions_.push_back([=]() {
+//		ImGuiIO& io = ImGui::GetIO();
+//
+//		// 【対策2】ギズモ用に画面全体を覆う「透明なウィンドウ」を強制的に作る
+//		ImGui::SetNextWindowPos(ImVec2(0, 0));
+//		ImGui::SetNextWindowSize(io.DisplaySize);
+//		ImGui::Begin("##GizmoFullscreenWindow", nullptr,
+//			ImGuiWindowFlags_NoTitleBar |
+//			ImGuiWindowFlags_NoResize |
+//			ImGuiWindowFlags_NoScrollbar |
+//			ImGuiWindowFlags_NoInputs |
+//			ImGuiWindowFlags_NoSavedSettings |
+//			ImGuiWindowFlags_NoBackground); // 背景透過
+//
+//		// 【対策3】この透明ウィンドウの描画リストを使うと明示する
+//		ImGuizmo::SetDrawlist();
+//		ImGuizmo::SetRect(0, 0, io.DisplaySize.x, io.DisplaySize.y);
+//
+//		// ギズモの描画と操作を実行
+//		ImGuizmo::Manipulate(
+//			reinterpret_cast<const float*>(&viewCopy),
+//			reinterpret_cast<const float*>(&projCopy),
+//			operation,
+//			mode,
+//			reinterpret_cast<float*>(pObjectMat)
+//		);
+//
+//		ImGui::End(); // 透明ウィンドウを閉じる
+//		});
+//#endif
+//}

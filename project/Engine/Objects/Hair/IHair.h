@@ -19,6 +19,17 @@ public:
 
 	void PreHair(ID3D12Resource* randerTargetResource, D3D12_RESOURCE_STATES preState, ID3D12Resource* depthResource);
 	void PostHair(ID3D12Resource* randerTargetResource, D3D12_RESOURCE_STATES postState, ID3D12Resource* depthResource);
+public:
+	void RequestNotifyUpdate() {
+		isGpuUpdateRequested_ = true;
+	}
+	GuideCurve::ControllerPoint* GetCPUGuideData() {
+		return uploadGuideBuffer->GetMappedData();
+	}
+	// エディタ側で Slider の最大値を決めるために、要素数も一緒に取得できるようにする
+	uint32_t GetCPUGuideCount() const {
+		return uploadGuideBuffer->GetNumElements();
+	}
 private:
 	Microsoft::WRL::ComPtr<ID3D12StateObject> CreateHairRaytracingPSO(
 		ID3D12Device5* device, // DXR対応のDevice5が必要
@@ -37,6 +48,7 @@ private:
 
 private:
 	GuideCurve::GuideHear guide_;
+	bool isGpuUpdateRequested_ = false; // フラグ
 
 	GuideCurve::Main hairData_;
 	std::unique_ptr<Structured<Strands::ChildStrand>>gpuChildStrandBuffer_;// ストランド生成に必要な情報

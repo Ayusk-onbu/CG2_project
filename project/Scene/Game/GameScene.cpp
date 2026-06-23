@@ -66,6 +66,9 @@ void GameScene::Initialize() {
 	playGuide_->Initialize(p_fngine_);
 	playGuide_->LoadbyFile("PlayGuide");
 	playGuide_->Play({ {"PlayGuide","PlayGuideFadeInAnim"} }, false);
+
+	particle_ = std::make_unique<Particle>(p_fngine_);
+	particle_->Initialize(1000, "FireVer2");
 }
 
 void GameScene::Update(){
@@ -93,28 +96,30 @@ void GameScene::Update(){
 
 		ToScene();
 
-		p_fngine_->hair_->Update(deltaTime, player_->GetMatrix());
+		
+
+		//particle_->Update();
 	}
 }
 
 void GameScene::Draw() {
+
 	//skySphere_->Draw();
 	skyBox_->Draw();
 	gameMap_->Draw();
 
-	rotationBox_->Draw();
+	//rotationBox_->Draw();
 
 	//boss_->Draw();
 	player_->Draw();
-
+	//particle_->Draw();
 	//playUI_->Draw();
 	// Fade
 	//fadeUp_->Draw();
 	//fadeDown_->Draw();
 	// UI
 	//purposeUI_->Draw();
-
-	
+	p_fngine_->hair_->Update(1.0f / 60.0f, player_->GetMatrix());
 }
 
 void GameScene::CollisionCheck() {

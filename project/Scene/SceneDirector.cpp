@@ -4,6 +4,8 @@
 #include "UIAnimation.h"
 #include "../Engine/Objects/Primitive/Box/PrimitiveBox.h"
 #include "../Engine/Objects/Primitive/Ring/Ring.h"
+#include "../Engine/Objects/Primitive/MagicPlane.h"
+#include "../UsefulTool/EditorManager/Hair/HairEditor.h"
 
 import MotionManager;
 
@@ -33,8 +35,13 @@ void SceneDirector::Initialize(Scene& firstScene) {
 	CameraSystem::GetInstance()->MakeCamera("GameCamera", CameraType::Game);
 	CameraSystem::GetInstance()->SetActiveCamera("GameCamera");
 
-	PrimitiveBox::GetInstance()->Initialize(p_fngine_, 500);
+	PrimitiveBox::GetInstance()->Initialize(p_fngine_, 1500);
 	PrimitiveRing::GetInstance()->Initialize(p_fngine_, 1000);
+	MagicCircle::GetInstance()->Initialize(p_fngine_, 100);
+
+	auto editorMgr = EditorManager::GetInstance();
+	auto* hairEditor = editorMgr->CreateEditor<HairGuideEditor>(p_fngine_->hair_.get());
+	editorMgr->SetActiveEditor(hairEditor);
 }
 
 void SceneDirector::Update() {
@@ -64,6 +71,7 @@ void SceneDirector::Update() {
 	p_fngine_->GetPointLight().Update();
 	p_fngine_->GetSpotLight().Update();
 	p_fngine_->GetAreaLight().Update();
+
 }
 
 void SceneDirector::Draw() {
@@ -79,6 +87,7 @@ void SceneDirector::Draw() {
 
 			PrimitiveBox::GetInstance()->DrawInstanced();
 			PrimitiveRing::GetInstance()->DrawInstanced();
+			MagicCircle::GetInstance()->DrawInstanced();
 		}
 	}
 	// [ ポーズ中 ]
@@ -116,6 +125,7 @@ void SceneDirector::ImGui() {
 
 		ImGui::TreePop();
 	}
+	EditorManager::GetInstance()->UpdateEditors();
 #endif//USE_IMGUI
 }
 
@@ -152,12 +162,15 @@ void SceneDirector::LoadModelData() {
 	name = ModelManager::GetInstance()->LoadObj("bullet.obj", "resources", LoadFileType::OBJ);
 	name = ModelManager::GetInstance()->LoadObj("debugBlock.obj", "resources", LoadFileType::OBJ);
 	name = ModelManager::GetInstance()->LoadObj("plane.gltf", "resources");
+	name = ModelManager::GetInstance()->LoadObj("Cylinder.obj", "resources");
 	name = ModelManager::GetInstance()->LoadObj("ulthimaSky.obj", "resources", LoadFileType::OBJ);
 	name = ModelManager::GetInstance()->LoadObj("Map_City.obj", "resources/Data/Map");
 	name = ModelManager::GetInstance()->LoadObj("Naira_ExportTest.gltf", "resources/Model/Character/Test");
 
-	ModelManager::GetInstance()->AddObject("Cube", ModelManager::GetInstance()->LoadModelData("bullet").vertices, ModelManager::GetInstance()->LoadModelData("bullet").indices);
-	ModelManager::GetInstance()->AddObject("Ring", MakeObjectVertices(RingData{ 32, 1.0f, 0.5f }), MakeObjectIndices(RingData{ 32, 1.0f, 0.5f }));
+	ModelManager::GetInstance()->AddObject("Cube", ModelManager::GetInstance()->LoadModelData("AnimatedCube").vertices, ModelManager::GetInstance()->LoadModelData("AnimatedCube").indices);
+	ModelManager::GetInstance()->AddObject("Plane", ModelManager::GetInstance()->LoadModelData("plane").vertices, ModelManager::GetInstance()->LoadModelData("plane").indices);
+	//ModelManager::GetInstance()->AddObject("Ring", MakeObjectVertices(RingData{ 32, 1.0f, 0.5f }), MakeObjectIndices(RingData{ 32, 1.0f, 0.5f }));
+	ModelManager::GetInstance()->AddObject("Ring", ModelManager::GetInstance()->LoadModelData("Cylinder").vertices, ModelManager::GetInstance()->LoadModelData("Cylinder").indices);
 }
 
 void SceneDirector::LoadTexture() {
@@ -179,7 +192,10 @@ void SceneDirector::LoadTexture() {
 	name = TextureManager::GetInstance()->LoadTexture("monsterBall.png", "resources");
 	name = TextureManager::GetInstance()->LoadTexture("PlayGuide.png", "resources/Game");
 	name = TextureManager::GetInstance()->LoadTexture("rostock_laage_airport_4k.dds", "resources");
-
+	name = TextureManager::GetInstance()->LoadTexture("magic-circle.png", "resources/Texture/Effect");
+	name = TextureManager::GetInstance()->LoadTexture("RevealTex_Circle.png", "resources/Texture/Effect");
+	name = TextureManager::GetInstance()->LoadTexture("noise0.png", "resources/Texture/Effect");
+	name = TextureManager::GetInstance()->LoadTexture("gradationLine.png", "resources/Texture/Effect");
 	TextureManager::GetInstance()->EndLoad();
 }
 

@@ -1,6 +1,7 @@
 #include "Player.h"
 #include "../Engine/Objects/Primitive/Box/PrimitiveBox.h"
 #include "../Engine/Objects/Primitive/Ring/Ring.h"
+#include "../Engine/Objects/Primitive/MagicPlane.h"
 
 Player::Player() {
 	controller_ = std::make_unique<PlayerController>();
@@ -58,7 +59,7 @@ void Player::Update(float deltaTime) {
 		effect.currentTime += deltaTime;
 		effect.color.w = 1.0f - (effect.currentTime / effect.lifeTime); // 徐々に透明にする
 
-		/*PrimitiveRing::GetInstance()->AddInstance({
+		/*PrimitiveBox::GetInstance()->AddInstance({
 			effect.transform,
 			effect.color
 		});*/
@@ -67,22 +68,66 @@ void Player::Update(float deltaTime) {
 		[](const HitEffectInfo& effect) { return effect.currentTime >= effect.lifeTime; }),
 		hitEffect_.end());
 
-	WorldTransform testTransform;
-	testTransform.Initialize();
-	testTransform.set_.Scale({2.0f,2.0f,2.0f});
-	testTransform.set_.Rotation({ 0.0f,180.0f, 0.0f});
-	testTransform.set_.Translation({ obj_->worldTransform_.GetWorldPos().x,obj_->worldTransform_.GetWorldPos().y + 1.2f,obj_->worldTransform_.GetWorldPos().z });
-	testTransform.LocalToWorld();
+	//WorldTransform testTransform;
+	//testTransform.Initialize();
+	//testTransform.set_.Scale({10.0f,10.0f,10.0f});
+	//testTransform.set_.Rotation({ 270.0f,0.0f, 0.0f});
+	////testTransform.set_.Translation({ obj_->worldTransform_.GetWorldPos().x,obj_->worldTransform_.GetWorldPos().y + 1.2f,obj_->worldTransform_.GetWorldPos().z });
+	//testTransform.set_.Translation({ 0.0f,0.01f,0.0f });
+	//testTransform.LocalToWorld();
 
-	//PrimitiveRing::GetInstance()->AddInstance({
+	//WorldTransform testUVTransform;
+	//testUVTransform.Initialize();
+	//float scale = 1.0f;
+	//testUVTransform.set_.Scale({ scale,scale,scale });
+	//testUVTransform.set_.Rotation({ 0.0f,0.0f, 0.0f });
+	//testUVTransform.set_.Translation({ 0.0f,0.0f,0.0f });
+	//testUVTransform.LocalToWorld();
+
+	//MagicCircle::GetInstance()->AddInstance({
 	//	testTransform,
-	//	obj_->worldTransform_,
+	//	testUVTransform,
 	//	{1.0f,0.0f,0.0f,1.0f}
 	//});
+
+	//MagicCircle::GetInstance()->Update();
+
+	/*PrimitiveRing::GetInstance()->AddInstance({
+		testTransform,
+		testUVTransform,
+		{1.0f,0.0f,0.0f,1.0f}
+	});*/
 
 	// この処理はここに書きたくない
 	/*CameraSystem::GetInstance()->GetActiveCamera()->SetTargetPos(
 		{ obj_->worldTransform_.get_.Translation().x,obj_->worldTransform_.get_.Translation().y + 1.0f ,obj_->worldTransform_.get_.Translation().z });*/
+
+	//auto ImGui = ImGuiManager::GetInstance();
+	//auto Camera = CameraSystem::GetInstance()->GetActiveCamera();
+	//Matrix4x4 viewMat = Camera->GetViewMatrix();
+	//Matrix4x4 projMat = Camera->GetProjectionMatrix();
+	//ImGui->DrawGizmo(
+	//	viewMat,
+	//	projMat,
+	//	obj_->worldTransform_.mat_,
+	//	ImGuizmo::TRANSLATE, // 移動モード（ROTATE や SCALE に変更可能）
+	//	ImGuizmo::LOCAL      // ローカル座標系
+	//);
+	//ImGui->DrawGizmo(
+	//	viewMat,
+	//	projMat,
+	//	obj_->worldTransform_.mat_,
+	//	ImGuizmo::ROTATE, // 移動モード（ROTATE や SCALE に変更可能）
+	//	ImGuizmo::LOCAL      // ローカル座標系
+	//);
+	//ImGui->DrawGizmo(
+	//	viewMat,
+	//	projMat,
+	//	obj_->worldTransform_.mat_,
+	//	ImGuizmo::SCALE, // 移動モード（ROTATE や SCALE に変更可能）
+	//	ImGuizmo::LOCAL      // ローカル座標系
+	//);
+	obj_->LocalToWorld();
 }
 
 void Player::Draw() {
@@ -97,8 +142,8 @@ void Player::MakeHitEffect() {
 	for (int i = 0; i < 5; ++i) {
 		HitEffectInfo info;
 		info.transform.Initialize();
-		info.transform.set_.Scale({ 0.05f,0.3f + 0.5f * rand->GetHighRandom().GetFloat(0.0f,1.0f),1.0f});
-		info.transform.set_.Rotation({ 0.0f,180.0f, ((float)rand->GetHighRandom().GetInt(0,360)) });
+		info.transform.set_.Scale({ 0.05f,0.3f + 0.5f * rand->GetHighRandom().GetFloat(0.0f,1.0f),0.05f });
+		info.transform.set_.Rotation({ ((float)rand->GetHighRandom().GetInt(0,360)),180.0f, ((float)rand->GetHighRandom().GetInt(0,360)) });
 		info.transform.set_.Translation({ obj_->worldTransform_.GetWorldPos().x,obj_->worldTransform_.GetWorldPos().y + 0.2f,obj_->worldTransform_.GetWorldPos().z });
 		info.transform.LocalToWorld();
 		info.lifeTime = 1.0f;
@@ -106,5 +151,5 @@ void Player::MakeHitEffect() {
 		info.color = Vector4(1.0f, 0.5f, 0.5f, 1.0f);
 		hitEffect_.push_back(info);
 	}
-	hitEffectCoolTimer_ = 0.2f;
+	hitEffectCoolTimer_ = 1.2f;
 }

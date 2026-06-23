@@ -84,7 +84,7 @@ void PrimitiveRing::Initialize(Fngine* engine, uint32_t numInstance) {
 		
 		commandList->SetGraphicsRootDescriptorTable(0, instancingBuffer_->GetSRVHandleGPU());
 	
-		commandList->SetGraphicsRootDescriptorTable(1, TextureManager::GetInstance()->GetTexture("Legends_Ground").GetHandleGPU());
+		commandList->SetGraphicsRootDescriptorTable(1, TextureManager::GetInstance()->GetTexture("GridLine").GetHandleGPU());
 
 		commandList->DrawIndexedInstanced(object.GetIndexCount(), UINT(instanceDataList_.size()), 0, 0, 0);
 		};

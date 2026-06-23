@@ -276,10 +276,10 @@ void Hair::Initialize(Fngine* engine) {
 	// 【 髪の基本的な設定 】
 	//   ==================
 	Strands::HairConfig hairConfig;
-	hairConfig.numGuides = 1;           // ガイドの総本数
+	hairConfig.numGuides = 1000;           // ガイドの総本数
 	hairConfig.pointPerGuide = 16;      // ガイド一本を作る数
 	hairConfig.pointPerStrand = 32;     // ストランド一本を作る数
-	hairConfig.numStrands = 100.0f;     // ストランドの総本数
+	hairConfig.numStrands = 10000.0f;     // ストランドの総本数
 
 	gpuConfigBuffer_ = std::make_unique<ConstantBuffer<Strands::HairConfig>>(engine);
 	gpuConfigBuffer_->Initialize();
@@ -289,7 +289,7 @@ void Hair::Initialize(Fngine* engine) {
 	gpuConfigBuffer_->GetMappedData()->numStrands = hairConfig.numStrands;
 
 	Strands::HairMakeConfig makeConfig;
-	makeConfig.globalSpreadRadius = 0.001f;//
+	makeConfig.globalSpreadRadius = 0.05f;//
 	makeConfig.globalHairThickness = 1.0f;
 	makeConfig.paddings[0] = 0.0f;
 	makeConfig.paddings[1] = 0.0f;
@@ -301,11 +301,11 @@ void Hair::Initialize(Fngine* engine) {
 	//   ==============
 	// 【 ガイドの作成 】
 	//   ==============
-	float headRadius = 0.2f;// 範囲
-	float segmentLength = 0.05f;// 点間の距離
+	float headRadius = 0.05f;// 範囲
+	float segmentLength = 0.01f;// 点間の距離
 
+#pragma region 初期Hair
 	// 本当ならガイドの根本の情報を取得して生やす(pos, direction)
-
 	for (UINT g = 0; g < hairConfig.numGuides; ++g) {
 		GuideCurve::GuideHear guide;
 		float guideAngle = Deg2Rad((360.0f / hairConfig.numGuides) * g);
@@ -317,15 +317,16 @@ void Hair::Initialize(Fngine* engine) {
 			Vector3 offsetDir(std::cosf(guideAngle) * 0.02f * static_cast<float>(i), 0.0f, std::sinf(guideAngle) * 0.02f * static_cast<float>(i));
 			cp.position = rootPosition + Vector3(0.0f, -static_cast<float>(i) * segmentLength, 0.0f) + offsetDir;
 			cp.homePosition = cp.position;
-			cp.radius = 0.025f * (1.0f - static_cast<float>(i) / hairConfig.pointPerGuide); // 先細り
+			cp.radius = 0.0025f * (1.0f - static_cast<float>(i) / hairConfig.pointPerGuide); // 先細り
 			//cp.radius = 0.05f;
 
-			//cp.color = Vector3(1.0f - (0.04f * i), 1.0f - (0.04f * i), 1.0f);
-			cp.color = Vector3(1.0f,1.0f,1.0f);
+			cp.color = Vector3(1.0f - (0.04f * i), 1.0f - (0.04f * i), 1.0f);
+			//cp.color = Vector3(1.0f,1.0f,1.0f);
 			cp.nextToLength = segmentLength;
 
 			// 根元固定、毛先ほど動く
 			cp.physicsWeight = static_cast<float>(i) / static_cast<float>(hairConfig.pointPerGuide - 1);
+			cp.physicsWeight = 0.5f;
 			if (i == 0) cp.physicsWeight = 0.0f;
 
 			guide.points.push_back(cp);
@@ -333,6 +334,8 @@ void Hair::Initialize(Fngine* engine) {
 		hairData_.guides.push_back(guide);
 	}
 
+#pragma endregion
+	
 	// 全ガイドの全制御点を「1つのフラットな配列」に結合してGPUへ送る
 	std::vector<GuideCurve::ControllerPoint> flatGuidePoints;
 	for (const auto& g : hairData_.guides) {
@@ -406,7 +409,7 @@ void Hair::Initialize(Fngine* engine) {
 	//   ================
 	std::vector<Strands::ChildStrand> childStrands;
 	auto rand = RandomUtils::GetInstance();
-	float spreadRadius = 0.25f;
+	float spreadRadius = 0.005f;
 	UINT NUM_STRANDS = static_cast<UINT>(hairConfig.numStrands);
 
 	for (UINT s = 0; s < NUM_STRANDS; ++s) {
@@ -417,7 +420,7 @@ void Hair::Initialize(Fngine* engine) {
 			child.parentGuideIds[0] = targetGuideId;
 			child.parentGuideIds[1] = targetGuideId;
 			child.parentGuideIds[2] = targetGuideId;
-			child.blendMode = 0; // 単一ガイド追従モード
+			child.blendMode = 1; // 単一ガイド追従モード//
 
 			child.weights[0] = 1.0f;
 			child.weights[1] = 0.0f;
@@ -866,6 +869,30 @@ void Hair::Update(float deltaTime, const Matrix4x4& mat) {
 	// コマンドリストにヒープをセット（テーブルをセットするより【前】に呼ぶ！）
 	dxrCmdList_->SetDescriptorHeaps(_countof(ppHeaps), ppHeaps);
 
+	if (isGpuUpdateRequested_) {
+		// コピー先に遷移
+		auto transitionToCopyDest = CD3DX12_RESOURCE_BARRIER::Transition(
+			gpuGuideBuffer_->GetResource(),
+			D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE,
+			D3D12_RESOURCE_STATE_COPY_DEST);
+
+		// バリア開始
+		D3D12_RESOURCE_BARRIER barriers[] = { transitionToCopyDest };
+		dxrCmdList_->ResourceBarrier(1, barriers);
+
+		// コピー開始
+		dxrCmdList_->CopyResource(gpuGuideBuffer_->GetResource(), uploadGuideBuffer->GetResource());
+
+		// コピーが終わったら、UAVバッファを「UAVとして使える状態」に戻す
+		auto transitionToUAV = CD3DX12_RESOURCE_BARRIER::Transition(
+			gpuGuideBuffer_->GetResource(),
+			D3D12_RESOURCE_STATE_COPY_DEST,
+			D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
+		dxrCmdList_->ResourceBarrier(1, &transitionToUAV);
+
+		isGpuUpdateRequested_ = false;
+	}
+
 	//   ====================
 	// 【 HairCSの初期化処理 】
 	//   ====================
@@ -964,7 +991,7 @@ void Hair::Update(float deltaTime, const Matrix4x4& mat) {
 	blasInputs.Type = D3D12_RAYTRACING_ACCELERATION_STRUCTURE_TYPE_BOTTOM_LEVEL;
 	blasInputs.Flags = D3D12_RAYTRACING_ACCELERATION_STRUCTURE_BUILD_FLAG_PREFER_FAST_TRACE
 					 | D3D12_RAYTRACING_ACCELERATION_STRUCTURE_BUILD_FLAG_ALLOW_UPDATE
-					 /*| D3D12_RAYTRACING_ACCELERATION_STRUCTURE_BUILD_FLAG_PERFORM_UPDATE*/;
+					 | D3D12_RAYTRACING_ACCELERATION_STRUCTURE_BUILD_FLAG_PERFORM_UPDATE;
 	blasInputs.NumDescs = 1;
 	blasInputs.DescsLayout = D3D12_ELEMENTS_LAYOUT_ARRAY;
 	blasInputs.pGeometryDescs = &geometryDesc;
@@ -973,8 +1000,8 @@ void Hair::Update(float deltaTime, const Matrix4x4& mat) {
 	blasBuildDesc.Inputs = blasInputs;
 	// アップデートなので、結果を既存のBLASバッファに上書きする
 	blasBuildDesc.DestAccelerationStructureData = blasResultBuffer_->GetGPUVirtualAddress();
-	//blasBuildDesc.SourceAccelerationStructureData = blasResultBuffer_->GetGPUVirtualAddress();
-	blasBuildDesc.SourceAccelerationStructureData = 0;
+	blasBuildDesc.SourceAccelerationStructureData = blasResultBuffer_->GetGPUVirtualAddress();
+	//blasBuildDesc.SourceAccelerationStructureData = 0;
 	blasBuildDesc.ScratchAccelerationStructureData = scratchBuffer_->GetGPUVirtualAddress();
 
 	// GPUに向けて、BLASのアップデートコマンドを発行！
@@ -1000,7 +1027,7 @@ void Hair::Update(float deltaTime, const Matrix4x4& mat) {
 	instanceBuffer->GetMappedData()->Transform[1][0] = mat.m[0][1];
 	instanceBuffer->GetMappedData()->Transform[1][1] = mat.m[1][1];
 	instanceBuffer->GetMappedData()->Transform[1][2] = mat.m[2][1];
-	instanceBuffer->GetMappedData()->Transform[1][3] = mat.m[3][1] + 1.4f;
+	instanceBuffer->GetMappedData()->Transform[1][3] = mat.m[3][1] + 1.42f;
 
 	instanceBuffer->GetMappedData()->Transform[2][0] = mat.m[0][2];
 	instanceBuffer->GetMappedData()->Transform[2][1] = mat.m[1][2];
@@ -1039,9 +1066,13 @@ void Hair::Update(float deltaTime, const Matrix4x4& mat) {
 // -----------------------------------------------
 #ifdef USE_IMGUI
 	ImGui::Begin("Hair");
-	Vector3 windDir = gpuFrameConfigBuffer_->GetMappedData()->windDirection;
-	ImGui::DragFloat3("Wind Direction ", &windDir.x, 0.01f, -1.0f, 1.0f);
-	gpuFrameConfigBuffer_->GetMappedData()->windDirection = windDir;
+	ImGui::DragFloat3("gravity", &gpuFrameConfigBuffer_->GetMappedData()->gravity.x, 0.01f, -1.0f, 1.0f);
+	ImGui::DragFloat3("Wind Direction ", &gpuFrameConfigBuffer_->GetMappedData()->windDirection.x, 0.01f, -1.0f, 1.0f);
+
+	ImGui::DragFloat("globalHairThickness ", &gpuMakeConfigBuffer_->GetMappedData()->globalHairThickness, 0.0001f, 0.0f, 1.0f);
+	ImGui::DragFloat("stiffness：剛性 ", &gpuPhysicsConfigBuffer_->GetMappedData()->stiffness, 0.0001f, 0.0f, 1.0f);
+	ImGui::DragFloat("restoringForce：復元力", &gpuPhysicsConfigBuffer_->GetMappedData()->restoringForce, 0.0001f, 0.0f, 1.0f);
+	ImGui::DragFloat("damping：減衰力", &gpuPhysicsConfigBuffer_->GetMappedData()->damping, 0.0001f, 0.0f, 1.0f);
 	ImGui::End();
 #endif// USE_IMGUI
 }
