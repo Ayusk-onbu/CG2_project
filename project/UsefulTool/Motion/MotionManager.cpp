@@ -129,8 +129,8 @@ void MotionEditor::NodeImGui() {
 
         ImVec2 canvas_center = ImVec2(canvas_p0.x + canvas_sz.x * 0.5f, canvas_p0.y + canvas_sz.y * 0.5f);
         ImVec2 pos_screen = ImVec2(canvas_center.x + node.position.x * DISPLAY_SCALE, canvas_center.y + node.position.y * DISPLAY_SCALE);
-        ImVec2 in_screen = ImVec2(canvas_center.x + node.TangentIn.x * DISPLAY_SCALE, canvas_center.y + node.TangentIn.y * DISPLAY_SCALE);
-        ImVec2 out_screen = ImVec2(canvas_center.x + node.TangentOut.x * DISPLAY_SCALE, canvas_center.y + node.TangentOut.y * DISPLAY_SCALE);
+        ImVec2 in_screen = ImVec2(canvas_center.x + node.tangentIn.x * DISPLAY_SCALE, canvas_center.y + node.tangentIn.y * DISPLAY_SCALE);
+        ImVec2 out_screen = ImVec2(canvas_center.x + node.tangentOut.x * DISPLAY_SCALE, canvas_center.y + node.tangentOut.y * DISPLAY_SCALE);
 
         draw_list->AddLine(pos_screen, in_screen, IM_COL32(150, 150, 150, 200), 1.0f);
         draw_list->AddLine(pos_screen, out_screen, IM_COL32(150, 150, 150, 200), 1.0f);
@@ -169,25 +169,25 @@ void MotionEditor::NodeImGui() {
         ImVec2 delta = ImGui::GetIO().MouseDelta;
 
         bool isAltDown = ImGui::IsKeyDown(ImGuiKey_LeftAlt);
-        node.isBroken = isAltDown;
+        //node.isBroken = isAltDown;
 
         if (draggedHandleType == 0) {
             node.position.x += delta.x / DISPLAY_SCALE; node.position.y += delta.y / DISPLAY_SCALE;
-            node.TangentIn.x += delta.x / DISPLAY_SCALE; node.TangentIn.y += delta.y / DISPLAY_SCALE;
-            node.TangentOut.x += delta.x / DISPLAY_SCALE; node.TangentOut.y += delta.y / DISPLAY_SCALE;
+            node.tangentIn.x += delta.x / DISPLAY_SCALE; node.tangentIn.y += delta.y / DISPLAY_SCALE;
+            node.tangentOut.x += delta.x / DISPLAY_SCALE; node.tangentOut.y += delta.y / DISPLAY_SCALE;
         }
         else if (draggedHandleType == 1) {
-            node.TangentIn.x += delta.x / DISPLAY_SCALE; node.TangentIn.y += delta.y / DISPLAY_SCALE;
-            if (node.isBroken) {
-                node.TangentOut.x = node.position.x + (node.position.x - node.TangentIn.x);
-                node.TangentOut.y = node.position.y + (node.position.y - node.TangentIn.y);
+            node.tangentIn.x += delta.x / DISPLAY_SCALE; node.tangentIn.y += delta.y / DISPLAY_SCALE;
+            if (/*node.isBroken*/false) {
+                node.tangentOut.x = node.position.x + (node.position.x - node.tangentIn.x);
+                node.tangentOut.y = node.position.y + (node.position.y - node.tangentIn.y);
             }
         }
         else if (draggedHandleType == 2) {
-            node.TangentOut.x += delta.x / DISPLAY_SCALE; node.TangentOut.y += delta.y / DISPLAY_SCALE;
-            if (node.isBroken) {
-                node.TangentIn.x = node.position.x + (node.position.x - node.TangentOut.x);
-                node.TangentIn.y = node.position.y + (node.position.y - node.TangentOut.y);
+            node.tangentOut.x += delta.x / DISPLAY_SCALE; node.tangentOut.y += delta.y / DISPLAY_SCALE;
+            if (/*node.isBroken*/false) {
+                node.tangentIn.x = node.position.x + (node.position.x - node.tangentOut.x);
+                node.tangentIn.y = node.position.y + (node.position.y - node.tangentOut.y);
             }
         }
     }
@@ -234,8 +234,8 @@ void MotionEditor::NodeImGui() {
             if (ImGui::TreeNodeEx(std::to_string(index).c_str())) {
                 auto& node = nodes_[idx];
                 ImGui::DragFloat3((std::string("node") + std::to_string(index)).c_str(), &node.position.x);
-                ImGui::DragFloat3((std::string("in") + std::to_string(index)).c_str(), &node.TangentIn.x);
-                ImGui::DragFloat3((std::string("out") + std::to_string(index)).c_str(), &node.TangentOut.x);
+                ImGui::DragFloat3((std::string("in") + std::to_string(index)).c_str(), &node.tangentIn.x);
+                ImGui::DragFloat3((std::string("out") + std::to_string(index)).c_str(), &node.tangentOut.x);
                 if (ImGui::Button("Delete")) {
                     nodes_.erase(nodes_.begin() + idx);
                 }

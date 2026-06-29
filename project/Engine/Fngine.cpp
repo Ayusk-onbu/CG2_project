@@ -174,7 +174,7 @@ void Fngine::BeginFrame() {
 
 void Fngine::EndFrame() {
 
-	usePostEffectName_ = "Dissolve";
+	usePostEffectName_ = "DepthBasedOutline";
 	// Pre 
 	if (usePostEffectName_ == "DepthBasedOutline"){
 		auto transitionDepth = CD3DX12_RESOURCE_BARRIER::Transition(

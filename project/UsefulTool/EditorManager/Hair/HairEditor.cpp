@@ -1,4 +1,5 @@
 #include "HairEditor.h"
+#include "FileSystem.h"
 
 void GenerateDefaultSphereHair(GuideCurve::ControllerPoint* data, uint32_t totalCount,float headRadius,
     float segmentLength,Vector3 headCenter, Vector3 rootColor,
@@ -343,21 +344,21 @@ void HairGuideEditor::Update(){
     // -----------------------------------------------------------
     // 左クリックされた、かつ「ユーザーが今ギズモを触っていない」ときにピッキングを行う
     // ※ ImGuizmo::IsOver() チェックを入れないと、ギズモを掴んだ瞬間に選択が解除されてしまいます！
-    //if (ImGui::IsMouseClicked(ImGuiMouseButton_Left) && !ImGuizmo::IsOver()) {
+    if (ImGui::IsMouseClicked(ImGuiMouseButton_Left) && !ImGuizmo::IsOver()) {
 
-    //    // ピッキング関数を呼び出して、衝突した制御点のインデックスを取得
-    //    selectedPointIndex_ = PickControlPointFromMouse();
+        // ピッキング関数を呼び出して、衝突した制御点のインデックスを取得
+        selectedPointIndex_ = PickControlPointFromMouse();
 
-    //    // 選択したポインタを BaseEditor の管理リストにも登録しておく（任意）
-    //    if (selectedPointIndex_ != -1) {
-    //        auto* cpuData = hairSystem_->GetCPUGuideData();
-    //        SetTargetObjects({ &cpuData[selectedPointIndex_] });
-    //    }
-    //    else {
-    //        // 何もない空間をクリックしたら選択解除
-    //        SetTargetObjects({});
-    //    }
-    //}
+        // 選択したポインタを BaseEditor の管理リストにも登録しておく（任意）
+        if (selectedPointIndex_ != -1) {
+            auto* cpuData = hairSystem_->GetCPUGuideData();
+            SetTargetObjects({ &cpuData[selectedPointIndex_] });
+        }
+        else {
+            // 何もない空間をクリックしたら選択解除
+            SetTargetObjects({});
+        }
+    }
 }
 
 void HairGuideEditor::DrawUI(){
@@ -504,7 +505,7 @@ void HairGuideEditor::DrawUI(){
     if (ImGui::Button("Save to JSON")) {
 
         // 1. JSON用の保存ダイアログを開く
-        std::string savePath = ShowSaveFileDialogJson();
+        std::string savePath = FileSystem::ShowSaveFileDialogJson();
 
         // 2. パスが取得できたらJSON保存を実行
         if (!savePath.empty()) {
@@ -516,7 +517,7 @@ void HairGuideEditor::DrawUI(){
 
     if (ImGui::Button("Load from JSON")) {
         // 1. ファイル選択ダイアログを開く
-        std::string openPath = ShowOpenFileDialogJson();
+        std::string openPath = FileSystem::ShowOpenFileDialogJson();
 
         // 2. パスが取得できたら読み込み処理を実行
         if (!openPath.empty()) {
@@ -540,66 +541,66 @@ void HairGuideEditor::DrawUI(){
     }
     ImGui::End();
 
-    //// -----------------------------------------------------------
-    //// B. ImGuizmo による3Dギズモの描画と操作
-    //// -----------------------------------------------------------
-    //selectedPointIndex_ = 0;
-    //if (selectedPointIndex_ == -1) return;
+    // -----------------------------------------------------------
+    // B. ImGuizmo による3Dギズモの描画と操作
+    // -----------------------------------------------------------
+    selectedPointIndex_ = 0;
+    if (selectedPointIndex_ == -1) return;
 
-    ////auto* cpuData = hairSystem_->GetCPUGuideData();
-    //auto& targetPoint = cpuData[selectedPointIndex_];
+    //auto* cpuData = hairSystem_->GetCPUGuideData();
+    auto& targetPoint = cpuData[selectedPointIndex_];
 
-    //// 2. 自作エンジンから、現在のカメラの「View行列」と「Projection行列」を取得する
-    //// ※お使いのエンジンのカメラシステムから float[16] で行列を取り出してください
-    //Matrix4x4 viewMatrix = CameraSystem::GetInstance()->GetActiveCamera()->GetViewMatrix();
-    //Matrix4x4 projMatrix = CameraSystem::GetInstance()->GetActiveCamera()->GetProjectionMatrix();
+    // 2. 自作エンジンから、現在のカメラの「View行列」と「Projection行列」を取得する
+    // ※お使いのエンジンのカメラシステムから float[16] で行列を取り出してください
+    Matrix4x4 viewMatrix = CameraSystem::GetInstance()->GetActiveCamera()->GetViewMatrix();
+    Matrix4x4 projMatrix = CameraSystem::GetInstance()->GetActiveCamera()->GetProjectionMatrix();
 
-    //// ギズモを表示・操作を受け付ける (移動ツール: TRANSLATE, ワールド座標系: WORLD)
-    //Vector3 scale = { 1.0f,1.0f,1.0f };
-    //Vector3 rotation = { 0.0f,0.0f,0.0f };
-    //ImGuiManager::GetInstance()->DrawGizmo(
-    //    viewMatrix, projMatrix, targetPoint.position, rotation, scale, ImGuizmo::TRANSLATE, ImGuizmo::WORLD
-    //);
-    //// ギズモが現在ユーザーにドラッグされているか
-    //bool isGizmoUsing = ImGuizmo::IsUsing();
+    // ギズモを表示・操作を受け付ける (移動ツール: TRANSLATE, ワールド座標系: WORLD)
+    Vector3 scale = { 1.0f,1.0f,1.0f };
+    Vector3 rotation = { 0.0f,0.0f,0.0f };
+    ImGuiManager::GetInstance()->DrawGizmo(
+        viewMatrix, projMatrix, targetPoint.position, rotation, scale, ImGuizmo::TRANSLATE, ImGuizmo::WORLD
+    );
+    // ギズモが現在ユーザーにドラッグされているか
+    bool isGizmoUsing = ImGuizmo::IsUsing();
 
-    //// -----------------------------------------------------------
-    //// C. ドラッグ開始・中・終了のハンドリング（Undoコマンド発行）
-    //// -----------------------------------------------------------
-    //if (isGizmoUsing) {
-    //    // 【ドラッグ開始の瞬間】
-    //    if (!wasGizmoUsing_) {
-    //        // 移動前の座標を記録しておく
-    //        dragStartPos_ = targetPoint.position;
-    //    }
+    // -----------------------------------------------------------
+    // C. ドラッグ開始・中・終了のハンドリング（Undoコマンド発行）
+    // -----------------------------------------------------------
+    if (isGizmoUsing) {
+        // 【ドラッグ開始の瞬間】
+        if (!wasGizmoUsing_) {
+            // 移動前の座標を記録しておく
+            dragStartPos_ = targetPoint.position;
+        }
 
-    //    // 【ドラッグ中のリアルタイム処理】
-    //    // ギズモの行列から新しい座標を抜き出して、Mappedメモリに直接代入！
-    //    /*targetPoint.position.x = gizmoMatrix.m[3][0];
-    //    targetPoint.position.y = gizmoMatrix.m[3][1];
-    //    targetPoint.position.z = gizmoMatrix.m[3][2];*/
+        // 【ドラッグ中のリアルタイム処理】
+        // ギズモの行列から新しい座標を抜き出して、Mappedメモリに直接代入！
+        /*targetPoint.position.x = gizmoMatrix.m[3][0];
+        targetPoint.position.y = gizmoMatrix.m[3][1];
+        targetPoint.position.z = gizmoMatrix.m[3][2];*/
 
-    //    targetPoint.homePosition = targetPoint.position;
+        targetPoint.homePosition = targetPoint.position;
 
-    //    // DragFloatの時と同様、毎フレームGPUへの転送を要求してリアルタイムに髪をうねうねさせる
-    //    hairSystem_->RequestNotifyUpdate();
-    //}
-    //else {
-    //    // 【ドラッグが離された（終了した）瞬間】
-    //    if (wasGizmoUsing_) {
-    //        // ドラッグ終了時の最終座標
-    //        Vector3 dragEndPos = targetPoint.position;
+        // DragFloatの時と同様、毎フレームGPUへの転送を要求してリアルタイムに髪をうねうねさせる
+        hairSystem_->RequestNotifyUpdate();
+    }
+    else {
+        // 【ドラッグが離された（終了した）瞬間】
+        if (wasGizmoUsing_) {
+            // ドラッグ終了時の最終座標
+            Vector3 dragEndPos = targetPoint.position;
 
-    //        // ここで初めて「移動コマンド」を作って履歴に積む！
-    //        auto cmd = std::make_unique<HairGuideMoveCommand>(
-    //            hairSystem_, selectedPointIndex_, dragStartPos_, dragEndPos
-    //        );
-    //        ExecuteCommand(std::move(cmd));
-    //    }
-    //}
+            // ここで初めて「移動コマンド」を作って履歴に積む！
+            auto cmd = std::make_unique<HairGuideMoveCommand>(
+                hairSystem_, selectedPointIndex_, dragStartPos_, dragEndPos
+            );
+            ExecuteCommand(std::move(cmd));
+        }
+    }
 
-    //// フラグの状態を更新
-    //wasGizmoUsing_ = isGizmoUsing;
+    // フラグの状態を更新
+    wasGizmoUsing_ = isGizmoUsing;
 }
 
 int HairGuideEditor::PickControlPointFromMouse() {

@@ -46,9 +46,9 @@ public:
 		DirectionTag tag = std::make_pair(static_cast<int>(category), detailId);
 
 		// 登録された関数の引数の数に合わせて、コンパイルタイムに 0, 1, 2... とインデックスを作る
-		actions_[tag] = [func](const EventArgs& args) {
+		actions_[tag].push_back([func](const EventArgs& args) {
 			CallHelper(func, args, std::index_sequence_for<FuncArgs...>{});
-		};
+		});
 	}
 	/// <summary>
 	/// メンバ関数を登録するための関数
@@ -63,9 +63,9 @@ public:
 	void RegisterAction(EVENTCATEGORY category, int detailId, T* instance, void(T::* func)(FuncArgs...)) {
 		DirectionTag tag = std::make_pair(static_cast<int>(category), detailId);
 
-		actions_[tag] = [instance, func](const EventArgs& args) {
+		actions_[tag].push_back([instance, func](const EventArgs& args) {
 			CallHelper(instance, func, args, std::index_sequence_for<FuncArgs...>{});
-			};
+		});
 	}
 	/// <summary>
 	/// イベントを発火
@@ -88,13 +88,15 @@ public:
 			if (actionIt != actions_.end())
 			{
 				// 登録されている関数（Action）を実行！
-				actionIt->second(eventArgs);
+				for (auto& action : actionIt->second) {
+					action(eventArgs);
+				}
 			}
 		}
 	}
 private:
 	//std::unordered_map<DirectionTag, EventAction, PairHash> events_;
-	std::map<DirectionTag, EventAction> actions_;
+	std::map<DirectionTag, std::vector<EventAction>> actions_;
 	std::unordered_map<GAMEEVENTID, std::vector<DirectionTag>> bindings_;
 
 private:

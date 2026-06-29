@@ -49,12 +49,12 @@ export namespace MathUtils {
         template<typename T>
         struct Node {
             T position;  // 通過する点の座標
-            T TangentIn; // 入ってくるハンドルの座標
-            T TangentOut;// 出ていくハンドルの座標
+            T tangentIn; // 入ってくるハンドルの座標
+            T tangentOut;// 出ていくハンドルの座標
 
-            bool isBroken = false;// 連動させるかどうか
+            //bool isBroken = false;// 連動させるかどうか
             // コンストラクタ
-            Node(T pos) : position(pos), TangentIn(pos), TangentOut(pos) {}
+            Node(T pos) : position(pos), tangentIn(pos), tangentOut(pos) {}
         };
 
         template<typename T>
@@ -75,9 +75,9 @@ export namespace MathUtils {
             }
             return HermiteInterpolation(
                 nodes[i].position,     // 今の点の位置
-                nodes[i].TangentOut,   // 出ていくハンドル
+                nodes[i].tangentOut,   // 出ていくハンドル
                 nodes[i + 1].position, // 次の点の位置
-                nodes[i + 1].TangentIn,// 次の点に入るハンドル
+                nodes[i + 1].tangentIn,// 次の点に入るハンドル
                 localT
             );
         }
@@ -88,8 +88,8 @@ export namespace MathUtils {
             for (const auto& node : nodes) {
                 j.push_back({
                     {"posX", node.position.x}, {"posY", node.position.y}, {"posZ", node.position.z},
-                    {"inX", node.TangentIn.x}, {"inY", node.TangentIn.y}, {"inZ", node.TangentIn.z},
-                    {"outX", node.TangentOut.x}, {"outY", node.TangentOut.y}, {"outZ", node.TangentOut.z}
+                    {"inX", node.tangentIn.x}, {"inY", node.tangentIn.y}, {"inZ", node.tangentIn.z},
+                    {"outX", node.tangentOut.x}, {"outY", node.tangentOut.y}, {"outZ", node.tangentOut.z}
                 });
             }
             return j;
@@ -100,9 +100,9 @@ export namespace MathUtils {
             std::vector<Node<T>> nodes;
             for (const auto& item : j) {
                 Node<T> node(T{ item["posX"], item["posY"], item["posZ"] });
-                node.TangentIn = T{ item["inX"], item["inY"], item["inZ"] };
-                node.TangentOut = T{ item["outX"], item["outY"], item["outZ"] };
-                node.isBroken = false;
+                node.tangentIn = T{ item["inX"], item["inY"], item["inZ"] };
+                node.tangentOut = T{ item["outX"], item["outY"], item["outZ"] };
+                //node.isBroken = false;
                 nodes.push_back(node);
             }
             return nodes;

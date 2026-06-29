@@ -35,7 +35,7 @@ public:
 	Vector3& GetTranslation() { return translation_; }
 	Matrix4x4& GetViewProjectionMatrix(){ return viewProjectionMatrix_; }
 	Projection& GetProjection() { return projection_; }
-	Matrix4x4 GetViewMatrix() const {return Matrix4x4::Inverse(worldMat_);}
+	Matrix4x4 GetViewMatrix() const {return worldMat_;}
 	Matrix4x4 GetProjectionMatrix() const {
 		return Matrix4x4::Make::PerspectiveFov(
 			projection_.fovY,

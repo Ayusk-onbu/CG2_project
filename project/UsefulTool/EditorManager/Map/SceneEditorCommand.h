@@ -22,3 +22,35 @@ private:
     Vector3 moveAmount_;
     DynamicObject* obj_;
 };
+
+class TestCommand : public ICommand
+{
+public:
+    TestCommand(){}
+public:
+    void Execute()override {
+        Log::View("Test Birth");
+    }
+    void Undo()override {
+        Log::View("Test Break");
+    }
+    void Redo()override {
+        Execute();
+    }
+};
+
+class TestCommandND : public ICommand
+{
+public:
+    TestCommandND() {}
+public:
+    void Execute()override {
+        Log::View("Test Birth My Baby");
+    }
+    void Undo()override {
+        Log::View("Test Break My Baby");
+    }
+    void Redo()override {
+        Execute();
+    }
+};

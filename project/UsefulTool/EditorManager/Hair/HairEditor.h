@@ -42,26 +42,6 @@ public:
 
     Ray CalculateRayFromScreen(float mouseX, float mouseY, float windowWidth, float windowHeight, const Matrix4x4& invProjView, const Vector3& camPos);
 
-    std::string ShowSaveFileDialogJson() {
-        char filename[MAX_PATH] = "";
-        OPENFILENAMEA ofn;
-        ZeroMemory(&ofn, sizeof(ofn));
-
-        ofn.lStructSize = sizeof(ofn);
-        ofn.hwndOwner = NULL;
-        // フィルターを JSON に指定
-        ofn.lpstrFilter = "JSON Files (*.json)\0*.json\0All Files (*.*)\0*.*\0";
-        ofn.lpstrFile = filename;
-        ofn.nMaxFile = MAX_PATH;
-        ofn.Flags = OFN_EXPLORER | OFN_PATHMUSTEXIST | OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT;
-        ofn.lpstrDefExt = "json";
-
-        if (GetSaveFileNameA(&ofn)) {
-            return std::string(filename);
-        }
-        return "";
-    }
-
     // データをJSON形式のテキストとして書き出す関数
     void SaveHairDataToJson(const std::string& filePath, GuideCurve::ControllerPoint* data, uint32_t count) {
         if (filePath.empty() || !data || count == 0) return;
@@ -99,27 +79,6 @@ public:
         ofs << "]\n";
 
         ofs.close();
-    }
-
-    std::string ShowOpenFileDialogJson() {
-        char filename[MAX_PATH] = "";
-        OPENFILENAMEA ofn;
-        ZeroMemory(&ofn, sizeof(ofn));
-
-        ofn.lStructSize = sizeof(ofn);
-        ofn.hwndOwner = NULL;
-        // フィルターを JSON に指定
-        ofn.lpstrFilter = "JSON Files (*.json)\0*.json\0All Files (*.*)\0*.*\0";
-        ofn.lpstrFile = filename;
-        ofn.nMaxFile = MAX_PATH;
-        // 存在するファイルのみ選択可能にするフラグを追加
-        ofn.Flags = OFN_EXPLORER | OFN_FILEMUSTEXIST | OFN_HIDEREADONLY;
-        ofn.lpstrDefExt = "json";
-
-        if (GetOpenFileNameA(&ofn)) {
-            return std::string(filename);
-        }
-        return "";
     }
 
     // JSONテキストファイルを解析して、Mappedメモリに流し込む関数

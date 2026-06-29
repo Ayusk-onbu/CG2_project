@@ -65,18 +65,20 @@ public:
             }
             ImGui::EndCombo();
         }
-
-        if (ImGui::Button("Undo")) {
+        if (ImGui::Button("Undo") || (InputManager::GetKey().PressKey(DIK_LCONTROL) && InputManager::GetKey().PressedKey(DIK_Z))) {
+            OnUndoEvent();
             //EventManager::GetInstance()->FireEvent(GAMEEVENTID::UndoClicked);
         }
         ImGui::SameLine();
-        if (ImGui::Button("Redo")) {
+        if (ImGui::Button("Redo") || (InputManager::GetKey().PressKey(DIK_LCONTROL) && InputManager::GetKey().PressedKey(DIK_Y))) {
+            OnRedoEvent();
             //EventManager::GetInstance()->FireEvent(GAMEEVENTID::RedoClicked);
         }
+        activeEditor_->DrawUI();
 
         ImGui::End(); // Tool Manager ウィンドウ終了
 
-        activeEditor_->DrawUI();
+        
 #endif// USE_IMGUI
     }
 

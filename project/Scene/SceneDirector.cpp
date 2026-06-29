@@ -2,10 +2,13 @@
 #include "CameraSystem.h"
 #include "ModelManager.h"
 #include "UIAnimation.h"
+#include "DrawManager.h"
 #include "../Engine/Objects/Primitive/Box/PrimitiveBox.h"
 #include "../Engine/Objects/Primitive/Ring/Ring.h"
 #include "../Engine/Objects/Primitive/MagicPlane.h"
 #include "../UsefulTool/EditorManager/Hair/HairEditor.h"
+#include "../UsefulTool/EditorManager/Map/SceneEditor.h"
+#include "../UsefulTool/EditorManager/Hermite/HermiteEditor.h"
 
 import MotionManager;
 
@@ -35,12 +38,15 @@ void SceneDirector::Initialize(Scene& firstScene) {
 	CameraSystem::GetInstance()->MakeCamera("GameCamera", CameraType::Game);
 	CameraSystem::GetInstance()->SetActiveCamera("GameCamera");
 
+	DrawManager::GetInstance()->Initialize(p_fngine_);
 	PrimitiveBox::GetInstance()->Initialize(p_fngine_, 1500);
 	PrimitiveRing::GetInstance()->Initialize(p_fngine_, 1000);
 	MagicCircle::GetInstance()->Initialize(p_fngine_, 100);
 
 	auto editorMgr = EditorManager::GetInstance();
 	auto* hairEditor = editorMgr->CreateEditor<HairGuideEditor>(p_fngine_->hair_.get());
+	auto* sceneEditor = editorMgr->CreateEditor<SceneEditor>();
+	auto* hermiteEditor = editorMgr->CreateEditor<HermiteEditor>();
 	editorMgr->SetActiveEditor(hairEditor);
 }
 
@@ -94,6 +100,8 @@ void SceneDirector::Draw() {
 	else if (pauseNow == true) {
 		currentScene_->PauseDraw();
 	}
+
+	DrawManager::GetInstance()->Draw();
 }
 
 void SceneDirector::ImGui() {
@@ -166,6 +174,7 @@ void SceneDirector::LoadModelData() {
 	name = ModelManager::GetInstance()->LoadObj("debugBlock.obj", "resources", LoadFileType::OBJ);
 	name = ModelManager::GetInstance()->LoadObj("plane.gltf", "resources");
 	name = ModelManager::GetInstance()->LoadObj("Cylinder.obj", "resources");
+	name = ModelManager::GetInstance()->LoadObj("Sphere.obj", "resources");
 	name = ModelManager::GetInstance()->LoadObj("ulthimaSky.obj", "resources", LoadFileType::OBJ);
 	name = ModelManager::GetInstance()->LoadObj("Map_City.obj", "resources/Data/Map");
 	name = ModelManager::GetInstance()->LoadObj("Naira_ExportTest.gltf", "resources/Model/Character/Test");
@@ -174,6 +183,7 @@ void SceneDirector::LoadModelData() {
 	ModelManager::GetInstance()->AddObject("Plane", ModelManager::GetInstance()->LoadModelData("plane").vertices, ModelManager::GetInstance()->LoadModelData("plane").indices);
 	//ModelManager::GetInstance()->AddObject("Ring", MakeObjectVertices(RingData{ 32, 1.0f, 0.5f }), MakeObjectIndices(RingData{ 32, 1.0f, 0.5f }));
 	ModelManager::GetInstance()->AddObject("Ring", ModelManager::GetInstance()->LoadModelData("Cylinder").vertices, ModelManager::GetInstance()->LoadModelData("Cylinder").indices);
+	ModelManager::GetInstance()->AddObject("Sphere", ModelManager::GetInstance()->LoadModelData("Sphere").vertices, ModelManager::GetInstance()->LoadModelData("Sphere").indices);
 }
 
 void SceneDirector::LoadTexture() {

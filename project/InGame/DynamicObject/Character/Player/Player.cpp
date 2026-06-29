@@ -39,9 +39,14 @@ void Player::Initialize(Fngine* fngine) {
 	myCollider->onCollisionCallBack = [this](Collider* other, const Vector3& pushOut) {
 		OnCollisionGround(other, pushOut);
 		if (other->GetMyType() == COL_Static_Map) {
-			MakeHitEffect();
+			//MakeHitEffect();
 		}
 	};
+
+	EventManager::GetInstance()->RegisterAction(
+		EVENTCATEGORY::EFFECT, 0, this, &Player::MakeHitEffect
+	);
+	EventManager::GetInstance()->BindEventToTag(GAMEEVENTID::OnPlayerAttack, EVENTCATEGORY::EFFECT, 0);
 }
 
 void Player::Update(float deltaTime) {
@@ -59,10 +64,10 @@ void Player::Update(float deltaTime) {
 		effect.currentTime += deltaTime;
 		effect.color.w = 1.0f - (effect.currentTime / effect.lifeTime); // 徐々に透明にする
 
-		/*PrimitiveBox::GetInstance()->AddInstance({
+		PrimitiveBox::GetInstance()->AddInstance({
 			effect.transform,
 			effect.color
-		});*/
+		});
 	}
 	hitEffect_.erase(std::remove_if(hitEffect_.begin(), hitEffect_.end(),
 		[](const HitEffectInfo& effect) { return effect.currentTime >= effect.lifeTime; }),
@@ -137,7 +142,7 @@ void Player::Draw() {
 
 void Player::MakeHitEffect() {
 	hitEffectCoolTimer_ -= 1.0f / 60.0f;
-	if (hitEffectCoolTimer_ > 0.0f)return;
+	//if (hitEffectCoolTimer_ > 0.0f)return;
 	auto rand = RandomUtils::GetInstance();
 	for (int i = 0; i < 5; ++i) {
 		HitEffectInfo info;
