@@ -6,8 +6,8 @@ struct Ray {
     Vector3 direction;// 進む方向：スピード
     Vector3 inverseDirection;// 逆数：計算で使う
     Ray(Vector3 origin, Vector3 direction) {
-        origin = origin;
-        direction = direction;
+        this->origin = origin;
+        this->direction = direction;
         // 割り算を掛け算にするための事前計算
         inverseDirection = Vector3(
             1.0f / direction.x,

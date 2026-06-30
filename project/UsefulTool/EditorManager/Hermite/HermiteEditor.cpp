@@ -1,12 +1,87 @@
 #include "HermiteEditor.h"
 #include "ImGuiManager.h"
 #include "DrawManager.h"
+#include "MathUtils.h"
 
 // ToDo
-// Rayによる選択の機能を作る<-Ray構造体を作成する
 // 軌道の見えるかをする<-Lineの新しいDraw関数を作成する
 
 void HermiteEditor::Update() {
+    auto& nodes_ = targetObjects_;
+
+    if (ImGui::IsMouseClicked(0) && !ImGui::GetIO().WantCaptureMouse) {
+
+        // マウスの画面座標を取得
+        ImVec2 mousePos = ImGui::GetMousePos();
+
+        // 画面サイズ・カメラの逆行列・カメラ位置を取得
+        float windowWidth = 1280.0f;  // 実際の画面幅
+        float windowHeight = 720.0f; // 実際の画面高
+        Matrix4x4 invProjView = Matrix4x4::Inverse(CameraSystem::GetInstance()->GetActiveCamera()->GetViewProjectionMatrix());
+        Vector3 camPos = CameraSystem::GetInstance()->GetActiveCamera()->GetTranslation();
+
+        // ③ マウス座標から3D空間のレイを生成！
+        Ray ray = MathUtils::CalculateRayFromScreen(
+            mousePos.x, mousePos.y,
+            windowWidth, windowHeight,
+            invProjView, camPos
+        ); //
+
+        // 判定用のワーク変数
+        int closestNode = -1;
+        int closestElement = 0;     // 0: Position, 1: TangentIn, 2: TangentOut
+        float minDistance = FLT_MAX; // 一番近い距離を記録する用
+        float hitDist = 0.0f;
+
+        // 点のクリック判定の大きさ（ギズモの見かけの大きさに合わせて調整してください）
+        float clickRadius = 0.5f;
+
+        // 2. 全てのノードに対して球判定を行う
+        for (int i = 0; i < (int)nodes_.size(); ++i) {
+            auto* node = nodes_[i]; // 前回のコードを元にポインタ配列と仮定
+            if (!node) continue;
+
+            // --- 通過点 (Position) の判定 ---
+            if (MathUtils::IntersectRaySphere(ray, node->position, clickRadius, &hitDist)) { //
+                if (hitDist < minDistance) {
+                    minDistance = hitDist;
+                    closestNode = i;
+                    closestElement = 0; // Position
+                }
+            }
+
+            // ---ハンドル (Tangent) の判定 ---
+            if (i == selectedNodeIndex_) {
+                // TangentIn の判定
+                if (MathUtils::IntersectRaySphere(ray, node->tangentIn, clickRadius, &hitDist)) { //
+                    if (hitDist < minDistance) {
+                        minDistance = hitDist;
+                        closestNode = i;
+                        closestElement = 1; // TangentIn
+                    }
+                }
+                // TangentOut の判定
+                if (MathUtils::IntersectRaySphere(ray, node->tangentOut, clickRadius, &hitDist)) { //
+                    if (hitDist < minDistance) {
+                        minDistance = hitDist;
+                        closestNode = i;
+                        closestElement = 2; // TangentOut
+                    }
+                }
+            }
+        }
+
+        // 3. 最終結果をエディタのメンバ変数に反映
+        if (closestNode != -1) {
+            selectedNodeIndex_ = closestNode; //
+            selectedElement_ = closestElement; //
+        }
+        else {
+            // 何もない空間をクリックしたら選択を解除したい場合はここを有効に
+            selectedNodeIndex_ = -1;
+        }
+    }
+
     // 描画用の処理
     for (const auto& obj : targetObjects_) {
         PrimitiveSphereData data;
@@ -37,7 +112,7 @@ void HermiteEditor::DrawUI() {
     // ---------------------------------------------------
     // 全体操作：ノードの追加ボタン
     // ---------------------------------------------------
-    if (ImGui::Button("Add Node")) {
+    if (ImGui::Button("Add Node 追加")) {
         SplineNode newNode({ 0.0f, 0.0f, 0.0f });
 
         // もしすでにノードがあるなら、最後のノードのちょっと右に生やす

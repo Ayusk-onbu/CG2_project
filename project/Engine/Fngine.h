@@ -120,5 +120,7 @@ private:
 	std::unique_ptr<ConstantBuffer<OutlineForGPU>> outlineForGPU_;
 public:
 	std::unique_ptr<ConstantBuffer<DissolveConfigForGPU>> dissolveForGPU_;
+
+	std::unique_ptr<ConstantBuffer<RandomConfigForGPU>> randomForGPU_;
 };
 

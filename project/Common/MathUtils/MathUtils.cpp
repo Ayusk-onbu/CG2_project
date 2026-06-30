@@ -54,10 +54,10 @@ Vector3 Slerp(const Vector3& v1, const Vector3& v2, float t) {
 	else {
 		normaLerpV = (sinThetaFrom * v1N + sinThetaTo * v2N) / sinTheta;
 	}
-	
+
 	float length1 = Length(v1);
 	float length2 = Length(v2);
-	
+
 	float length = Lerp(length1, length2, t);
 
 	return length * normaLerpV;
@@ -87,10 +87,10 @@ Vector3 CatmullRomPosition(const std::vector<Vector3>& points, float t) {
 	// 区間番号
 	size_t index = static_cast<size_t>(t / areaWidth);
 	// 区間番号が上限を超えないように収める
-	index = std::min(index,division - 1);
+	index = std::min(index, division - 1);
 
 	// 区間内の始点を0.0f、終点を1.0fとしたときの現在位置
-	float t_2 = (t - areaWidth * index)/areaWidth;
+	float t_2 = (t - areaWidth * index) / areaWidth;
 	// 下限(0.0f)と上限(1.0f)の範囲に収める
 	t_2 = std::clamp(t_2, 0.0f, 1.0f);
 
@@ -229,5 +229,82 @@ namespace MathUtils {
 		// 距離は tMin を返す（ただし、Rayの発射地点が箱の「内部」にある場合は tMin がマイナスになるため、tMax を採用する）
 		hitDistance = tMin > 0 ? tMin : tMax;
 		return true;
+	}
+
+	bool IntersectRaySphere(const Ray& ray, const Vector3& sphereCenter, float sphereRadius, float* outDist) {
+		const float minClickRadius = 0.1f;
+		float finalRadius = (std::max)(sphereRadius, minClickRadius);
+
+		// レイの始点から球の中心へのベクトル
+		Vector3 v = sphereCenter - ray.origin;
+
+		// レイの方向に球の中心を投影し、レイに一番近い点までの距離 t を出す
+		float t = v.x * ray.direction.x + v.y * ray.direction.y + v.z * ray.direction.z; // Dot(V, Direction)
+
+		// レイの背後（カメラの後ろ）にある点なら除外
+		if (t < 0.0f) return false;
+
+		// レイの直線上で、球の中心に「一番近い3D座標」を求める
+		Vector3 closestPointOnRay = {
+			ray.origin.x + ray.direction.x * t,
+			ray.origin.y + ray.direction.y * t,
+			ray.origin.z + ray.direction.z * t
+		};
+
+		// その一番近い点と、球の中心との距離（の2乗）を計算する
+		Vector3 diff = sphereCenter - closestPointOnRay;
+		float distSq = diff.x * diff.x + diff.y * diff.y + diff.z * diff.z;
+
+		// クリック許容半径の2乗より離れていれば不時着
+		if (distSq > (finalRadius * finalRadius)) {
+			return false;
+		}
+
+		// 衝突距離として t を返す
+		if (outDist) {
+			*outDist = t;
+		}
+		return true;
+	}
+
+	Ray CalculateRayFromScreen(float screenPosX, float screenPosY, float windowWidth, float windowHeight, const Matrix4x4& invProjView, const Vector3& camPos) {
+		// マウス座標をスクリーン空間 [0 ～ Width] から NDC（正規化デバイス座標）空間 [-1 ～ 1] に変換
+		// ※ DirectXは左上が原点で、Y軸は下方向がプラスですが、NDCは上がプラスなのでYを反転させます
+		float ndcX = (2.0f * screenPosX) / windowWidth - 1.0f;
+		float ndcY = 1.0f - (2.0f * screenPosY) / windowHeight;
+
+		// ニアプレーン（手前）とファープレーン（奥）の点をクリップ空間の座標(Vector4)として定義
+		// 通常の射影バッファなら Z=0 が手前、Z=1 が奥
+		Vector4 clipNear = { ndcX, ndcY, 0.0f, 1.0f };
+		Vector4 clipFar = { ndcX, ndcY, 1.0f, 1.0f };
+
+		// 逆プロジェクションビュー行列（inverseProjView）を掛けて、ワールド空間の座標に逆変換する
+		Vector4 worldNear = Matrix4x4::Transform(invProjView, clipNear);
+		Vector4 worldFar = Matrix4x4::Transform(invProjView, clipFar);
+
+		// w成分で割って、通常の3D座標（パースペクティブ除算）にする
+		if (worldNear.w != 0.0f) {
+			worldNear.x /= worldNear.w; worldNear.y /= worldNear.w; worldNear.z /= worldNear.w;
+		}
+		if (worldFar.w != 0.0f) {
+			worldFar.x /= worldFar.w; worldFar.y /= worldFar.w; worldFar.z /= worldFar.w;
+		}
+
+		// 方向 ＝ 奥の点 － 手前の点
+		Vector3 dir = { worldFar.x - worldNear.x, worldFar.y - worldNear.y, worldFar.z - worldNear.z };
+
+		// 始点はカメラの位置
+		Ray ray(camPos, dir);
+
+		// 方向ベクトルを正規化（長さを1にする）
+		float length = std::sqrt(dir.x * dir.x + dir.y * dir.y + dir.z * dir.z);
+		if (length > 0.0f) {
+			ray.direction = { dir.x / length, dir.y / length, dir.z / length };
+		}
+		else {
+			ray.direction = { 0.0f, 0.0f, 1.0f };
+		}
+
+		return ray;
 	}
 }

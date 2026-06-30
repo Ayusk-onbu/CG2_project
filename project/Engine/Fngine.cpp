@@ -118,6 +118,9 @@ void Fngine::Initialize() {
 	dissolveForGPU_ = std::make_unique<ConstantBuffer<DissolveConfigForGPU>>(this);
 	dissolveForGPU_->Initialize();
 
+	randomForGPU_ = std::make_unique<ConstantBuffer<RandomConfigForGPU>>(this);
+	randomForGPU_->Initialize();
+
 	osr_.Initialize(d3d12_, srv_, float(kClienWidth_), float(kClienHeight_));
 	hair_ = std::make_unique<Hair>();
 }
@@ -174,7 +177,7 @@ void Fngine::BeginFrame() {
 
 void Fngine::EndFrame() {
 
-	usePostEffectName_ = "DepthBasedOutline";
+	usePostEffectName_ = "Random";
 	// Pre 
 	if (usePostEffectName_ == "DepthBasedOutline"){
 		auto transitionDepth = CD3DX12_RESOURCE_BARRIER::Transition(
@@ -185,6 +188,9 @@ void Fngine::EndFrame() {
 		command_.GetList().GetList()->ResourceBarrier(1, &transitionDepth);
 
 		outlineForGPU_->GetMappedData()->viewProjInverse = Matrix4x4::Inverse(CameraSystem::GetInstance()->GetActiveCamera()->GetViewProjectionMatrix());
+	}
+	else if (usePostEffectName_ == "Random") {
+		randomForGPU_->GetMappedData()->time += 1.0f / 60.0f;
 	}
 
 	command_.GetList().GetList()->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
@@ -200,6 +206,9 @@ void Fngine::EndFrame() {
 	else if (usePostEffectName_ == "Dissolve") {
 		command_.GetList().GetList()->SetGraphicsRootDescriptorTable(1, TextureManager::GetInstance()->GetTexture("noise0").GetHandleGPU());
 		command_.GetList().GetList()->SetGraphicsRootConstantBufferView(2, dissolveForGPU_->GetGPUVirtualAddress());
+	}
+	else if (usePostEffectName_ == "Random") {
+		command_.GetList().GetList()->SetGraphicsRootConstantBufferView(1, randomForGPU_->GetGPUVirtualAddress());
 	}
 
 	command_.GetList().GetList()->DrawInstanced(3, 1, 0, 0);

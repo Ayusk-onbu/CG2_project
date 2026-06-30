@@ -3,11 +3,6 @@
 #include "Hair/IHair.h"
 #include "HairEditorCommand.h"
 
-struct Ray {
-    Vector3 origin;
-    Vector3 direction;
-};
-
 class HairGuideEditor :
 	public BaseEditor<GuideCurve::ControllerPoint>
 {
@@ -38,9 +33,9 @@ public:
         std::memcpy(proj, &projMatrix, sizeof(float) * 16);
     }
 
-    bool CheckRaySphereIntersection(const Ray& ray, const Vector3& sphereCenter, float sphereRadius, float* outDist);
+    /*bool CheckRaySphereIntersection(const Ray& ray, const Vector3& sphereCenter, float sphereRadius, float* outDist);
 
-    Ray CalculateRayFromScreen(float mouseX, float mouseY, float windowWidth, float windowHeight, const Matrix4x4& invProjView, const Vector3& camPos);
+    Ray CalculateRayFromScreen(float mouseX, float mouseY, float windowWidth, float windowHeight, const Matrix4x4& invProjView, const Vector3& camPos);*/
 
     // データをJSON形式のテキストとして書き出す関数
     void SaveHairDataToJson(const std::string& filePath, GuideCurve::ControllerPoint* data, uint32_t count) {

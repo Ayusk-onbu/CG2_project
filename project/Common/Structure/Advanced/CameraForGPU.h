@@ -10,11 +10,14 @@ struct OutlineForGPU {
 	Matrix4x4 viewProjInverse;
 };
 
-struct DissolveConfigForGPU
-{
+struct DissolveConfigForGPU{
 	float threshold = 0.5f;// しきいち
 	float edgeMin = 0.5f;
 	float edgeMax = 0.53f;
+};
+
+struct RandomConfigForGPU {
+	float time = 0.0f;
 };
 
 class Fngine;

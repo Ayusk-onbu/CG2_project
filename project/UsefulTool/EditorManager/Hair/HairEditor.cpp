@@ -604,119 +604,120 @@ void HairGuideEditor::DrawUI(){
 }
 
 int HairGuideEditor::PickControlPointFromMouse() {
-    // 1. マウスの2D座標を取得
-    ImGuiIO& io = ImGui::GetIO();
-    float mouseX = io.MousePos.x;
-    float mouseY = io.MousePos.y;
+    //// 1. マウスの2D座標を取得
+    //ImGuiIO& io = ImGui::GetIO();
+    //float mouseX = io.MousePos.x;
+    //float mouseY = io.MousePos.y;
 
-    // 画面（ビューポート）のサイズを取得
-    float windowWidth = io.DisplaySize.x;
-    float windowHeight = io.DisplaySize.y;
+    //// 画面（ビューポート）のサイズを取得
+    //float windowWidth = io.DisplaySize.x;
+    //float windowHeight = io.DisplaySize.y;
 
-    auto camera = CameraSystem::GetInstance()->GetActiveCamera();
+    //auto camera = CameraSystem::GetInstance()->GetActiveCamera();
 
-    // ★ ここで ray が生成されます！
-    Ray ray = CalculateRayFromScreen(mouseX, mouseY, windowWidth, windowHeight, Matrix4x4::Inverse(camera->GetViewProjectionMatrix()), camera->GetTranslation());
+    //// ★ ここで ray が生成されます！
+    //Ray ray = CalculateRayFromScreen(mouseX, mouseY, windowWidth, windowHeight, Matrix4x4::Inverse(camera->GetViewProjectionMatrix()), camera->GetTranslation());
 
-    // 3. 髪の毛の全制御点と、飛ばしたRayの「交差判定」を行う
-    auto* cpuData = hairSystem_->GetCPUGuideData();
-    uint32_t count = hairSystem_->GetCPUGuideCount();
+    //// 3. 髪の毛の全制御点と、飛ばしたRayの「交差判定」を行う
+    //auto* cpuData = hairSystem_->GetCPUGuideData();
+    //uint32_t count = hairSystem_->GetCPUGuideCount();
 
-    int closestIndex = -1;
-    float minDistance = FLT_MAX;
+    //int closestIndex = -1;
+    //float minDistance = FLT_MAX;
 
-    for (uint32_t i = 0; i < count; ++i) {
-        float dist = 0.0f;
+    //for (uint32_t i = 0; i < count; ++i) {
+    //    float dist = 0.0f;
 
-        // 前回作成した最短距離判定を呼ぶ
-        bool isHit = CheckRaySphereIntersection(ray, cpuData[i].position, cpuData[i].radius, &dist);
+    //    // 前回作成した最短距離判定を呼ぶ
+    //    bool isHit = CheckRaySphereIntersection(ray, cpuData[i].position, cpuData[i].radius, &dist);
 
-        if (isHit && dist < minDistance) {
-            minDistance = dist;
-            closestIndex = i;
-        }
-    }
+    //    if (isHit && dist < minDistance) {
+    //        minDistance = dist;
+    //        closestIndex = i;
+    //    }
+    //}
 
-    return closestIndex; // 衝突した一番近いポイントのインデックスを返す（何もなければ -1）
+    //return closestIndex; // 衝突した一番近いポイントのインデックスを返す（何もなければ -1）
+    return -1;
 }
 
-bool HairGuideEditor::CheckRaySphereIntersection(const Ray& ray, const Vector3& sphereCenter, float sphereRadius, float* outDist) {
-    // エディタ操作用に、最低でもこの半径(メートル単位)の太さがあるものとして判定する
-    // 画面を見ながら 0.05f ～ 0.2f 辺りで調整してください
-    const float minClickRadius = 0.1f;
-    float finalRadius = (std::max)(sphereRadius, minClickRadius);
-
-    // 1. レイの始点から球の中心へのベクトル
-    Vector3 v = sphereCenter - ray.origin;
-
-    // 2. レイの方向に球の中心を投影し、レイに一番近い点までの距離 t を出す
-    float t = v.x * ray.direction.x + v.y * ray.direction.y + v.z * ray.direction.z; // Dot(V, Direction)
-
-    // レイの背後（カメラの後ろ）にある点なら除外
-    if (t < 0.0f) return false;
-
-    // 3. レイの直線上で、球の中心に「一番近い3D座標」を求める
-    Vector3 closestPointOnRay = {
-        ray.origin.x + ray.direction.x * t,
-        ray.origin.y + ray.direction.y * t,
-        ray.origin.z + ray.direction.z * t
-    };
-
-    // 4. その一番近い点と、球の中心との距離（の2乗）を計算する
-    Vector3 diff = sphereCenter - closestPointOnRay;
-    float distSq = diff.x * diff.x + diff.y * diff.y + diff.z * diff.z;
-
-    // クリック許容半径の2乗より離れていれば不時着
-    if (distSq > (finalRadius * finalRadius)) {
-        return false;
-    }
-
-    // 衝突距離として t を返す
-    if (outDist) {
-        *outDist = t;
-    }
-    return true;
-}
-
-Ray HairGuideEditor::CalculateRayFromScreen(float mouseX, float mouseY, float windowWidth, float windowHeight, const Matrix4x4& invProjView, const Vector3& camPos) {
-    // 1. マウス座標をスクリーン空間 [0 ～ Width] から NDC（正規化デバイス座標）空間 [-1 ～ 1] に変換
-    // ※ DirectXは左上が原点で、Y軸は下方向がプラスですが、NDCは上がプラスなのでYを反転させます
-    float ndcX = (2.0f * mouseX) / windowWidth - 1.0f;
-    float ndcY = 1.0f - (2.0f * mouseY) / windowHeight;
-
-    // 2. ニアプレーン（手前）とファープレーン（奥）の点をクリップ空間の座標(Vector4)として定義
-    // 通常の射影バッファなら Z=0 が手前、Z=1 が奥（逆Zバッファ運用の場合は 1 と 0 が逆になります）
-    Vector4 clipNear = { ndcX, ndcY, 0.0f, 1.0f };
-    Vector4 clipFar = { ndcX, ndcY, 1.0f, 1.0f };
-
-    // 3. 逆プロジェクションビュー行列（inverseProjView）を掛けて、ワールド空間の座標に逆変換する
-    // ※自作エンジンにある「Vector4 と Matrix4x4 の乗算関数」に差し替えてください
-    Vector4 worldNear = Matrix4x4::Transform(invProjView, clipNear);
-    Vector4 worldFar = Matrix4x4::Transform(invProjView, clipFar);
-
-    // 4. w成分で割って、通常の3D座標（パースペクティブ除算）にする
-    if (worldNear.w != 0.0f) {
-        worldNear.x /= worldNear.w; worldNear.y /= worldNear.w; worldNear.z /= worldNear.w;
-    }
-    if (worldFar.w != 0.0f) {
-        worldFar.x /= worldFar.w; worldFar.y /= worldFar.w; worldFar.z /= worldFar.w;
-    }
-
-    // 5. レイを組み立てる
-    Ray ray;
-    ray.origin = camPos; // 始点はカメラの位置
-
-    // 方向 ＝ 奥の点 － 手前の点
-    Vector3 dir = { worldFar.x - worldNear.x, worldFar.y - worldNear.y, worldFar.z - worldNear.z };
-
-    // 方向ベクトルを正規化（長さを1にする）
-    float length = std::sqrt(dir.x * dir.x + dir.y * dir.y + dir.z * dir.z);
-    if (length > 0.0f) {
-        ray.direction = { dir.x / length, dir.y / length, dir.z / length };
-    }
-    else {
-        ray.direction = { 0.0f, 0.0f, 1.0f };
-    }
-
-    return ray;
-}
+//bool HairGuideEditor::CheckRaySphereIntersection(const Ray& ray, const Vector3& sphereCenter, float sphereRadius, float* outDist) {
+//    // エディタ操作用に、最低でもこの半径(メートル単位)の太さがあるものとして判定する
+//    // 画面を見ながら 0.05f ～ 0.2f 辺りで調整してください
+//    const float minClickRadius = 0.1f;
+//    float finalRadius = (std::max)(sphereRadius, minClickRadius);
+//
+//    // 1. レイの始点から球の中心へのベクトル
+//    Vector3 v = sphereCenter - ray.origin;
+//
+//    // 2. レイの方向に球の中心を投影し、レイに一番近い点までの距離 t を出す
+//    float t = v.x * ray.direction.x + v.y * ray.direction.y + v.z * ray.direction.z; // Dot(V, Direction)
+//
+//    // レイの背後（カメラの後ろ）にある点なら除外
+//    if (t < 0.0f) return false;
+//
+//    // 3. レイの直線上で、球の中心に「一番近い3D座標」を求める
+//    Vector3 closestPointOnRay = {
+//        ray.origin.x + ray.direction.x * t,
+//        ray.origin.y + ray.direction.y * t,
+//        ray.origin.z + ray.direction.z * t
+//    };
+//
+//    // 4. その一番近い点と、球の中心との距離（の2乗）を計算する
+//    Vector3 diff = sphereCenter - closestPointOnRay;
+//    float distSq = diff.x * diff.x + diff.y * diff.y + diff.z * diff.z;
+//
+//    // クリック許容半径の2乗より離れていれば不時着
+//    if (distSq > (finalRadius * finalRadius)) {
+//        return false;
+//    }
+//
+//    // 衝突距離として t を返す
+//    if (outDist) {
+//        *outDist = t;
+//    }
+//    return true;
+//}
+//
+//Ray HairGuideEditor::CalculateRayFromScreen(float mouseX, float mouseY, float windowWidth, float windowHeight, const Matrix4x4& invProjView, const Vector3& camPos) {
+//    // 1. マウス座標をスクリーン空間 [0 ～ Width] から NDC（正規化デバイス座標）空間 [-1 ～ 1] に変換
+//    // ※ DirectXは左上が原点で、Y軸は下方向がプラスですが、NDCは上がプラスなのでYを反転させます
+//    float ndcX = (2.0f * mouseX) / windowWidth - 1.0f;
+//    float ndcY = 1.0f - (2.0f * mouseY) / windowHeight;
+//
+//    // 2. ニアプレーン（手前）とファープレーン（奥）の点をクリップ空間の座標(Vector4)として定義
+//    // 通常の射影バッファなら Z=0 が手前、Z=1 が奥（逆Zバッファ運用の場合は 1 と 0 が逆になります）
+//    Vector4 clipNear = { ndcX, ndcY, 0.0f, 1.0f };
+//    Vector4 clipFar = { ndcX, ndcY, 1.0f, 1.0f };
+//
+//    // 3. 逆プロジェクションビュー行列（inverseProjView）を掛けて、ワールド空間の座標に逆変換する
+//    // ※自作エンジンにある「Vector4 と Matrix4x4 の乗算関数」に差し替えてください
+//    Vector4 worldNear = Matrix4x4::Transform(invProjView, clipNear);
+//    Vector4 worldFar = Matrix4x4::Transform(invProjView, clipFar);
+//
+//    // 4. w成分で割って、通常の3D座標（パースペクティブ除算）にする
+//    if (worldNear.w != 0.0f) {
+//        worldNear.x /= worldNear.w; worldNear.y /= worldNear.w; worldNear.z /= worldNear.w;
+//    }
+//    if (worldFar.w != 0.0f) {
+//        worldFar.x /= worldFar.w; worldFar.y /= worldFar.w; worldFar.z /= worldFar.w;
+//    }
+//
+//    // 5. レイを組み立てる
+//    Ray ray;
+//    ray.origin = camPos; // 始点はカメラの位置
+//
+//    // 方向 ＝ 奥の点 － 手前の点
+//    Vector3 dir = { worldFar.x - worldNear.x, worldFar.y - worldNear.y, worldFar.z - worldNear.z };
+//
+//    // 方向ベクトルを正規化（長さを1にする）
+//    float length = std::sqrt(dir.x * dir.x + dir.y * dir.y + dir.z * dir.z);
+//    if (length > 0.0f) {
+//        ray.direction = { dir.x / length, dir.y / length, dir.z / length };
+//    }
+//    else {
+//        ray.direction = { 0.0f, 0.0f, 1.0f };
+//    }
+//
+//    return ray;
+//}

@@ -44,5 +44,16 @@ Matrix4x4 MakeAffineMatrix(const Vector3& scale, const Quaternion& rotate, const
 
 namespace MathUtils {
 	bool IntersectRayAABB(Ray ray, AABB aabb, float& hitDistance);
-
+	bool IntersectRaySphere(const Ray& ray, const Vector3& sphereCenter, float sphereRadius, float* outDist);
+	/// <summary>
+	/// スクリーン座標をRayに変換する
+	/// </summary>
+	/// <param name="screenPosX"></param>
+	/// <param name="screenPosY"></param>
+	/// <param name="windowWidth"></param>
+	/// <param name="windowHeight"></param>
+	/// <param name="invProjView"></param>
+	/// <param name="camPos"></param>
+	/// <returns></returns>
+	Ray CalculateRayFromScreen(float screenPosX, float screenPosY, float windowWidth, float windowHeight, const Matrix4x4& invProjView, const Vector3& camPos);
 }
