@@ -3,7 +3,8 @@
 #include "DrawManager.h"
 
 // ToDo
-// Rayによる選択の機能を作る
+// Rayによる選択の機能を作る<-Ray構造体を作成する
+// 軌道の見えるかをする<-Lineの新しいDraw関数を作成する
 
 void HermiteEditor::Update() {
     // 描画用の処理

@@ -1,6 +1,8 @@
 #pragma once
 #include "Structures.h"
 #include <vector>
+#include "AABB.h"
+#include "Ray/Ray.h"
 #include "Quaternion.h"
 #include "Keyframe.h"
 
@@ -39,3 +41,8 @@ Vector3 CalculateValue(const std::vector<KeyframeVector3>& keyframes, float time
 Quaternion CalculateValue(const std::vector<KeyframeQuaternion>& keyframes, float time);
 
 Matrix4x4 MakeAffineMatrix(const Vector3& scale, const Quaternion& rotate, const Vector3& translate);
+
+namespace MathUtils {
+	bool IntersectRayAABB(Ray ray, AABB aabb, float& hitDistance);
+
+}

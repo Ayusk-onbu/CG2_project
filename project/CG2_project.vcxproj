@@ -352,6 +352,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="UsefulTool\UI\UIHEditor\UIHEditor.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Common\MathUtils\Ray\Ray.h" />
     <ClInclude Include="Engine\Objects\DrawManager.h" />
     <ClInclude Include="Engine\Objects\Hair\GuideCurve.h" />
     <ClInclude Include="Engine\Objects\Hair\Hair.h" />

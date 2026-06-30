@@ -1244,6 +1244,9 @@
     <ClInclude Include="UsefulTool\FileSystem\FileSystem.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
+    <ClInclude Include="Common\MathUtils\Ray\Ray.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Text Include="externals\imgui\LICENSE.txt">

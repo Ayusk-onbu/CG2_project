@@ -186,3 +186,48 @@ Matrix4x4 MakeAffineMatrix(const Vector3& scale, const Quaternion& rotate, const
 
 	return localMatrix;
 }
+
+namespace MathUtils {
+	bool IntersectRayAABB(Ray ray, AABB aabb, float& hitDistance) {
+		hitDistance = 0.0f;
+
+		// --- 1. X軸の判定（左右の壁） ---
+		float tx1 = (aabb.min.x - ray.origin.x) * ray.inverseDirection.x;
+		float tx2 = (aabb.max.x - ray.origin.x) * ray.inverseDirection.x;
+
+		// Xの壁に入る時間と出る時間
+		float tMin = (std::min)(tx1, tx2);
+		float tMax = (std::max)(tx1, tx2);
+
+		// --- 2. Y軸の判定（上下の壁） ---
+		float ty1 = (aabb.min.y - ray.origin.y) * ray.inverseDirection.y;
+		float ty2 = (aabb.max.y - ray.origin.y) * ray.inverseDirection.y;
+
+		// これまでの時間(X)と、Yの時間で「共通して内部にいる期間」を更新
+		tMin = (std::max)(tMin, (std::min)(ty1, ty2)); // 一番遅く入った時間
+		tMax = (std::min)(tMax, (std::max)(ty1, ty2)); // 一番早く出た時間
+
+		// XとYで共通する時間がなければ、この時点でハズレ（早期リターン）
+		if (tMax < tMin) return false;
+
+		// --- 3. Z軸の判定（手前と奥の壁） ---
+		float tz1 = (aabb.min.z - ray.origin.z) * ray.inverseDirection.z;
+		float tz2 = (aabb.max.z - ray.origin.z) * ray.inverseDirection.z;
+
+		// さらにZの時間も重ね合わせる
+		tMin = (std::max)(tMin, (std::min)(tz1, tz2));
+		tMax = (std::min)(tMax, (std::max)(tz1, tz2));
+
+		// XYZすべてで共通する時間がなければハズレ
+		if (tMax < tMin) return false;
+
+		// --- 4. 最終チェック（Rayの向き） ---
+		// 共通区間はあっても、箱がRayの「真後ろ」にある場合はハズレ (tMax < 0)
+		if (tMax < 0) return false;
+
+		// 当たり！ 
+		// 距離は tMin を返す（ただし、Rayの発射地点が箱の「内部」にある場合は tMin がマイナスになるため、tMax を採用する）
+		hitDistance = tMin > 0 ? tMin : tMax;
+		return true;
+	}
+}
