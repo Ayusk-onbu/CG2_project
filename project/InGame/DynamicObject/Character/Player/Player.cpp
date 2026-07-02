@@ -2,6 +2,7 @@
 #include "../Engine/Objects/Primitive/Box/PrimitiveBox.h"
 #include "../Engine/Objects/Primitive/Ring/Ring.h"
 #include "../Engine/Objects/Primitive/MagicPlane.h"
+#include "DrawManager.h"
 
 Player::Player() {
 	controller_ = std::make_unique<PlayerController>();
@@ -47,6 +48,11 @@ void Player::Initialize(Fngine* fngine) {
 		EVENTCATEGORY::EFFECT, 0, this, &Player::MakeHitEffect
 	);
 	EventManager::GetInstance()->BindEventToTag(GAMEEVENTID::OnPlayerAttack, EVENTCATEGORY::EFFECT, 0);
+
+	EventManager::GetInstance()->RegisterAction(
+		EVENTCATEGORY::UI, 0, this, &Player::SetHeadPosToCameraTarget
+	);
+	EventManager::GetInstance()->BindEventToTag(GAMEEVENTID::HairEditor, EVENTCATEGORY::UI, 0);
 }
 
 void Player::Update(float deltaTime) {
@@ -73,21 +79,27 @@ void Player::Update(float deltaTime) {
 		[](const HitEffectInfo& effect) { return effect.currentTime >= effect.lifeTime; }),
 		hitEffect_.end());
 
-	//WorldTransform testTransform;
-	//testTransform.Initialize();
-	//testTransform.set_.Scale({10.0f,10.0f,10.0f});
-	//testTransform.set_.Rotation({ 270.0f,0.0f, 0.0f});
-	////testTransform.set_.Translation({ obj_->worldTransform_.GetWorldPos().x,obj_->worldTransform_.GetWorldPos().y + 1.2f,obj_->worldTransform_.GetWorldPos().z });
+	WorldTransform testTransform;
+	testTransform.Initialize();
+	testTransform.set_.Scale({1.0f,1.0f,1.0f});
+	testTransform.set_.Rotation({ 0.0f,0.0f, 0.0f});
+	testTransform.set_.Translation({ obj_->worldTransform_.GetWorldPos().x,obj_->worldTransform_.GetWorldPos().y + 1.2f,obj_->worldTransform_.GetWorldPos().z });
 	//testTransform.set_.Translation({ 0.0f,0.01f,0.0f });
-	//testTransform.LocalToWorld();
+	testTransform.LocalToWorld();
 
-	//WorldTransform testUVTransform;
-	//testUVTransform.Initialize();
-	//float scale = 1.0f;
-	//testUVTransform.set_.Scale({ scale,scale,scale });
-	//testUVTransform.set_.Rotation({ 0.0f,0.0f, 0.0f });
-	//testUVTransform.set_.Translation({ 0.0f,0.0f,0.0f });
-	//testUVTransform.LocalToWorld();
+	WorldTransform testUVTransform;
+	testUVTransform.Initialize();
+	float scale = 1.0f;
+	testUVTransform.set_.Scale({ scale,scale,scale });
+	testUVTransform.set_.Rotation({ 0.0f,0.0f, 0.0f });
+	testUVTransform.set_.Translation({ 0.0f,0.0f,0.0f });
+	testUVTransform.LocalToWorld();
+
+	DrawManager::GetInstance()->GetCylinder()->AddInstance({
+		testTransform,
+		testUVTransform,
+		{1.0f,0.0f,0.0f,1.0f}
+		});
 
 	//MagicCircle::GetInstance()->AddInstance({
 	//	testTransform,
@@ -157,4 +169,20 @@ void Player::MakeHitEffect() {
 		hitEffect_.push_back(info);
 	}
 	hitEffectCoolTimer_ = 1.2f;
+}
+
+Matrix4x4 Player::GetHeadMatrix()const {
+	int headIndex = skeleton_->jointMap_.find("Head")->second;
+	auto headMatrix = skeleton_->joints_[headIndex].skeletonSpaceMatrix;
+	return headMatrix * obj_->worldTransform_.mat_;
+}
+
+Vector3 Player::GetHeadPos()const {
+	auto headMatrix = GetHeadMatrix();
+	return Vector3(headMatrix.m[3][0], headMatrix.m[3][1] + 0.075f, headMatrix.m[3][2]);
+}
+
+void Player::SetHeadPosToCameraTarget() {
+	auto headPos = GetHeadPos();
+	CameraSystem::GetInstance()->GetActiveCamera()->SetTargetPos(headPos);
 }

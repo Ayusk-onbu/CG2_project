@@ -119,7 +119,7 @@ void GameScene::Draw() {
 	//fadeDown_->Draw();
 	// UI
 	//purposeUI_->Draw();
-	p_fngine_->hair_->Update(1.0f / 60.0f, player_->GetMatrix());
+	p_fngine_->hair_->Update(1.0f / 60.0f, player_->GetHeadMatrix());
 }
 
 void GameScene::CollisionCheck() {

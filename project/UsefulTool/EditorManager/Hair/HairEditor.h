@@ -10,18 +10,16 @@ private:
     Hair* hairSystem_ = nullptr;
     int selectedGuideIndex_ = 0; // とりあえず最初のガイドをいじる用
     int selectedPointIndex_ = 0; // とりあえず最初のポイントをいじる用
+    
     // ドラッグ＆Undo管理用のフラグ
-    bool wasGizmoUsing_ = false;
-    Vector3 dragStartPos_ = { 0, 0, 0 };
+    bool isGizmoUsingLastFrame_ = false;
+    Vector3 gizmoOldPosition_; // ギズモを触る前の位置
 public:
     // コンストラクタで編集対象のHairシステムを受け取る
     HairGuideEditor(Hair* hair) : BaseEditor("Hair Guide Editor"), hairSystem_(hair) {}
 
     void Update() override;
-
     void DrawUI() override;
-
-    int PickControlPointFromMouse();
 
     void GetEngineCameraMatrices(float* view, float* proj) {
         // 1. 一度ローカル変数（左辺値）に受けて実体を作る
@@ -32,10 +30,6 @@ public:
         std::memcpy(view, &viewMatrix, sizeof(float) * 16);
         std::memcpy(proj, &projMatrix, sizeof(float) * 16);
     }
-
-    /*bool CheckRaySphereIntersection(const Ray& ray, const Vector3& sphereCenter, float sphereRadius, float* outDist);
-
-    Ray CalculateRayFromScreen(float mouseX, float mouseY, float windowWidth, float windowHeight, const Matrix4x4& invProjView, const Vector3& camPos);*/
 
     // データをJSON形式のテキストとして書き出す関数
     void SaveHairDataToJson(const std::string& filePath, GuideCurve::ControllerPoint* data, uint32_t count) {

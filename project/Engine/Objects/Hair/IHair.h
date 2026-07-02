@@ -81,4 +81,8 @@ private:
 	std::unique_ptr<RWTexture2D> outputTexture_;
 
 	std::unique_ptr<ConstantBuffer<HairCamera>> hairCameraBuffer_;
+
+public:
+	// 追従させているキャラクターの行列
+	Matrix4x4 characterMatrix_;
 };

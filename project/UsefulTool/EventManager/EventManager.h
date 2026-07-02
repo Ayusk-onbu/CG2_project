@@ -1,5 +1,6 @@
 #pragma once
 #include "../ISingleton.h"
+#include "Log.h"
 #include <map>
 #include <functional>
 #include <any>
@@ -12,7 +13,7 @@ enum EVENTCATEGORY : int {
 
 enum GAMEEVENTID : int {
 	OnPlayerAttack = 0,
-
+	HairEditor,
 };
 
 //struct PairHash{
@@ -45,10 +46,19 @@ public:
 	void RegisterAction(EVENTCATEGORY category, int detailId, void(*func)(FuncArgs...)) {
 		DirectionTag tag = std::make_pair(static_cast<int>(category), detailId);
 
-		// 登録された関数の引数の数に合わせて、コンパイルタイムに 0, 1, 2... とインデックスを作る
-		actions_[tag].push_back([func](const EventArgs& args) {
-			CallHelper(func, args, std::index_sequence_for<FuncArgs...>{});
-		});
+
+		if (actions_.find(tag) == actions_.end()) {
+			// 登録された関数の引数の数に合わせて、コンパイルタイムに 0, 1, 2... とインデックスを作る
+			actions_[tag].push_back([func](const EventArgs& args) {
+				CallHelper(func, args, std::index_sequence_for<FuncArgs...>{});
+			});
+		}
+		else {
+			// すでに同じタグのアクションが登録されている場合、警告
+			Log::View("Warning: Action already registered for category " + std::to_string(static_cast<int>(category)) + " and detailId " + std::to_string(detailId));
+			return;
+		}
+		
 	}
 	/// <summary>
 	/// メンバ関数を登録するための関数
@@ -63,9 +73,16 @@ public:
 	void RegisterAction(EVENTCATEGORY category, int detailId, T* instance, void(T::* func)(FuncArgs...)) {
 		DirectionTag tag = std::make_pair(static_cast<int>(category), detailId);
 
-		actions_[tag].push_back([instance, func](const EventArgs& args) {
-			CallHelper(instance, func, args, std::index_sequence_for<FuncArgs...>{});
-		});
+		if (actions_.find(tag) == actions_.end()) {
+			actions_[tag].push_back([instance, func](const EventArgs& args) {
+				CallHelper(instance, func, args, std::index_sequence_for<FuncArgs...>{});
+			});
+		}
+		else {
+			// すでに同じタグのアクションが登録されている場合、警告
+			Log::View("Warning: Action already registered for category " + std::to_string(static_cast<int>(category)) + " and detailId " + std::to_string(detailId));
+			return;
+		}
 	}
 	/// <summary>
 	/// イベントを発火

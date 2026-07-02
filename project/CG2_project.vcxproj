@@ -162,6 +162,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="Engine\Objects\Hair\Hair.cpp" />
     <ClCompile Include="Engine\Objects\Hair\IHair.cpp" />
     <ClCompile Include="Engine\Objects\Hair\Strands.cpp" />
+    <ClCompile Include="Engine\Objects\Primitive\Cylinder\Cylinder.cpp" />
     <ClCompile Include="Engine\Objects\Primitive\MagicPlane.cpp" />
     <ClCompile Include="Engine\Objects\Primitive\Ring\Ring.cpp" />
     <ClCompile Include="Engine\Objects\Primitive\SkyBox.cpp" />
@@ -358,6 +359,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="Engine\Objects\Hair\Hair.h" />
     <ClInclude Include="Engine\Objects\Hair\IHair.h" />
     <ClInclude Include="Engine\Objects\Primitive\Base\PrimitiveBaseModelData.h" />
+    <ClInclude Include="Engine\Objects\Primitive\Cylinder\Cylinder.h" />
     <ClInclude Include="Engine\Objects\Primitive\MagicPlane.h" />
     <ClInclude Include="Engine\Objects\Primitive\Ring\Ring.h" />
     <ClInclude Include="Engine\Objects\Primitive\SkyBox.h" />
@@ -533,6 +535,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
   <ItemGroup>
     <None Include="packages.config" />
     <None Include="resources\shaders\CopyImage\Fullscreen.hlsli" />
+    <None Include="resources\shaders\Cylinder\Cylinder.hlsli" />
     <None Include="resources\shaders\Hair\Hair.hlsli" />
     <None Include="resources\shaders\Object3d\Object3d.hlsli" />
     <None Include="resources\shaders\Particle\Particle.hlsli" />

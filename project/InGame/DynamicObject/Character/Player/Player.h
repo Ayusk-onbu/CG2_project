@@ -47,4 +47,14 @@ public:
 private:
 	std::vector<HitEffectInfo>hitEffect_;
 	float hitEffectCoolTimer_ = 0.0f;
+
+///////////////////////////
+/// 
+/// 髪のための関数
+///
+//////////////////////////
+public:
+	Matrix4x4 GetHeadMatrix()const;
+	Vector3 GetHeadPos()const;
+	void SetHeadPosToCameraTarget();
 };

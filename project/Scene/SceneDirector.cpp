@@ -47,7 +47,7 @@ void SceneDirector::Initialize(Scene& firstScene) {
 	auto* hairEditor = editorMgr->CreateEditor<HairGuideEditor>(p_fngine_->hair_.get());
 	auto* sceneEditor = editorMgr->CreateEditor<SceneEditor>();
 	auto* hermiteEditor = editorMgr->CreateEditor<HermiteEditor>();
-	editorMgr->SetActiveEditor(hairEditor);
+	editorMgr->SetActiveEditor(hermiteEditor);
 }
 
 void SceneDirector::Update() {
@@ -184,6 +184,7 @@ void SceneDirector::LoadModelData() {
 	//ModelManager::GetInstance()->AddObject("Ring", MakeObjectVertices(RingData{ 32, 1.0f, 0.5f }), MakeObjectIndices(RingData{ 32, 1.0f, 0.5f }));
 	ModelManager::GetInstance()->AddObject("Ring", ModelManager::GetInstance()->LoadModelData("Cylinder").vertices, ModelManager::GetInstance()->LoadModelData("Cylinder").indices);
 	ModelManager::GetInstance()->AddObject("Sphere", ModelManager::GetInstance()->LoadModelData("Sphere").vertices, ModelManager::GetInstance()->LoadModelData("Sphere").indices);
+	ModelManager::GetInstance()->AddObject("Cylinder", MakeObjectVertices(CylinderData{ 32, 1.0f, 0.5f,1.0f }), MakeObjectIndices(CylinderData{ 32, 1.0f, 0.5f, 1.0f }));
 }
 
 void SceneDirector::LoadTexture() {

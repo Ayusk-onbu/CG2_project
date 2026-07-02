@@ -276,8 +276,8 @@ void Hair::Initialize(Fngine* engine) {
 	// 【 髪の基本的な設定 】
 	//   ==================
 	Strands::HairConfig hairConfig;
-	hairConfig.numGuides = 1000;           // ガイドの総本数
-	hairConfig.pointPerGuide = 16;      // ガイド一本を作る数
+	hairConfig.numGuides = 10;           // ガイドの総本数
+	hairConfig.pointPerGuide = 5;      // ガイド一本を作る数
 	hairConfig.pointPerStrand = 32;     // ストランド一本を作る数
 	hairConfig.numStrands = 10000.0f;     // ストランドの総本数
 
@@ -415,12 +415,12 @@ void Hair::Initialize(Fngine* engine) {
 	for (UINT s = 0; s < NUM_STRANDS; ++s) {
 		Strands::ChildStrand child;
 
-		if (s < 300) {
+		if (s < 0) {
 			uint32_t targetGuideId = rand->GetHighRandom().GetInt(0, hairConfig.numGuides - 1); // ランダムに1本選ぶ
 			child.parentGuideIds[0] = targetGuideId;
 			child.parentGuideIds[1] = targetGuideId;
 			child.parentGuideIds[2] = targetGuideId;
-			child.blendMode = 1; // 単一ガイド追従モード//
+			child.blendMode = 0; // 単一ガイド追従モード//
 
 			child.weights[0] = 1.0f;
 			child.weights[1] = 0.0f;
@@ -1027,12 +1027,14 @@ void Hair::Update(float deltaTime, const Matrix4x4& mat) {
 	instanceBuffer->GetMappedData()->Transform[1][0] = mat.m[0][1];
 	instanceBuffer->GetMappedData()->Transform[1][1] = mat.m[1][1];
 	instanceBuffer->GetMappedData()->Transform[1][2] = mat.m[2][1];
-	instanceBuffer->GetMappedData()->Transform[1][3] = mat.m[3][1] + 1.42f;
+	instanceBuffer->GetMappedData()->Transform[1][3] = mat.m[3][1];
 
 	instanceBuffer->GetMappedData()->Transform[2][0] = mat.m[0][2];
 	instanceBuffer->GetMappedData()->Transform[2][1] = mat.m[1][2];
 	instanceBuffer->GetMappedData()->Transform[2][2] = mat.m[2][2];
 	instanceBuffer->GetMappedData()->Transform[2][3] = mat.m[3][2];
+
+	characterMatrix_ = mat;
 
 // -----------------------------------------------
 
