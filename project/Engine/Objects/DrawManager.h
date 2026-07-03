@@ -3,6 +3,8 @@
 #include "Primitive/Ring/Ring.h"
 #include "Primitive/Sphere/PrimitiveSphere.h"
 #include "Primitive/Cylinder/Cylinder.h"
+#include "Primitive/MagicPlane.h"
+#include "Primitive/Line/Line.h"
 
 class DrawManager :
 	public ISingleton<DrawManager>
@@ -33,6 +35,18 @@ private:
 	std::unique_ptr<PrimitiveCylinder>cylinder_;
 
 
+	//   ======
+	// 【 Line 】
+	//   ======
+	std::unique_ptr<PrimitiveLine>line_;
+
+
+	//   ======
+	// 【 MagicCircle 】
+	//   ======
+	std::unique_ptr<MagicCircle>magicCircle_;
+
+
 	//=============
 	//  Getの関数 
 	//=============
@@ -40,5 +54,9 @@ public:
 	PrimitiveSphere* GetSphere() { return sphere_.get(); }
 
 	PrimitiveCylinder* GetCylinder() { return cylinder_.get(); }
+
+	PrimitiveLine* GetLine() { return line_.get(); }
+
+	MagicCircle* GetMagicCircle() { return magicCircle_.get(); }
 };
 

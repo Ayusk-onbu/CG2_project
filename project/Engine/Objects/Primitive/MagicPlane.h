@@ -32,15 +32,8 @@ struct MagicCircleData {
 };
 
 class MagicCircle :
-	public PrimitiveBaseModel<MagicCircleForGPU, MagicCircleData>,
-	public ISingleton<MagicCircle>
+	public PrimitiveBaseModel<MagicCircleForGPU, MagicCircleData>
 {
-	// シングルトン
-private:
-	MagicCircle() = default;// 勝手にNewをされないように
-	// 親クラスにPriveteを覗かれてもいいようにカギを渡す役割(上記のようにコンストラクタを触れないのを防ぐため)
-	friend class ISingleton<MagicCircle>;
-
 public:
 	void Initialize(Fngine* engine, uint32_t numInstance)override;
 	void Update();

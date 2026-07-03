@@ -20,6 +20,14 @@ void ImGuiManager::SetImGui(HWND hwnd, Microsoft::WRL::ComPtr<ID3D12Device> devi
 		srvDescriptorHeap->GetCPUDescriptorHandleForHeapStart(),
 		srvDescriptorHeap->GetGPUDescriptorHandleForHeapStart()
 	);
+
+	ImGuiIO& io = ImGui::GetIO();
+	ImFont* font = io.Fonts->AddFontFromFileTTF(
+		"resources/Font/NotoSansJP-Regular.ttf",
+		18.0f,
+		nullptr,
+		io.Fonts->GetGlyphRangesJapanese()
+	);
 #endif
 }
 

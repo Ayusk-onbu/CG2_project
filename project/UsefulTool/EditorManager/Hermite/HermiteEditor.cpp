@@ -4,7 +4,7 @@
 #include "MathUtils.h"
 
 // ToDo
-// 軌道の見えるかをする<-Lineの新しいDraw関数を作成する
+// 軌道だけ見える機能が欲しい
 
 void HermiteEditor::Update() {
     auto& nodes_ = targetObjects_;
@@ -99,7 +99,36 @@ void HermiteEditor::Update() {
         data.worldTransform.LocalToWorld();
         data.color = { 0.0f,1.0f,0.0f,1.0f };
         DrawManager::GetInstance()->GetSphere()->AddInstance(data);
+
+        DrawManager::GetInstance()->GetLine()->AddInstance({ obj->position, obj->tangentIn, { 1.0f,0.0f,0.0f,1.0f } });
+        DrawManager::GetInstance()->GetLine()->AddInstance({ obj->position, obj->tangentOut, { 0.0f,1.0f,0.0f,1.0f } });
    }
+
+    std::vector<MathUtils::Spline::Node<Vector3>> rawNodes;
+    for (auto* ptr : nodes_) {
+        if (ptr) rawNodes.push_back(*ptr);
+    }
+
+    if (rawNodes.size() >= 2) {
+        // --- 曲線の軌跡を描画 ---
+        const int splitCount = 50; // 曲線の滑らかさ（分割数）
+
+        // t = 0.0 の最初の点を取得
+        Vector3 prevPoint = MathUtils::Spline::GetPointSpline(rawNodes, 0.0f);
+
+        for (int i = 1; i <= splitCount; ++i) {
+            float t = (float)i / splitCount;
+            Vector3 currentPoint = MathUtils::Spline::GetPointSpline(rawNodes, t);
+
+            PrimitiveLineData lineData;
+            lineData.startPoint = prevPoint;
+            lineData.endPoint = currentPoint;
+            lineData.color = { 1.0f, 1.0f, 1.0f, 1.0f }; // 曲線の色は白
+            
+            DrawManager::GetInstance()->GetLine()->AddInstance(lineData);
+            prevPoint = currentPoint;
+        }
+    }
 }
 
 void HermiteEditor::DrawUI() {

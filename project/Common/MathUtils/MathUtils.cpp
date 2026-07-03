@@ -191,7 +191,7 @@ namespace MathUtils {
 	bool IntersectRayAABB(Ray ray, AABB aabb, float& hitDistance) {
 		hitDistance = 0.0f;
 
-		// --- 1. X軸の判定（左右の壁） ---
+		// --- X軸の判定（左右の壁） ---
 		float tx1 = (aabb.min.x - ray.origin.x) * ray.inverseDirection.x;
 		float tx2 = (aabb.max.x - ray.origin.x) * ray.inverseDirection.x;
 
@@ -199,7 +199,7 @@ namespace MathUtils {
 		float tMin = (std::min)(tx1, tx2);
 		float tMax = (std::max)(tx1, tx2);
 
-		// --- 2. Y軸の判定（上下の壁） ---
+		// --- Y軸の判定（上下の壁） ---
 		float ty1 = (aabb.min.y - ray.origin.y) * ray.inverseDirection.y;
 		float ty2 = (aabb.max.y - ray.origin.y) * ray.inverseDirection.y;
 
@@ -210,7 +210,7 @@ namespace MathUtils {
 		// XとYで共通する時間がなければ、この時点でハズレ（早期リターン）
 		if (tMax < tMin) return false;
 
-		// --- 3. Z軸の判定（手前と奥の壁） ---
+		// --- Z軸の判定（手前と奥の壁） ---
 		float tz1 = (aabb.min.z - ray.origin.z) * ray.inverseDirection.z;
 		float tz2 = (aabb.max.z - ray.origin.z) * ray.inverseDirection.z;
 
@@ -221,7 +221,7 @@ namespace MathUtils {
 		// XYZすべてで共通する時間がなければハズレ
 		if (tMax < tMin) return false;
 
-		// --- 4. 最終チェック（Rayの向き） ---
+		// --- 最終チェック（Rayの向き） ---
 		// 共通区間はあっても、箱がRayの「真後ろ」にある場合はハズレ (tMax < 0)
 		if (tMax < 0) return false;
 
@@ -295,6 +295,7 @@ namespace MathUtils {
 
 		// 始点はカメラの位置
 		Ray ray(camPos, dir);
+		//Ray ray({ worldNear.x, worldNear.y, worldNear.z }, dir);
 
 		// 方向ベクトルを正規化（長さを1にする）
 		float length = std::sqrt(dir.x * dir.x + dir.y * dir.y + dir.z * dir.z);

@@ -2,6 +2,7 @@
 #include <d3dx12.h>
 #include "CameraSystem.h"
 #include "../Engine/Objects/Primitive/Box/PrimitiveBox.h"
+#include <pix3.h>
 
 // CPPのみで定義されている関数
 
@@ -276,10 +277,10 @@ void Hair::Initialize(Fngine* engine) {
 	// 【 髪の基本的な設定 】
 	//   ==================
 	Strands::HairConfig hairConfig;
-	hairConfig.numGuides = 10;           // ガイドの総本数
-	hairConfig.pointPerGuide = 5;      // ガイド一本を作る数
-	hairConfig.pointPerStrand = 32;     // ストランド一本を作る数
-	hairConfig.numStrands = 10000.0f;     // ストランドの総本数
+	hairConfig.numGuides = 50;           // ガイドの総本数：1000
+	hairConfig.pointPerGuide = 8;      // ガイド一本を作る数：16
+	hairConfig.pointPerStrand = 32;     // ストランド一本を作る数：32
+	hairConfig.numStrands = 10000.0f;     // ストランドの総本数：10000
 
 	gpuConfigBuffer_ = std::make_unique<ConstantBuffer<Strands::HairConfig>>(engine);
 	gpuConfigBuffer_->Initialize();
@@ -436,7 +437,7 @@ void Hair::Initialize(Fngine* engine) {
 
 			child.parentGuideIds[0] = guideA;
 			child.parentGuideIds[1] = guideB;
-			child.parentGuideIds[2] = guideB;
+			child.parentGuideIds[2] = guideB + 1;
 			child.blendMode = 1; // 複数ガイドブレンドモード
 
 			float w = rand->GetHighRandom().GetFloat(0.1f, 0.9f); // 2本の間でのランダムな位置
@@ -869,6 +870,11 @@ void Hair::Update(float deltaTime, const Matrix4x4& mat) {
 	// コマンドリストにヒープをセット（テーブルをセットするより【前】に呼ぶ！）
 	dxrCmdList_->SetDescriptorHeaps(_countof(ppHeaps), ppHeaps);
 
+#ifdef USE_IMGUI
+	// PIXイベントを開始
+	PIXScopedEvent(dxrCmdList_.Get(), PIX_COLOR_INDEX(2), "Update Hair Pass");
+#endif// USEIMGUI
+
 	if (isGpuUpdateRequested_) {
 		// コピー先に遷移
 		auto transitionToCopyDest = CD3DX12_RESOURCE_BARRIER::Transition(
@@ -1072,6 +1078,7 @@ void Hair::Update(float deltaTime, const Matrix4x4& mat) {
 	ImGui::DragFloat3("Wind Direction ", &gpuFrameConfigBuffer_->GetMappedData()->windDirection.x, 0.01f, -1.0f, 1.0f);
 
 	ImGui::DragFloat("globalHairThickness ", &gpuMakeConfigBuffer_->GetMappedData()->globalHairThickness, 0.0001f, 0.0f, 1.0f);
+	ImGui::DragFloat("globalSpreadRadius ", &gpuMakeConfigBuffer_->GetMappedData()->globalSpreadRadius, 0.0001f, 0.0f, 1.0f);
 	ImGui::DragFloat("stiffness：剛性 ", &gpuPhysicsConfigBuffer_->GetMappedData()->stiffness, 0.0001f, 0.0f, 1.0f);
 	ImGui::DragFloat("restoringForce：復元力", &gpuPhysicsConfigBuffer_->GetMappedData()->restoringForce, 0.0001f, 0.0f, 1.0f);
 	ImGui::DragFloat("damping：減衰力", &gpuPhysicsConfigBuffer_->GetMappedData()->damping, 0.0001f, 0.0f, 1.0f);
@@ -1088,6 +1095,10 @@ void Hair::Render(D3D12_GPU_DESCRIPTOR_HANDLE depthHandle) {
 	hairCameraBuffer_->GetMappedData()[0] = cameraData;
 
 	auto commandList = engine_->GetCommand().GetList().GetList().Get();
+#ifdef USE_IMGUI
+	// PIXイベントを開始
+	PIXScopedEvent(commandList, PIX_COLOR_INDEX(2), "Render Hair Pass");
+#endif// USEIMGUI
 
 	// --- グローバルルートシグネチャの設定 ---
 	// レイトレ全体で使う共通のバッファ（TLASや出力テクスチャなど）をシェーダーに紐付け
@@ -1127,6 +1138,11 @@ void Hair::Render(D3D12_GPU_DESCRIPTOR_HANDLE depthHandle) {
 
 void Hair::PreHair(ID3D12Resource* randerTargetResource, D3D12_RESOURCE_STATES preState, ID3D12Resource* depthResource) {
 	auto commandList = engine_->GetCommand().GetList().GetList().Get();
+	
+#ifdef USE_IMGUI
+	// PIXイベントを開始
+	PIXScopedEvent(commandList, PIX_COLOR_INDEX(2), "Pre Hair Pass");
+#endif// USEIMGUI
 
 	// 今描画されている画像をコピーする
 	auto transitionTargetSrc = CD3DX12_RESOURCE_BARRIER::Transition(
@@ -1171,6 +1187,11 @@ void Hair::PreHair(ID3D12Resource* randerTargetResource, D3D12_RESOURCE_STATES p
 
 void Hair::PostHair(ID3D12Resource* randerTargetResource, D3D12_RESOURCE_STATES postState, ID3D12Resource* depthResource) {
 	auto commandList = engine_->GetCommand().GetList().GetList().Get();
+
+#ifdef USE_IMGUI
+	// PIXイベントを開始
+	PIXScopedEvent(commandList, PIX_COLOR_INDEX(2), "Post Hair Pass");
+#endif// USEIMGUI
 
 	auto transitionToCopySrc = CD3DX12_RESOURCE_BARRIER::Transition(
 		outputTexture_->GetResource(),

@@ -1,0 +1,26 @@
+{
+      "pipelineType": "Graphics",
+      "primitiveTopologyType": "Line",
+      "shaders": {
+        "vs": "resources/shaders/Line/Line.VS.hlsl",
+        "ps": "resources/shaders/Line/Line.PS.hlsl"
+      },
+      "inputLayout": [
+      ],
+      "rasterizer": {
+        "fillMode": "Solid",
+        "cullMode": "NONE"
+      },
+      "depthStencilState": {
+        "depthEnable": true,
+        "depthWriteMask": "Zero",
+        "depthFunc": "LessEqual",
+        "format": "D24"
+      },
+      "blendMode": "AlphaBlend",
+      "rootSignature": [
+       { "type": "SRVTable", "register": 0, "count": 1, "visibility": "Vertex" }
+      ],
+      "staticSamplers":[
+      ]
+}

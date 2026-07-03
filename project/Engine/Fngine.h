@@ -41,7 +41,7 @@
 #include "Constant.h"
 #include "../UsefulTool/EditorManager/EditorManager.h"
 
-#define pi float(3.14159265358979323846f)
+//#define pi float(3.14159265358979323846f)
 
 class Hair;
 

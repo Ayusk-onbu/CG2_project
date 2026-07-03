@@ -26,6 +26,9 @@ public:
 	GuideCurve::ControllerPoint* GetCPUGuideData() {
 		return uploadGuideBuffer->GetMappedData();
 	}
+	Strands::HairConfig* GetCPUGuideConfig() {
+		return gpuConfigBuffer_->GetMappedData();
+	}
 	// エディタ側で Slider の最大値を決めるために、要素数も一緒に取得できるようにする
 	uint32_t GetCPUGuideCount() const {
 		return uploadGuideBuffer->GetNumElements();

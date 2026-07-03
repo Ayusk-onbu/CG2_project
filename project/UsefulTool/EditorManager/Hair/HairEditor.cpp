@@ -3,16 +3,11 @@
 #include "MathUtils.h"
 #include "DrawManager.h"
 
-void GenerateDefaultSphereHair(GuideCurve::ControllerPoint* data, uint32_t totalCount,float headRadius,
+void HairGuideEditor::GenerateDefaultSphereHair(GuideCurve::ControllerPoint* data, uint32_t totalCount,float headRadius,
     float segmentLength,Vector3 headCenter, Vector3 rootColor,
     Vector3 tipColor) {
-    const int POINTS_PER_GUIDE = 16; // Test.jsonの構造に合わせる
+    const int POINTS_PER_GUIDE = hairSystem_->GetCPUGuideConfig()->pointPerGuide;
     int totalGuides = totalCount / POINTS_PER_GUIDE;
-
-    // --- スケール調整用のパラメータ（環境に合わせて調整してください） ---
-    //float headRadius = 0.3f;                   // 頭部（球体）の半径
-   // Vector3 headCenter = { 0.0f, -0.01f, 0.0f }; // 頭部の中心座標
-    //float segmentLength = 0.04f;               // 制御点と点の間の長さ（15間隔で約0.6fの長さに）
 
     for (int g = 0; g < totalGuides; ++g) {
 
@@ -98,10 +93,10 @@ void GenerateDefaultSphereHair(GuideCurve::ControllerPoint* data, uint32_t total
     }
 }
 
-void GenerateDefaultShortHair(GuideCurve::ControllerPoint* data, uint32_t totalCount, float headRadius,
+void HairGuideEditor::GenerateDefaultShortHair(GuideCurve::ControllerPoint* data, uint32_t totalCount, float headRadius,
     float bangLength, float backLength, Vector3 headCenter, Vector3 rootColor,
     Vector3 tipColor) {
-    const int POINTS_PER_GUIDE = 16;
+    const int POINTS_PER_GUIDE = hairSystem_->GetCPUGuideConfig()->pointPerGuide;
     int totalGuides = totalCount / POINTS_PER_GUIDE;
 
     float bangSegLen = bangLength / (POINTS_PER_GUIDE - 1);
@@ -210,10 +205,10 @@ void GenerateDefaultShortHair(GuideCurve::ControllerPoint* data, uint32_t totalC
     }
 }
 
-void GenerateDefaultShortHair2(GuideCurve::ControllerPoint* data, uint32_t totalCount, float headRadius,
+void HairGuideEditor::GenerateDefaultShortHair2(GuideCurve::ControllerPoint* data, uint32_t totalCount, float headRadius,
     float bangLength, float sideLength, float backLength, Vector3 headCenter, Vector3 rootColor,
     Vector3 tipColor) {
-    const int POINTS_PER_GUIDE = 16;
+    const int POINTS_PER_GUIDE = hairSystem_->GetCPUGuideConfig()->pointPerGuide;
     int totalGuides = totalCount / POINTS_PER_GUIDE;
 
     float bangSegLen = bangLength / (POINTS_PER_GUIDE - 1);
@@ -340,9 +335,11 @@ void GenerateDefaultShortHair2(GuideCurve::ControllerPoint* data, uint32_t total
         }
     }
 }
+
 void HairGuideEditor::Update(){
     EventManager::GetInstance()->FireEvent(GAMEEVENTID::HairEditor);
     auto* cpuData = hairSystem_->GetCPUGuideData();
+    const int POINTS_PER_GUIDE = hairSystem_->GetCPUGuideConfig()->pointPerGuide;
 
     if (ImGui::IsMouseClicked(0) && !ImGui::GetIO().WantCaptureMouse) {
 
@@ -385,25 +382,62 @@ void HairGuideEditor::Update(){
             }
         }
 
-        // 選択結果を反映（何もない場所をクリックしたら -1 にして選択解除）
-        selectedPointIndex_ = closestPoint;
+        ImGuiIO& io = ImGui::GetIO();
+
+        if (closestPoint != -1) {
+            selectedPointIndices_.clear(); // まず選択状態をリセット
+
+            if (io.KeyCtrl) {
+                // Ctrl: 全部選択
+                for (uint32_t i = 0; i < count; ++i) {
+                    selectedPointIndices_.push_back(i);
+                }
+            }
+            else if (io.KeyAlt) {
+                // Alt: 同じ行（同じガイド）を選択
+                int guideIndex = closestPoint / POINTS_PER_GUIDE;
+                for (int i = 0; i < POINTS_PER_GUIDE; ++i) {
+                    int idx = guideIndex * POINTS_PER_GUIDE + i;
+                    if (idx < (int)count) selectedPointIndices_.push_back(idx);
+                }
+            }
+            else if (io.KeyShift) {
+                // Shift: 同じ列（各ガイドの同じ高さ）を選択
+                int depthIndex = closestPoint % POINTS_PER_GUIDE;
+                int totalGuides = count / POINTS_PER_GUIDE;
+                for (int i = 0; i < totalGuides; ++i) {
+                    int idx = i * POINTS_PER_GUIDE + depthIndex;
+                    if (idx < (int)count) selectedPointIndices_.push_back(idx);
+                }
+            }
+            else {
+                // 通常クリック: 単一選択
+                selectedPointIndices_.push_back(closestPoint);
+            }
+        }
+        else {
+            // 何も無い場所をクリックしたら選択解除
+            selectedPointIndices_.clear();
+        }
     }
 
-    float scale = 0.005f;
-    for (uint32_t i = 0; i < hairSystem_->GetCPUGuideCount(); ++i) {
-        PrimitiveSphereData data;
-        data.worldTransform.Initialize();
+    if (isDrawPoint_) {
+        float scale = 0.005f;
+        for (uint32_t i = 0; i < hairSystem_->GetCPUGuideCount(); ++i) {
+            PrimitiveSphereData data;
+            data.worldTransform.Initialize();
 
-        Vector3 localPos = cpuData[i].position;
-        Vector4 localPos4 = { localPos.x, localPos.y, localPos.z, 1.0f };
-        Vector4 worldPos4 = Matrix4x4::Transform(hairSystem_->characterMatrix_, localPos4);
-        Vector3 worldPos = { worldPos4.x / worldPos4.w, worldPos4.y / worldPos4.w, worldPos4.z / worldPos4.w };
+            Vector3 localPos = cpuData[i].position;
+            Vector4 localPos4 = { localPos.x, localPos.y, localPos.z, 1.0f };
+            Vector4 worldPos4 = Matrix4x4::Transform(hairSystem_->characterMatrix_, localPos4);
+            Vector3 worldPos = { worldPos4.x / worldPos4.w, worldPos4.y / worldPos4.w, worldPos4.z / worldPos4.w };
 
-        data.worldTransform.set_.Translation(worldPos);
-        data.worldTransform.set_.Scale({ scale,scale,scale });
-        data.worldTransform.LocalToWorld();
-        data.color = { 1.0f,1.0f,1.0f,1.0f };
-        DrawManager::GetInstance()->GetSphere()->AddInstance(data);
+            data.worldTransform.set_.Translation(worldPos);
+            data.worldTransform.set_.Scale({ scale,scale,scale });
+            data.worldTransform.LocalToWorld();
+            data.color = { 1.0f,1.0f,1.0f,1.0f };
+            DrawManager::GetInstance()->GetSphere()->AddInstance(data);
+        }
     }
 }
 
@@ -416,37 +450,44 @@ void HairGuideEditor::DrawUI(){
     uint32_t count = hairSystem_->GetCPUGuideCount();
     auto* cpuData = hairSystem_->GetCPUGuideData();
 
-    // ---------------------------------------------------
-    // 🎛️ 2. ImGui によるパラメータ編集 UI
-    // ---------------------------------------------------
-    if (selectedPointIndex_ >= 0 && selectedPointIndex_ < (int)count) {
-        ImGui::Text("Selected Point: %d", selectedPointIndex_);
+    if (ImGui::Button(("Draw Point" + std::string(isDrawPoint_ ? " On" : " Off")).c_str())) {
+        isDrawPoint_ = !isDrawPoint_;
+    }
+
+    if (!selectedPointIndices_.empty()) {
+        ImGui::Text("Selected Points Sum: %d", (int)selectedPointIndices_.size());
         ImGui::Separator();
 
-        auto& point = cpuData[selectedPointIndex_];
+        // UI表示には、代表として「選択されている最初のポイント」の値を表示
+        auto& firstPoint = cpuData[selectedPointIndices_[0]];
         bool isEdited = false;
 
-        // --- 個別のパラメータ編集（変更があればGPU更新を投げる） ---
-        if (ImGui::SliderFloat("Radius", &point.radius, 0.01f, 1.0f)) isEdited = true;
-        if (ImGui::ColorEdit3("Color", &point.color.x)) isEdited = true;
-        if (ImGui::SliderFloat("Physics Weight", &point.physicsWeight, 0.0f, 1.0f)) isEdited = true;
+        float tempRadius = firstPoint.radius;
+        Vector3 tempColor = firstPoint.color;
+        float tempWeight = firstPoint.physicsWeight;
 
+        if (ImGui::SliderFloat("Radius", &tempRadius, 0.01f, 1.0f)) isEdited = true;
+        if (ImGui::ColorEdit3("Color", &tempColor.x)) isEdited = true;
+        if (ImGui::SliderFloat("Physics Weight", &tempWeight, 0.0f, 1.0f)) isEdited = true;
+
+        // パラメータを動かしたら、選択されているすべてのポイントに一括適用！
         if (isEdited) {
+            for (int idx : selectedPointIndices_) {
+                cpuData[idx].radius = tempRadius;
+                cpuData[idx].color = tempColor;
+                cpuData[idx].physicsWeight = tempWeight;
+            }
             hairSystem_->RequestNotifyUpdate();
         }
-    }
-    else {
-        ImGui::Text("No control point selected.");
-    }
 
-    // =================================================================
-    // 🛠️ 3. 3Dギズモ（ImGuizmo）による座標操作と Undo/Redo 対応
-    // =================================================================
-    if (selectedPointIndex_ >= 0 && selectedPointIndex_ < (int)count) {
+        // =================================================================
+        // 🛠️ ギズモ操作（重心でまとめて動かす ＆ ガタガタ防止版）
+        // =================================================================
         float viewMatrix[16];
         float projectionMatrix[16];
         auto camera = CameraSystem::GetInstance()->GetActiveCamera();
-        // ビュー行列の詰め替え
+
+        // 1. ビュー行列の詰め替え
         auto viewMat = camera->GetViewMatrix();
         for (int row = 0; row < 4; ++row) {
             for (int col = 0; col < 4; ++col) {
@@ -461,18 +502,32 @@ void HairGuideEditor::DrawUI(){
                 projectionMatrix[row * 4 + col] = projMat.m[row][col];
             }
         }
-        /*Vector3* targetPos = &cpuData[selectedPointIndex_].position;*/
-        Vector3 localPos = cpuData[selectedPointIndex_].position;
-        Vector4 localPos4 = { localPos.x, localPos.y, localPos.z, 1.0f };
-        Vector4 worldPos4 = Matrix4x4::Transform(hairSystem_->characterMatrix_, localPos4);
-        Vector3 targetPos = { worldPos4.x / worldPos4.w, worldPos4.y / worldPos4.w, worldPos4.z / worldPos4.w };
 
-        // 今の座標からギズモ用の変換行列を作る
+        // 3. 選択されたすべてのポイントの「ローカル空間での重心」を計算する
+        Vector3 currentLocalCenter = { 0, 0, 0 };
+        for (int idx : selectedPointIndices_) {
+            currentLocalCenter.x += cpuData[idx].position.x;
+            currentLocalCenter.y += cpuData[idx].position.y;
+            currentLocalCenter.z += cpuData[idx].position.z;
+        }
+        currentLocalCenter.x /= selectedPointIndices_.size();
+        currentLocalCenter.y /= selectedPointIndices_.size();
+        currentLocalCenter.z /= selectedPointIndices_.size();
+
+        // 🌟 4. ガタガタ防止！
+        // ドラッグ中なら「開始時のローカル重心」、そうでないなら「現在のローカル重心」を使う
+        Vector3 targetLocalCenter = isGizmoUsingLastFrame_ ? gizmoStartCenter_ : currentLocalCenter;
+
+        // ローカル重心をワールド空間に変換してギズモに渡す
+        Vector4 localPos4 = { targetLocalCenter.x, targetLocalCenter.y, targetLocalCenter.z, 1.0f };
+        Vector4 worldPos4 = Matrix4x4::Transform(hairSystem_->characterMatrix_, localPos4);
+        Vector3 targetWorldCenter = { worldPos4.x / worldPos4.w, worldPos4.y / worldPos4.w, worldPos4.z / worldPos4.w };
+
         float gizmoMatrix[16] = {
             1, 0, 0, 0,
             0, 1, 0, 0,
             0, 0, 1, 0,
-            targetPos.x, targetPos.y, targetPos.z, 1
+            targetWorldCenter.x, targetWorldCenter.y, targetWorldCenter.z, 1
         };
 
         ImGuizmo::BeginFrame();
@@ -480,37 +535,62 @@ void HairGuideEditor::DrawUI(){
         ImGuizmo::SetRect(0, 0, io.DisplaySize.x, io.DisplaySize.y);
         ImGuizmo::Manipulate(viewMatrix, projectionMatrix, ImGuizmo::TRANSLATE, ImGuizmo::WORLD, gizmoMatrix);
 
-        // ギズモ操作中
         if (ImGuizmo::IsUsing()) {
             if (!isGizmoUsingLastFrame_) {
-                // 操作が始まった瞬間に、今の座標をバックアップ
-                gizmoOldPosition_ = cpuData[selectedPointIndex_].position;
+                // 操作開始時に全員の「ローカル位置」と「ローカル重心」をバックアップ
+                gizmoOldPositions_.clear();
+                for (int idx : selectedPointIndices_) {
+                    gizmoOldPositions_[idx] = cpuData[idx].position;
+                }
+                gizmoStartCenter_ = currentLocalCenter;
             }
 
-            // 新しい座標を取得して、一時的に直接書き換える（リアルタイムプレビューのため）
-            Vector3 newWorldPos = { gizmoMatrix[12], gizmoMatrix[13], gizmoMatrix[14] };
-            Vector4 newWorldPos4 = { newWorldPos.x, newWorldPos.y, newWorldPos.z, 1.0f };
-            Vector4 newLocalPos4 = Matrix4x4::Transform(Matrix4x4::Inverse(hairSystem_->characterMatrix_), newWorldPos4);
-            Vector3 newLocalPos = { newLocalPos4.x / newLocalPos4.w, newLocalPos4.y / newLocalPos4.w, newLocalPos4.z / newLocalPos4.w };
+            // 5. ギズモから動かされた「新しいワールド重心」を取得
+            Vector3 newWorldCenter = { gizmoMatrix[12], gizmoMatrix[13], gizmoMatrix[14] };
 
-            cpuData[selectedPointIndex_].position = newLocalPos;
-            cpuData[selectedPointIndex_].homePosition = newLocalPos;
-            hairSystem_->RequestNotifyUpdate(); // GPUにリアルタイム送信
+            // 6. 「新しいワールド重心」を「新しいローカル重心」に逆変換！
+            Matrix4x4 invCharacterMatrix = Matrix4x4::Inverse(hairSystem_->characterMatrix_);
+            Vector4 newWorldCenter4 = { newWorldCenter.x, newWorldCenter.y, newWorldCenter.z, 1.0f };
+            Vector4 newLocalCenter4 = Matrix4x4::Transform(invCharacterMatrix, newWorldCenter4);
+            Vector3 newLocalCenter = { newLocalCenter4.x / newLocalCenter4.w, newLocalCenter4.y / newLocalCenter4.w, newLocalCenter4.z / newLocalCenter4.w };
 
+            // 7. ローカル空間での「総移動量（デルタ）」を計算
+            Vector3 deltaLocalMove = {
+                newLocalCenter.x - gizmoStartCenter_.x,
+                newLocalCenter.y - gizmoStartCenter_.y,
+                newLocalCenter.z - gizmoStartCenter_.z
+            };
+
+            // 8. すべてのポイントの元の位置に、ローカル空間の総移動量を足す
+            for (int idx : selectedPointIndices_) {
+                cpuData[idx].position.x = gizmoOldPositions_[idx].x + deltaLocalMove.x;
+                cpuData[idx].position.y = gizmoOldPositions_[idx].y + deltaLocalMove.y;
+                cpuData[idx].position.z = gizmoOldPositions_[idx].z + deltaLocalMove.z;
+
+                cpuData[idx].homePosition = cpuData[idx].position;
+            }
+            hairSystem_->RequestNotifyUpdate();
             isGizmoUsingLastFrame_ = true;
         }
         else {
-            // 操作を終えて手を離した瞬間（確定！）
             if (isGizmoUsingLastFrame_) {
-                Vector3 newPos = cpuData[selectedPointIndex_].position;
+                // 操作を終えた瞬間にコマンド発行
+                std::vector<int> indices;
+                std::vector<Vector3> oldPos;
+                std::vector<Vector3> newPos;
 
-                // 一旦、触る前の状態に戻す（コマンドの中で書き換えてもらうため）
-                cpuData[selectedPointIndex_].position = gizmoOldPosition_;
-                cpuData[selectedPointIndex_].homePosition = gizmoOldPosition_;
+                for (int idx : selectedPointIndices_) {
+                    indices.push_back(idx);
+                    oldPos.push_back(gizmoOldPositions_[idx]);
+                    newPos.push_back(cpuData[idx].position);
 
-                // 既に用意されている完璧なコマンドを発行！
+                    // 一旦戻す（コマンド内で書き換えて歴史に刻むため）
+                    cpuData[idx].position = gizmoOldPositions_[idx];
+                    cpuData[idx].homePosition = gizmoOldPositions_[idx];
+                }
+
                 ExecuteCommand(std::make_unique<HairGuideMoveCommand>(
-                    hairSystem_, selectedPointIndex_, gizmoOldPosition_, newPos
+                    hairSystem_, indices, oldPos, newPos
                 ));
 
                 isGizmoUsingLastFrame_ = false;
@@ -543,7 +623,7 @@ void HairGuideEditor::DrawUI(){
     ImGui::ColorEdit3("Tip Color (毛先)", &tipColor.x);
 
     // 現在の設定値での全体の髪の長さの目安を表示
-    ImGui::Text("Estimated Total Length: %.2f units", segmentLength * (16 - 1));
+    ImGui::Text("Estimated Total Length: %.2f units", segmentLength * (hairSystem_->GetCPUGuideConfig()->pointPerGuide - 1));
 
     ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.2f, 0.6f, 0.2f, 1.0f)); // 目立つように緑色にする
     if (ImGui::Button("Reset to Photo Sphere Layout", ImVec2(-1, 35))) {
@@ -605,16 +685,4 @@ void HairGuideEditor::DrawUI(){
             LoadHairDataFromJson(openPath, cpuData, count, hairSystem_);
         }
     }
-
-    /*ImGui::End();*/
-
-    // 選択中の情報などを出すデバッグ用ImGuiウィンドウ
-    ImGui::Begin("Hair Gizmo Controller");
-    if (selectedPointIndex_ != -1) {
-        ImGui::Text("Selected Point Index: %d", selectedPointIndex_);
-    }
-    else {
-        ImGui::Text("Click a hair control point to select.");
-    }
-    ImGui::End();
 }

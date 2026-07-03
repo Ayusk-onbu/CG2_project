@@ -9,11 +9,14 @@ class HairGuideEditor :
 private:
     Hair* hairSystem_ = nullptr;
     int selectedGuideIndex_ = 0; // とりあえず最初のガイドをいじる用
-    int selectedPointIndex_ = 0; // とりあえず最初のポイントをいじる用
+    std::vector<int> selectedPointIndices_ = { 0 }; // とりあえず最初のポイントをいじる用
     
     // ドラッグ＆Undo管理用のフラグ
     bool isGizmoUsingLastFrame_ = false;
-    Vector3 gizmoOldPosition_; // ギズモを触る前の位置
+    std::map<int,Vector3> gizmoOldPositions_; // ギズモを触る前の位置
+
+    Vector3 gizmoStartCenter_ = { 0, 0, 0 };
+    bool isDrawPoint_ = true;
 public:
     // コンストラクタで編集対象のHairシステムを受け取る
     HairGuideEditor(Hair* hair) : BaseEditor("Hair Guide Editor"), hairSystem_(hair) {}
@@ -21,15 +24,17 @@ public:
     void Update() override;
     void DrawUI() override;
 
-    void GetEngineCameraMatrices(float* view, float* proj) {
-        // 1. 一度ローカル変数（左辺値）に受けて実体を作る
-        auto viewMatrix = CameraSystem::GetInstance()->GetActiveCamera()->GetViewMatrix();
-        auto projMatrix = CameraSystem::GetInstance()->GetActiveCamera()->GetProjection();
+    void GenerateDefaultSphereHair(GuideCurve::ControllerPoint* data, uint32_t totalCount, float headRadius,
+        float segmentLength, Vector3 headCenter, Vector3 rootColor,
+        Vector3 tipColor);
 
-        // 2. 実体化した変数のアドレスを渡す
-        std::memcpy(view, &viewMatrix, sizeof(float) * 16);
-        std::memcpy(proj, &projMatrix, sizeof(float) * 16);
-    }
+    void GenerateDefaultShortHair(GuideCurve::ControllerPoint* data, uint32_t totalCount, float headRadius,
+        float bangLength, float backLength, Vector3 headCenter, Vector3 rootColor,
+        Vector3 tipColor);
+
+    void GenerateDefaultShortHair2(GuideCurve::ControllerPoint* data, uint32_t totalCount, float headRadius,
+        float bangLength, float sideLength, float backLength, Vector3 headCenter, Vector3 rootColor,
+        Vector3 tipColor);
 
     // データをJSON形式のテキストとして書き出す関数
     void SaveHairDataToJson(const std::string& filePath, GuideCurve::ControllerPoint* data, uint32_t count) {

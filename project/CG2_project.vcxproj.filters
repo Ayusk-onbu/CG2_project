@@ -357,9 +357,6 @@
     <ClCompile Include="Engine\Objects\Model\ModelObject.cpp">
       <Filter>Engine\Objects\Model</Filter>
     </ClCompile>
-    <ClCompile Include="Engine\Objects\Primitive\LineObject.cpp">
-      <Filter>Engine\Objects\Primitive</Filter>
-    </ClCompile>
     <ClCompile Include="Engine\Objects\Primitive\SphereObject.cpp">
       <Filter>Engine\Objects\Primitive</Filter>
     </ClCompile>
@@ -741,6 +738,9 @@
     <ClCompile Include="Engine\Objects\Primitive\Cylinder\Cylinder.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
+    <ClCompile Include="Engine\Objects\Primitive\Line\Line.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="externals\imgui\imconfig.h">
@@ -892,9 +892,6 @@
     </ClInclude>
     <ClInclude Include="Engine\Objects\Model\ModelObject.h">
       <Filter>Engine\Objects\Model</Filter>
-    </ClInclude>
-    <ClInclude Include="Engine\Objects\Primitive\LineObject.h">
-      <Filter>Engine\Objects\Primitive</Filter>
     </ClInclude>
     <ClInclude Include="Engine\Objects\Primitive\SphereObject.h">
       <Filter>Engine\Objects\Primitive</Filter>
@@ -1253,6 +1250,9 @@
     <ClInclude Include="Engine\Objects\Primitive\Cylinder\Cylinder.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
+    <ClInclude Include="Engine\Objects\Primitive\Line\Line.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Text Include="externals\imgui\LICENSE.txt">
@@ -1277,6 +1277,7 @@
     <None Include="resources\shaders\Plane\MagicCircle.hlsli" />
     <None Include="resources\shaders\Sphere\Sphere.hlsli" />
     <None Include="resources\shaders\Cylinder\Cylinder.hlsli" />
+    <None Include="resources\shaders\Line\Line.hlsli" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="resources\shaders\Object3d\Object3d.VS.hlsl">

@@ -163,6 +163,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="Engine\Objects\Hair\IHair.cpp" />
     <ClCompile Include="Engine\Objects\Hair\Strands.cpp" />
     <ClCompile Include="Engine\Objects\Primitive\Cylinder\Cylinder.cpp" />
+    <ClCompile Include="Engine\Objects\Primitive\Line\Line.cpp" />
     <ClCompile Include="Engine\Objects\Primitive\MagicPlane.cpp" />
     <ClCompile Include="Engine\Objects\Primitive\Ring\Ring.cpp" />
     <ClCompile Include="Engine\Objects\Primitive\SkyBox.cpp" />
@@ -254,7 +255,6 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="Engine\Objects\ModelManager.cpp" />
     <ClCompile Include="Engine\Objects\Model\ModelObject.cpp" />
     <ClCompile Include="Engine\Objects\ObjectBase.cpp" />
-    <ClCompile Include="Engine\Objects\Primitive\LineObject.cpp" />
     <ClCompile Include="Engine\Objects\Primitive\SphereObject.cpp" />
     <ClCompile Include="Engine\Objects\Primitive\SpriteObject.cpp" />
     <ClCompile Include="Engine\Objects\Primitive\TriangleObject.cpp" />
@@ -360,6 +360,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="Engine\Objects\Hair\IHair.h" />
     <ClInclude Include="Engine\Objects\Primitive\Base\PrimitiveBaseModelData.h" />
     <ClInclude Include="Engine\Objects\Primitive\Cylinder\Cylinder.h" />
+    <ClInclude Include="Engine\Objects\Primitive\Line\Line.h" />
     <ClInclude Include="Engine\Objects\Primitive\MagicPlane.h" />
     <ClInclude Include="Engine\Objects\Primitive\Ring\Ring.h" />
     <ClInclude Include="Engine\Objects\Primitive\SkyBox.h" />
@@ -462,7 +463,6 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="Engine\Objects\Model\ModelData.h" />
     <ClInclude Include="Engine\Objects\Model\ModelObject.h" />
     <ClInclude Include="Engine\Objects\ObjectBase.h" />
-    <ClInclude Include="Engine\Objects\Primitive\LineObject.h" />
     <ClInclude Include="Engine\Objects\Primitive\SphereObject.h" />
     <ClInclude Include="Engine\Objects\Primitive\SpriteObject.h" />
     <ClInclude Include="Engine\Objects\Primitive\TriangleObject.h" />
@@ -537,6 +537,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <None Include="resources\shaders\CopyImage\Fullscreen.hlsli" />
     <None Include="resources\shaders\Cylinder\Cylinder.hlsli" />
     <None Include="resources\shaders\Hair\Hair.hlsli" />
+    <None Include="resources\shaders\Line\Line.hlsli" />
     <None Include="resources\shaders\Object3d\Object3d.hlsli" />
     <None Include="resources\shaders\Particle\Particle.hlsli" />
     <None Include="resources\shaders\Plane\MagicCircle.hlsli" />
@@ -580,6 +581,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
     <Import Project="packages\Microsoft.Direct3D.D3D12.1.619.3\build\native\Microsoft.Direct3D.D3D12.targets" Condition="Exists('packages\Microsoft.Direct3D.D3D12.1.619.3\build\native\Microsoft.Direct3D.D3D12.targets')" />
+    <Import Project="packages\WinPixEventRuntime.1.0.240308001\build\WinPixEventRuntime.targets" Condition="Exists('packages\WinPixEventRuntime.1.0.240308001\build\WinPixEventRuntime.targets')" />
   </ImportGroup>
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>
@@ -587,5 +589,6 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     </PropertyGroup>
     <Error Condition="!Exists('packages\Microsoft.Direct3D.D3D12.1.619.3\build\native\Microsoft.Direct3D.D3D12.props')" Text="$([System.String]::Format('$(ErrorText)', 'packages\Microsoft.Direct3D.D3D12.1.619.3\build\native\Microsoft.Direct3D.D3D12.props'))" />
     <Error Condition="!Exists('packages\Microsoft.Direct3D.D3D12.1.619.3\build\native\Microsoft.Direct3D.D3D12.targets')" Text="$([System.String]::Format('$(ErrorText)', 'packages\Microsoft.Direct3D.D3D12.1.619.3\build\native\Microsoft.Direct3D.D3D12.targets'))" />
+    <Error Condition="!Exists('packages\WinPixEventRuntime.1.0.240308001\build\WinPixEventRuntime.targets')" Text="$([System.String]::Format('$(ErrorText)', 'packages\WinPixEventRuntime.1.0.240308001\build\WinPixEventRuntime.targets'))" />
   </Target>
 </Project>

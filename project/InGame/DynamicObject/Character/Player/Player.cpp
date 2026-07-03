@@ -79,12 +79,12 @@ void Player::Update(float deltaTime) {
 		[](const HitEffectInfo& effect) { return effect.currentTime >= effect.lifeTime; }),
 		hitEffect_.end());
 
-	WorldTransform testTransform;
+	/*WorldTransform testTransform;
 	testTransform.Initialize();
 	testTransform.set_.Scale({1.0f,1.0f,1.0f});
 	testTransform.set_.Rotation({ 0.0f,0.0f, 0.0f});
 	testTransform.set_.Translation({ obj_->worldTransform_.GetWorldPos().x,obj_->worldTransform_.GetWorldPos().y + 1.2f,obj_->worldTransform_.GetWorldPos().z });
-	//testTransform.set_.Translation({ 0.0f,0.01f,0.0f });
+	testTransform.set_.Translation({ 0.0f,0.01f,0.0f });
 	testTransform.LocalToWorld();
 
 	WorldTransform testUVTransform;
@@ -99,7 +99,15 @@ void Player::Update(float deltaTime) {
 		testTransform,
 		testUVTransform,
 		{1.0f,0.0f,0.0f,1.0f}
-		});
+	});
+
+	DrawManager::GetInstance()->GetMagicCircle()->AddInstance({
+		testTransform,
+		testUVTransform,
+		{1.0f,0.0f,0.0f,1.0f}
+	});
+
+	DrawManager::GetInstance()->GetMagicCircle()->Update();*/
 
 	//MagicCircle::GetInstance()->AddInstance({
 	//	testTransform,
