@@ -2,6 +2,8 @@
 
 StructuredBuffer<ControllerPoint> g_InGuideBuffer : register(t0); // 物理演算後のガイド頂点群
 StructuredBuffer<ChildStrand> g_InChildStrandBuffer : register(t1); // 子髪の設定バッファ
+StructuredBuffer<StrandInfo> g_StrandInfoBuffer : register(t2);
+StructuredBuffer<GuideInfo> g_GuideInfoBuffer : register(t3);
 RWStructuredBuffer<StrandVertex> g_OutVertexBuffer : register(u0);
 ConstantBuffer<HairMakeConfig> g_HairMakeConfig : register(b0);
 ConstantBuffer<HairConfig> gHairConfig : register(b1);
@@ -36,38 +38,38 @@ void main(uint3 dispatchThreadID : SV_DispatchThreadID)
 {
     // 担当する髪のＩＤを取得
     uint strandIdx = dispatchThreadID.x;
-    
-     // 総ストランド数
+    // 総ストランド数
     if (strandIdx >= gHairConfig.numStrands)return;
+    
+    // -------------------------------------------
     
     // この子髪の遺伝子（設定）をロード
     ChildStrand child = g_InChildStrandBuffer[strandIdx];
+    StrandInfo info = g_StrandInfoBuffer[strandIdx];
     
-    // この子髪の書き込み先（先頭インデックス）を計算
-    uint outStartIndex = strandIdx * gHairConfig.pointPerStrand;
+    // たぶん一番頂点数が多いガイドを参照することになるかな？
+    // ここが正直わからない
+    GuideInfo guideInfo = g_GuideInfoBuffer[child.parentGuideIds[0]]; // 代表ガイドの情報を取得
     
-    // 代表する親ガイドの先頭インデックス：一つ目のガイドを取得している
-    //uint guideStartIndex = child.parentGuideIds[0] * gHairConfig.pointPerGuide;
-
     // -------------------------------------------------------------
     // 根元から毛先まで、1本分の全頂点を生やすループ
     // -------------------------------------------------------------
-    for (uint i = 0; i < gHairConfig.pointPerStrand; ++i)
+    for (uint i = 0; i < info.vertexCount; ++i)
     {
         // ストランド全体での進行割合 (0.0 ～ 1.0)
-        float progress = (float) i / (float) (gHairConfig.pointPerStrand - 1);
+        float progress = (float) i / (float) (info.vertexCount - 1);
 
         // ガイド側の仮想インデックス (例: 16頂点なら 0.0 ～ 15.0)
-        float guideFloatIdx = progress * (float)(gHairConfig.pointPerGuide - 1);
+        float guideFloatIdx = progress * (float)(guideInfo.vertexCount - 1);
 
         // Catmull-Romに必要な 4つのインデックス を計算
         // idx1 と idx2 が現在補間しようとしている区間
         int idx1 = (int)floor(guideFloatIdx);
-        int idx2 = min(idx1 + 1, gHairConfig.pointPerGuide - 1);
+        int idx2 = min(idx1 + 1, guideInfo.vertexCount - 1);
         
         // idx0 と idx3 は曲線を滑らかにするための前後の点（範囲外に出ないようClamp）
         int idx0 = max(idx1 - 1, 0);
-        int idx3 = min(idx2 + 1, gHairConfig.pointPerGuide - 1);
+        int idx3 = min(idx2 + 1, guideInfo.vertexCount - 1);
 
         // 小数点以下を取り出してブレンド率 (t) にする
         float t = guideFloatIdx - (float) idx1;
@@ -86,7 +88,7 @@ void main(uint3 dispatchThreadID : SV_DispatchThreadID)
             if (child.weights[b] <= 0.0)
                 continue;
 
-            uint guideStartIndex = child.parentGuideIds[b] * gHairConfig.pointPerGuide;
+            uint guideStartIndex = child.parentGuideIds[b] * g_GuideInfoBuffer[child.parentGuideIds[b]].vertexCount;
 
             ControllerPoint gPoint0 = g_InGuideBuffer[guideStartIndex + idx0];
             ControllerPoint gPoint1 = g_InGuideBuffer[guideStartIndex + idx1];
@@ -138,6 +140,6 @@ void main(uint3 dispatchThreadID : SV_DispatchThreadID)
         outVertex.color = currentColor;
         outVertex.padding = 0.0;
 
-        g_OutVertexBuffer[outStartIndex + i] = outVertex;
+        g_OutVertexBuffer[info.vertexStartIndex + i] = outVertex;
     }
 }

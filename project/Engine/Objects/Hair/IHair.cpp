@@ -221,46 +221,38 @@ Microsoft::WRL::ComPtr<ID3D12StateObject> Hair::CreateHairRaytracingPSO(
 
 // -----------------------------------------------
 
-void Hair::Initialize(Fngine* engine) {
+void Hair::Initialize(Fngine* engine, bool isLoad, const Strands::HairSaveData& savedata) {
+//   ====================
+// 【 初期化時の共通処理 】
+//   ====================
 // -----------------------------------------------
 
-	// engineの情報を取得
+	// ■engineの情報を取得
 	engine_ = engine;
 
-// -----------------------------------------------
-
-	// 【 RayTracingを使用するために4にキャスト 】
+	// ■【 RayTracingを使用するために4にキャストしたコマンドリストを取得 】
 	engine->GetCommand().GetList().GetList().As(&dxrCmdList_);
+#ifdef USE_IMGUI
+	// PIXイベントを開始
+	PIXScopedEvent(dxrCmdList_.Get(), PIX_COLOR_INDEX(2), "Initialize Hair Pass");
+#endif// USEIMGUI
 
 // -----------------------------------------------
 
-	// キャンバスを作成
+	// ■キャンバスを作成
 	outputTexture_ = std::make_unique<RWTexture2D>();
-	// フォーマットはエンジンのスワップチェーンに合わせる (例: DXGI_FORMAT_R8G8B8A8_UNORM)
+	// ■フォーマットはエンジンのスワップチェーンに合わせる (例: DXGI_FORMAT_R8G8B8A8_UNORM)
 	outputTexture_->Initialize(engine, 1280, 720, DXGI_FORMAT_R8G8B8A8_UNORM);
 	outputTexture_->GetResource()->SetName(L"HairOutputTexture");
 
-	// DXRに渡すためのGPUハンドルをメンバ変数に保存！
+	// ■DXRに渡すためのGPUハンドルをメンバ変数に保存！
 	renderTargetUAVHandleGPU_ = outputTexture_->GetUAVHandleGPU();
 
 // -----------------------------------------------
 
-	//   ================
-	// 【 物理処理の設定 】
-	//   ================
-	GuideCurve::HairPhysicsConfig commonPhysics;
-	commonPhysics.stiffness = 0.4f;
-	commonPhysics.restoringForce = 0.2f;
-	commonPhysics.damping = 0.96f;
-	commonPhysics.padding = 0.0f;
-
-	gpuPhysicsConfigBuffer_ = std::make_unique<ConstantBuffer<GuideCurve::HairPhysicsConfig>>(engine);
-	gpuPhysicsConfigBuffer_->Initialize();
-	gpuPhysicsConfigBuffer_->GetMappedData()->stiffness = commonPhysics.stiffness;
-	gpuPhysicsConfigBuffer_->GetMappedData()->restoringForce = commonPhysics.restoringForce;
-	gpuPhysicsConfigBuffer_->GetMappedData()->damping = commonPhysics.damping;
-	gpuPhysicsConfigBuffer_->GetMappedData()->padding = commonPhysics.padding;
-
+	// ----------------------
+	// 【 髪への物理の性質 】
+	// ----------------------
 	GuideCurve::FrameConfig frameConfig;
 	frameConfig.gravity = { 0.0f, 0.0f,0.0f };
 	frameConfig.deltaTime = 1.0f / 60.0f;
@@ -273,111 +265,172 @@ void Hair::Initialize(Fngine* engine) {
 	gpuFrameConfigBuffer_->Initialize();
 	std::memcpy(gpuFrameConfigBuffer_->GetMappedData(), &frameConfig, sizeof(GuideCurve::FrameConfig));
 
-	//   ==================
-	// 【 髪の基本的な設定 】
-	//   ==================
-	Strands::HairConfig hairConfig;
-	hairConfig.numGuides = 50;           // ガイドの総本数：1000
-	hairConfig.pointPerGuide = 8;      // ガイド一本を作る数：16
-	hairConfig.pointPerStrand = 32;     // ストランド一本を作る数：32
-	hairConfig.numStrands = 10000.0f;     // ストランドの総本数：10000
-
-	gpuConfigBuffer_ = std::make_unique<ConstantBuffer<Strands::HairConfig>>(engine);
-	gpuConfigBuffer_->Initialize();
-	gpuConfigBuffer_->GetMappedData()->numGuides = hairConfig.numGuides;
-	gpuConfigBuffer_->GetMappedData()->pointPerGuide = hairConfig.pointPerGuide;
-	gpuConfigBuffer_->GetMappedData()->pointPerStrand = hairConfig.pointPerStrand;
-	gpuConfigBuffer_->GetMappedData()->numStrands = hairConfig.numStrands;
-
-	Strands::HairMakeConfig makeConfig;
-	makeConfig.globalSpreadRadius = 0.05f;//
-	makeConfig.globalHairThickness = 1.0f;
-	makeConfig.paddings[0] = 0.0f;
-	makeConfig.paddings[1] = 0.0f;
+	// -------------------
+	//
+	// 【　Bufferの初期化　】
+	//
+	// --------------------
+	gpuPhysicsConfigBuffer_ = std::make_unique<ConstantBuffer<GuideCurve::HairPhysicsConfig>>(engine);
+	gpuPhysicsConfigBuffer_->Initialize();
 
 	gpuMakeConfigBuffer_ = std::make_unique<ConstantBuffer<Strands::HairMakeConfig>>(engine);
 	gpuMakeConfigBuffer_->Initialize();
-	std::memcpy(gpuMakeConfigBuffer_->GetMappedData(), &makeConfig, sizeof(Strands::HairMakeConfig));
 
-	//   ==============
-	// 【 ガイドの作成 】
-	//   ==============
-	float headRadius = 0.05f;// 範囲
-	float segmentLength = 0.01f;// 点間の距離
+	gpuConfigBuffer_ = std::make_unique<ConstantBuffer<Strands::HairConfig>>(engine);
+	gpuConfigBuffer_->Initialize();
 
-#pragma region 初期Hair
-	// 本当ならガイドの根本の情報を取得して生やす(pos, direction)
-	for (UINT g = 0; g < hairConfig.numGuides; ++g) {
-		GuideCurve::GuideHear guide;
-		float guideAngle = Deg2Rad((360.0f / hairConfig.numGuides) * g);
-		Vector3 rootPosition(std::cosf(guideAngle) * headRadius, 0.0f, std::sinf(guideAngle) * headRadius);
+	guideInfoBuffer_ = std::make_unique<Structured<GuideCurve::GuideInfo>>(engine);
 
-		for (UINT i = 0; i < hairConfig.pointPerGuide; ++i) {
-			GuideCurve::ControllerPoint cp;
-			// 外側に向かって少し広がりながら垂れ下がる初期ポーズ
-			Vector3 offsetDir(std::cosf(guideAngle) * 0.02f * static_cast<float>(i), 0.0f, std::sinf(guideAngle) * 0.02f * static_cast<float>(i));
-			cp.position = rootPosition + Vector3(0.0f, -static_cast<float>(i) * segmentLength, 0.0f) + offsetDir;
-			cp.homePosition = cp.position;
-			cp.radius = 0.0025f * (1.0f - static_cast<float>(i) / hairConfig.pointPerGuide); // 先細り
-			//cp.radius = 0.05f;
+	strandInfoBuffer_ = std::make_unique<Structured<Strands::StrandInfo>>(engine);
 
-			cp.color = Vector3(1.0f - (0.04f * i), 1.0f - (0.04f * i), 1.0f);
-			//cp.color = Vector3(1.0f,1.0f,1.0f);
-			cp.nextToLength = segmentLength;
+	// ガイドの総本数：Load - 取得　作成 - 作成
+	uint32_t totalGuides;
 
-			// 根元固定、毛先ほど動く
-			cp.physicsWeight = static_cast<float>(i) / static_cast<float>(hairConfig.pointPerGuide - 1);
-			cp.physicsWeight = 0.5f;
-			if (i == 0) cp.physicsWeight = 0.0f;
+	Strands::HairConfig hairConfig;// Loadするもの
 
-			guide.points.push_back(cp);
-		}
-		hairData_.guides.push_back(guide);
+	// =====================================
+	//
+	// 【 データをLoadして作成するタイプ 】
+	//
+	// =====================================
+	if (isLoad == true) {
+	// -------------------------
+	// 【 髪の物理に対する性質 】
+	// -------------------------
+		std::memcpy(gpuPhysicsConfigBuffer_->GetMappedData(), &savedata.physicsConfig, sizeof(GuideCurve::HairPhysicsConfig));
+
+	// --------------
+	// 【 髪の性質 】
+	// --------------
+		std::memcpy(gpuMakeConfigBuffer_->GetMappedData(), &savedata.makeConfig, sizeof(Strands::HairMakeConfig));
+
+	// --------------------------------
+	// 【 ガイドを参照するための情報 】
+	// --------------------------------
+		guideInfoBuffer_->Initialize(static_cast<uint32_t>(savedata.guideInfo.size()));
+		std::memcpy(guideInfoBuffer_->GetMappedData(), &savedata.guideInfo, sizeof(GuideCurve::GuideInfo) * savedata.guideInfo.size());
+
+	// ------------------
+	// 【 ガイドを作成 】
+	// ------------------
+		uint32_t controllerPointCount = static_cast<uint32_t>(savedata.points.size());
+
+		// Loadパターンの総ガイド数はおそらくGuideInfoのSize
+		//totalGuides = savedata.guideInfo.size();
+		totalGuides = savedata.hairConfig.numGuides;
+
+		// UAVの作成
+		gpuGuideBuffer_ = std::make_unique<RWStructured<GuideCurve::ControllerPoint>>(engine);
+		gpuGuideBuffer_->Initialize(controllerPointCount);
+
+		uploadGuideBuffer = std::make_unique<Structured<GuideCurve::ControllerPoint>>(engine);
+		uploadGuideBuffer->Initialize(controllerPointCount);
+		std::memcpy(uploadGuideBuffer->GetMappedData(), savedata.points.data(), sizeof(GuideCurve::ControllerPoint) * controllerPointCount);
+
+		// コピー先に遷移
+		auto transitionToCopyDest = CD3DX12_RESOURCE_BARRIER::Transition(
+			gpuGuideBuffer_->GetResource(),
+			D3D12_RESOURCE_STATE_COMMON,
+			D3D12_RESOURCE_STATE_COPY_DEST);
+
+		// バリア開始
+		D3D12_RESOURCE_BARRIER barriers[] = { transitionToCopyDest };
+		dxrCmdList_->ResourceBarrier(1, barriers);
+
+		// コピー開始
+		dxrCmdList_->CopyResource(gpuGuideBuffer_->GetResource(), uploadGuideBuffer->GetResource());
+
+		// コピーが終わったら、UAVバッファを「UAVとして使える状態」に戻す
+		auto transitionToUAV = CD3DX12_RESOURCE_BARRIER::Transition(
+			gpuGuideBuffer_->GetResource(),
+			D3D12_RESOURCE_STATE_COPY_DEST,
+			D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
+		dxrCmdList_->ResourceBarrier(1, &transitionToUAV);
+
+		strandInfoBuffer_->Initialize(static_cast<uint32_t>(savedata.strandInfos.size()));
+		std::memcpy(strandInfoBuffer_->GetMappedData(), savedata.strandInfos.data(), sizeof(Strands::StrandInfo) * savedata.strandInfos.size());
 	}
+	// =====================================
+	//
+	// 【 データを作成して作成するタイプ 】
+	//   もしかして：ObjectPool
+	// =====================================
+	else {
 
-#pragma endregion
-	
-	// 全ガイドの全制御点を「1つのフラットな配列」に結合してGPUへ送る
-	std::vector<GuideCurve::ControllerPoint> flatGuidePoints;
-	for (const auto& g : hairData_.guides) {
-		for (const auto& p : g.points) {
-			flatGuidePoints.push_back(p);
-		}
+	// -------------------------
+	// 【 髪の物理に対する性質 】
+	// -------------------------
+		GuideCurve::HairPhysicsConfig commonPhysics;
+		commonPhysics.stiffness = 0.4f;
+		commonPhysics.restoringForce = 0.2f;
+		commonPhysics.damping = 0.96f;
+		commonPhysics.padding = 0.0f;
+		std::memcpy(gpuPhysicsConfigBuffer_->GetMappedData(), &commonPhysics, sizeof(GuideCurve::HairPhysicsConfig));
+
+	// --------------
+	// 【 髪の性質 】
+	// --------------
+		Strands::HairMakeConfig makeConfig;
+		makeConfig.globalSpreadRadius = 0.05f;//
+		makeConfig.globalHairThickness = 1.0f;
+		makeConfig.paddings[0] = 0.0f;
+		makeConfig.paddings[1] = 0.0f;
+		std::memcpy(gpuMakeConfigBuffer_->GetMappedData(), &makeConfig, sizeof(Strands::HairMakeConfig));
+
+	// -------------------------
+	// 【 髪の物理に対する性質 】最大数かな???
+	// -------------------------
+		hairConfig.numGuides = 1000;       // ガイドの総本数：1000
+		hairConfig.pointPerGuide = 16;      // ガイド一本を作る最大数：16
+		hairConfig.pointPerStrand = 32;     // ストランド一本を作る数：32
+		hairConfig.numStrands = 50000.0f;     // ストランドの総本数：10000
+		std::memcpy(gpuConfigBuffer_->GetMappedData(), &hairConfig, sizeof(Strands::HairConfig));
+
+		// ガイドを構成する頂点数の合計 = ガイドの本数 x ガイドを構成する頂点数
+		UINT controllerPointSum = static_cast<UINT>(hairConfig.numGuides * hairConfig.pointPerGuide);
+
+		guideInfoBuffer_->Initialize(hairConfig.numGuides);
+
+		totalGuides = hairConfig.numGuides;
+
+		// UAVの作成：ガイドを管理するためのBuffer
+		gpuGuideBuffer_ = std::make_unique<RWStructured<GuideCurve::ControllerPoint>>(engine);
+		gpuGuideBuffer_->Initialize(controllerPointSum);
+
+		// dataをコピーするためだけに作成
+		uploadGuideBuffer = std::make_unique<Structured<GuideCurve::ControllerPoint>>(engine);
+		uploadGuideBuffer->Initialize(controllerPointSum);
+
+		// ----------------
+		// 【 コピー処理 】
+		// ----------------
+		// コピー先に遷移
+		auto transitionToCopyDest = CD3DX12_RESOURCE_BARRIER::Transition(
+			gpuGuideBuffer_->GetResource(),
+			D3D12_RESOURCE_STATE_COMMON,
+			D3D12_RESOURCE_STATE_COPY_DEST);
+
+		// バリア開始
+		D3D12_RESOURCE_BARRIER barriers[] = { transitionToCopyDest };
+		dxrCmdList_->ResourceBarrier(1, barriers);
+
+		// コピー開始
+		dxrCmdList_->CopyResource(gpuGuideBuffer_->GetResource(), uploadGuideBuffer->GetResource());
+
+		// コピーが終わったら、UAVバッファを「UAVとして使える状態」に戻す
+		auto transitionToUAV = CD3DX12_RESOURCE_BARRIER::Transition(
+			gpuGuideBuffer_->GetResource(),
+			D3D12_RESOURCE_STATE_COPY_DEST,
+			D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
+		dxrCmdList_->ResourceBarrier(1, &transitionToUAV);
+
+		strandInfoBuffer_->Initialize(static_cast<uint32_t>(hairConfig.numStrands * hairConfig.pointPerStrand));
 	}
-	// UAVの作成
-	gpuGuideBuffer_ = std::make_unique<RWStructured<GuideCurve::ControllerPoint>>(engine);
-	gpuGuideBuffer_->Initialize(static_cast<UINT>(flatGuidePoints.size()));
-
-// -----------------------------------------------
-
-	// dataをコピーするためだけに作成
-	uploadGuideBuffer = std::make_unique<Structured<GuideCurve::ControllerPoint>>(engine);
-	uploadGuideBuffer->Initialize(static_cast<UINT>(flatGuidePoints.size()));
-	std::memcpy(uploadGuideBuffer->GetMappedData(), flatGuidePoints.data(), sizeof(GuideCurve::ControllerPoint) * flatGuidePoints.size());
-
-	// コピー先に遷移
-	auto transitionToCopyDest = CD3DX12_RESOURCE_BARRIER::Transition(
-		gpuGuideBuffer_->GetResource(),
-		D3D12_RESOURCE_STATE_COMMON,
-		D3D12_RESOURCE_STATE_COPY_DEST);
-
-	// バリア開始
-	D3D12_RESOURCE_BARRIER barriers[] = { transitionToCopyDest};
-	dxrCmdList_->ResourceBarrier(1, barriers);
+	// -----------------------------------------------------------------
+	// -----------------------------------------------------------------
 	
-	// コピー開始
-	dxrCmdList_->CopyResource(gpuGuideBuffer_->GetResource(), uploadGuideBuffer->GetResource());
-
-	// コピーが終わったら、UAVバッファを「UAVとして使える状態」に戻す
-	auto transitionToUAV = CD3DX12_RESOURCE_BARRIER::Transition(
-		gpuGuideBuffer_->GetResource(),
-		D3D12_RESOURCE_STATE_COPY_DEST,
-		D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
-	dxrCmdList_->ResourceBarrier(1, &transitionToUAV);
-
-	// ガイドの総本数 = 全頂点数 / 16
-	uint32_t totalGuides = gpuGuideBuffer_->GetNumElements() / hairConfig.pointPerGuide;
-	uint32_t physicsGroupX = (totalGuides + 63) / 64;
+	//uint32_t physicsGroupX = (totalGuides + 63) / 64;
+	uint32_t physicsGroupX = (totalGuides) / 64;
 
 	//   =====================
 	// 【 HairGuideの物理演算 】
@@ -386,15 +439,15 @@ void Hair::Initialize(Fngine* engine) {
 	// コマンドリストにヒープをセット（テーブルをセットするより【前】に呼ぶ！）
 	dxrCmdList_->SetDescriptorHeaps(_countof(ppHeaps), ppHeaps);
 
-
 	dxrCmdList_->SetComputeRootSignature(PSOManager::GetInstance()->GetPSO("HairPhysicsCS").GetRootSignature().GetRS().Get());
 	dxrCmdList_->SetPipelineState(PSOManager::GetInstance()->GetPSO("HairPhysicsCS").GetCPS().Get());
 	
 	dxrCmdList_->SetComputeRootConstantBufferView(0, gpuPhysicsConfigBuffer_->GetGPUVirtualAddress());
 	dxrCmdList_->SetComputeRootConstantBufferView(1, gpuFrameConfigBuffer_->GetGPUVirtualAddress());
-	dxrCmdList_->SetComputeRootDescriptorTable(2, gpuGuideBuffer_->GetUAVHandleGPU());
-	dxrCmdList_->SetComputeRootConstantBufferView(3, gpuConfigBuffer_->GetGPUVirtualAddress());
-
+	dxrCmdList_->SetComputeRootConstantBufferView(2, gpuConfigBuffer_->GetGPUVirtualAddress());
+	dxrCmdList_->SetComputeRootDescriptorTable(3, guideInfoBuffer_->GetSRVHandleGPU());
+	dxrCmdList_->SetComputeRootDescriptorTable(4, gpuGuideBuffer_->GetUAVHandleGPU());
+	
 	dxrCmdList_->Dispatch(physicsGroupX, 1, 1);
 
 	auto barrierGuide = CD3DX12_RESOURCE_BARRIER::Transition(
@@ -405,19 +458,46 @@ void Hair::Initialize(Fngine* engine) {
 
 // -----------------------------------------------
 
-	//   ================
-	// 【 ストランド設計 】
-	//   ================
+#pragma region ストランドについて
+
 	std::vector<Strands::ChildStrand> childStrands;
+	gpuChildStrandBuffer_ = std::make_unique<Structured<Strands::ChildStrand>>(engine);
 	auto rand = RandomUtils::GetInstance();
-	float spreadRadius = 0.005f;
-	UINT NUM_STRANDS = static_cast<UINT>(hairConfig.numStrands);
+	UINT NUM_STRANDS;
+	UINT totalVertices = 0;
 
-	for (UINT s = 0; s < NUM_STRANDS; ++s) {
-		Strands::ChildStrand child;
+	// =====================================
+	//
+	// 【 データをLoadして作成するタイプ 】
+	//
+	// =====================================
+	if (isLoad == true) {
+		NUM_STRANDS = static_cast<UINT>(savedata.hairConfig.numStrands);
+		gpuChildStrandBuffer_->Initialize(static_cast<UINT>(savedata.childStrands.size()));
+		std::memcpy(gpuChildStrandBuffer_->GetMappedData(), savedata.childStrands.data(), sizeof(Strands::ChildStrand)* savedata.childStrands.size());
+		Log::View("Child strands loaded from save data.");
+		// Strandによって頂点数が違うからStrandInfoで計算するしか方法がないかな
+		// 計算方法はなんだ？
+		for (const auto& info : savedata.strandInfos) {
+			totalVertices += static_cast<UINT>(info.vertexCount);
+		}
+	}
+	// =====================================
+	//
+	// 【 データを作成して作成するタイプ 】
+	//   もしかして：ObjectPool
+	// =====================================
+	else {
+		float spreadRadius = 0.005f;
+		NUM_STRANDS = static_cast<UINT>(gpuConfigBuffer_->GetMappedData()->numStrands);
 
-		if (s < 0) {
-			uint32_t targetGuideId = rand->GetHighRandom().GetInt(0, hairConfig.numGuides - 1); // ランダムに1本選ぶ
+		//   ================
+		// 【 ストランド設計 】
+		//   ================
+		for (UINT s = 0; s < NUM_STRANDS; ++s) {
+			Strands::ChildStrand child;
+
+			uint32_t targetGuideId = rand->GetHighRandom().GetInt(0, gpuConfigBuffer_->GetMappedData()->numGuides - 1); // ランダムに1本選ぶ
 			child.parentGuideIds[0] = targetGuideId;
 			child.parentGuideIds[1] = targetGuideId;
 			child.parentGuideIds[2] = targetGuideId;
@@ -429,53 +509,39 @@ void Hair::Initialize(Fngine* engine) {
 
 			child.twistAngle = Deg2Rad(1080.0f); // 3回転ドリルねじれ
 			child.clumpForce = 0.8f;             // ギュッと束ねる
-		}
-		// 隣り合う2本の親ガイドを滑らかに補間する「ブレンド髪」にする
-		else {
-			uint32_t guideA = rand->GetHighRandom().GetInt(0, hairConfig.numGuides - 2);
-			uint32_t guideB = guideA + 1; // 隣のガイド
 
-			child.parentGuideIds[0] = guideA;
-			child.parentGuideIds[1] = guideB;
-			child.parentGuideIds[2] = guideB + 1;
-			child.blendMode = 1; // 複数ガイドブレンドモード
+			//child.lengthScale = 0.9f + rand->GetHighRandom().GetFloat(0.0f, 0.2f);
+			child.lengthScale = 1.0f;
 
-			float w = rand->GetHighRandom().GetFloat(0.1f, 0.9f); // 2本の間でのランダムな位置
-			child.weights[0] = w;
-			child.weights[1] = 1.0f - w;
-			child.weights[2] = 0.0f;
+			// ガイドの周りに散らすオフセット
+			float angle = static_cast<float>(rand->GetHighRandom().GetInt(0, 360));
+			float r = sqrtf(rand->GetHighRandom().GetFloat(0.0f, 1.0f)) * spreadRadius;
+			child.offset = Vector2(std::cosf(Deg2Rad(angle)) * r, std::sinf(Deg2Rad(angle)) * r);
 
-			child.twistAngle = 0.0f; // ブレンド髪はねじらないストレート
-			child.clumpForce = 0.2f; // ゆるめの束感
+			child.seed = s; // チラつき防止固定シード
+			child.waveAmplitude = 0.01f;
+			child.waveFrequency = 4.0f;
+			child.noise = 0.0f;
+
+			childStrands.push_back(child);
 		}
 
-		//child.lengthScale = 0.9f + rand->GetHighRandom().GetFloat(0.0f, 0.2f);
-		child.lengthScale = 1.0f;
+		gpuChildStrandBuffer_->Initialize(static_cast<UINT>(childStrands.size()));
+		std::memcpy(gpuChildStrandBuffer_->GetMappedData(), childStrands.data(), sizeof(Strands::ChildStrand) * childStrands.size());
 
-		// ガイドの周りに散らすオフセット
-		float angle = static_cast<float>(rand->GetHighRandom().GetInt(0, 360));
-		float r = sqrtf(rand->GetHighRandom().GetFloat(0.0f, 1.0f)) * spreadRadius;
-		child.offset = Vector2(std::cosf(Deg2Rad(angle)) * r, std::sinf(Deg2Rad(angle)) * r);
+		Log::View("Child strands generated.\n");
+		totalVertices = NUM_STRANDS * gpuConfigBuffer_->GetMappedData()->pointPerStrand;
 
-		child.seed = s; // チラつき防止固定シード
-		child.waveAmplitude = 0.01f;
-		child.waveFrequency = 4.0f;
-		child.noise = 0.0f;
-
-		childStrands.push_back(child);
+		// もし、クラッシュしたりデータがゴミだった場合は、偽のデータを作成してとりあえず詰めてください
+		Log::View("if you Clash when make only buffer ni Please nise data");
 	}
-
-	gpuChildStrandBuffer_ = std::make_unique<Structured<Strands::ChildStrand>>(engine);
-	gpuChildStrandBuffer_->Initialize(static_cast<UINT>(childStrands.size()));
-	std::memcpy(gpuChildStrandBuffer_->GetMappedData(), childStrands.data(), sizeof(Strands::ChildStrand) * childStrands.size());
-
-	UINT totalVertices = NUM_STRANDS * hairConfig.pointPerStrand;
 
 	// GPUに送るためのバッファを作成
 	hairVertexBuffer_ = std::make_unique<RWStructured<Strands::StrandVertex>>(engine);
 	hairVertexBuffer_->Initialize(totalVertices);
 	hairVertexBuffer_->GetResource()->SetName(L"HairVertexBuffer");
 
+	//uint32_t generateGroupX = (NUM_STRANDS + 63) / 64;
 	uint32_t generateGroupX = (NUM_STRANDS + 63) / 64;
 
 	// Strands作成CSを実行
@@ -484,9 +550,11 @@ void Hair::Initialize(Fngine* engine) {
 	
 	dxrCmdList_->SetComputeRootDescriptorTable(0, gpuGuideBuffer_->GetSRVHandleGPU());
 	dxrCmdList_->SetComputeRootDescriptorTable(1, gpuChildStrandBuffer_->GetSRVHandleGPU());
-	dxrCmdList_->SetComputeRootDescriptorTable(2, hairVertexBuffer_->GetUAVHandleGPU());
-	dxrCmdList_->SetComputeRootConstantBufferView(3, gpuMakeConfigBuffer_->GetGPUVirtualAddress());
-	dxrCmdList_->SetComputeRootConstantBufferView(4, gpuConfigBuffer_->GetGPUVirtualAddress());
+	dxrCmdList_->SetComputeRootDescriptorTable(2, strandInfoBuffer_->GetSRVHandleGPU());
+	dxrCmdList_->SetComputeRootDescriptorTable(3, guideInfoBuffer_->GetSRVHandleGPU());
+	dxrCmdList_->SetComputeRootDescriptorTable(4, hairVertexBuffer_->GetUAVHandleGPU());
+	dxrCmdList_->SetComputeRootConstantBufferView(5, gpuMakeConfigBuffer_->GetGPUVirtualAddress());
+	dxrCmdList_->SetComputeRootConstantBufferView(6, gpuConfigBuffer_->GetGPUVirtualAddress());
 
 	dxrCmdList_->Dispatch(generateGroupX, 1, 1);
 
@@ -497,24 +565,47 @@ void Hair::Initialize(Fngine* engine) {
 		D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
 	dxrCmdList_->ResourceBarrier(1, &barrierVertices);
 
+#pragma endregion
+
 	/////////////////////////////
 	//
 	//  AABBBufferについての処理
 	//
 	/////////////////////////////
+	std::vector<Strands::SegmentData> cpuSegments;
+	if (isLoad == true) {
+		cpuSegments = savedata.segments;
+	}
+	else {
+		for (int i = 0; i < hairConfig.numStrands; ++i) {
+			// 各髪の毛(ストランド)のセグメントを生成
+			for (uint32_t j = 0; j < hairConfig.pointPerStrand - 1; ++j) {
+				Strands::SegmentData seg;
+				seg.v0_Index = i * hairConfig.pointPerStrand + j;
+				seg.v1_Index = i * hairConfig.pointPerStrand + j + 1;
+				cpuSegments.push_back(seg);
+			}
+		}
+	}
+	segmentBuffer_ = std::make_unique<Structured<Strands::SegmentData>>(engine);
+	segmentBuffer_->Initialize(static_cast<uint32_t>(cpuSegments.size()));
+	segmentBuffer_->GetResource()->SetName(L"HairSegmentBuffer");
+	std::memcpy(segmentBuffer_->GetMappedData(), cpuSegments.data(), sizeof(Strands::SegmentData) * cpuSegments.size());
+
 	hairAABBBuffer_ = std::make_unique<RWStructured<D3D12_RAYTRACING_AABB>>(engine);
-	// ここのサイズをどうしよう。多めに取るのが正解かな？
-	hairAABBBuffer_->Initialize(NUM_STRANDS * (hairConfig.pointPerStrand - 1));
+	hairAABBBuffer_->Initialize(static_cast<uint32_t>(cpuSegments.size()));
 	hairAABBBuffer_->GetResource()->SetName(L"HairAABBBuffer");
 
 	// 計算を実行
 	dxrCmdList_->SetComputeRootSignature(PSOManager::GetInstance()->GetPSO("HairAABBCS").GetRootSignature().GetRS().Get());
 	dxrCmdList_->SetPipelineState(PSOManager::GetInstance()->GetPSO("HairAABBCS").GetCPS().Get());
 	// ここにRootSignatureのやつを設定していく
-	
-	dxrCmdList_->SetComputeRootDescriptorTable(0, hairVertexBuffer_->GetSRVHandleGPU());
-	dxrCmdList_->SetComputeRootDescriptorTable(1, hairAABBBuffer_->GetUAVHandleGPU());
-	dxrCmdList_->SetComputeRootConstantBufferView(2, gpuConfigBuffer_->GetGPUVirtualAddress());
+
+	dxrCmdList_->SetComputeRootConstantBufferView(0, gpuConfigBuffer_->GetGPUVirtualAddress());
+	dxrCmdList_->SetComputeRootDescriptorTable(1, hairVertexBuffer_->GetSRVHandleGPU());
+	dxrCmdList_->SetComputeRootDescriptorTable(2, strandInfoBuffer_->GetSRVHandleGPU());
+	dxrCmdList_->SetComputeRootDescriptorTable(3, hairAABBBuffer_->GetUAVHandleGPU());
+	//dxrCmdList_->SetComputeRootDescriptorTable(4, segmentBuffer_->GetSRVHandleGPU());
 
 	dxrCmdList_->Dispatch(generateGroupX, 1, 1);
 
@@ -523,14 +614,26 @@ void Hair::Initialize(Fngine* engine) {
 	uavBarrier.UAV.pResource = hairAABBBuffer_->GetResource(); // AABBバッファ
 	dxrCmdList_->ResourceBarrier(1, &uavBarrier);
 
+	//D3D12_RESOURCE_BARRIER uavSegmentBarrier = {};
+	//uavSegmentBarrier.Type = D3D12_RESOURCE_BARRIER_TYPE_UAV;
+	//uavSegmentBarrier.UAV.pResource = segmentBuffer_->GetResource(); // Segmentバッファ
+	//dxrCmdList_->ResourceBarrier(1, &uavSegmentBarrier);
+
 	// 作業完了を待つ
 	auto barrierAABB = CD3DX12_RESOURCE_BARRIER::Transition(
 		hairAABBBuffer_->GetResource(),
 		D3D12_RESOURCE_STATE_UNORDERED_ACCESS,
 		D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
 	dxrCmdList_->ResourceBarrier(1, &barrierAABB);
-	
-	Log::View("AABB Compleate");
+
+	/*auto barrierSegment = CD3DX12_RESOURCE_BARRIER::Transition(
+		segmentBuffer_->GetResource(),
+		D3D12_RESOURCE_STATE_UNORDERED_ACCESS,
+		D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
+	dxrCmdList_->ResourceBarrier(1, &barrierSegment);*/
+
+
+	Log::View("AABB Compleate\n");
 	// AABBが完成しました。。。
 
 // -----------------------------------------------
@@ -784,7 +887,7 @@ void Hair::Initialize(Fngine* engine) {
 	// ---------------------------------------------------------
 	// 配線図のパラメーターを4つ定義する
 	// ---------------------------------------------------------
-	CD3DX12_ROOT_PARAMETER rootParameters[5]{};
+	CD3DX12_ROOT_PARAMETER rootParameters[6]{};
 
 	// [0] b0: カメラ情報 (Constant Buffer)
 	rootParameters[0].InitAsConstantBufferView(0); // レジスタ b0 に直接繋ぐ
@@ -795,14 +898,17 @@ void Hair::Initialize(Fngine* engine) {
 	// [2] t1: 髪の毛の頂点バッファ (Shader Resource View)
 	rootParameters[2].InitAsShaderResourceView(1); // レジスタ t1 に直接繋ぐ
 
-	// [3] u0: 出力先のキャンバス (Unordered Access View)
+	// [3] t3: Segmentバッファ (Shader Resource View)
+	rootParameters[3].InitAsShaderResourceView(3); // レジスタ t3 に直接繋ぐ
+
+	// [4] u0: 出力先のキャンバス (Unordered Access View)
 	CD3DX12_DESCRIPTOR_RANGE uavRange;
 	uavRange.Init(D3D12_DESCRIPTOR_RANGE_TYPE_UAV, 1, 0); // u0 を1個
-	rootParameters[3].InitAsDescriptorTable(1, &uavRange);
+	rootParameters[4].InitAsDescriptorTable(1, &uavRange);
 
 	CD3DX12_DESCRIPTOR_RANGE srvRange;
 	srvRange.Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 2); // t2 を1個
-	rootParameters[4].InitAsDescriptorTable(1, &srvRange);
+	rootParameters[5].InitAsDescriptorTable(1, &srvRange);
 
 	// ---------------------------------------------------------
 	// 配線図を1つにまとめる
@@ -909,6 +1015,8 @@ void Hair::Update(float deltaTime, const Matrix4x4& mat) {
 			D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_UNORDERED_ACCESS),
 		CD3DX12_RESOURCE_BARRIER::Transition(hairAABBBuffer_->GetResource(),
 			D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_UNORDERED_ACCESS)
+		/*CD3DX12_RESOURCE_BARRIER::Transition(segmentBuffer_->GetResource(),
+			D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_UNORDERED_ACCESS)*/
 	};
 	dxrCmdList_->ResourceBarrier(_countof(preCSBarriers), preCSBarriers);
 
@@ -916,15 +1024,17 @@ void Hair::Update(float deltaTime, const Matrix4x4& mat) {
 	// 【 HairGuideの物理演算 】
 	//   =====================
 	uint32_t totalGuides = gpuConfigBuffer_->GetMappedData()->numGuides;
-	uint32_t physicsGroupX = (totalGuides + 63) / 64;
+	//uint32_t physicsGroupX = (totalGuides + 63) / 64;
+	uint32_t physicsGroupX = (totalGuides) / 64;
 
 	dxrCmdList_->SetComputeRootSignature(PSOManager::GetInstance()->GetPSO("HairPhysicsCS").GetRootSignature().GetRS().Get());
 	dxrCmdList_->SetPipelineState(PSOManager::GetInstance()->GetPSO("HairPhysicsCS").GetCPS().Get());
 
 	dxrCmdList_->SetComputeRootConstantBufferView(0, gpuPhysicsConfigBuffer_->GetGPUVirtualAddress());
 	dxrCmdList_->SetComputeRootConstantBufferView(1, gpuFrameConfigBuffer_->GetGPUVirtualAddress());
-	dxrCmdList_->SetComputeRootDescriptorTable(2, gpuGuideBuffer_->GetUAVHandleGPU());
-	dxrCmdList_->SetComputeRootConstantBufferView(3, gpuConfigBuffer_->GetGPUVirtualAddress());
+	dxrCmdList_->SetComputeRootConstantBufferView(2, gpuConfigBuffer_->GetGPUVirtualAddress());
+	dxrCmdList_->SetComputeRootDescriptorTable(3, guideInfoBuffer_->GetSRVHandleGPU());
+	dxrCmdList_->SetComputeRootDescriptorTable(4, gpuGuideBuffer_->GetUAVHandleGPU());
 
 	dxrCmdList_->Dispatch(physicsGroupX, 1, 1);
 
@@ -945,9 +1055,11 @@ void Hair::Update(float deltaTime, const Matrix4x4& mat) {
 	
 	dxrCmdList_->SetComputeRootDescriptorTable(0, gpuGuideBuffer_->GetSRVHandleGPU());
 	dxrCmdList_->SetComputeRootDescriptorTable(1, gpuChildStrandBuffer_->GetSRVHandleGPU());
-	dxrCmdList_->SetComputeRootDescriptorTable(2, hairVertexBuffer_->GetUAVHandleGPU());
-	dxrCmdList_->SetComputeRootConstantBufferView(3, gpuMakeConfigBuffer_->GetGPUVirtualAddress());
-	dxrCmdList_->SetComputeRootConstantBufferView(4, gpuConfigBuffer_->GetGPUVirtualAddress());
+	dxrCmdList_->SetComputeRootDescriptorTable(2, strandInfoBuffer_->GetSRVHandleGPU());
+	dxrCmdList_->SetComputeRootDescriptorTable(3, guideInfoBuffer_->GetSRVHandleGPU());
+	dxrCmdList_->SetComputeRootDescriptorTable(4, hairVertexBuffer_->GetUAVHandleGPU());
+	dxrCmdList_->SetComputeRootConstantBufferView(5, gpuMakeConfigBuffer_->GetGPUVirtualAddress());
+	dxrCmdList_->SetComputeRootConstantBufferView(6, gpuConfigBuffer_->GetGPUVirtualAddress());
 
 	dxrCmdList_->Dispatch(generateGroupX, 1, 1);
 
@@ -963,9 +1075,11 @@ void Hair::Update(float deltaTime, const Matrix4x4& mat) {
 	dxrCmdList_->SetComputeRootSignature(PSOManager::GetInstance()->GetPSO("HairAABBCS").GetRootSignature().GetRS().Get());
 	dxrCmdList_->SetPipelineState(PSOManager::GetInstance()->GetPSO("HairAABBCS").GetCPS().Get());
 	// ここにRootSignatureのやつを設定していく
-	dxrCmdList_->SetComputeRootDescriptorTable(0, hairVertexBuffer_->GetSRVHandleGPU());
-	dxrCmdList_->SetComputeRootDescriptorTable(1, hairAABBBuffer_->GetUAVHandleGPU());
-	dxrCmdList_->SetComputeRootConstantBufferView(2, gpuConfigBuffer_->GetGPUVirtualAddress());
+	dxrCmdList_->SetComputeRootConstantBufferView(0, gpuConfigBuffer_->GetGPUVirtualAddress());
+	dxrCmdList_->SetComputeRootDescriptorTable(1, hairVertexBuffer_->GetSRVHandleGPU());
+	dxrCmdList_->SetComputeRootDescriptorTable(2, strandInfoBuffer_->GetSRVHandleGPU());
+	dxrCmdList_->SetComputeRootDescriptorTable(3, hairAABBBuffer_->GetUAVHandleGPU());
+	//dxrCmdList_->SetComputeRootDescriptorTable(4, segmentBuffer_->GetSRVHandleGPU());
 
 	dxrCmdList_->Dispatch(generateGroupX, 1, 1);
 
@@ -974,12 +1088,23 @@ void Hair::Update(float deltaTime, const Matrix4x4& mat) {
 	uavBarrier.UAV.pResource = hairAABBBuffer_->GetResource(); // AABBバッファ
 	dxrCmdList_->ResourceBarrier(1, &uavBarrier);
 
+	//D3D12_RESOURCE_BARRIER uavSegmentBarrier = {};
+	//uavSegmentBarrier.Type = D3D12_RESOURCE_BARRIER_TYPE_UAV;
+	//uavSegmentBarrier.UAV.pResource = segmentBuffer_->GetResource(); // Segmentバッファ
+	//dxrCmdList_->ResourceBarrier(1, &uavSegmentBarrier);
+
 	auto barrierAABB = CD3DX12_RESOURCE_BARRIER::Transition(
 		hairAABBBuffer_->GetResource(),
 		D3D12_RESOURCE_STATE_UNORDERED_ACCESS,
 		D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE
 	);
 	dxrCmdList_->ResourceBarrier(1, &barrierAABB);
+
+	/*auto barrierSegment = CD3DX12_RESOURCE_BARRIER::Transition(
+		segmentBuffer_->GetResource(),
+		D3D12_RESOURCE_STATE_UNORDERED_ACCESS,
+		D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
+	dxrCmdList_->ResourceBarrier(1, &barrierSegment);*/
 
 	//   ==============
 	// 【 BLASの再構築 】
@@ -1110,9 +1235,11 @@ void Hair::Render(D3D12_GPU_DESCRIPTOR_HANDLE depthHandle) {
 
 	commandList->SetComputeRootShaderResourceView(2, hairVertexBuffer_->GetResource()->GetGPUVirtualAddress());
 
-	commandList->SetComputeRootDescriptorTable(3, renderTargetUAVHandleGPU_);
+	commandList->SetComputeRootShaderResourceView(3, segmentBuffer_->GetResource()->GetGPUVirtualAddress());
 
-	commandList->SetComputeRootDescriptorTable(4, depthHandle);
+	commandList->SetComputeRootDescriptorTable(4, renderTargetUAVHandleGPU_);
+
+	commandList->SetComputeRootDescriptorTable(5, depthHandle);
 
 	// --- 2. パイプライン（RTPSO）のセット ---
 	// コマンドリストにレイトレ専用パイプラインを設定（StateObjectをセットします）

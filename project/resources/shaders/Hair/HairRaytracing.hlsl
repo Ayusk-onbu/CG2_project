@@ -1,3 +1,5 @@
+#include "Hair.hlsli"
+
 ///////////////
 //
 // RayGenShader
@@ -23,19 +25,14 @@ struct Camera
     float32_t3 position;
 };
 
-struct StrandVertex
-{
-    float32_t3 position;
-    float32_t radius;
-    float32_t3 color;
-    float32_t padding;
-};
-
 // TLAS
 RaytracingAccelerationStructure SceneTLAS : register(t0);
-
 // Hair Vertex Buffer
 StructuredBuffer<StrandVertex> HairVertices : register(t1);
+// シーンのDepth情報
+Texture2D<float32_t> SceneDepth : register(t2);
+// Segment Data Buffer
+StructuredBuffer<SegmentData> HairSegments : register(t3);
 
 // Camera Buffer
 ConstantBuffer<Camera> gCamera : register(b0);
@@ -43,8 +40,6 @@ ConstantBuffer<Camera> gCamera : register(b0);
 // UAV
 RWTexture2D<float32_t4> gOutput : register(u0);
 
-
-Texture2D<float32_t> SceneDepth : register(t2);
 
 [shader("raygeneration")]
 void MyRayGenShader()
@@ -223,29 +218,20 @@ void HairIntersectionShader()
     ray.Origin = ObjectRayOrigin();
     ray.Direction = ObjectRayDirection();
 
-    // プリミティブIDから、対応するC++の頂点バッファのインデックスを特定
-   
-    uint segmentsPerStrand = 32 - 1;
-
-    // 何本目の髪の毛か
-    uint strandId = PrimitiveIndex() / segmentsPerStrand;
-    // その髪の毛の何番目のセグメントか
-    uint segmentId = PrimitiveIndex() % segmentsPerStrand;
-
-    // 実際の頂点バッファの開始インデックス
-    uint index = (strandId * 32) + segmentId;
+    // レイトレーシングエンジンが教えてくれる「当たったAABBの通し番号」
+    uint aabbIndex = PrimitiveIndex();
+    // セグメントバッファから、直接このAABBを構成する頂点インデックスを引く
+    SegmentData seg = HairSegments[aabbIndex];
+    // 頂点データを直接取得！
+    StrandVertex v0 = HairVertices[seg.v0_Index];
+    StrandVertex v1 = HairVertices[seg.v1_Index];
     
-    // uint index = PrimitiveIndex() * 1;
-    StrandVertex v0 = HairVertices[index];
-    StrandVertex v1 = HairVertices[index + 1];
-    
-    // 両端の半径の平均値を太さとする
     float radius = v0.radius;
 
     float thit;
     HairAttribute attr;
 
-    // 数学テストを実行
+    // 数学テストを実行：ここに改良の余地あり
     if (RayCapsuleIntersectionTest(ray, v0.position, v1.position, radius, thit, attr))
     {
         // 計算された交点 t が、現在のレイトレーシングの有効範囲内（一番手前）にあるか確認
@@ -256,35 +242,9 @@ void HairIntersectionShader()
             attr.normal = normalize(mul((float3x3) ObjectToWorld3x4(), attr.normal));
 
             // GPUへ交差を報告！（これによりClosestHitが起動する）
-            ReportHit(thit, /*hitKind*/0, attr);
+            ReportHit(thit, 0, attr);
         }
     }
-    
-    
-    
-    //// とにかく「レイの有効範囲内の適当な距離」でヒットしたことにする！
-    //float dummyThit = RayTMin() + 0.1f;
-
-    //// 現在のレイの最大到達距離より手前ならヒット！
-    //if (dummyThit < RayTCurrent())
-    //{
-    //    HairAttribute attr;
-    //    attr.uv = float2(0.5f, 0.5f);
-    //    attr.normal = float3(0, 1, 0); // 適当な上向き法線
-
-    //    // 問答無用でヒットを報告
-    //    ReportHit(dummyThit, 0, attr);
-    //}
-}
-////////////////////////
-//
-//     Miss Shader
-//
-////////////////////////
-[shader("miss")]
-void MyMissShader(inout RayPayload payload)
-{
-   //payload.color = float32_t3(0.1f, 0.2f, 0.5f);
 }
 
 ////////////////////////
@@ -295,20 +255,14 @@ void MyMissShader(inout RayPayload payload)
 [shader("closesthit")]
 void HairClosestHitShader(inout RayPayload payload, in HairAttribute attribute)
 {
-    // 当たった節の頂点データを引き直す
-    //uint32_t index = PrimitiveIndex() * 1;
+   // レイトレーシングエンジンが教えてくれる「当たったAABBの通し番号」
+    uint32_t aabbIndex = PrimitiveIndex();
+    // セグメントバッファから、直接このAABBを構成する頂点インデックスを引く
+    SegmentData seg = HairSegments[aabbIndex];
+    // 頂点データを直接取得
+    StrandVertex v0 = HairVertices[seg.v0_Index];
+    StrandVertex v1 = HairVertices[seg.v1_Index];
     
-    uint segmentsPerStrand = 32 - 1;
-    // 何本目の髪の毛か
-    uint strandId = PrimitiveIndex() / segmentsPerStrand;
-    // その髪の毛の何番目のセグメントか
-    uint segmentId = PrimitiveIndex() % segmentsPerStrand;
-    // 実際の頂点バッファの開始インデックス
-    uint index = (strandId * 32) + segmentId;
-    
-    StrandVertex v0 = HairVertices[index];
-    StrandVertex v1 = HairVertices[index + 1];
-
     // 当たった場所の比率（attribute.uv.y）を使って、C++からきた頂点カラーを滑らかに補間！
     float32_t3 baseColor = lerp(v0.color, v1.color, attribute.uv.y);
 
@@ -342,4 +296,15 @@ void HairClosestHitShader(inout RayPayload payload, in HairAttribute attribute)
     // DiffuseにSpecularを加算する
     //payload.color = (baseColor * diffuse) + (specularColor * specularIntensity) + envColor;
     payload.color = baseColor;
+}
+
+////////////////////////
+//
+//     Miss Shader
+//
+////////////////////////
+[shader("miss")]
+void MyMissShader(inout RayPayload payload)
+{
+    // 背景はゲームの画像なので特に何もしない
 }

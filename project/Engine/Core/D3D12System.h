@@ -13,5 +13,6 @@ public:
 	void SelectLevel(OmnisTechOracle& omnisTechOracle);
 private:
 	Microsoft::WRL::ComPtr <ID3D12Device> device_ = nullptr;
+	Microsoft::WRL::ComPtr<ID3D12DeviceRemovedExtendedDataSettings> pDredSettings;
 };
 

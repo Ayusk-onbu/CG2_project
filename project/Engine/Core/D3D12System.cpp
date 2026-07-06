@@ -24,4 +24,13 @@ void D3D12System::SelectLevel(OmnisTechOracle& omnisTechOracle) {
 	assert(device_ != nullptr);
 	Log::ViewFile("Complete create D3D12Device!!!\n");//初期化完了のログを出す
 	device_->SetName(L"D3D12Device");
+
+#ifdef _DEBUG
+	
+	if (SUCCEEDED(D3D12GetDebugInterface(IID_PPV_ARGS(&pDredSettings)))) {
+		// デバイスロスト時にAuto-Breadcrumbs（処理の足跡）とPage Fault（メモリ違反）の情報を有効化
+		pDredSettings->SetAutoBreadcrumbsEnablement(D3D12_DRED_ENABLEMENT_FORCED_ON);
+		pDredSettings->SetPageFaultEnablement(D3D12_DRED_ENABLEMENT_FORCED_ON);
+	}
+#endif
 }

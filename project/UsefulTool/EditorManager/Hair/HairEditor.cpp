@@ -96,24 +96,34 @@ void HairGuideEditor::GenerateDefaultSphereHair(GuideCurve::ControllerPoint* dat
 void HairGuideEditor::GenerateDefaultShortHair(GuideCurve::ControllerPoint* data, uint32_t totalCount, float headRadius,
     float bangLength, float backLength, Vector3 headCenter, Vector3 rootColor,
     Vector3 tipColor) {
-    const int POINTS_PER_GUIDE = hairSystem_->GetCPUGuideConfig()->pointPerGuide;
-    int totalGuides = totalCount / POINTS_PER_GUIDE;
+    // 1. IHair から各種メタデータバッファのポインタを取得
+    auto* guideInfoData = hairSystem_->GetCPUGuideInfoData();
+    auto* strandInfoData = hairSystem_->GetCPUStrandInfoData();
+    auto* segmentData = hairSystem_->GetCPUSegmentData();
 
-    float bangSegLen = bangLength / (POINTS_PER_GUIDE - 1);
-    float backSegLen = backLength / (POINTS_PER_GUIDE - 1);
+    // ガイドの総数を取得
+    int totalGuides = hairSystem_->GetCPUGuideInfoCount();
+    if (totalGuides == 0) return;
+
+    // 🌟 累積オフセット（インデックス）の初期化
+    uint32_t currentVertexOffset = 0;
+    uint32_t currentStrandOffset = 0;
+    uint32_t currentSegmentOffset = 0;
+
+    // 分割数の基準（例として最大16点 = 15セグメントとする場合）
+    float bangSegLen = bangLength / 15.0f;
+    float backSegLen = backLength / 15.0f;
 
     bool isZPlusFront = true;
     float forwardSign = isZPlusFront ? 1.0f : -1.0f;
 
     for (int g = 0; g < totalGuides; ++g) {
-
+        // --- ジオメトリ・配置計算（既存のロジック） ---
         float t_geo = (float)g / (float)(totalGuides - 1);
         float y_local = 1.0f - t_geo * 1.3f;
-
         float radiusAtY = std::sqrt((std::max)(0.0f, 1.0f - y_local * y_local));
         float goldenAngle = 2.39996322f;
         float theta = g * goldenAngle;
-
         float x_local = std::cos(theta) * radiusAtY;
         float z_local = std::sin(theta) * radiusAtY;
 
@@ -121,14 +131,8 @@ void HairGuideEditor::GenerateDefaultShortHair(GuideCurve::ControllerPoint* data
         float n_len = std::sqrt(normal.x * normal.x + normal.y * normal.y + normal.z * normal.z);
         if (n_len > 0.0f) { normal.x /= n_len; normal.y /= n_len; normal.z /= n_len; }
 
-        // -----------------------------------------------------------
-        // 【修正1】ワンレンボブ・ぱっつん前髪用の長さ計算
-        // -----------------------------------------------------------
-        // 毛先を水平に揃えるため、頭頂部(normal.yが1)の毛を長く、下の方の毛を短くします。
         float heightFactor = 0.3f + (std::max)(0.0f, normal.y) * 0.7f;
         float currentBackSegLen = backSegLen * heightFactor;
-
-        // 前髪も同様に、上から生える毛ほど長くして毛先を揃えます
         float currentBangSegLen = bangSegLen * (0.5f + (std::max)(0.0f, normal.y) * 0.5f);
 
         float localSegmentLength = currentBackSegLen;
@@ -137,28 +141,64 @@ void HairGuideEditor::GenerateDefaultShortHair(GuideCurve::ControllerPoint* data
 
         if (isFrontArea && normal.y > 0.0f) {
             float blend = std::abs(normal.z);
+            if (blend > 0.5f) { localSegmentLength = currentBangSegLen; isBang = true; }
+            else { float t = blend / 0.5f; localSegmentLength = currentBackSegLen * (1.0f - t) + currentBangSegLen * t; }
+        }
 
-            if (blend > 0.5f) {
-                localSegmentLength = currentBangSegLen; // 修正した長さを適用
-                isBang = true;
-            }
-            else {
-                float t = blend / 0.5f;
-                localSegmentLength = currentBackSegLen * (1.0f - t) + currentBangSegLen * t;
+        // 🌟 【修正ポイント1】ガイドごとに最適な頂点数を動的に決定する
+        int pointsForThisGuide = 16; // デフォルトの頂点数
+        if (isBang) {
+            pointsForThisGuide = 10; // 前髪は短いので頂点数を減らす、といった調整が可能
+        }
+        else if (normal.y < -0.1f) {
+            pointsForThisGuide = 8;  // 襟足の短い部分はさらに頂点数を減らす、など
+        }
+
+        // 🌟 【修正ポイント2】GuideInfo の組み直し
+        if (guideInfoData) {
+            guideInfoData[g].vertexStartIndex = currentVertexOffset;
+            guideInfoData[g].vertexCount = pointsForThisGuide;
+            // 必要に応じて他の物理パラメータや初期化フラグ等があればここでセット
+        }
+
+        // 🌟 【修正ポイント3】StrandInfo の組み直し
+        // ガイド1本に対して生成される子ストランド（Strand）の情報をセット
+        // 例: ガイド1本につき4本のストランドが生成される場合
+        int strandsPerGuide = 4;
+        for (int s = 0; s < strandsPerGuide; ++s) {
+            uint32_t strandIdx = currentStrandOffset + s;
+            if (strandIdx < hairSystem_->GetCPUStrandInfoCount() && strandInfoData) {
+                // ストランド固有の頂点バッファがある場合はそのオフセット、
+                // ガイドと同期する場合は共通のオフセットやカウントをセット
+                strandInfoData[strandIdx].vertexStartIndex = currentVertexOffset;
+                strandInfoData[strandIdx].vertexCount = pointsForThisGuide;
+                strandInfoData[strandIdx].aabbStartIndex = g;
             }
         }
 
+        // 🌟 【修正ポイント4】SegmentData の組み直し (DXR/AABB用)
+        // セグメント数は (頂点数 - 1)
+        int segmentsForThisGuide = pointsForThisGuide - 1;
+        for (int seg = 0; seg < segmentsForThisGuide; ++seg) {
+            uint32_t segIdx = currentSegmentOffset + seg;
+            if (segmentData) {
+                // segmentData[segIdx] に対する初期化や、対応する頂点インデックスの紐付けを行う
+                // 例: segmentData[segIdx].globalVertexIndex = currentVertexOffset + seg;
+            }
+        }
+
+        // --- 制御点の座標・パラメータ計算（POINTS_PER_GUIDE を pointsForThisGuide に置換） ---
         Vector3 rootPos = {
             headCenter.x + normal.x * headRadius,
             headCenter.y + normal.y * headRadius,
             headCenter.z + normal.z * headRadius
         };
-
         Vector3 currentPos = rootPos;
 
-        for (int p = 0; p < POINTS_PER_GUIDE; ++p) {
-            int targetIndex = (g * POINTS_PER_GUIDE) + p;
-            float progress = (float)p / (float)(POINTS_PER_GUIDE - 1);
+        for (int p = 0; p < pointsForThisGuide; ++p) {
+            // 🌟 ターゲットインデックスは累積オフセットを基準にする
+            int targetIndex = currentVertexOffset + p;
+            float progress = (float)p / (float)(pointsForThisGuide - 1);
 
             if (p == 0) {
                 data[targetIndex].position = rootPos;
@@ -169,15 +209,11 @@ void HairGuideEditor::GenerateDefaultShortHair(GuideCurve::ControllerPoint* data
 
                 if (isBang) {
                     float volumeBoost = std::sin(progress * 3.141592f);
-
-                    // 【修正2】横幅(X)を絞りすぎない。0.8から0.2に変更。
-                    // これで顔の中心に寄らず、額の幅を保ったまま下に落ちます。
                     dir.x = normal.x * (1.0f - progress * 0.2f);
                     dir.y = -0.2f - curveInfluence * 1.5f;
                     dir.z = normal.z * (1.0f - progress * 0.2f) + (forwardSign * volumeBoost * 0.15f);
                 }
                 else {
-                    // 後ろ・サイドも同様に横幅をキープ
                     dir.x = normal.x * (1.0f - progress * 0.2f);
                     dir.y = -0.2f - curveInfluence * 2.0f;
                     dir.z = normal.z * (1.0f - progress * 0.2f);
@@ -202,6 +238,11 @@ void HairGuideEditor::GenerateDefaultShortHair(GuideCurve::ControllerPoint* data
             data[targetIndex].color.y = rootColor.y * (1.0f - progress) + tipColor.y * progress;
             data[targetIndex].color.z = rootColor.z * (1.0f - progress) + tipColor.z * progress;
         }
+
+        // 🌟 【最重要】次のガイドのために累積オフセットを進める
+        currentVertexOffset += pointsForThisGuide;
+        currentStrandOffset += strandsPerGuide;
+        currentSegmentOffset += segmentsForThisGuide;
     }
 }
 
