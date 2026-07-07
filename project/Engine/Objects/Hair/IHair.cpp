@@ -277,8 +277,8 @@ void Hair::Initialize(Fngine* engine) {
 	// 【 髪の基本的な設定 】
 	//   ==================
 	Strands::HairConfig hairConfig;
-	hairConfig.numGuides = 50;           // ガイドの総本数：1000
-	hairConfig.pointPerGuide = 8;      // ガイド一本を作る数：16
+	hairConfig.numGuides = 1000;           // ガイドの総本数：1000
+	hairConfig.pointPerGuide = 16;      // ガイド一本を作る数：16
 	hairConfig.pointPerStrand = 32;     // ストランド一本を作る数：32
 	hairConfig.numStrands = 10000.0f;     // ストランドの総本数：10000
 
@@ -437,7 +437,7 @@ void Hair::Initialize(Fngine* engine) {
 
 			child.parentGuideIds[0] = guideA;
 			child.parentGuideIds[1] = guideB;
-			child.parentGuideIds[2] = guideB + 1;
+			child.parentGuideIds[2] = guideB;
 			child.blendMode = 1; // 複数ガイドブレンドモード
 
 			float w = rand->GetHighRandom().GetFloat(0.1f, 0.9f); // 2本の間でのランダムな位置
