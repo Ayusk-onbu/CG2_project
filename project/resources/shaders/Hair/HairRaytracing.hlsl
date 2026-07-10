@@ -12,24 +12,12 @@ struct RayPayload
     float32_t3 color;
 };
 
-// Hit Attribute Store <- Where Hit
-struct HairAttribute
-{
-    float32_t2 uv; // x: 中心軸からの距離比率(0~1), y: 節の始点からの位置比率(0~1)
-    float32_t3 normal; // ワールド空間における法線
-};
-
-struct Camera 
-{
-    float32_t4x4 inverseViewProj;
-    float32_t3 position;
-};
-
 // TLAS
 RaytracingAccelerationStructure SceneTLAS : register(t0);
 // Hair Vertex Buffer
 //StructuredBuffer<StrandVertex> HairVertices : register(t1);
-StructuredBuffer<StrandVertex> HairFlatVertices : register(t1);
+//StructuredBuffer<StrandVertex> HairFlatVertices : register(t1);
+StructuredBuffer<StrandVertex> HairTriangleBuffer : register(t1);
 // シーンのDepth情報
 Texture2D<float32_t> SceneDepth : register(t2);
 // Segment Data Buffer
@@ -120,232 +108,63 @@ void MyRayGenShader()
 
 ////////////////////////
 //
-//  Intersection Shader
-//
-////////////////////////
-
-struct Ray
-{
-    float3 Origin;
-    float3 Direction;
-};
-
-bool RayCapsuleIntersectionTest(Ray ray, float3 p0, float3 p1, float radius, float rayTCurrent, out float thit, out HairAttribute attr)
-{
-    thit = 0.0f;
-    attr = (HairAttribute) 0;
-
-    // 線分の方向と長さを計算
-    float3 delta = ray.Origin - p0;
-    float3 v = p1 - p0;
-    float L = length(v);
-    if (L < 0.0001f)
-        return false; // 点潰れはスキップ
-    float3 W = v / L; // 線分の単位方向ベクトル
-
-    // 2直線の関係を解くための準備
-    float dotDW = dot(ray.Direction, W);
-    float denom = 1.0f - dotDW * dotDW; // 平行判定用の分母
-
-    float t = 0.0f; // レイ上の距離
-    float u = 0.0f; // 線分上の距離
-
-    if (denom < 0.0001f)
-    {
-        // レイと線分が完全に平行な場合の処理
-        t = -dot(delta, ray.Direction);
-        u = t * dotDW + dot(delta, W);
-    }
-    else
-    {
-        // 通常のねじれの位置にある場合の数式解法
-        float dotDD = dot(delta, ray.Direction);
-        float dotDW_delta = dot(delta, W);
-
-        t = (dotDW_delta * dotDW - dotDD) / denom;
-        u = t * dotDW + dotDW_delta;
-    }
-
-    // クンプ前の大雑把な t の時点で、すでに現在の最短ヒット距離(rayTCurrent)より
-    // 遥か後ろ（奥）にあることが分かったら、この先の重いクランプやベクトル計算をせずに即座に捨てる！
-    // ※カプセルの半径分(radius)だけ安全マージンを持たせます
-    if (t > rayTCurrent + radius)
-    {
-        return false;
-    }
-    
-    // 無限の線を「有限の長さ」にクリッピング(クランプ)する
-    float uClamped = clamp(u, 0.0f, L);
-
-    // 範囲外に飛び出ていたら、丸め込んだ端点を使ってレイ上の衝突位置 t を再計算
-    if (uClamped != u)
-    {
-        u = uClamped;
-        t = -dot(delta - u * W, ray.Direction);
-        
-        // 端点に補正したあとの t でも再度チェック。超えていたら捨てる。
-        if (t > rayTCurrent + radius)
-        {
-            return false;
-        }
-    }
-
-    // レイ上の最接近点と、線分上の最接近点のリアルな3D座標を計算
-    float3 hitPointRay = ray.Origin + t * ray.Direction;
-    float3 hitPointSegment = p0 + u * W;
-    
-    // 中心軸からのズレ（距離）ベクトル
-    float3 distVec = hitPointRay - hitPointSegment;
-    float distSq = dot(distVec, distVec);
-
-    // 髪の毛の太さ（半径）の内側を通過しているか判定
-    if (distSq <= radius * radius)
-    {
-        thit = t; // 衝突距離を確定
-        
-        // ClosestHitへ渡す属性を公式の手順に沿って計算
-        attr.uv.x = sqrt(distSq) / radius; // 太さに対する当たった位置の比率
-        attr.uv.y = u / L; // 線分の長さに対する当たった位置の比率 (0.0〜1.0)
-        
-        // ローカル空間での法線（芯から外側へ向かうベクトル）
-        float distLengthSq = dot(distVec, distVec);
-        if (distLengthSq > 0.000001f)
-        {
-            attr.normal = distVec / sqrt(distLengthSq); // normalizeと同等
-        }
-        else
-        {
-    // 中心を貫いた場合は、カメラ方向に向いた適当な法線を返す
-            attr.normal = -ray.Direction;
-        }
-        
-        return true;
-    }
-
-    return false;
-}
-
-[shader("intersection")]
-void HairIntersectionShader()
-{
-    float rayTCurrent = RayTCurrent();
-    float rayTMin = RayTMin();
-    
-    // 現在処理中のレイ情報を取得
-    Ray ray;
-    ray.Origin = ObjectRayOrigin();
-    ray.Direction = ObjectRayDirection();
-
-    // レイトレーシングエンジンが教えてくれる「当たったAABBの通し番号」
-    uint aabbIndex = PrimitiveIndex();
-    StrandVertex v0 = HairFlatVertices[aabbIndex * 2 + 0];
-    StrandVertex v1 = HairFlatVertices[aabbIndex * 2 + 1];
-    
-    //// セグメントバッファから、直接このAABBを構成する頂点インデックスを引く
-    //SegmentData seg = HairSegments[aabbIndex];
-    //// 頂点データを直接取得！
-    //StrandVertex v0 = HairVertices[seg.v0_Index];
-    //StrandVertex v1 = HairVertices[seg.v1_Index];
-    
-    float radius = v0.radius;
-
-    // レイの始点から、線分の両端点（v0, v1）への距離の最小値を大雑把にチェック。
-    // 完全に rayTCurrent より奥にある AABB なら、交差テストすら行わずに終了する。
-    // (AABBをかすめただけの無駄な奥のレイをここで9割以上ふるい落とせます)
-    float3 toV0 = v0.position - ray.Origin;
-    float3 toV1 = v1.position - ray.Origin;
-    float minDistEstimate = min(dot(toV0, ray.Direction), dot(toV1, ray.Direction)) - radius;
-    if (minDistEstimate > rayTCurrent)
-    {
-        return;
-    }
-    
-    float thit;
-    HairAttribute attr;
-
-    // 数学テストを実行：ここに改良の余地あり
-    if (RayCapsuleIntersectionTest(ray, v0.position, v1.position, radius, rayTCurrent,thit, attr))
-    {
-        // 計算された交点 t が、現在のレイトレーシングの有効範囲内（一番手前）にあるか確認
-        if (thit > rayTMin && thit < rayTCurrent)
-        {
-            // ローカル空間で計算された法線を、世界の傾き（ワールド空間）に変換する
-            // ※髪の毛のデータがBLASの時点で配置されている場合は ObjectToWorld で一発で変換
-            attr.normal = normalize(mul((float3x3) ObjectToWorld3x4(), attr.normal));
-
-            // GPUへ交差を報告！（これによりClosestHitが起動する）
-            ReportHit(thit, 0, attr);
-        }
-    }
-}
-
-////////////////////////
-//
 //  ClosestHit Shader
 //
 ////////////////////////
 [shader("closesthit")]
-void HairClosestHitShader(inout RayPayload payload, in HairAttribute attribute)
+void HairClosestHitShader(inout RayPayload payload, in BuiltInTriangleIntersectionAttributes attr)
 {
-   // レイトレーシングエンジンが教えてくれる「当たったAABBの通し番号」
-    uint32_t aabbIndex = PrimitiveIndex();
-    StrandVertex v0 = HairFlatVertices[aabbIndex * 2 + 0];
-    StrandVertex v1 = HairFlatVertices[aabbIndex * 2 + 1];
+   // 当たった三角形の通し番号を取得
+    uint triIdx = PrimitiveIndex();
     
-    //// セグメントバッファから、直接このAABBを構成する頂点インデックスを引く
-    //SegmentData seg = HairSegments[aabbIndex];
-    //// 頂点データを直接取得
-    //StrandVertex v0 = HairVertices[seg.v0_Index];
-    //StrandVertex v1 = HairVertices[seg.v1_Index];
+    // この三角形を構成する3つの頂点をロード（キャッシュが効くので爆速！）
+    StrandVertex v0 = HairTriangleBuffer[triIdx * 3 + 0];
+    StrandVertex v1 = HairTriangleBuffer[triIdx * 3 + 1];
+    StrandVertex v2 = HairTriangleBuffer[triIdx * 3 + 2];
+
+    // 💡重心座標（barycentrics）を使って、色を滑らかにブレンド
+    float3 bary = float3(1.0 - attr.barycentrics.x - attr.barycentrics.y, attr.barycentrics.x, attr.barycentrics.y);
+    float3 baseColor = v0.color * bary.x + v1.color * bary.y + v2.color * bary.z;
+
+    // 💡 1. 芯からの距離（-1.0 ～ 1.0）を重心座標で補間して復元！
+    float u = v0.padding * bary.x + v1.padding * bary.y + v2.padding * bary.z;
+
+    float3 T = normalize(v2.position - v0.position);
+    float3 V = normalize(-WorldRayDirection());
+
+    // 💡 2. 視線(V)と接線(T)から、画面にとって「真横」のベクトル(R)を作る
+    float3 R = normalize(cross(T, V));
+
+    // 💡 3. 板ポリゴンなのに「円柱の丸み」を持った法線を生成！
+    // 横方向(R)に u の割合、手前方向(V)に円の高さ( ピタゴラスの定理: sqrt(1-u^2) ) の割合を混ぜる
+    float z = sqrt(max(0.0f, 1.0f - u * u));
+    float3 N = normalize(R * u + V * z); // これが本物の円柱の法線になる！
+
+    // --- ここから下は今までと同じ ---
+    float3 L = normalize(float3(1.0f, 1.0f, -1.0f));
+    float3 H = normalize(L + V);
     
-    // 当たった場所の比率（attribute.uv.y）を使って、C++からきた頂点カラーを滑らかに補間！
-    float32_t3 baseColor = lerp(v0.color, v1.color, attribute.uv.y);
+    // ① Diffuse (拡散反射) 
+    float dotLT = dot(L, T);
+    float diffuse = saturate(sqrt(max(0.0f, 1.0f - dotLT * dotLT)) * 0.7f + 0.3f);
 
-    // 固定値 (0,1,0) を廃止し、この節の「本物の傾きベクトル」を計算して接線 T とする！
-    float32_t3 T = normalize(v1.position - v0.position);
+    // ② Dual-Specular (天使の輪)
+    // 💡さっき作った「丸みのある法線(N)」を使うことで、ハイライトが円柱状に美しく乗る！
+    float3 T1 = normalize(T + N * 0.1f);
+    float3 T2 = normalize(T - N * 0.05f);
 
-    // 2. 各種ベクトルの準備
-    float32_t3 L = normalize(float32_t3(1.0f, 1.0f, -1.0f)); // ライト方向
-    float32_t3 V = normalize(-WorldRayDirection()); // 視線方向 (レイの逆向き)
-    float32_t3 H = normalize(L + V); // ハーフベクトル（LとVの中間）
-    float32_t3 N = attribute.normal; // Intersectionから渡された法線
-    
-    // ------------------------------------------------------------
-    // ① Diffuse (拡散反射) - 髪の毛用のシリンダー（円柱）シェーディング
-    // ------------------------------------------------------------
-    float32_t dotLT = dot(L, T);
-    float32_t diffuse = sqrt(max(0.0f, 1.0f - dotLT * dotLT));
-    
-    // 簡易的なライトの回り込み（Wrap-around）を入れて、髪の不透明な影を柔らかくする
-    diffuse = saturate(diffuse * 0.7f + 0.3f);
+    float dotT1H = dot(T1, H);
+    float spec1 = pow(sqrt(max(0.0f, 1.0f - dotT1H * dotT1H)), 80.0f);
+    float3 specularColor1 = float3(1.0f, 1.0f, 1.0f) * spec1 * 0.6f;
 
-    // ------------------------------------------------------------
-    // ② Dual-Specular (天使の輪をリアルにする2重ハイライト)
-    // ------------------------------------------------------------
-    // 髪の表面（キューティクル）の傾きを模倣するため、接線を法線方向に少しシフト（傾斜）させる
-    float32_t3 T1 = normalize(T + N * 0.1f); // 第一ハイライト用（根元側へずれる）
-    float32_t3 T2 = normalize(T - N * 0.05f); // 第二ハイライト用（毛先側へずれる）
+    float dotT2H = dot(T2, H);
+    float spec2 = pow(sqrt(max(0.0f, 1.0f - dotT2H * dotT2H)), 30.0f);
+    float3 specularColor2 = baseColor * spec2 * 0.4f;
 
-    // 【第一ハイライト (R成分)】: 表面のキューティクルで反射する、シャープで白い光
-    float32_t dotT1H = dot(T1, H);
-    float32_t sinT1H = sqrt(max(0.0f, 1.0f - dotT1H * dotT1H));
-    float32_t spec1 = pow(sinT1H, 80.0f); // 鋭いハイライト（数値大）
-    float32_t3 specularColor1 = float32_t3(1.0f, 1.0f, 1.0f) * spec1 * 0.6f; // 白い光
+    float3 ambient = baseColor * 0.05f;
+    //payload.color = (baseColor * diffuse) + specularColor1 + specularColor2 + ambient;
+    payload.color = baseColor;
 
-    // 【第二ハイライト (TRT成分)】: 髪の内部に入り、後ろに透過して戻ってくる、少し鈍く「髪の色」を帯びた光
-    float32_t dotT2H = dot(T2, H);
-    float32_t sinT2H = sqrt(max(0.0f, 1.0f - dotT2H * dotT2H));
-    float32_t spec2 = pow(sinT2H, 30.0f); // 少し広がるハイライト（数値小）
-    float32_t3 specularColor2 = baseColor * spec2 * 0.4f; // 💡髪の毛の色（baseColor）が乗る！
-
-    // ------------------------------------------------------------
-    // ③ 環境光 ＆ 最終合成
-    // ------------------------------------------------------------
-    float32_t3 ambient = baseColor * 0.05f;
-    
-    // すべてを合算してペイロードに返す
-    payload.color = (baseColor * diffuse) + specularColor1 + specularColor2 + ambient;
-    //payload.color = baseColor;
 }
 
 ////////////////////////

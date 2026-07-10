@@ -115,10 +115,10 @@ private:
 	std::unique_ptr<Structured<Strands::SegmentData>> segmentBuffer_; // レイトレ＆AABB用
 	std::unique_ptr<RWStructured<GuideCurve::ControllerPoint>>gpuGuideBuffer_;// 全てのガイドの情報
 	std::unique_ptr<RWStructured<Strands::StrandVertex>> hairVertexBuffer_;
-	std::unique_ptr<RWStructured<D3D12_RAYTRACING_AABB>> hairAABBBuffer_;
+	
 	std::unique_ptr<Structured<D3D12_RAYTRACING_INSTANCE_DESC>> instanceBuffer;
-	// レイトレ専用のフラット頂点バッファ(二重参照をしないため)
-	std::unique_ptr<RWStructured<Strands::StrandVertex>> hairFlatVertexBuffer_;
+	
+	std::unique_ptr<RWStructured<Strands::StrandVertex>> hairTriangleBuffer_;
 
 	// 加速構造体（BLAS）用のリソース
 	Microsoft::WRL::ComPtr<ID3D12Resource> scratchBuffer_;

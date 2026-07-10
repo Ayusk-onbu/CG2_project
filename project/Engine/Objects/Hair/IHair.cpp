@@ -171,7 +171,7 @@ Microsoft::WRL::ComPtr<ID3D12StateObject> Hair::CreateHairRaytracingPSO(
 	// 使用するシェーダー関数名をDXRに登録 -> ShaderImportで登録
 	libSubobject->DefineExport(L"MyRayGenShader");
 	libSubobject->DefineExport(L"MyMissShader");
-	libSubobject->DefineExport(L"HairIntersectionShader");
+	//libSubobject->DefineExport(L"HairIntersectionShader");
 	libSubobject->DefineExport(L"HairClosestHitShader");
 
 	// -----------------------------------------------
@@ -179,12 +179,12 @@ Microsoft::WRL::ComPtr<ID3D12StateObject> Hair::CreateHairRaytracingPSO(
 		// 【最重要】ヒットグループの作成
 	auto hitGroupSubobject = pipelineDesc.CreateSubobject<CD3DX12_HIT_GROUP_SUBOBJECT>();
 	// 髪の毛は三角形ではないので「PROCEDURAL_PRIMITIVE」を指定します
-	hitGroupSubobject->SetHitGroupType(D3D12_HIT_GROUP_TYPE_PROCEDURAL_PRIMITIVE);
+	hitGroupSubobject->SetHitGroupType(D3D12_HIT_GROUP_TYPE_TRIANGLES);
 	// このヒットグループの名前を設定
 	hitGroupSubobject->SetHitGroupExport(L"HairHitGroup");
 
 	// 交差シェーダーとヒットシェーダーをこのグループに紐付ける
-	hitGroupSubobject->SetIntersectionShaderImport(L"HairIntersectionShader");
+	//hitGroupSubobject->SetIntersectionShaderImport(L"HairIntersectionShader");
 	hitGroupSubobject->SetClosestHitShaderImport(L"HairClosestHitShader");
 
 	// -----------------------------------------------
@@ -195,7 +195,8 @@ Microsoft::WRL::ComPtr<ID3D12StateObject> Hair::CreateHairRaytracingPSO(
 	// ペイロードサイズ: RayPayload（float3 color = 12バイト）
 	UINT payloadSize = sizeof(float) * 3;
 	// アトリビュートサイズ: Intersectionから渡される float2 attr（8バイト）
-	UINT attributeSize = sizeof(float) * 5;
+	// 渡したいデータ量
+	UINT attributeSize = sizeof(float) * 2;
 	shaderConfigSubobject->Config(payloadSize, attributeSize);
 
 	// -----------------------------------------------
@@ -250,6 +251,14 @@ void Hair::Initialize(Fngine* engine, bool isLoad, const Strands::HairSaveData& 
 	renderTargetUAVHandleGPU_ = outputTexture_->GetUAVHandleGPU();
 
 // -----------------------------------------------
+
+	hairCameraBuffer_ = std::make_unique<ConstantBuffer<HairCamera>>(engine_);
+	hairCameraBuffer_->Initialize();
+	HairCamera cameraData;
+	cameraData.inverseProjView = Matrix4x4::Inverse(CameraSystem::GetInstance()->GetActiveCamera()->GetViewProjectionMatrix());
+	cameraData.cameraPosition = CameraSystem::GetInstance()->GetActiveCamera()->GetTranslation();
+	cameraData.padding = 0.0f; // パディングを0で初期化
+	hairCameraBuffer_->GetMappedData()[0] = cameraData;
 
 	// ----------------------
 	// 【 髪への物理の性質 】
@@ -588,18 +597,18 @@ void Hair::Initialize(Fngine* engine, bool isLoad, const Strands::HairSaveData& 
 			}
 		}
 	}
-	segmentBuffer_ = std::make_unique<Structured<Strands::SegmentData>>(engine);
+	/*segmentBuffer_ = std::make_unique<Structured<Strands::SegmentData>>(engine);
 	segmentBuffer_->Initialize(static_cast<uint32_t>(cpuSegments.size()));
 	segmentBuffer_->GetResource()->SetName(L"HairSegmentBuffer");
-	std::memcpy(segmentBuffer_->GetMappedData(), cpuSegments.data(), sizeof(Strands::SegmentData) * cpuSegments.size());
+	std::memcpy(segmentBuffer_->GetMappedData(), cpuSegments.data(), sizeof(Strands::SegmentData) * cpuSegments.size());*/
 
-	hairFlatVertexBuffer_ = std::make_unique<RWStructured<Strands::StrandVertex>>(engine);
+	/*hairFlatVertexBuffer_ = std::make_unique<RWStructured<Strands::StrandVertex>>(engine);
 	hairFlatVertexBuffer_->Initialize(static_cast<uint32_t>(cpuSegments.size()) * 2);
-	hairFlatVertexBuffer_->GetResource()->SetName(L"HairFlatVertexBuffer");
+	hairFlatVertexBuffer_->GetResource()->SetName(L"HairFlatVertexBuffer");*/
 
-	hairAABBBuffer_ = std::make_unique<RWStructured<D3D12_RAYTRACING_AABB>>(engine);
-	hairAABBBuffer_->Initialize(static_cast<uint32_t>(cpuSegments.size()));
-	hairAABBBuffer_->GetResource()->SetName(L"HairAABBBuffer");
+	hairTriangleBuffer_ = std::make_unique<RWStructured<Strands::StrandVertex>>(engine);
+	hairTriangleBuffer_->Initialize(static_cast<uint32_t>(cpuSegments.size()) * 6);
+	hairTriangleBuffer_->GetResource()->SetName(L"hairTriangleBuffer_");
 
 	// 計算を実行
 	dxrCmdList_->SetComputeRootSignature(PSOManager::GetInstance()->GetPSO("HairAABBCS").GetRootSignature().GetRS().Get());
@@ -607,21 +616,16 @@ void Hair::Initialize(Fngine* engine, bool isLoad, const Strands::HairSaveData& 
 	// ここにRootSignatureのやつを設定していく
 
 	dxrCmdList_->SetComputeRootConstantBufferView(0, gpuConfigBuffer_->GetGPUVirtualAddress());
-	dxrCmdList_->SetComputeRootDescriptorTable(1, hairVertexBuffer_->GetSRVHandleGPU());
-	dxrCmdList_->SetComputeRootDescriptorTable(2, strandInfoBuffer_->GetSRVHandleGPU());
-	dxrCmdList_->SetComputeRootDescriptorTable(3, hairAABBBuffer_->GetUAVHandleGPU());
-	dxrCmdList_->SetComputeRootDescriptorTable(4, hairFlatVertexBuffer_->GetUAVHandleGPU());
+	dxrCmdList_->SetComputeRootConstantBufferView(1, hairCameraBuffer_->GetGPUVirtualAddress());
+	dxrCmdList_->SetComputeRootDescriptorTable(2, hairVertexBuffer_->GetSRVHandleGPU());
+	dxrCmdList_->SetComputeRootDescriptorTable(3, strandInfoBuffer_->GetSRVHandleGPU());
+	dxrCmdList_->SetComputeRootDescriptorTable(4, hairTriangleBuffer_->GetUAVHandleGPU());
 
 	dxrCmdList_->Dispatch(generateGroupX, 1, 1);
 
-	D3D12_RESOURCE_BARRIER uavBarrier = {};
-	uavBarrier.Type = D3D12_RESOURCE_BARRIER_TYPE_UAV;
-	uavBarrier.UAV.pResource = hairAABBBuffer_->GetResource(); // AABBバッファ
-	dxrCmdList_->ResourceBarrier(1, &uavBarrier);
-
 	D3D12_RESOURCE_BARRIER uavHairBarrier = {};
 	uavHairBarrier.Type = D3D12_RESOURCE_BARRIER_TYPE_UAV;
-	uavHairBarrier.UAV.pResource = hairFlatVertexBuffer_->GetResource(); // AABBバッファ
+	uavHairBarrier.UAV.pResource = hairTriangleBuffer_->GetResource(); // AABBバッファ
 	dxrCmdList_->ResourceBarrier(1, &uavHairBarrier);
 
 
@@ -631,14 +635,8 @@ void Hair::Initialize(Fngine* engine, bool isLoad, const Strands::HairSaveData& 
 	//dxrCmdList_->ResourceBarrier(1, &uavSegmentBarrier);
 
 	// 作業完了を待つ
-	auto barrierAABB = CD3DX12_RESOURCE_BARRIER::Transition(
-		hairAABBBuffer_->GetResource(),
-		D3D12_RESOURCE_STATE_UNORDERED_ACCESS,
-		D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
-	dxrCmdList_->ResourceBarrier(1, &barrierAABB);
-
 	auto barrierHair = CD3DX12_RESOURCE_BARRIER::Transition(
-		hairFlatVertexBuffer_->GetResource(),
+		hairTriangleBuffer_->GetResource(),
 		D3D12_RESOURCE_STATE_UNORDERED_ACCESS,
 		D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
 	dxrCmdList_->ResourceBarrier(1, &barrierHair);
@@ -666,14 +664,27 @@ void Hair::Initialize(Fngine* engine, bool isLoad, const Strands::HairSaveData& 
 	// ジオメトリの設定
 	D3D12_RAYTRACING_GEOMETRY_DESC geometryDesc{};
 	// ジオメトリの種類
-	geometryDesc.Type = D3D12_RAYTRACING_GEOMETRY_TYPE_PROCEDURAL_PRIMITIVE_AABBS; // AABBを指定
+	//geometryDesc.Type = D3D12_RAYTRACING_GEOMETRY_TYPE_PROCEDURAL_PRIMITIVE_AABBS; // AABBを指定
+	geometryDesc.Type = D3D12_RAYTRACING_GEOMETRY_TYPE_TRIANGLES;
 	// ジオメトリのフラグ
-	geometryDesc.Flags = D3D12_RAYTRACING_GEOMETRY_FLAG_NONE;
+	//geometryDesc.Flags = D3D12_RAYTRACING_GEOMETRY_FLAG_NONE;
+	geometryDesc.Flags = D3D12_RAYTRACING_GEOMETRY_FLAG_OPAQUE;
 
 	// 【 AABBの数を設置場所 】
-	geometryDesc.AABBs.AABBCount = hairAABBBuffer_->GetNumElements();
+	/*geometryDesc.AABBs.AABBCount = hairAABBBuffer_->GetNumElements();
 	geometryDesc.AABBs.AABBs.StartAddress = hairAABBBuffer_->GetResource()->GetGPUVirtualAddress();
-	geometryDesc.AABBs.AABBs.StrideInBytes = sizeof(D3D12_RAYTRACING_AABB);
+	geometryDesc.AABBs.AABBs.StrideInBytes = sizeof(D3D12_RAYTRACING_AABB);*/
+
+	geometryDesc.Triangles.VertexBuffer.StartAddress = hairTriangleBuffer_->GetResource()->GetGPUVirtualAddress();
+	geometryDesc.Triangles.VertexBuffer.StrideInBytes = sizeof(Strands::StrandVertex); // 32バイト
+	geometryDesc.Triangles.VertexCount = hairTriangleBuffer_->GetNumElements(); // 頂点数
+	geometryDesc.Triangles.VertexFormat = DXGI_FORMAT_R32G32B32_FLOAT;
+
+	// IndexBuffer　動的に毎回Flatに作成するから大丈夫
+	geometryDesc.Triangles.IndexBuffer = 0;
+	geometryDesc.Triangles.IndexCount = 0;
+	geometryDesc.Triangles.IndexFormat = DXGI_FORMAT_UNKNOWN;
+	geometryDesc.Triangles.Transform3x4 = 0;
 
 	//   ======================
 	// 【 BLASを作るための情報 】
@@ -972,9 +983,6 @@ void Hair::Initialize(Fngine* engine, bool isLoad, const Strands::HairSaveData& 
 		dispatchDesc_
 	);
 
-	hairCameraBuffer_ = std::make_unique<ConstantBuffer<HairCamera>>(engine_);
-	hairCameraBuffer_->Initialize();
-
 	auto initBarrier = CD3DX12_RESOURCE_BARRIER::Transition(
 		outputTexture_->GetResource(),
 		D3D12_RESOURCE_STATE_COMMON,
@@ -988,7 +996,13 @@ void Hair::Initialize(Fngine* engine, bool isLoad, const Strands::HairSaveData& 
 //   ====================
 //////////////////////////////
 void Hair::Update(float deltaTime, const Matrix4x4& mat) {
-	
+	// Get Camera Data
+	HairCamera cameraData;
+	cameraData.inverseProjView = Matrix4x4::Inverse(CameraSystem::GetInstance()->GetActiveCamera()->GetViewProjectionMatrix());
+	cameraData.cameraPosition = CameraSystem::GetInstance()->GetActiveCamera()->GetTranslation();
+	cameraData.padding = 0.0f; // パディングを0で初期化
+	hairCameraBuffer_->GetMappedData()[0] = cameraData;
+
 	ID3D12DescriptorHeap* ppHeaps[] = { engine_->GetSRV().GetDescriptorHeap().GetHeap().Get() };
 	// コマンドリストにヒープをセット（テーブルをセットするより【前】に呼ぶ！）
 	dxrCmdList_->SetDescriptorHeaps(_countof(ppHeaps), ppHeaps);
@@ -1030,9 +1044,7 @@ void Hair::Update(float deltaTime, const Matrix4x4& mat) {
 			D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_UNORDERED_ACCESS),
 		CD3DX12_RESOURCE_BARRIER::Transition(hairVertexBuffer_->GetResource(),
 			D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_UNORDERED_ACCESS),
-		CD3DX12_RESOURCE_BARRIER::Transition(hairAABBBuffer_->GetResource(),
-			D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_UNORDERED_ACCESS),
-		CD3DX12_RESOURCE_BARRIER::Transition(hairFlatVertexBuffer_->GetResource(),
+		CD3DX12_RESOURCE_BARRIER::Transition(hairTriangleBuffer_->GetResource(),
 			D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_UNORDERED_ACCESS)
 		/*CD3DX12_RESOURCE_BARRIER::Transition(segmentBuffer_->GetResource(),
 			D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_UNORDERED_ACCESS)*/
@@ -1095,22 +1107,17 @@ void Hair::Update(float deltaTime, const Matrix4x4& mat) {
 	dxrCmdList_->SetPipelineState(PSOManager::GetInstance()->GetPSO("HairAABBCS").GetCPS().Get());
 	// ここにRootSignatureのやつを設定していく
 	dxrCmdList_->SetComputeRootConstantBufferView(0, gpuConfigBuffer_->GetGPUVirtualAddress());
-	dxrCmdList_->SetComputeRootDescriptorTable(1, hairVertexBuffer_->GetSRVHandleGPU());
-	dxrCmdList_->SetComputeRootDescriptorTable(2, strandInfoBuffer_->GetSRVHandleGPU());
-	dxrCmdList_->SetComputeRootDescriptorTable(3, hairAABBBuffer_->GetUAVHandleGPU());
-	dxrCmdList_->SetComputeRootDescriptorTable(4, hairFlatVertexBuffer_->GetUAVHandleGPU());
+	dxrCmdList_->SetComputeRootConstantBufferView(1, hairCameraBuffer_->GetGPUVirtualAddress());
+	dxrCmdList_->SetComputeRootDescriptorTable(2, hairVertexBuffer_->GetSRVHandleGPU());
+	dxrCmdList_->SetComputeRootDescriptorTable(3, strandInfoBuffer_->GetSRVHandleGPU());
+	dxrCmdList_->SetComputeRootDescriptorTable(4, hairTriangleBuffer_->GetUAVHandleGPU());
 	//dxrCmdList_->SetComputeRootDescriptorTable(4, segmentBuffer_->GetSRVHandleGPU());
 
 	dxrCmdList_->Dispatch(generateGroupX, 1, 1);
 
-	D3D12_RESOURCE_BARRIER uavBarrier = {};
-	uavBarrier.Type = D3D12_RESOURCE_BARRIER_TYPE_UAV;
-	uavBarrier.UAV.pResource = hairAABBBuffer_->GetResource(); // AABBバッファ
-	dxrCmdList_->ResourceBarrier(1, &uavBarrier);
-
 	D3D12_RESOURCE_BARRIER uavHairBarrier = {};
 	uavHairBarrier.Type = D3D12_RESOURCE_BARRIER_TYPE_UAV;
-	uavHairBarrier.UAV.pResource = hairFlatVertexBuffer_->GetResource(); // AABBバッファ
+	uavHairBarrier.UAV.pResource = hairTriangleBuffer_->GetResource(); // AABBバッファ
 	dxrCmdList_->ResourceBarrier(1, &uavHairBarrier);
 
 	//D3D12_RESOURCE_BARRIER uavSegmentBarrier = {};
@@ -1118,15 +1125,8 @@ void Hair::Update(float deltaTime, const Matrix4x4& mat) {
 	//uavSegmentBarrier.UAV.pResource = segmentBuffer_->GetResource(); // Segmentバッファ
 	//dxrCmdList_->ResourceBarrier(1, &uavSegmentBarrier);
 
-	auto barrierAABB = CD3DX12_RESOURCE_BARRIER::Transition(
-		hairAABBBuffer_->GetResource(),
-		D3D12_RESOURCE_STATE_UNORDERED_ACCESS,
-		D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE
-	);
-	dxrCmdList_->ResourceBarrier(1, &barrierAABB);
-
 	auto barrierHair = CD3DX12_RESOURCE_BARRIER::Transition(
-		hairFlatVertexBuffer_->GetResource(),
+		hairTriangleBuffer_->GetResource(),
 		D3D12_RESOURCE_STATE_UNORDERED_ACCESS,
 		D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
 	dxrCmdList_->ResourceBarrier(1, &barrierHair);
@@ -1142,11 +1142,22 @@ void Hair::Update(float deltaTime, const Matrix4x4& mat) {
 	//   ==============
 	// ジオメトリ（AABBバッファ）の設定を最新の状態に更新
 	D3D12_RAYTRACING_GEOMETRY_DESC geometryDesc{};
-	geometryDesc.Type = D3D12_RAYTRACING_GEOMETRY_TYPE_PROCEDURAL_PRIMITIVE_AABBS;
-	geometryDesc.Flags = D3D12_RAYTRACING_GEOMETRY_FLAG_NONE;
-	geometryDesc.AABBs.AABBCount = hairAABBBuffer_->GetNumElements();
-	geometryDesc.AABBs.AABBs.StartAddress = hairAABBBuffer_->GetResource()->GetGPUVirtualAddress();
-	geometryDesc.AABBs.AABBs.StrideInBytes = sizeof(D3D12_RAYTRACING_AABB);
+	geometryDesc.Type = D3D12_RAYTRACING_GEOMETRY_TYPE_TRIANGLES;
+	geometryDesc.Flags = D3D12_RAYTRACING_GEOMETRY_FLAG_OPAQUE;
+	/*geometryDesc.AABBs.AABBCount = hairTriangleBuffer_->GetNumElements();
+	geometryDesc.AABBs.AABBs.StartAddress = hairTriangleBuffer_->GetResource()->GetGPUVirtualAddress();
+	geometryDesc.AABBs.AABBs.StrideInBytes = sizeof(D3D12_RAYTRACING_AABB);*/
+
+	geometryDesc.Triangles.VertexBuffer.StartAddress = hairTriangleBuffer_->GetResource()->GetGPUVirtualAddress();
+	geometryDesc.Triangles.VertexBuffer.StrideInBytes = sizeof(Strands::StrandVertex); // 32バイト
+	geometryDesc.Triangles.VertexCount = hairTriangleBuffer_->GetNumElements(); // 頂点数
+	geometryDesc.Triangles.VertexFormat = DXGI_FORMAT_R32G32B32_FLOAT;
+
+	// IndexBuffer　動的に毎回Flatに作成するから大丈夫
+	geometryDesc.Triangles.IndexBuffer = 0;
+	geometryDesc.Triangles.IndexCount = 0;
+	geometryDesc.Triangles.IndexFormat = DXGI_FORMAT_UNKNOWN;
+	geometryDesc.Triangles.Transform3x4 = 0;
 
 	// ビルド用のインプットを再設定
 	D3D12_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_INPUTS blasInputs{};
@@ -1243,13 +1254,6 @@ void Hair::Update(float deltaTime, const Matrix4x4& mat) {
 }
 
 void Hair::Render(D3D12_GPU_DESCRIPTOR_HANDLE depthHandle) {
-	// Get Camera Data
-	HairCamera cameraData;
-	cameraData.inverseProjView = Matrix4x4::Inverse(CameraSystem::GetInstance()->GetActiveCamera()->GetViewProjectionMatrix());
-	cameraData.cameraPosition = CameraSystem::GetInstance()->GetActiveCamera()->GetTranslation();
-	cameraData.padding = 0.0f; // パディングを0で初期化
-	hairCameraBuffer_->GetMappedData()[0] = cameraData;
-
 	auto commandList = engine_->GetCommand().GetList().GetList().Get();
 #ifdef USE_IMGUI
 	// PIXイベントを開始
@@ -1264,7 +1268,7 @@ void Hair::Render(D3D12_GPU_DESCRIPTOR_HANDLE depthHandle) {
 
 	commandList->SetComputeRootShaderResourceView(1, tlasResultBuffer_->GetGPUVirtualAddress());
 	// hairVertex->flat
-	commandList->SetComputeRootShaderResourceView(2, hairFlatVertexBuffer_->GetResource()->GetGPUVirtualAddress());
+	commandList->SetComputeRootShaderResourceView(2, hairTriangleBuffer_->GetResource()->GetGPUVirtualAddress());
 
 	//commandList->SetComputeRootShaderResourceView(3, segmentBuffer_->GetResource()->GetGPUVirtualAddress());
 

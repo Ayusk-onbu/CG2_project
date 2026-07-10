@@ -92,3 +92,9 @@ struct RaytracingAABB
     float maxPositionY;
     float maxPositionZ;
 };
+
+struct Camera
+{
+    float32_t4x4 inverseViewProj;
+    float32_t3 position;
+};
