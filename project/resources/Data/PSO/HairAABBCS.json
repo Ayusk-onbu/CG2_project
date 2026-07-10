@@ -21,7 +21,8 @@
        { "type": "CBV", "register": 0, "visibility": "All" },
        { "type": "SRVTable", "register": 0, "count": 1, "visibility": "All" },
        { "type": "SRVTable", "register": 1, "count": 1, "visibility": "All" },
-       { "type": "UAVTable", "register": 0, "count": 1, "visibility": "All" }
+       { "type": "UAVTable", "register": 0, "count": 1, "visibility": "All" },
+       { "type": "UAVTable", "register": 1, "count": 1, "visibility": "All" }
       ],
       "staticSamplers":[
       ]

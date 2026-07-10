@@ -38,6 +38,21 @@ public:
 	uint32_t GetCPUGuideCount() const {
 		return uploadGuideBuffer->GetNumElements();
 	}
+	uint32_t GetCPUActiveGuideCount() const {
+		uint32_t count = 0;
+		if (guideInfoBuffer_) {
+			for (uint32_t i = 0; i < guideInfoBuffer_->GetNumElements(); ++i) {
+				if (guideInfoBuffer_->GetMappedData()[i].vertexCount > 0) {
+					count += guideInfoBuffer_->GetMappedData()[i].vertexCount;
+				}
+				else {
+					break;
+				}
+			}
+		}
+		return count;
+	}
+
 	GuideCurve::GuideInfo* GetCPUGuideInfoData() {
 		return guideInfoBuffer_ ? guideInfoBuffer_->GetMappedData() : nullptr;
 	}
@@ -53,6 +68,17 @@ public:
 
 	Strands::SegmentData* GetCPUSegmentData() {
 		return segmentBuffer_ ? segmentBuffer_->GetMappedData() : nullptr;
+	}
+
+	Strands::ChildStrand* GetCPUChildStrandData() {
+		return gpuChildStrandBuffer_ ? gpuChildStrandBuffer_->GetMappedData() : nullptr;
+	}
+
+	GuideCurve::HairPhysicsConfig* GetCPUPhysicsConfig() {
+		return gpuPhysicsConfigBuffer_ ? gpuPhysicsConfigBuffer_->GetMappedData() : nullptr;
+	}
+	Strands::HairMakeConfig* GetCPUMakeConfig() {
+		return gpuMakeConfigBuffer_ ? gpuMakeConfigBuffer_->GetMappedData() : nullptr;
 	}
 private:
 	Microsoft::WRL::ComPtr<ID3D12StateObject> CreateHairRaytracingPSO(
@@ -81,7 +107,7 @@ private:
 	std::unique_ptr<ConstantBuffer<Strands::HairConfig>>gpuConfigBuffer_;// 髪全体の情報その性質
 	std::unique_ptr<ConstantBuffer<Strands::HairMakeConfig>>gpuMakeConfigBuffer_;// 髪全体の情報その性質
 
-	std::unique_ptr<Structured<GuideCurve::ControllerPoint>> uploadGuideBuffer;
+	std::unique_ptr<Structured<GuideCurve::ControllerPoint>> uploadGuideBuffer;// データ転送用バッファ
 	std::unique_ptr<Structured<GuideCurve::GuideInfo>>guideInfoBuffer_;
 	std::unique_ptr<Structured<Strands::ChildStrand>>gpuChildStrandBuffer_;// ストランド生成に必要な情報
 	std::unique_ptr<Structured<Strands::StrandInfo>> strandInfoBuffer_;
@@ -91,6 +117,8 @@ private:
 	std::unique_ptr<RWStructured<Strands::StrandVertex>> hairVertexBuffer_;
 	std::unique_ptr<RWStructured<D3D12_RAYTRACING_AABB>> hairAABBBuffer_;
 	std::unique_ptr<Structured<D3D12_RAYTRACING_INSTANCE_DESC>> instanceBuffer;
+	// レイトレ専用のフラット頂点バッファ(二重参照をしないため)
+	std::unique_ptr<RWStructured<Strands::StrandVertex>> hairFlatVertexBuffer_;
 
 	// 加速構造体（BLAS）用のリソース
 	Microsoft::WRL::ComPtr<ID3D12Resource> scratchBuffer_;
@@ -115,4 +143,19 @@ private:
 public:
 	// 追従させているキャラクターの行列
 	Matrix4x4 characterMatrix_;
+
+public:
+	/**
+     * @brief 現在の巨大な固定長バッファから、アクティブなデータのみをバイナリとして保存する
+     * @param filename 保存先ファイルパス
+     * @return 成功したら true
+     */
+    bool SaveToFile(const std::string& filename);
+
+    /**
+     * @brief バイナリファイルからデータを読み込み、既存の固定長バッファに数値を直接上書き（再登録）する
+     * @param filename 読み込み元ファイルパス
+     * @return 成功したら true
+     */
+    bool LoadFromFile(const std::string& filename);
 };

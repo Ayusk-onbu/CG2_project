@@ -464,7 +464,7 @@ void HairGuideEditor::Update(){
 
     if (isDrawPoint_) {
         float scale = 0.005f;
-        for (uint32_t i = 0; i < hairSystem_->GetCPUGuideCount(); ++i) {
+        for (uint32_t i = 0; i < hairSystem_->GetCPUActiveGuideCount(); ++i) {
             PrimitiveSphereData data;
             data.worldTransform.Initialize();
 
@@ -480,6 +480,30 @@ void HairGuideEditor::Update(){
             DrawManager::GetInstance()->GetSphere()->AddInstance(data);
         }
     }
+
+    // 髪を作成するガイドの可視化
+	PrimitiveSphereData directionData;
+	directionData.worldTransform.Initialize();
+    Vector3 localPos = newGuidePos;
+    Vector4 localPos4 = { localPos.x, localPos.y, localPos.z, 1.0f };
+    Vector4 worldPos4 = Matrix4x4::Transform(hairSystem_->characterMatrix_, localPos4);
+    Vector3 worldPos = { worldPos4.x / worldPos4.w, worldPos4.y / worldPos4.w, worldPos4.z / worldPos4.w };
+
+    directionData.worldTransform.set_.Translation(worldPos);
+    directionData.worldTransform.set_.Scale({ 0.005f,0.005f,0.005f });
+    directionData.worldTransform.LocalToWorld();
+    directionData.color = { 1.0f,0.0f,1.0f,1.0f };
+    DrawManager::GetInstance()->GetSphere()->AddInstance(directionData);
+
+	PrimitiveLineData lineData;
+	lineData.startPoint = worldPos;
+    localPos = newGuidePos + newGuideDir * newGuideLength;
+    localPos4 = { localPos.x, localPos.y, localPos.z, 1.0f };
+    worldPos4 = Matrix4x4::Transform(hairSystem_->characterMatrix_, localPos4);
+    worldPos = { worldPos4.x / worldPos4.w, worldPos4.y / worldPos4.w, worldPos4.z / worldPos4.w };
+    lineData.endPoint = worldPos;
+	lineData.color = { 1.0f,0.0f,1.0f,1.0f };
+    DrawManager::GetInstance()->GetLine()->AddInstance(lineData);
 }
 
 ////////////////////////////////
@@ -521,6 +545,7 @@ void HairGuideEditor::DrawUI(){
             hairSystem_->RequestNotifyUpdate();
         }
 
+#pragma region ギズモ
         // =================================================================
         // 🛠️ ギズモ操作（重心でまとめて動かす ＆ ガタガタ防止版）
         // =================================================================
@@ -638,7 +663,146 @@ void HairGuideEditor::DrawUI(){
             }
         }
     }
+#pragma endregion
     ImGui::Separator();
+
+    // ----------------------------------------------------------------
+    // 🆕 要素の動的追加セクション
+    // ----------------------------------------------------------------
+    if (ImGui::CollapsingHeader("Add New Hair Elements", ImGuiTreeNodeFlags_DefaultOpen))
+    {
+        // ------------------------------------------------------------
+        // 1. ガイドの動的追加 UI
+        // ------------------------------------------------------------
+        ImGui::TextColored(ImVec4(0.2f, 0.8f, 1.0f, 1.0f), "--- Add New Guide ---");
+
+        ImGui::SliderInt("ガイドを構成する頂点の数", &addGuideNum_, 1, 100);
+        ImGui::DragFloat3("Root Position", &newGuidePos.x, 0.01f);
+        ImGui::DragFloat3("Direction", &newGuideDir.x, 0.01f);
+        ImGui::DragFloat("Total Length", &newGuideLength, 0.01f, 0.05f, 2.0f);
+        ImGui::DragFloat("Root Radius", &newGuideRootRad, 0.001f, 0.001f, 0.1f);
+        ImGui::DragFloat("Tip Radius", &newGuideTipRad, 0.001f, 0.001f, 0.1f);
+        ImGui::ColorEdit3("Root Color", newGuideRootCol);
+        ImGui::ColorEdit3("Tip Color", newGuideTipCol);
+
+        if (ImGui::Button("Spawn New Guide", ImVec2(-1, 26)))
+        {
+            Vector3 rCol = { newGuideRootCol[0], newGuideRootCol[1], newGuideRootCol[2] };
+            Vector3 tCol = { newGuideTipCol[0],  newGuideTipCol[1],  newGuideTipCol[2] };
+
+            // ガイドを追加！
+            AddGuide(newGuidePos, newGuideDir, newGuideLength, newGuideRootRad, newGuideTipRad, rCol, tCol);
+        }
+
+        ImGui::Separator();
+
+        // ------------------------------------------------------------
+        // 子髪（ChildStrand）の動的追加 UI
+        // ------------------------------------------------------------
+        ImGui::TextColored(ImVec4(0.4f, 1.0f, 0.4f, 1.0f), "--- Add New Child Strand ---");
+
+        // エディタが現在選択しているガイド（selectedGuideIndex_）を親として自動指定
+        ImGui::Text("Target Parent Guide ID.1: %d", selectedGuideIndices_[0]);
+        ImGui::Text("Target Parent Guide ID.2: %d", selectedGuideIndices_[1]);
+        ImGui::Text("Target Parent Guide ID.3: %d", selectedGuideIndices_[2]);
+
+        static Vector2 childOffset = { 0.03f, 0.0f }; // ガイドから少しずらす
+        static int childVertexCount = 16;             // 補間後の標準的な頂点数
+        static float childLengthScale = 1.0f;
+        static float childTwistAngle = 0.0f;
+        static float childClumpForce = 0.0f;
+        static int generateCount = 10;// 生成する子髪の数
+        static float spreadRadius = 0.05f;// 生成する範囲(単一の場合のみ使用する)
+
+        if(ImGui::Button(("参照しているガイドのモード\n変換　Now：" + std::string(blendMode_ == false ? " 単一" : " 複数")).c_str()))
+        {
+            blendMode_ = !blendMode_;
+        }
+
+        // アクティブなガイドの数を計算している
+        int guideMaxCount = 0;
+        for (size_t i = 0; i < hairSystem_->GetCPUGuideInfoCount(); ++i) {
+            if (hairSystem_->GetCPUGuideInfoData()[i].vertexCount > 0) {
+                guideMaxCount++;
+            }
+        }
+        
+        if(blendMode_){// ブレンドモードが複数なら複数選べる
+            ImGui::SliderInt("Parent Guide ID.1", &selectedGuideIndices_[0], 0, (int)(guideMaxCount - 1));
+            ImGui::SliderInt("Parent Guide ID.2", &selectedGuideIndices_[1], 0, (int)(guideMaxCount - 1));
+            ImGui::SliderInt("Parent Guide ID.3", &selectedGuideIndices_[2], 0, (int)(guideMaxCount - 1));
+        }   
+        else {// 単一なら一つ
+            ImGui::SliderInt("Parent Guide ID", &selectedGuideIndices_[0], 0, (int)(guideMaxCount - 1));
+        }
+
+        ImGui::DragFloat2("Offset (X, Y)", &childOffset.x, 0.002f, -0.2f, 0.2f);
+        ImGui::SliderInt("構成する頂点の数 / Vertex Count", &childVertexCount, 2, 64);
+        ImGui::SliderFloat("Length Scale", &childLengthScale, 0.1f, 2.0f);
+        ImGui::SliderFloat("Twist Angle", &childTwistAngle, -3.14f, 3.14f);
+        ImGui::SliderFloat("髪先がガイドに近づく強度 / Clump Force", &childClumpForce, 0.0f, 1.0f);
+
+        ImGui::Separator();
+
+        ImGui::SliderInt("一括生成数 / Generate Count", &generateCount, 1, 500);
+        if (!blendMode_) {
+            ImGui::SliderFloat("散布半径 / Spread Radius", &spreadRadius, 0.0f, 0.2f);
+        }
+        else {
+            ImGui::BeginDisabled(); // 面生成時はOffset無効なのでグレーアウト
+            ImGui::SliderFloat("散布半径 / Spread Radius", &spreadRadius, 0.0f, 0.2f);
+            ImGui::EndDisabled();
+        }
+
+        if (ImGui::Button("上記の設定で子髪を追加", ImVec2(-1, 26)))
+        {
+            // RandomUtils の高精度乱数ジェネレータを取得
+            auto& random = RandomUtils::GetInstance()->GetHighRandom();
+
+            for (int i = 0; i < generateCount; ++i) {
+                Vector2 currentOffset = childOffset;
+
+                // Weightの計算とOffsetの計算
+                if (blendMode_ == false) {
+                    // 💡 単一ガイド参照モード（円柱状に散らす）
+                    weights_[0] = 1.0f;
+                    weights_[1] = 0.0f;
+                    weights_[2] = 0.0f;
+
+                    // ランダムな円の計算
+                    float angle = random.GetFloat(0.0f, 3.14159265f * 2.0f);
+                    float radius = std::sqrt(random.GetFloat(0.0f, 1.0f)) * spreadRadius;
+                    currentOffset.x += std::cos(angle) * radius;
+                    currentOffset.y += std::sin(angle) * radius;
+                }
+                else {
+                    // 複数ガイド（3本）参照モード（三角形の面内に散らす）
+                    float r1 = std::sqrt(random.GetFloat(0.0f, 1.0f));
+                    float r2 = random.GetFloat(0.0f, 1.0f);
+
+                    weights_[0] = 1.0f - r1;
+                    weights_[1] = r1 * (1.0f - r2);
+                    weights_[2] = r1 * r2;
+
+                    // 面の時はOffsetによる散らばりはゼロにする
+                    currentOffset = { 0.0f, 0.0f };
+                }
+
+                // 現在エディタで選択しているガイドのIDを親にして子髪を追加！
+                AddChildStrand(
+                    selectedGuideIndices_,
+                    weights_,
+                    currentOffset,
+                    static_cast<uint32_t>(childVertexCount),
+                    childLengthScale,
+                    childTwistAngle,
+                    childClumpForce
+                );
+            }
+        }
+    }
+
+
 
     ImGui::TextColored(ImVec4(0.3f, 0.8f, 1.0f, 1.0f), "--- Auto Generation Parameters ---");
 
@@ -711,7 +875,10 @@ void HairGuideEditor::DrawUI(){
 
         // 2. パスが取得できたらJSON保存を実行
         if (!savePath.empty()) {
-            SaveHairDataToJson(savePath, cpuData, count);
+            //SaveHairDataToJson(savePath, cpuData, count);
+            if (hairSystem_->SaveToFile(savePath)) {
+                // セーブ成功のログなど
+            }
         }
     }
 
@@ -723,7 +890,421 @@ void HairGuideEditor::DrawUI(){
 
         // 2. パスが取得できたら読み込み処理を実行
         if (!openPath.empty()) {
-            LoadHairDataFromJson(openPath, cpuData, count, hairSystem_);
+            //LoadHairDataFromJson(openPath, cpuData, count, hairSystem_);
+            if (hairSystem_->LoadFromFile(openPath)) {
+                // ロードに成功したら、エディタ側の選択中のインデックス等を安全にリセット
+                selectedGuideIndices_[0] = 0;
+                selectedGuideIndices_[1] = -1;
+                selectedGuideIndices_[2] = -1;
+                selectedPointIndices_ = { 0 };
+            }
         }
     }
+}
+
+void HairGuideEditor::AddGuide(const Vector3& rootPosition, const Vector3& direction, float totalLength,
+    float rootRadius, float tipRadius, const Vector3& rootColor, const Vector3& tipColor) {
+    if (addGuideNum_ < 2) {
+        // ガイドの頂点数が1以下の場合は無効なので処理を中断
+        Log::View("Invalid guide count. Please set a value greater than 1.");
+        return;
+    }
+
+    auto* guideInfoData = hairSystem_->GetCPUGuideInfoData();
+    int targetGuideIndex = -1;      // 空いている「何本目か」のインデックス
+    uint32_t nextVertexStartIndex = 0; // 次のガイドが使い始めるべき「頂点開始インデックス」
+
+    // 空きスロットを探しつつ、同時にこれまでに使われている頂点数の合計を計算する
+    for (uint32_t i = 0; i < hairSystem_->GetCPUGuideInfoCount(); ++i) {
+        if (guideInfoData[i].vertexCount == 0) {
+            targetGuideIndex = i; // 最初の空きスロットを見つけた
+            break;
+        }
+        // 使用中のガイドがある場合、そのガイドの「開始位置 + 頂点数」が次のガイドの開始位置になる
+        nextVertexStartIndex = guideInfoData[i].vertexStartIndex + guideInfoData[i].vertexCount;
+    }
+
+    // もし最大本数まで使い切っていたら中断
+    if (targetGuideIndex == -1) {
+        Log::View("Guide limit reached. Cannot add more guides.");
+        return;
+    }
+
+    // 新しいガイドInfoの構築
+    GuideCurve::GuideInfo info;
+    info.vertexStartIndex = nextVertexStartIndex; // 正しい頂点バッファの開始位置
+    info.vertexCount = static_cast<uint32_t>(addGuideNum_);
+
+    // CPU頂点バッファに数値を流し込む
+    auto cpuData = hairSystem_->GetCPUGuideData();
+    float segmentLength = totalLength / (addGuideNum_ - 1);
+    Vector3 normDir = Normalize(direction); // 伸びる方向
+
+    for (int i = 0; i < addGuideNum_; ++i)
+    {
+        float t = static_cast<float>(i) / static_cast<float>(addGuideNum_ - 1);
+
+        GuideCurve::ControllerPoint p;
+        p.position = rootPosition + normDir * (segmentLength * i);
+        p.homePosition = p.position; // 初期姿勢として保存
+        p.radius = Lerp(rootRadius, tipRadius, t); // 根元から毛先へ細くする
+        p.color = Lerp(rootColor, tipColor, t);   // 根元から毛先へのグラデーション
+        p.nextToLength = (i == addGuideNum_ - 1) ? 0.0f : segmentLength;
+        p.physicsWeight = t; // 根元 0.0 (固定) ～ 毛先 1.0 (物理で揺れる)
+
+        // 正しい位置（info.vertexStartIndex からのオフセット）に書き込む
+        cpuData[info.vertexStartIndex + i] = p;
+    }
+
+    // 【重要】見つけた空きスロットに、新しく作ったGuideInfoを書き戻す！
+    guideInfoData[targetGuideIndex] = info;
+
+    // GPU側に更新を通知
+    hairSystem_->RequestNotifyUpdate();
+}
+
+void HairGuideEditor::AddChildStrand(
+    int parentGuideIds[3],   // 追従する親ガイドのID
+    float parentWeights[3],
+    const Vector2& offset,    // ガイドからの2Dオフセット（散らばり具合）
+    uint32_t vertexCount,     // この髪の毛1本の頂点数（例: 8や16など補間後の数）
+    float lengthScale,        // 長さの倍率
+    float twistAngle,         // ねじれ
+    float clumpForce          // 束感の強さ
+) {
+    if (vertexCount < 2) {
+        Log::View("Invalid strand vertex count. Please set a value greater than 1.");
+        return;
+    }
+
+    // 髪システムから各CPUバッファのポインタと最大数を取得
+    auto strandInfoData = hairSystem_->GetCPUStrandInfoData();
+    auto childStrandData = hairSystem_->GetCPUChildStrandData();
+    auto segmentData = hairSystem_->GetCPUSegmentData();
+    int maxStrandCount = hairSystem_->GetCPUStrandInfoCount();
+
+    int targetStrandIndex = -1;      // 空いている「何本目か」のインデックス
+    uint32_t nextVertexStartIndex = 0; // 次の髪頂点が使い始めるべきインデックス
+    uint32_t nextAABBStartIndex = 0;   // 次のAABB（セグメント）が使い始めるべきインデックス
+
+    // 1. 空きスロットを探しつつ、同時にこれまでに消費されている頂点数・AABB数の合計を累積計算
+    for (int i = 0; i < maxStrandCount; ++i) {
+        if (strandInfoData[i].vertexCount == 0) {
+            targetStrandIndex = i; // 最初の空きスロットを発見
+            break;
+        }
+        // 使用中のストランドから、次のストランドのための開始位置を累積
+        nextVertexStartIndex = strandInfoData[i].vertexStartIndex + strandInfoData[i].vertexCount;
+
+        // AABB（セグメント）の数は「頂点数 - 1」個消費されるため、その合計を累積
+        nextAABBStartIndex = strandInfoData[i].aabbStartIndex + (strandInfoData[i].vertexCount - 1);
+    }
+
+    // プールが満杯なら中断
+    if (targetStrandIndex == -1) {
+        Log::View("Strand limit reached. Cannot add more child strands.");
+        return;
+    }
+
+    // StrandInfo（管理メタデータ）の構築
+    Strands::StrandInfo info;
+    info.vertexStartIndex = nextVertexStartIndex;
+    info.vertexCount = vertexCount;
+    info.aabbStartIndex = nextAABBStartIndex; // 計算したAABBの開始位置をセット
+
+    // ChildStrand（生成パラメータ）の構築
+    // まだ単一だが、ちゃんと実装できていれば複数に対応させる
+    Strands::ChildStrand child;
+    child.parentGuideIds[0] = parentGuideIds[0];
+    child.parentGuideIds[1] = parentGuideIds[1];
+    child.parentGuideIds[2] = parentGuideIds[2];
+    child.blendMode = blendMode_;         // 0: 単一ガイド追従モード
+    child.weights[0] = parentWeights[0];     // このガイドの影響度100%
+    child.weights[1] = parentWeights[1];
+    child.weights[2] = parentWeights[2];
+    child.offset = offset;
+    child.lengthScale = lengthScale;
+    child.twistAngle = twistAngle;
+    child.clumpForce = clumpForce;
+	child.waveAmplitude = 0.0f; // 波打ちの振幅（未使用）
+	child.waveFrequency = 0.0f; // 波打ちの周波数（未使用）
+    child.noise = 0.0f;
+    // ※もしHLSL側の構造体に他にもメンバ（paddingや追加パラメータ）があればここで初期化
+
+    // 固定長バッファの空いたスロットに数値をぶち込む！
+    strandInfoData[targetStrandIndex] = info;
+    childStrandData[targetStrandIndex] = child;
+
+    // 1本の髪に含まれるセグメントの数は必ず (頂点数 - 1) 個になります
+    uint32_t segmentCount = info.vertexCount - 1;
+    for (uint32_t j = 0; j < segmentCount; ++j) {
+        Strands::SegmentData seg;
+        // このセグメントを構成する「始点」と「終点」の絶対頂点インデックスを計算
+        seg.v0_Index = info.vertexStartIndex + j;
+        seg.v1_Index = info.vertexStartIndex + j + 1;
+
+        // グローバルなAABB配列の正しいオフセット位置に流し込む
+        uint32_t globalAABBIndex = info.aabbStartIndex + j;
+        segmentData[globalAABBIndex] = seg;
+    }
+
+    // もし ConstantBuffer 等の numStrands を有効数として使っている場合、更新する
+    // 現在のインデックス + 1 が、最低限必要な有効ストランド数になります
+    /*if (hairSystem_->GetNumStrands() <= targetStrandIndex) {
+        hairSystem_->SetNumStrands(targetStrandIndex + 1);
+    }*/
+
+    // GPU側に更新と、Compute Shaderによる髪再生成をリクエスト
+    hairSystem_->RequestNotifyUpdate();
+}
+
+bool HairGuideEditor::SaveHairSaveData(const std::string& filename, const Strands::HairSaveData& saveData) {
+    // バイナリ書き込みモードでファイルを開く
+    std::ofstream ofs(filename, std::ios::binary);
+    if (!ofs.is_open()) {
+        std::cerr << "Failed to open file for saving: " << filename << std::endl;
+        return false;
+    }
+
+    // 1. 固定サイズの構造体をそのまま書き出す
+    ofs.write(reinterpret_cast<const char*>(&saveData.physicsConfig), sizeof(saveData.physicsConfig));
+    ofs.write(reinterpret_cast<const char*>(&saveData.makeConfig), sizeof(saveData.makeConfig));
+    ofs.write(reinterpret_cast<const char*>(&saveData.hairConfig), sizeof(saveData.hairConfig));
+
+    // 2. 各 std::vector の要素数とデータ本体を書き出す
+
+    // points
+    uint32_t pointsCount = static_cast<uint32_t>(saveData.points.size());
+    ofs.write(reinterpret_cast<const char*>(&pointsCount), sizeof(pointsCount));
+    if (pointsCount > 0) {
+        ofs.write(reinterpret_cast<const char*>(saveData.points.data()), pointsCount * sizeof(GuideCurve::ControllerPoint));
+    }
+
+    // guideInfo
+    uint32_t guideInfoCount = static_cast<uint32_t>(saveData.guideInfo.size());
+    ofs.write(reinterpret_cast<const char*>(&guideInfoCount), sizeof(guideInfoCount));
+    if (guideInfoCount > 0) {
+        ofs.write(reinterpret_cast<const char*>(saveData.guideInfo.data()), guideInfoCount * sizeof(GuideCurve::GuideInfo));
+    }
+
+    // childStrands
+    uint32_t childStrandsCount = static_cast<uint32_t>(saveData.childStrands.size());
+    ofs.write(reinterpret_cast<const char*>(&childStrandsCount), sizeof(childStrandsCount));
+    if (childStrandsCount > 0) {
+        ofs.write(reinterpret_cast<const char*>(saveData.childStrands.data()), childStrandsCount * sizeof(Strands::ChildStrand));
+    }
+
+    // strandInfos
+    uint32_t strandInfosCount = static_cast<uint32_t>(saveData.strandInfos.size());
+    ofs.write(reinterpret_cast<const char*>(&strandInfosCount), sizeof(strandInfosCount));
+    if (strandInfosCount > 0) {
+        ofs.write(reinterpret_cast<const char*>(saveData.strandInfos.data()), strandInfosCount * sizeof(Strands::StrandInfo));
+    }
+
+    // segments
+    uint32_t segmentsCount = static_cast<uint32_t>(saveData.segments.size());
+    ofs.write(reinterpret_cast<const char*>(&segmentsCount), sizeof(segmentsCount));
+    if (segmentsCount > 0) {
+        ofs.write(reinterpret_cast<const char*>(saveData.segments.data()), segmentsCount * sizeof(Strands::SegmentData));
+    }
+
+    ofs.close();
+    return true;
+}
+
+bool HairGuideEditor::LoadHairSaveData(const std::string& filename, Strands::HairSaveData& outSaveData) {
+    // バイナリ読み込みモードでファイルを開く
+    std::ifstream ifs(filename, std::ios::binary);
+    if (!ifs.is_open()) {
+        std::cerr << "Failed to open file for loading: " << filename << std::endl;
+        return false;
+    }
+
+    // 1. 固定サイズの構造体を読み込む
+    ifs.read(reinterpret_cast<char*>(&outSaveData.physicsConfig), sizeof(outSaveData.physicsConfig));
+    ifs.read(reinterpret_cast<char*>(&outSaveData.makeConfig), sizeof(outSaveData.makeConfig));
+    ifs.read(reinterpret_cast<char*>(&outSaveData.hairConfig), sizeof(outSaveData.hairConfig));
+
+    // 2. 各 std::vector の要素数を読み込み、resize してからデータ本体を読み込む
+
+    // points
+    uint32_t pointsCount = 0;
+    ifs.read(reinterpret_cast<char*>(&pointsCount), sizeof(pointsCount));
+    outSaveData.points.resize(pointsCount);
+    if (pointsCount > 0) {
+        ifs.read(reinterpret_cast<char*>(outSaveData.points.data()), pointsCount * sizeof(GuideCurve::ControllerPoint));
+    }
+
+    // guideInfo
+    uint32_t guideInfoCount = 0;
+    ifs.read(reinterpret_cast<char*>(&guideInfoCount), sizeof(guideInfoCount));
+    outSaveData.guideInfo.resize(guideInfoCount);
+    if (guideInfoCount > 0) {
+        ifs.read(reinterpret_cast<char*>(outSaveData.guideInfo.data()), guideInfoCount * sizeof(GuideCurve::GuideInfo));
+    }
+
+    // childStrands
+    uint32_t childStrandsCount = 0;
+    ifs.read(reinterpret_cast<char*>(&childStrandsCount), sizeof(childStrandsCount));
+    outSaveData.childStrands.resize(childStrandsCount);
+    if (childStrandsCount > 0) {
+        ifs.read(reinterpret_cast<char*>(outSaveData.childStrands.data()), childStrandsCount * sizeof(Strands::ChildStrand));
+    }
+
+    // strandInfos
+    uint32_t strandInfosCount = 0;
+    ifs.read(reinterpret_cast<char*>(&strandInfosCount), sizeof(strandInfosCount));
+    outSaveData.strandInfos.resize(strandInfosCount);
+    if (strandInfosCount > 0) {
+        ifs.read(reinterpret_cast<char*>(outSaveData.strandInfos.data()), strandInfosCount * sizeof(Strands::StrandInfo));
+    }
+
+    // segments
+    uint32_t segmentsCount = 0;
+    ifs.read(reinterpret_cast<char*>(&segmentsCount), sizeof(segmentsCount));
+    outSaveData.segments.resize(segmentsCount);
+    if (segmentsCount > 0) {
+        ifs.read(reinterpret_cast<char*>(outSaveData.segments.data()), segmentsCount * sizeof(Strands::SegmentData));
+    }
+
+    ifs.close();
+    return true;
+}
+
+bool HairGuideEditor::SaveToFile(const std::string& filename) {
+    if (!hairSystem_) return false;
+
+    Strands::HairSaveData saveData{};
+
+    // 1. 各種コンフィグ設定の取得
+    if (auto* physics = hairSystem_->GetCPUPhysicsConfig()) {
+        saveData.physicsConfig = *physics;
+    }
+    if (auto* make = hairSystem_->GetCPUMakeConfig()) {
+        saveData.makeConfig = *make;
+    }
+    if (auto* config = hairSystem_->GetCPUGuideConfig()) {
+        saveData.hairConfig = *config;
+    }
+
+    // 2. ガイド制御点（ControllerPoint）の吸い出し
+    uint32_t guideCount = hairSystem_->GetCPUGuideCount();
+    auto* guideData = hairSystem_->GetCPUGuideData();
+    if (guideCount > 0 && guideData) {
+        saveData.points.assign(guideData, guideData + guideCount);
+    }
+
+    // 3. ガイド情報（GuideInfo）の吸い出し
+    uint32_t guideInfoCount = hairSystem_->GetCPUGuideInfoCount();
+    auto* guideInfoData = hairSystem_->GetCPUGuideInfoData();
+    if (guideInfoCount > 0 && guideInfoData) {
+        saveData.guideInfo.assign(guideInfoData, guideInfoData + guideInfoCount);
+    }
+
+    // 4. 子ストランド設定（ChildStrand）とストランド情報（StrandInfo）の吸い出し
+    uint32_t strandCount = hairSystem_->GetCPUStrandInfoCount();
+    auto* strandInfoData = hairSystem_->GetCPUStrandInfoData();
+    auto* childStrandData = hairSystem_->GetCPUChildStrandData();
+
+    if (strandCount > 0) {
+        if (strandInfoData) {
+            saveData.strandInfos.assign(strandInfoData, strandInfoData + strandCount);
+        }
+        if (childStrandData) {
+            saveData.childStrands.assign(childStrandData, childStrandData + strandCount);
+        }
+    }
+
+    // 5. セグメントデータ（SegmentData）の吸い出し
+    // strandInfos から全髪の総セグメント数を計算
+    uint32_t totalSegments = 0;
+    for (const auto& info : saveData.strandInfos) {
+        if (info.vertexCount > 1) {
+            totalSegments += (info.vertexCount - 1); // (頂点数 - 1) がセグメント数
+        }
+    }
+    auto* segmentData = hairSystem_->GetCPUSegmentData();
+    if (totalSegments > 0 && segmentData) {
+        saveData.segments.assign(segmentData, segmentData + totalSegments);
+    }
+
+    // 6. バイナリファイルへの書き出し
+    std::ofstream ofs(filename, std::ios::binary);
+    if (!ofs.is_open()) {
+        std::cerr << "Failed to open file for saving: " << filename << std::endl;
+        return false;
+    }
+
+    // 固定サイズ構造体の保存
+    ofs.write(reinterpret_cast<const char*>(&saveData.physicsConfig), sizeof(saveData.physicsConfig));
+    ofs.write(reinterpret_cast<const char*>(&saveData.makeConfig), sizeof(saveData.makeConfig));
+    ofs.write(reinterpret_cast<const char*>(&saveData.hairConfig), sizeof(saveData.hairConfig));
+
+    // 各 std::vector を「要素数 + データ本体」の順で保存するラムダ関数
+    auto writeVector = [&ofs](const auto& vec) {
+        uint32_t count = static_cast<uint32_t>(vec.size());
+        ofs.write(reinterpret_cast<const char*>(&count), sizeof(count));
+        if (count > 0) {
+            using ElementType = typename std::decay_t<decltype(vec)>::value_type;
+            ofs.write(reinterpret_cast<const char*>(vec.data()), count * sizeof(ElementType));
+        }
+        };
+
+    writeVector(saveData.points);
+    writeVector(saveData.guideInfo);
+    writeVector(saveData.childStrands);
+    writeVector(saveData.strandInfos);
+    writeVector(saveData.segments);
+
+    ofs.close();
+    return true;
+}
+
+bool HairGuideEditor::LoadFromFile(const std::string& filename, Fngine* engine) {
+    if (!hairSystem_ || !engine) return false;
+
+    Strands::HairSaveData loadedData{};
+
+    // 1. バイナリファイルの読み込み
+    std::ifstream ifs(filename, std::ios::binary);
+    if (!ifs.is_open()) {
+        std::cerr << "Failed to open file for loading: " << filename << std::endl;
+        return false;
+    }
+
+    // 固定サイズ構造体の読み込み
+    ifs.read(reinterpret_cast<char*>(&loadedData.physicsConfig), sizeof(loadedData.physicsConfig));
+    ifs.read(reinterpret_cast<char*>(&loadedData.makeConfig), sizeof(loadedData.makeConfig));
+    ifs.read(reinterpret_cast<char*>(&loadedData.hairConfig), sizeof(loadedData.hairConfig));
+
+    // 各 std::vector を「要素数を取得 -> resize -> データ本体を復元」するラムダ関数
+    auto readVector = [&ifs](auto& vec) {
+        uint32_t count = 0;
+        ifs.read(reinterpret_cast<char*>(&count), sizeof(count));
+        vec.resize(count);
+        if (count > 0) {
+            using ElementType = typename std::decay_t<decltype(vec)>::value_type;
+            ifs.read(reinterpret_cast<char*>(vec.data()), count * sizeof(ElementType));
+        }
+        };
+
+    readVector(loadedData.points);
+    readVector(loadedData.guideInfo);
+    readVector(loadedData.childStrands);
+    readVector(loadedData.strandInfos);
+    readVector(loadedData.segments);
+
+    ifs.close();
+
+    // 2. 読み込んだデータを渡し、IHair のバッファ群を再初期化（再生成）させる
+    // IHair::Initialize(engine, isLoad=true, savedata) を呼び出す
+    hairSystem_->Initialize(engine, true, loadedData);
+
+    // エディタ側の選択中のガイドインデックスなども安全のために初期化
+    selectedGuideIndices_[0] = 0;
+    selectedGuideIndices_[1] = -1;
+    selectedGuideIndices_[2] = -1;
+    selectedPointIndices_ = { 0 };
+
+    return true;
 }

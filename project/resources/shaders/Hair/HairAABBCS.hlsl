@@ -4,7 +4,7 @@ ConstantBuffer<HairConfig> gHairConfig : register(b0);
 StructuredBuffer<StrandVertex> g_InVertexBuffer : register(t0); // 生成された髪頂点
 StructuredBuffer<StrandInfo> g_StrandInfoBuffer : register(t1);
 RWStructuredBuffer<RaytracingAABB> g_OutAABBBuffer : register(u0); // DXRが読み込むAABB配列
-//StructuredBuffer<SegmentData> g_OutSegmentBuffer : register(t2);
+RWStructuredBuffer<StrandVertex> g_OutFlatVertexBuffer : register(u1);
 
 [numthreads(64, 1, 1)]
 void main(uint3 dispatchThreadID : SV_DispatchThreadID)
@@ -96,5 +96,8 @@ void main(uint3 dispatchThreadID : SV_DispatchThreadID)
         //segData.v0_Index = v0_idx;
         //segData.v1_Index = v1_idx;
         //g_OutSegmentBuffer[aabbWriteIndex] = segData;
+        uint flatIdx = aabbWriteIndex * 2;
+        g_OutFlatVertexBuffer[flatIdx + 0] = v0; // 始点
+        g_OutFlatVertexBuffer[flatIdx + 1] = v1; // 終点
     }
 }

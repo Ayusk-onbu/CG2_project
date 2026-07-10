@@ -1,6 +1,7 @@
 #pragma once
 #include "Structures.h"
 #include <vector>
+#include <json.hpp>
 
 namespace GuideCurve {
 	
@@ -59,6 +60,10 @@ namespace GuideCurve {
 	struct Main {
 		std::vector<GuideHear>guides;
 	};// うーん
+
+	NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(ControllerPoint, position, radius, color, nextToLength, homePosition, physicsWeight)
+	NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(HairPhysicsConfig, stiffness, restoringForce, damping, padding)
+	NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(GuideInfo, vertexStartIndex, vertexCount)
 }
 
 namespace Strands {
@@ -149,4 +154,12 @@ namespace Strands {
 		float spreadRadius);
 
 	std::vector<StrandVertex> FlattenStrands(const std::vector<Strand>& strands);
+
+	NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(ChildStrand, parentGuideIds, blendMode, weights, lengthScale, offset, twistAngle, clumpForce, seed, waveAmplitude, waveFrequency, noise)
+	NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(HairConfig, numGuides, pointPerGuide, pointPerStrand, numStrands)
+	NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(HairMakeConfig, globalSpreadRadius, globalHairThickness, paddings)
+	NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(StrandInfo, vertexStartIndex, vertexCount, aabbStartIndex)
+	NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(SegmentData, v0_Index, v1_Index)
+	// HairSaveData をルートとして、全ての vector を一括シリアライズ
+	NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(HairSaveData, physicsConfig, makeConfig, hairConfig, points, guideInfo, childStrands, strandInfos, segments)
 }
