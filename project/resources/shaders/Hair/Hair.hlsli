@@ -8,6 +8,12 @@ struct ControllerPoint
     float physicsWeight;
 };
 
+struct GuideInfo
+{
+    uint vertexStartIndex;
+    uint vertexCount;
+};
+
 struct HairPhysicsConfig
 {
     float stiffness; // 剛性
@@ -32,6 +38,19 @@ struct StrandVertex
     float radius;
     float3 color;
     float padding;
+};
+
+struct StrandInfo
+{
+    uint vertexStartIndex;
+    uint vertexCount;
+    uint aabbStartIndex;
+};
+
+struct SegmentData
+{
+    uint v0_Index;
+    uint v1_Index;
 };
 
 struct ChildStrand

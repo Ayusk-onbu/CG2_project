@@ -1,0 +1,1418 @@
+{
+    "childStrands": [
+        {
+            "blendMode": 0,
+            "clumpForce": 0.0,
+            "lengthScale": 1.0,
+            "noise": 0.0,
+            "offset": {
+                "x": 0.0,
+                "y": 0.0
+            },
+            "parentGuideIds": [
+                0,
+                0,
+                0
+            ],
+            "seed": 3435973836,
+            "twistAngle": 0.0,
+            "waveAmplitude": 0.0,
+            "waveFrequency": 0.0,
+            "weights": [
+                1.0,
+                0.0,
+                0.0
+            ]
+        },
+        {
+            "blendMode": 0,
+            "clumpForce": 0.0,
+            "lengthScale": 1.0,
+            "noise": 0.0,
+            "offset": {
+                "x": 0.07199999690055847,
+                "y": 0.0
+            },
+            "parentGuideIds": [
+                0,
+                0,
+                0
+            ],
+            "seed": 3435973836,
+            "twistAngle": 0.0,
+            "waveAmplitude": 0.0,
+            "waveFrequency": 0.0,
+            "weights": [
+                1.0,
+                0.0,
+                0.0
+            ]
+        },
+        {
+            "blendMode": 0,
+            "clumpForce": 0.0,
+            "lengthScale": 1.0,
+            "noise": 0.0,
+            "offset": {
+                "x": 0.07199999690055847,
+                "y": 0.0
+            },
+            "parentGuideIds": [
+                0,
+                0,
+                0
+            ],
+            "seed": 3435973836,
+            "twistAngle": 0.0,
+            "waveAmplitude": 0.0,
+            "waveFrequency": 0.0,
+            "weights": [
+                1.0,
+                0.0,
+                0.0
+            ]
+        },
+        {
+            "blendMode": 0,
+            "clumpForce": 0.0,
+            "lengthScale": 1.0,
+            "noise": 0.0,
+            "offset": {
+                "x": 0.019999999552965164,
+                "y": 0.0
+            },
+            "parentGuideIds": [
+                0,
+                0,
+                0
+            ],
+            "seed": 3435973836,
+            "twistAngle": 0.0,
+            "waveAmplitude": 0.0,
+            "waveFrequency": 0.0,
+            "weights": [
+                1.0,
+                0.0,
+                0.0
+            ]
+        },
+        {
+            "blendMode": 0,
+            "clumpForce": 0.0,
+            "lengthScale": 1.0,
+            "noise": 0.0,
+            "offset": {
+                "x": 0.019999999552965164,
+                "y": 0.017999999225139618
+            },
+            "parentGuideIds": [
+                0,
+                0,
+                0
+            ],
+            "seed": 3435973836,
+            "twistAngle": 0.0,
+            "waveAmplitude": 0.0,
+            "waveFrequency": 0.0,
+            "weights": [
+                1.0,
+                0.0,
+                0.0
+            ]
+        },
+        {
+            "blendMode": 0,
+            "clumpForce": 0.0,
+            "lengthScale": 1.0,
+            "noise": 0.0,
+            "offset": {
+                "x": 0.019999999552965164,
+                "y": -0.05000000074505806
+            },
+            "parentGuideIds": [
+                0,
+                0,
+                0
+            ],
+            "seed": 3435973836,
+            "twistAngle": 0.0,
+            "waveAmplitude": 0.0,
+            "waveFrequency": 0.0,
+            "weights": [
+                1.0,
+                0.0,
+                0.0
+            ]
+        }
+    ],
+    "guideInfo": [
+        {
+            "vertexCount": 8,
+            "vertexStartIndex": 0
+        },
+        {
+            "vertexCount": 8,
+            "vertexStartIndex": 8
+        },
+        {
+            "vertexCount": 8,
+            "vertexStartIndex": 16
+        }
+    ],
+    "hairConfig": {
+        "numGuides": 1000,
+        "numStrands": 50000.0,
+        "pointPerGuide": 16,
+        "pointPerStrand": 32
+    },
+    "makeConfig": {
+        "globalHairThickness": 1.0,
+        "globalSpreadRadius": 0.05000000074505806,
+        "paddings": [
+            0.0,
+            0.0
+        ]
+    },
+    "physicsConfig": {
+        "damping": 0.9599999785423279,
+        "padding": 0.0,
+        "restoringForce": 0.20000000298023224,
+        "stiffness": 0.4000000059604645
+    },
+    "points": [
+        {
+            "color": {
+                "x": 0.10000000149011612,
+                "y": 0.05000000074505806,
+                "z": 0.019999999552965164
+            },
+            "homePosition": {
+                "x": 0.0,
+                "y": 1.7000000476837158,
+                "z": 0.0
+            },
+            "nextToLength": 0.05714285746216774,
+            "physicsWeight": 0.0,
+            "position": {
+                "x": 0.0,
+                "y": 1.7000000476837158,
+                "z": 0.0
+            },
+            "radius": 0.014999999664723873
+        },
+        {
+            "color": {
+                "x": 0.15714286267757416,
+                "y": 0.08571428805589676,
+                "z": 0.03857143223285675
+            },
+            "homePosition": {
+                "x": 0.0,
+                "y": 1.6428571939468384,
+                "z": 0.0
+            },
+            "nextToLength": 0.05714285746216774,
+            "physicsWeight": 0.1428571492433548,
+            "position": {
+                "x": 0.0,
+                "y": 1.6428571939468384,
+                "z": 0.0
+            },
+            "radius": 0.013142856769263744
+        },
+        {
+            "color": {
+                "x": 0.2142857313156128,
+                "y": 0.12142857909202576,
+                "z": 0.05714286118745804
+            },
+            "homePosition": {
+                "x": 0.0,
+                "y": 1.585714340209961,
+                "z": 0.0
+            },
+            "nextToLength": 0.05714285746216774,
+            "physicsWeight": 0.2857142984867096,
+            "position": {
+                "x": 0.0,
+                "y": 1.585714340209961,
+                "z": 0.0
+            },
+            "radius": 0.011285713873803616
+        },
+        {
+            "color": {
+                "x": 0.27142858505249023,
+                "y": 0.15714286267757416,
+                "z": 0.07571429014205933
+            },
+            "homePosition": {
+                "x": 0.0,
+                "y": 1.5285714864730835,
+                "z": 0.0
+            },
+            "nextToLength": 0.05714285746216774,
+            "physicsWeight": 0.4285714328289032,
+            "position": {
+                "x": 0.0,
+                "y": 1.5285714864730835,
+                "z": 0.0
+            },
+            "radius": 0.009428571909666061
+        },
+        {
+            "color": {
+                "x": 0.3285714387893677,
+                "y": 0.19285714626312256,
+                "z": 0.09428572654724121
+            },
+            "homePosition": {
+                "x": 0.0,
+                "y": 1.471428632736206,
+                "z": 0.0
+            },
+            "nextToLength": 0.05714285746216774,
+            "physicsWeight": 0.5714285969734192,
+            "position": {
+                "x": 0.0,
+                "y": 1.471428632736206,
+                "z": 0.0
+            },
+            "radius": 0.007571428082883358
+        },
+        {
+            "color": {
+                "x": 0.3857142925262451,
+                "y": 0.22857142984867096,
+                "z": 0.1128571480512619
+            },
+            "homePosition": {
+                "x": 0.0,
+                "y": 1.4142857789993286,
+                "z": 0.0
+            },
+            "nextToLength": 0.05714285746216774,
+            "physicsWeight": 0.7142857313156128,
+            "position": {
+                "x": 0.0,
+                "y": 1.4142857789993286,
+                "z": 0.0
+            },
+            "radius": 0.005714285187423229
+        },
+        {
+            "color": {
+                "x": 0.44285714626312256,
+                "y": 0.26428571343421936,
+                "z": 0.1314285844564438
+            },
+            "homePosition": {
+                "x": 0.0,
+                "y": 1.3571429252624512,
+                "z": 0.0
+            },
+            "nextToLength": 0.05714285746216774,
+            "physicsWeight": 0.8571428656578064,
+            "position": {
+                "x": 0.0,
+                "y": 1.3571429252624512,
+                "z": 0.0
+            },
+            "radius": 0.003857143223285675
+        },
+        {
+            "color": {
+                "x": 0.5,
+                "y": 0.30000001192092896,
+                "z": 0.15000000596046448
+            },
+            "homePosition": {
+                "x": 0.0,
+                "y": 1.3000000715255737,
+                "z": 0.0
+            },
+            "nextToLength": 0.0,
+            "physicsWeight": 1.0,
+            "position": {
+                "x": 0.0,
+                "y": 1.3000000715255737,
+                "z": 0.0
+            },
+            "radius": 0.0020000003278255463
+        },
+        {
+            "color": {
+                "x": 0.10000000149011612,
+                "y": 0.05000000074505806,
+                "z": 0.019999999552965164
+            },
+            "homePosition": {
+                "x": 0.0,
+                "y": -1.1200000047683716,
+                "z": 0.0
+            },
+            "nextToLength": 0.05714285746216774,
+            "physicsWeight": 0.0,
+            "position": {
+                "x": 0.0,
+                "y": -1.1200000047683716,
+                "z": 0.0
+            },
+            "radius": 0.014999999664723873
+        },
+        {
+            "color": {
+                "x": 0.15714286267757416,
+                "y": 0.08571428805589676,
+                "z": 0.03857143223285675
+            },
+            "homePosition": {
+                "x": 0.0,
+                "y": -1.177142858505249,
+                "z": 0.0
+            },
+            "nextToLength": 0.05714285746216774,
+            "physicsWeight": 0.1428571492433548,
+            "position": {
+                "x": 0.0,
+                "y": -1.177142858505249,
+                "z": 0.0
+            },
+            "radius": 0.013142856769263744
+        },
+        {
+            "color": {
+                "x": 0.2142857313156128,
+                "y": 0.12142857909202576,
+                "z": 0.05714286118745804
+            },
+            "homePosition": {
+                "x": 0.0,
+                "y": -1.2342857122421265,
+                "z": 0.0
+            },
+            "nextToLength": 0.05714285746216774,
+            "physicsWeight": 0.2857142984867096,
+            "position": {
+                "x": 0.0,
+                "y": -1.2342857122421265,
+                "z": 0.0
+            },
+            "radius": 0.011285713873803616
+        },
+        {
+            "color": {
+                "x": 0.27142858505249023,
+                "y": 0.15714286267757416,
+                "z": 0.07571429014205933
+            },
+            "homePosition": {
+                "x": 0.0,
+                "y": -1.291428565979004,
+                "z": 0.0
+            },
+            "nextToLength": 0.05714285746216774,
+            "physicsWeight": 0.4285714328289032,
+            "position": {
+                "x": 0.0,
+                "y": -1.291428565979004,
+                "z": 0.0
+            },
+            "radius": 0.009428571909666061
+        },
+        {
+            "color": {
+                "x": 0.3285714387893677,
+                "y": 0.19285714626312256,
+                "z": 0.09428572654724121
+            },
+            "homePosition": {
+                "x": 0.0,
+                "y": -1.3485714197158813,
+                "z": 0.0
+            },
+            "nextToLength": 0.05714285746216774,
+            "physicsWeight": 0.5714285969734192,
+            "position": {
+                "x": 0.0,
+                "y": -1.3485714197158813,
+                "z": 0.0
+            },
+            "radius": 0.007571428082883358
+        },
+        {
+            "color": {
+                "x": 0.3857142925262451,
+                "y": 0.22857142984867096,
+                "z": 0.1128571480512619
+            },
+            "homePosition": {
+                "x": 0.0,
+                "y": -1.4057142734527588,
+                "z": 0.0
+            },
+            "nextToLength": 0.05714285746216774,
+            "physicsWeight": 0.7142857313156128,
+            "position": {
+                "x": 0.0,
+                "y": -1.4057142734527588,
+                "z": 0.0
+            },
+            "radius": 0.005714285187423229
+        },
+        {
+            "color": {
+                "x": 0.44285714626312256,
+                "y": 0.26428571343421936,
+                "z": 0.1314285844564438
+            },
+            "homePosition": {
+                "x": 0.0,
+                "y": -1.4628571271896362,
+                "z": 0.0
+            },
+            "nextToLength": 0.05714285746216774,
+            "physicsWeight": 0.8571428656578064,
+            "position": {
+                "x": 0.0,
+                "y": -1.4628571271896362,
+                "z": 0.0
+            },
+            "radius": 0.003857143223285675
+        },
+        {
+            "color": {
+                "x": 0.5,
+                "y": 0.30000001192092896,
+                "z": 0.15000000596046448
+            },
+            "homePosition": {
+                "x": 0.0,
+                "y": -1.5199999809265137,
+                "z": 0.0
+            },
+            "nextToLength": 0.0,
+            "physicsWeight": 1.0,
+            "position": {
+                "x": 0.0,
+                "y": -1.5199999809265137,
+                "z": 0.0
+            },
+            "radius": 0.0020000003278255463
+        },
+        {
+            "color": {
+                "x": 0.10000000149011612,
+                "y": 0.05000000074505806,
+                "z": 0.019999999552965164
+            },
+            "homePosition": {
+                "x": 0.0,
+                "y": -0.07999999821186066,
+                "z": 0.0
+            },
+            "nextToLength": 0.05714285746216774,
+            "physicsWeight": 0.0,
+            "position": {
+                "x": 0.0,
+                "y": -0.07999999821186066,
+                "z": 0.0
+            },
+            "radius": 0.014999999664723873
+        },
+        {
+            "color": {
+                "x": 0.15714286267757416,
+                "y": 0.08571428805589676,
+                "z": 0.03857143223285675
+            },
+            "homePosition": {
+                "x": 0.0,
+                "y": -0.1371428519487381,
+                "z": 0.0
+            },
+            "nextToLength": 0.05714285746216774,
+            "physicsWeight": 0.1428571492433548,
+            "position": {
+                "x": 0.0,
+                "y": -0.1371428519487381,
+                "z": 0.0
+            },
+            "radius": 0.013142856769263744
+        },
+        {
+            "color": {
+                "x": 0.2142857313156128,
+                "y": 0.12142857909202576,
+                "z": 0.05714286118745804
+            },
+            "homePosition": {
+                "x": 0.0,
+                "y": -0.19428572058677673,
+                "z": 0.0
+            },
+            "nextToLength": 0.05714285746216774,
+            "physicsWeight": 0.2857142984867096,
+            "position": {
+                "x": 0.0,
+                "y": -0.19428572058677673,
+                "z": 0.0
+            },
+            "radius": 0.011285713873803616
+        },
+        {
+            "color": {
+                "x": 0.27142858505249023,
+                "y": 0.15714286267757416,
+                "z": 0.07571429014205933
+            },
+            "homePosition": {
+                "x": 0.0,
+                "y": -0.2514285743236542,
+                "z": 0.0
+            },
+            "nextToLength": 0.05714285746216774,
+            "physicsWeight": 0.4285714328289032,
+            "position": {
+                "x": 0.0,
+                "y": -0.2514285743236542,
+                "z": 0.0
+            },
+            "radius": 0.009428571909666061
+        },
+        {
+            "color": {
+                "x": 0.3285714387893677,
+                "y": 0.19285714626312256,
+                "z": 0.09428572654724121
+            },
+            "homePosition": {
+                "x": 0.0,
+                "y": -0.3085714280605316,
+                "z": 0.0
+            },
+            "nextToLength": 0.05714285746216774,
+            "physicsWeight": 0.5714285969734192,
+            "position": {
+                "x": 0.0,
+                "y": -0.3085714280605316,
+                "z": 0.0
+            },
+            "radius": 0.007571428082883358
+        },
+        {
+            "color": {
+                "x": 0.3857142925262451,
+                "y": 0.22857142984867096,
+                "z": 0.1128571480512619
+            },
+            "homePosition": {
+                "x": 0.0,
+                "y": -0.36571431159973145,
+                "z": 0.0
+            },
+            "nextToLength": 0.05714285746216774,
+            "physicsWeight": 0.7142857313156128,
+            "position": {
+                "x": 0.0,
+                "y": -0.36571431159973145,
+                "z": 0.0
+            },
+            "radius": 0.005714285187423229
+        },
+        {
+            "color": {
+                "x": 0.44285714626312256,
+                "y": 0.26428571343421936,
+                "z": 0.1314285844564438
+            },
+            "homePosition": {
+                "x": 0.0,
+                "y": -0.4228571653366089,
+                "z": 0.0
+            },
+            "nextToLength": 0.05714285746216774,
+            "physicsWeight": 0.8571428656578064,
+            "position": {
+                "x": 0.0,
+                "y": -0.4228571653366089,
+                "z": 0.0
+            },
+            "radius": 0.003857143223285675
+        },
+        {
+            "color": {
+                "x": 0.5,
+                "y": 0.30000001192092896,
+                "z": 0.15000000596046448
+            },
+            "homePosition": {
+                "x": 0.0,
+                "y": -0.48000001907348633,
+                "z": 0.0
+            },
+            "nextToLength": 0.0,
+            "physicsWeight": 1.0,
+            "position": {
+                "x": 0.0,
+                "y": -0.48000001907348633,
+                "z": 0.0
+            },
+            "radius": 0.0020000003278255463
+        }
+    ],
+    "segments": [
+        {
+            "v0_Index": 0,
+            "v1_Index": 1
+        },
+        {
+            "v0_Index": 1,
+            "v1_Index": 2
+        },
+        {
+            "v0_Index": 2,
+            "v1_Index": 3
+        },
+        {
+            "v0_Index": 3,
+            "v1_Index": 4
+        },
+        {
+            "v0_Index": 4,
+            "v1_Index": 5
+        },
+        {
+            "v0_Index": 5,
+            "v1_Index": 6
+        },
+        {
+            "v0_Index": 6,
+            "v1_Index": 7
+        },
+        {
+            "v0_Index": 7,
+            "v1_Index": 8
+        },
+        {
+            "v0_Index": 8,
+            "v1_Index": 9
+        },
+        {
+            "v0_Index": 9,
+            "v1_Index": 10
+        },
+        {
+            "v0_Index": 10,
+            "v1_Index": 11
+        },
+        {
+            "v0_Index": 11,
+            "v1_Index": 12
+        },
+        {
+            "v0_Index": 12,
+            "v1_Index": 13
+        },
+        {
+            "v0_Index": 13,
+            "v1_Index": 14
+        },
+        {
+            "v0_Index": 14,
+            "v1_Index": 15
+        },
+        {
+            "v0_Index": 15,
+            "v1_Index": 16
+        },
+        {
+            "v0_Index": 16,
+            "v1_Index": 17
+        },
+        {
+            "v0_Index": 17,
+            "v1_Index": 18
+        },
+        {
+            "v0_Index": 18,
+            "v1_Index": 19
+        },
+        {
+            "v0_Index": 19,
+            "v1_Index": 20
+        },
+        {
+            "v0_Index": 20,
+            "v1_Index": 21
+        },
+        {
+            "v0_Index": 21,
+            "v1_Index": 22
+        },
+        {
+            "v0_Index": 22,
+            "v1_Index": 23
+        },
+        {
+            "v0_Index": 23,
+            "v1_Index": 24
+        },
+        {
+            "v0_Index": 24,
+            "v1_Index": 25
+        },
+        {
+            "v0_Index": 25,
+            "v1_Index": 26
+        },
+        {
+            "v0_Index": 26,
+            "v1_Index": 27
+        },
+        {
+            "v0_Index": 27,
+            "v1_Index": 28
+        },
+        {
+            "v0_Index": 28,
+            "v1_Index": 29
+        },
+        {
+            "v0_Index": 29,
+            "v1_Index": 30
+        },
+        {
+            "v0_Index": 31,
+            "v1_Index": 32
+        },
+        {
+            "v0_Index": 32,
+            "v1_Index": 33
+        },
+        {
+            "v0_Index": 33,
+            "v1_Index": 34
+        },
+        {
+            "v0_Index": 34,
+            "v1_Index": 35
+        },
+        {
+            "v0_Index": 35,
+            "v1_Index": 36
+        },
+        {
+            "v0_Index": 36,
+            "v1_Index": 37
+        },
+        {
+            "v0_Index": 37,
+            "v1_Index": 38
+        },
+        {
+            "v0_Index": 38,
+            "v1_Index": 39
+        },
+        {
+            "v0_Index": 39,
+            "v1_Index": 40
+        },
+        {
+            "v0_Index": 40,
+            "v1_Index": 41
+        },
+        {
+            "v0_Index": 41,
+            "v1_Index": 42
+        },
+        {
+            "v0_Index": 42,
+            "v1_Index": 43
+        },
+        {
+            "v0_Index": 43,
+            "v1_Index": 44
+        },
+        {
+            "v0_Index": 44,
+            "v1_Index": 45
+        },
+        {
+            "v0_Index": 45,
+            "v1_Index": 46
+        },
+        {
+            "v0_Index": 46,
+            "v1_Index": 47
+        },
+        {
+            "v0_Index": 47,
+            "v1_Index": 48
+        },
+        {
+            "v0_Index": 48,
+            "v1_Index": 49
+        },
+        {
+            "v0_Index": 49,
+            "v1_Index": 50
+        },
+        {
+            "v0_Index": 50,
+            "v1_Index": 51
+        },
+        {
+            "v0_Index": 51,
+            "v1_Index": 52
+        },
+        {
+            "v0_Index": 52,
+            "v1_Index": 53
+        },
+        {
+            "v0_Index": 53,
+            "v1_Index": 54
+        },
+        {
+            "v0_Index": 54,
+            "v1_Index": 55
+        },
+        {
+            "v0_Index": 55,
+            "v1_Index": 56
+        },
+        {
+            "v0_Index": 56,
+            "v1_Index": 57
+        },
+        {
+            "v0_Index": 57,
+            "v1_Index": 58
+        },
+        {
+            "v0_Index": 58,
+            "v1_Index": 59
+        },
+        {
+            "v0_Index": 59,
+            "v1_Index": 60
+        },
+        {
+            "v0_Index": 60,
+            "v1_Index": 61
+        },
+        {
+            "v0_Index": 62,
+            "v1_Index": 63
+        },
+        {
+            "v0_Index": 63,
+            "v1_Index": 64
+        },
+        {
+            "v0_Index": 64,
+            "v1_Index": 65
+        },
+        {
+            "v0_Index": 65,
+            "v1_Index": 66
+        },
+        {
+            "v0_Index": 66,
+            "v1_Index": 67
+        },
+        {
+            "v0_Index": 67,
+            "v1_Index": 68
+        },
+        {
+            "v0_Index": 68,
+            "v1_Index": 69
+        },
+        {
+            "v0_Index": 69,
+            "v1_Index": 70
+        },
+        {
+            "v0_Index": 70,
+            "v1_Index": 71
+        },
+        {
+            "v0_Index": 71,
+            "v1_Index": 72
+        },
+        {
+            "v0_Index": 72,
+            "v1_Index": 73
+        },
+        {
+            "v0_Index": 73,
+            "v1_Index": 74
+        },
+        {
+            "v0_Index": 74,
+            "v1_Index": 75
+        },
+        {
+            "v0_Index": 75,
+            "v1_Index": 76
+        },
+        {
+            "v0_Index": 76,
+            "v1_Index": 77
+        },
+        {
+            "v0_Index": 77,
+            "v1_Index": 78
+        },
+        {
+            "v0_Index": 78,
+            "v1_Index": 79
+        },
+        {
+            "v0_Index": 79,
+            "v1_Index": 80
+        },
+        {
+            "v0_Index": 80,
+            "v1_Index": 81
+        },
+        {
+            "v0_Index": 81,
+            "v1_Index": 82
+        },
+        {
+            "v0_Index": 82,
+            "v1_Index": 83
+        },
+        {
+            "v0_Index": 83,
+            "v1_Index": 84
+        },
+        {
+            "v0_Index": 84,
+            "v1_Index": 85
+        },
+        {
+            "v0_Index": 85,
+            "v1_Index": 86
+        },
+        {
+            "v0_Index": 86,
+            "v1_Index": 87
+        },
+        {
+            "v0_Index": 87,
+            "v1_Index": 88
+        },
+        {
+            "v0_Index": 88,
+            "v1_Index": 89
+        },
+        {
+            "v0_Index": 89,
+            "v1_Index": 90
+        },
+        {
+            "v0_Index": 90,
+            "v1_Index": 91
+        },
+        {
+            "v0_Index": 91,
+            "v1_Index": 92
+        },
+        {
+            "v0_Index": 93,
+            "v1_Index": 94
+        },
+        {
+            "v0_Index": 94,
+            "v1_Index": 95
+        },
+        {
+            "v0_Index": 95,
+            "v1_Index": 96
+        },
+        {
+            "v0_Index": 96,
+            "v1_Index": 97
+        },
+        {
+            "v0_Index": 97,
+            "v1_Index": 98
+        },
+        {
+            "v0_Index": 98,
+            "v1_Index": 99
+        },
+        {
+            "v0_Index": 99,
+            "v1_Index": 100
+        },
+        {
+            "v0_Index": 100,
+            "v1_Index": 101
+        },
+        {
+            "v0_Index": 101,
+            "v1_Index": 102
+        },
+        {
+            "v0_Index": 102,
+            "v1_Index": 103
+        },
+        {
+            "v0_Index": 103,
+            "v1_Index": 104
+        },
+        {
+            "v0_Index": 104,
+            "v1_Index": 105
+        },
+        {
+            "v0_Index": 105,
+            "v1_Index": 106
+        },
+        {
+            "v0_Index": 106,
+            "v1_Index": 107
+        },
+        {
+            "v0_Index": 107,
+            "v1_Index": 108
+        },
+        {
+            "v0_Index": 108,
+            "v1_Index": 109
+        },
+        {
+            "v0_Index": 109,
+            "v1_Index": 110
+        },
+        {
+            "v0_Index": 110,
+            "v1_Index": 111
+        },
+        {
+            "v0_Index": 111,
+            "v1_Index": 112
+        },
+        {
+            "v0_Index": 112,
+            "v1_Index": 113
+        },
+        {
+            "v0_Index": 113,
+            "v1_Index": 114
+        },
+        {
+            "v0_Index": 114,
+            "v1_Index": 115
+        },
+        {
+            "v0_Index": 115,
+            "v1_Index": 116
+        },
+        {
+            "v0_Index": 116,
+            "v1_Index": 117
+        },
+        {
+            "v0_Index": 117,
+            "v1_Index": 118
+        },
+        {
+            "v0_Index": 118,
+            "v1_Index": 119
+        },
+        {
+            "v0_Index": 119,
+            "v1_Index": 120
+        },
+        {
+            "v0_Index": 120,
+            "v1_Index": 121
+        },
+        {
+            "v0_Index": 121,
+            "v1_Index": 122
+        },
+        {
+            "v0_Index": 122,
+            "v1_Index": 123
+        },
+        {
+            "v0_Index": 124,
+            "v1_Index": 125
+        },
+        {
+            "v0_Index": 125,
+            "v1_Index": 126
+        },
+        {
+            "v0_Index": 126,
+            "v1_Index": 127
+        },
+        {
+            "v0_Index": 127,
+            "v1_Index": 128
+        },
+        {
+            "v0_Index": 128,
+            "v1_Index": 129
+        },
+        {
+            "v0_Index": 129,
+            "v1_Index": 130
+        },
+        {
+            "v0_Index": 130,
+            "v1_Index": 131
+        },
+        {
+            "v0_Index": 131,
+            "v1_Index": 132
+        },
+        {
+            "v0_Index": 132,
+            "v1_Index": 133
+        },
+        {
+            "v0_Index": 133,
+            "v1_Index": 134
+        },
+        {
+            "v0_Index": 134,
+            "v1_Index": 135
+        },
+        {
+            "v0_Index": 135,
+            "v1_Index": 136
+        },
+        {
+            "v0_Index": 136,
+            "v1_Index": 137
+        },
+        {
+            "v0_Index": 137,
+            "v1_Index": 138
+        },
+        {
+            "v0_Index": 138,
+            "v1_Index": 139
+        },
+        {
+            "v0_Index": 139,
+            "v1_Index": 140
+        },
+        {
+            "v0_Index": 140,
+            "v1_Index": 141
+        },
+        {
+            "v0_Index": 141,
+            "v1_Index": 142
+        },
+        {
+            "v0_Index": 142,
+            "v1_Index": 143
+        },
+        {
+            "v0_Index": 143,
+            "v1_Index": 144
+        },
+        {
+            "v0_Index": 144,
+            "v1_Index": 145
+        },
+        {
+            "v0_Index": 145,
+            "v1_Index": 146
+        },
+        {
+            "v0_Index": 146,
+            "v1_Index": 147
+        },
+        {
+            "v0_Index": 147,
+            "v1_Index": 148
+        },
+        {
+            "v0_Index": 148,
+            "v1_Index": 149
+        },
+        {
+            "v0_Index": 149,
+            "v1_Index": 150
+        },
+        {
+            "v0_Index": 150,
+            "v1_Index": 151
+        },
+        {
+            "v0_Index": 151,
+            "v1_Index": 152
+        },
+        {
+            "v0_Index": 152,
+            "v1_Index": 153
+        },
+        {
+            "v0_Index": 153,
+            "v1_Index": 154
+        },
+        {
+            "v0_Index": 155,
+            "v1_Index": 156
+        },
+        {
+            "v0_Index": 156,
+            "v1_Index": 157
+        },
+        {
+            "v0_Index": 157,
+            "v1_Index": 158
+        },
+        {
+            "v0_Index": 158,
+            "v1_Index": 159
+        },
+        {
+            "v0_Index": 159,
+            "v1_Index": 160
+        },
+        {
+            "v0_Index": 160,
+            "v1_Index": 161
+        },
+        {
+            "v0_Index": 161,
+            "v1_Index": 162
+        },
+        {
+            "v0_Index": 162,
+            "v1_Index": 163
+        },
+        {
+            "v0_Index": 163,
+            "v1_Index": 164
+        },
+        {
+            "v0_Index": 164,
+            "v1_Index": 165
+        },
+        {
+            "v0_Index": 165,
+            "v1_Index": 166
+        },
+        {
+            "v0_Index": 166,
+            "v1_Index": 167
+        },
+        {
+            "v0_Index": 167,
+            "v1_Index": 168
+        },
+        {
+            "v0_Index": 168,
+            "v1_Index": 169
+        },
+        {
+            "v0_Index": 169,
+            "v1_Index": 170
+        },
+        {
+            "v0_Index": 170,
+            "v1_Index": 171
+        },
+        {
+            "v0_Index": 171,
+            "v1_Index": 172
+        },
+        {
+            "v0_Index": 172,
+            "v1_Index": 173
+        },
+        {
+            "v0_Index": 173,
+            "v1_Index": 174
+        },
+        {
+            "v0_Index": 174,
+            "v1_Index": 175
+        },
+        {
+            "v0_Index": 175,
+            "v1_Index": 176
+        },
+        {
+            "v0_Index": 176,
+            "v1_Index": 177
+        },
+        {
+            "v0_Index": 177,
+            "v1_Index": 178
+        },
+        {
+            "v0_Index": 178,
+            "v1_Index": 179
+        },
+        {
+            "v0_Index": 179,
+            "v1_Index": 180
+        },
+        {
+            "v0_Index": 180,
+            "v1_Index": 181
+        },
+        {
+            "v0_Index": 181,
+            "v1_Index": 182
+        },
+        {
+            "v0_Index": 182,
+            "v1_Index": 183
+        },
+        {
+            "v0_Index": 183,
+            "v1_Index": 184
+        },
+        {
+            "v0_Index": 184,
+            "v1_Index": 185
+        }
+    ],
+    "strandInfos": [
+        {
+            "aabbStartIndex": 0,
+            "vertexCount": 31,
+            "vertexStartIndex": 0
+        },
+        {
+            "aabbStartIndex": 30,
+            "vertexCount": 31,
+            "vertexStartIndex": 31
+        },
+        {
+            "aabbStartIndex": 60,
+            "vertexCount": 31,
+            "vertexStartIndex": 62
+        },
+        {
+            "aabbStartIndex": 90,
+            "vertexCount": 31,
+            "vertexStartIndex": 93
+        },
+        {
+            "aabbStartIndex": 120,
+            "vertexCount": 31,
+            "vertexStartIndex": 124
+        },
+        {
+            "aabbStartIndex": 150,
+            "vertexCount": 31,
+            "vertexStartIndex": 155
+        }
+    ]
+}

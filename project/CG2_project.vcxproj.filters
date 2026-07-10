@@ -678,9 +678,6 @@
     <ClCompile Include="Engine\Objects\Primitive\Ring\Ring.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="Engine\Objects\Hair\Hair.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
     <ClCompile Include="Engine\Objects\DrawManager.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
@@ -1158,9 +1155,6 @@
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
     <ClInclude Include="Engine\Objects\Primitive\Ring\Ring.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="Engine\Objects\Hair\Hair.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
     <ClInclude Include="Engine\Objects\DrawManager.h">

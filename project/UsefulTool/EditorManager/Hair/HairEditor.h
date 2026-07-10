@@ -8,8 +8,10 @@ class HairGuideEditor :
 {
 private:
     Hair* hairSystem_ = nullptr;
-    int selectedGuideIndex_ = 0; // とりあえず最初のガイドをいじる用
+    int selectedGuideIndices_[3] = {0,-1,-1};
+	bool blendMode_ = false; // 3つのガイドを選択している場合に、Blendモードにするかどうか
     std::vector<int> selectedPointIndices_ = { 0 }; // とりあえず最初のポイントをいじる用
+	float weights_[3] = { 1.0f, 0.0f, 0.0f }; // Blendモード時の重み（合計1.0になるように）
     
     // ドラッグ＆Undo管理用のフラグ
     bool isGizmoUsingLastFrame_ = false;
@@ -17,6 +19,38 @@ private:
 
     Vector3 gizmoStartCenter_ = { 0, 0, 0 };
     bool isDrawPoint_ = true;
+
+
+private:
+    Vector3 newGuidePos = { 0.0f, 0.19f, 0.0f }; // 初期位置（頭上付近）
+    Vector3 newGuideDir = { 0.0f, 0.0f, 1.0f }; // 初期方向（真横）
+    float newGuideLength = 0.4f;
+    float newGuideRootRad = 0.015f;
+    float newGuideTipRad = 0.002f;
+    float newGuideRootCol[3] = { 0.1f, 0.05f, 0.02f }; // 暗い茶色
+    float newGuideTipCol[3] = { 0.5f, 0.3f,  0.15f }; // 明るい茶色
+
+    //
+    // 【 Guideを追加する機能 】
+    // 将来てきにCommandになる
+private:
+    void AddGuide(const Vector3& rootPosition, const Vector3& direction, float totalLength,
+        float rootRadius, float tipRadius, const Vector3& rootColor, const Vector3& tipColor);
+    int addGuideNum_ = 8;// 追加するガイドのポイントの数
+
+    // 
+    // 【 Strandを追加する機能 】
+    //
+private:
+    void AddChildStrand(int parentGuideIds[3],   // 追従する親ガイドのID
+		                float parentWeights[3], // 追従する親ガイドの重み（合計1.0になるように）
+                        const Vector2& offset,    // ガイドからの2Dオフセット（散らばり具合）
+                        uint32_t vertexCount,     // この髪の毛1本の頂点数（例: 8や16など補間後の数）
+                        float lengthScale,        // 長さの倍率
+                        float twistAngle,         // ねじれ
+                        float clumpForce          // 束感の強さ)
+    );
+
 public:
     // コンストラクタで編集対象のHairシステムを受け取る
     HairGuideEditor(Hair* hair) : BaseEditor("Hair Guide Editor"), hairSystem_(hair) {}
@@ -35,6 +69,37 @@ public:
     void GenerateDefaultShortHair2(GuideCurve::ControllerPoint* data, uint32_t totalCount, float headRadius,
         float bangLength, float sideLength, float backLength, Vector3 headCenter, Vector3 rootColor,
         Vector3 tipColor);
+
+    /**
+     * @brief 髪の編集データをバイナリファイルとして保存する
+     * @param filename 保存先のファイルパス
+     * @param saveData 保存するデータ
+     * @return 保存に成功した場合は true、失敗した場合は false
+     */
+    bool SaveHairSaveData(const std::string& filename, const Strands::HairSaveData& saveData);
+
+    /**
+     * @brief バイナリファイルから髪の編集データを読み込む
+     * @param filename 読み込み元のファイルパス
+     * @param outSaveData 読み込んだデータの格納先
+     * @return 読み込みに成功した場合は true、失敗した場合は false
+     */
+    bool LoadHairSaveData(const std::string& filename, Strands::HairSaveData& outSaveData);
+
+    /**
+     * @brief 現在のエディタの髪データをバイナリファイルとして保存する
+     * @param filename 保存先のファイルパス (.bin などの拡張子)
+     * @return 成功したら true
+     */
+    bool SaveToFile(const std::string& filename);
+
+    /**
+     * @brief バイナリファイルからデータを読み込み、Hairシステムを再初期化する
+     * @param filename 読み込み元のファイルパス
+     * @param engine 初期化に必要なFngineポインタ
+     * @return 成功したら true
+     */
+    bool LoadFromFile(const std::string& filename, Fngine* engine);
 
     // データをJSON形式のテキストとして書き出す関数
     void SaveHairDataToJson(const std::string& filePath, GuideCurve::ControllerPoint* data, uint32_t count) {

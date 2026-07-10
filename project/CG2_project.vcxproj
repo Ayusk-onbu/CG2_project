@@ -159,7 +159,6 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Engine\Objects\DrawManager.cpp" />
-    <ClCompile Include="Engine\Objects\Hair\Hair.cpp" />
     <ClCompile Include="Engine\Objects\Hair\IHair.cpp" />
     <ClCompile Include="Engine\Objects\Hair\Strands.cpp" />
     <ClCompile Include="Engine\Objects\Primitive\Cylinder\Cylinder.cpp" />
@@ -356,7 +355,6 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="Common\MathUtils\Ray\Ray.h" />
     <ClInclude Include="Engine\Objects\DrawManager.h" />
     <ClInclude Include="Engine\Objects\Hair\GuideCurve.h" />
-    <ClInclude Include="Engine\Objects\Hair\Hair.h" />
     <ClInclude Include="Engine\Objects\Hair\IHair.h" />
     <ClInclude Include="Engine\Objects\Primitive\Base\PrimitiveBaseModelData.h" />
     <ClInclude Include="Engine\Objects\Primitive\Cylinder\Cylinder.h" />

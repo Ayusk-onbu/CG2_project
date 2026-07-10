@@ -5,6 +5,7 @@
 
 using json = nlohmann::json;
 
+NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(Vector2, x, y)
 NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(Vector3,x,y,z)
 
 namespace FileSystem {

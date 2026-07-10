@@ -1,3 +1,5 @@
+#include "Hair.hlsli"
+
 ///////////////
 //
 // RayGenShader
@@ -23,19 +25,15 @@ struct Camera
     float32_t3 position;
 };
 
-struct StrandVertex
-{
-    float32_t3 position;
-    float32_t radius;
-    float32_t3 color;
-    float32_t padding;
-};
-
 // TLAS
 RaytracingAccelerationStructure SceneTLAS : register(t0);
-
 // Hair Vertex Buffer
-StructuredBuffer<StrandVertex> HairVertices : register(t1);
+//StructuredBuffer<StrandVertex> HairVertices : register(t1);
+StructuredBuffer<StrandVertex> HairFlatVertices : register(t1);
+// シーンのDepth情報
+Texture2D<float32_t> SceneDepth : register(t2);
+// Segment Data Buffer
+//StructuredBuffer<SegmentData> HairSegments : register(t3);
 
 // Camera Buffer
 ConstantBuffer<Camera> gCamera : register(b0);
@@ -43,8 +41,6 @@ ConstantBuffer<Camera> gCamera : register(b0);
 // UAV
 RWTexture2D<float32_t4> gOutput : register(u0);
 
-
-Texture2D<float32_t> SceneDepth : register(t2);
 
 [shader("raygeneration")]
 void MyRayGenShader()
@@ -114,7 +110,7 @@ void MyRayGenShader()
   // ----------------------------------------
     
     // Ray Trace
-    TraceRay(SceneTLAS, RAY_FLAG_NONE, 0xFF, 0, 1, 0, ray, payload);
+    TraceRay(SceneTLAS, RAY_FLAG_FORCE_OPAQUE, 0xFF, 0, 1, 0, ray, payload);
 
   // ----------------------------------------
     
@@ -134,7 +130,7 @@ struct Ray
     float3 Direction;
 };
 
-bool RayCapsuleIntersectionTest(Ray ray, float3 p0, float3 p1, float radius, out float thit, out HairAttribute attr)
+bool RayCapsuleIntersectionTest(Ray ray, float3 p0, float3 p1, float radius, float rayTCurrent, out float thit, out HairAttribute attr)
 {
     thit = 0.0f;
     attr = (HairAttribute) 0;
@@ -170,6 +166,14 @@ bool RayCapsuleIntersectionTest(Ray ray, float3 p0, float3 p1, float radius, out
         u = t * dotDW + dotDW_delta;
     }
 
+    // クンプ前の大雑把な t の時点で、すでに現在の最短ヒット距離(rayTCurrent)より
+    // 遥か後ろ（奥）にあることが分かったら、この先の重いクランプやベクトル計算をせずに即座に捨てる！
+    // ※カプセルの半径分(radius)だけ安全マージンを持たせます
+    if (t > rayTCurrent + radius)
+    {
+        return false;
+    }
+    
     // 無限の線を「有限の長さ」にクリッピング(クランプ)する
     float uClamped = clamp(u, 0.0f, L);
 
@@ -178,6 +182,12 @@ bool RayCapsuleIntersectionTest(Ray ray, float3 p0, float3 p1, float radius, out
     {
         u = uClamped;
         t = -dot(delta - u * W, ray.Direction);
+        
+        // 端点に補正したあとの t でも再度チェック。超えていたら捨てる。
+        if (t > rayTCurrent + radius)
+        {
+            return false;
+        }
     }
 
     // レイ上の最接近点と、線分上の最接近点のリアルな3D座標を計算
@@ -218,73 +228,55 @@ bool RayCapsuleIntersectionTest(Ray ray, float3 p0, float3 p1, float radius, out
 [shader("intersection")]
 void HairIntersectionShader()
 {
+    float rayTCurrent = RayTCurrent();
+    float rayTMin = RayTMin();
+    
     // 現在処理中のレイ情報を取得
     Ray ray;
     ray.Origin = ObjectRayOrigin();
     ray.Direction = ObjectRayDirection();
 
-    // プリミティブIDから、対応するC++の頂点バッファのインデックスを特定
-   
-    uint segmentsPerStrand = 32 - 1;
-
-    // 何本目の髪の毛か
-    uint strandId = PrimitiveIndex() / segmentsPerStrand;
-    // その髪の毛の何番目のセグメントか
-    uint segmentId = PrimitiveIndex() % segmentsPerStrand;
-
-    // 実際の頂点バッファの開始インデックス
-    uint index = (strandId * 32) + segmentId;
+    // レイトレーシングエンジンが教えてくれる「当たったAABBの通し番号」
+    uint aabbIndex = PrimitiveIndex();
+    StrandVertex v0 = HairFlatVertices[aabbIndex * 2 + 0];
+    StrandVertex v1 = HairFlatVertices[aabbIndex * 2 + 1];
     
-    // uint index = PrimitiveIndex() * 1;
-    StrandVertex v0 = HairVertices[index];
-    StrandVertex v1 = HairVertices[index + 1];
+    //// セグメントバッファから、直接このAABBを構成する頂点インデックスを引く
+    //SegmentData seg = HairSegments[aabbIndex];
+    //// 頂点データを直接取得！
+    //StrandVertex v0 = HairVertices[seg.v0_Index];
+    //StrandVertex v1 = HairVertices[seg.v1_Index];
     
-    // 両端の半径の平均値を太さとする
     float radius = v0.radius;
 
+    // レイの始点から、線分の両端点（v0, v1）への距離の最小値を大雑把にチェック。
+    // 完全に rayTCurrent より奥にある AABB なら、交差テストすら行わずに終了する。
+    // (AABBをかすめただけの無駄な奥のレイをここで9割以上ふるい落とせます)
+    float3 toV0 = v0.position - ray.Origin;
+    float3 toV1 = v1.position - ray.Origin;
+    float minDistEstimate = min(dot(toV0, ray.Direction), dot(toV1, ray.Direction)) - radius;
+    if (minDistEstimate > rayTCurrent)
+    {
+        return;
+    }
+    
     float thit;
     HairAttribute attr;
 
-    // 数学テストを実行
-    if (RayCapsuleIntersectionTest(ray, v0.position, v1.position, radius, thit, attr))
+    // 数学テストを実行：ここに改良の余地あり
+    if (RayCapsuleIntersectionTest(ray, v0.position, v1.position, radius, rayTCurrent,thit, attr))
     {
         // 計算された交点 t が、現在のレイトレーシングの有効範囲内（一番手前）にあるか確認
-        if (thit > RayTMin() && thit < RayTCurrent())
+        if (thit > rayTMin && thit < rayTCurrent)
         {
             // ローカル空間で計算された法線を、世界の傾き（ワールド空間）に変換する
             // ※髪の毛のデータがBLASの時点で配置されている場合は ObjectToWorld で一発で変換
             attr.normal = normalize(mul((float3x3) ObjectToWorld3x4(), attr.normal));
 
             // GPUへ交差を報告！（これによりClosestHitが起動する）
-            ReportHit(thit, /*hitKind*/0, attr);
+            ReportHit(thit, 0, attr);
         }
     }
-    
-    
-    
-    //// とにかく「レイの有効範囲内の適当な距離」でヒットしたことにする！
-    //float dummyThit = RayTMin() + 0.1f;
-
-    //// 現在のレイの最大到達距離より手前ならヒット！
-    //if (dummyThit < RayTCurrent())
-    //{
-    //    HairAttribute attr;
-    //    attr.uv = float2(0.5f, 0.5f);
-    //    attr.normal = float3(0, 1, 0); // 適当な上向き法線
-
-    //    // 問答無用でヒットを報告
-    //    ReportHit(dummyThit, 0, attr);
-    //}
-}
-////////////////////////
-//
-//     Miss Shader
-//
-////////////////////////
-[shader("miss")]
-void MyMissShader(inout RayPayload payload)
-{
-   //payload.color = float32_t3(0.1f, 0.2f, 0.5f);
 }
 
 ////////////////////////
@@ -295,20 +287,17 @@ void MyMissShader(inout RayPayload payload)
 [shader("closesthit")]
 void HairClosestHitShader(inout RayPayload payload, in HairAttribute attribute)
 {
-    // 当たった節の頂点データを引き直す
-    //uint32_t index = PrimitiveIndex() * 1;
+   // レイトレーシングエンジンが教えてくれる「当たったAABBの通し番号」
+    uint32_t aabbIndex = PrimitiveIndex();
+    StrandVertex v0 = HairFlatVertices[aabbIndex * 2 + 0];
+    StrandVertex v1 = HairFlatVertices[aabbIndex * 2 + 1];
     
-    uint segmentsPerStrand = 32 - 1;
-    // 何本目の髪の毛か
-    uint strandId = PrimitiveIndex() / segmentsPerStrand;
-    // その髪の毛の何番目のセグメントか
-    uint segmentId = PrimitiveIndex() % segmentsPerStrand;
-    // 実際の頂点バッファの開始インデックス
-    uint index = (strandId * 32) + segmentId;
+    //// セグメントバッファから、直接このAABBを構成する頂点インデックスを引く
+    //SegmentData seg = HairSegments[aabbIndex];
+    //// 頂点データを直接取得
+    //StrandVertex v0 = HairVertices[seg.v0_Index];
+    //StrandVertex v1 = HairVertices[seg.v1_Index];
     
-    StrandVertex v0 = HairVertices[index];
-    StrandVertex v1 = HairVertices[index + 1];
-
     // 当たった場所の比率（attribute.uv.y）を使って、C++からきた頂点カラーを滑らかに補間！
     float32_t3 baseColor = lerp(v0.color, v1.color, attribute.uv.y);
 
@@ -319,27 +308,53 @@ void HairClosestHitShader(inout RayPayload payload, in HairAttribute attribute)
     float32_t3 L = normalize(float32_t3(1.0f, 1.0f, -1.0f)); // ライト方向
     float32_t3 V = normalize(-WorldRayDirection()); // 視線方向 (レイの逆向き)
     float32_t3 H = normalize(L + V); // ハーフベクトル（LとVの中間）
-
-    // 3. Diffuse (拡散反射) - 既存の処理
+    float32_t3 N = attribute.normal; // Intersectionから渡された法線
+    
+    // ------------------------------------------------------------
+    // ① Diffuse (拡散反射) - 髪の毛用のシリンダー（円柱）シェーディング
+    // ------------------------------------------------------------
     float32_t dotLT = dot(L, T);
     float32_t diffuse = sqrt(max(0.0f, 1.0f - dotLT * dotLT));
-
-    // 4. Specular (鏡面反射: Kajiya-Kayモデル)
-    float32_t dotTH = dot(T, H);
-    // TとHのなす角のサイン波を求める (ピタゴラスの定理 sin^2 + cos^2 = 1 より)
-    float32_t sinTH = sqrt(max(0.0f, 1.0f - dotTH * dotTH));
     
-    // ハイライトの鋭さ（数値が大きいほど細く鋭いハイライトになる。例: 20〜100程度）
-    float32_t shininess = 60.0f;
-    float32_t specularIntensity = pow(sinTH, shininess);
+    // 簡易的なライトの回り込み（Wrap-around）を入れて、髪の不透明な影を柔らかくする
+    diffuse = saturate(diffuse * 0.7f + 0.3f);
 
-    // ハイライトの色（とりあえず分かりやすいように純白）
-    float32_t3 specularColor = float32_t3(1.0f, 1.0f, 1.0f);
+    // ------------------------------------------------------------
+    // ② Dual-Specular (天使の輪をリアルにする2重ハイライト)
+    // ------------------------------------------------------------
+    // 髪の表面（キューティクル）の傾きを模倣するため、接線を法線方向に少しシフト（傾斜）させる
+    float32_t3 T1 = normalize(T + N * 0.1f); // 第一ハイライト用（根元側へずれる）
+    float32_t3 T2 = normalize(T - N * 0.05f); // 第二ハイライト用（毛先側へずれる）
 
-    // 5. 環境光と最終合成
-    float32_t3 envColor = float32_t3(0.05f, 0.05f, 0.05f);
+    // 【第一ハイライト (R成分)】: 表面のキューティクルで反射する、シャープで白い光
+    float32_t dotT1H = dot(T1, H);
+    float32_t sinT1H = sqrt(max(0.0f, 1.0f - dotT1H * dotT1H));
+    float32_t spec1 = pow(sinT1H, 80.0f); // 鋭いハイライト（数値大）
+    float32_t3 specularColor1 = float32_t3(1.0f, 1.0f, 1.0f) * spec1 * 0.6f; // 白い光
+
+    // 【第二ハイライト (TRT成分)】: 髪の内部に入り、後ろに透過して戻ってくる、少し鈍く「髪の色」を帯びた光
+    float32_t dotT2H = dot(T2, H);
+    float32_t sinT2H = sqrt(max(0.0f, 1.0f - dotT2H * dotT2H));
+    float32_t spec2 = pow(sinT2H, 30.0f); // 少し広がるハイライト（数値小）
+    float32_t3 specularColor2 = baseColor * spec2 * 0.4f; // 💡髪の毛の色（baseColor）が乗る！
+
+    // ------------------------------------------------------------
+    // ③ 環境光 ＆ 最終合成
+    // ------------------------------------------------------------
+    float32_t3 ambient = baseColor * 0.05f;
     
-    // DiffuseにSpecularを加算する
-    //payload.color = (baseColor * diffuse) + (specularColor * specularIntensity) + envColor;
-    payload.color = baseColor;
+    // すべてを合算してペイロードに返す
+    payload.color = (baseColor * diffuse) + specularColor1 + specularColor2 + ambient;
+    //payload.color = baseColor;
+}
+
+////////////////////////
+//
+//     Miss Shader
+//
+////////////////////////
+[shader("miss")]
+void MyMissShader(inout RayPayload payload)
+{
+    // 背景はゲームの画像なので特に何もしない
 }

@@ -2,6 +2,8 @@
 
 StructuredBuffer<ControllerPoint> g_InGuideBuffer : register(t0); // 物理演算後のガイド頂点群
 StructuredBuffer<ChildStrand> g_InChildStrandBuffer : register(t1); // 子髪の設定バッファ
+StructuredBuffer<StrandInfo> g_StrandInfoBuffer : register(t2);
+StructuredBuffer<GuideInfo> g_GuideInfoBuffer : register(t3);
 RWStructuredBuffer<StrandVertex> g_OutVertexBuffer : register(u0);
 ConstantBuffer<HairMakeConfig> g_HairMakeConfig : register(b0);
 ConstantBuffer<HairConfig> gHairConfig : register(b1);
@@ -36,58 +38,52 @@ void main(uint3 dispatchThreadID : SV_DispatchThreadID)
 {
     // 担当する髪のＩＤを取得
     uint strandIdx = dispatchThreadID.x;
-    
-     // 総ストランド数
+    // 総ストランド数
     if (strandIdx >= gHairConfig.numStrands)return;
+    
+    // -------------------------------------------
     
     // この子髪の遺伝子（設定）をロード
     ChildStrand child = g_InChildStrandBuffer[strandIdx];
+    StrandInfo info = g_StrandInfoBuffer[strandIdx];
+    float3 currentNormal = float3(0.0, 0.0, 0.0);
     
-    // この子髪の書き込み先（先頭インデックス）を計算
-    uint outStartIndex = strandIdx * gHairConfig.pointPerStrand;
-    
-    // 代表する親ガイドの先頭インデックス：一つ目のガイドを取得している
-    //uint guideStartIndex = child.parentGuideIds[0] * gHairConfig.pointPerGuide;
-
     // -------------------------------------------------------------
     // 根元から毛先まで、1本分の全頂点を生やすループ
     // -------------------------------------------------------------
-    for (uint i = 0; i < gHairConfig.pointPerStrand; ++i)
+    for (uint i = 0; i < info.vertexCount; ++i)
     {
         // ストランド全体での進行割合 (0.0 ～ 1.0)
-        float progress = (float) i / (float) (gHairConfig.pointPerStrand - 1);
-
-        // ガイド側の仮想インデックス (例: 16頂点なら 0.0 ～ 15.0)
-        float guideFloatIdx = progress * (float)(gHairConfig.pointPerGuide - 1);
-
-        // Catmull-Romに必要な 4つのインデックス を計算
-        // idx1 と idx2 が現在補間しようとしている区間
-        int idx1 = (int)floor(guideFloatIdx);
-        int idx2 = min(idx1 + 1, gHairConfig.pointPerGuide - 1);
-        
-        // idx0 と idx3 は曲線を滑らかにするための前後の点（範囲外に出ないようClamp）
-        int idx0 = max(idx1 - 1, 0);
-        int idx3 = min(idx2 + 1, gHairConfig.pointPerGuide - 1);
-
-        // 小数点以下を取り出してブレンド率 (t) にする
-        float t = guideFloatIdx - (float) idx1;
+        float progress = (float) i / (float) (info.vertexCount - 1);
 
         float3 blendedPos = float3(0.0, 0.0, 0.0);
         float3 blendedTangent = float3(0.0, 0.0, 0.0);
         float blendedRadius = 0.0;
         float3 blendedColor = float3(0.0, 0.0, 0.0);
 
-        // ブレンドするガイドの数を決定（単一なら1、複数ブレンドなら3）
         uint numBlend = (child.blendMode == 1) ? 3 : 1;
 
         for (uint b = 0; b < numBlend; ++b)
         {
-            // ウェイトが0の場合は計算をスキップして負荷を減らす
             if (child.weights[b] <= 0.0)
                 continue;
 
-            uint guideStartIndex = child.parentGuideIds[b] * gHairConfig.pointPerGuide;
+            // 各ガイドの情報をちゃんと取得する
+            uint guideId = child.parentGuideIds[b];
+            GuideInfo gInfo = g_GuideInfoBuffer[guideId];
+            
+            // 掛け算ではなくメンバから直接StartIndexを取る！
+            uint guideStartIndex = gInfo.vertexStartIndex;
 
+            // このガイド自身の頂点数に合わせて、インデックスと t を計算し直す
+            float gFloatIdx = progress * (float) (gInfo.vertexCount - 1);
+            int idx1 = (int) floor(gFloatIdx);
+            int idx2 = min(idx1 + 1, (int) gInfo.vertexCount - 1);
+            int idx0 = max(idx1 - 1, 0);
+            int idx3 = min(idx2 + 1, (int) gInfo.vertexCount - 1);
+            float t = gFloatIdx - (float) idx1;
+
+            // これで絶対に範囲外を引かない安全なインデックスになる！
             ControllerPoint gPoint0 = g_InGuideBuffer[guideStartIndex + idx0];
             ControllerPoint gPoint1 = g_InGuideBuffer[guideStartIndex + idx1];
             ControllerPoint gPoint2 = g_InGuideBuffer[guideStartIndex + idx2];
@@ -113,14 +109,25 @@ void main(uint3 dispatchThreadID : SV_DispatchThreadID)
         float currentRadius = blendedRadius;
         float3 currentColor = blendedColor;
         
-        // --- 以降は既存のオフセット計算 ---
-        float3 arbitraryUp = float3(0.0, 1.0, 0.0);
-        if (abs(dot(tangent, arbitraryUp)) > 0.99)
+        // 髪がねじれてがくがくしてしまうのを防ぐため、法線ベクトルを前の頂点からスライドさせて計算する
+        if (i == 0)
         {
-            arbitraryUp = float3(1.0, 0.0, 0.0);
+            // 根元（最初の頂点）のときだけ、最初の基準を作る
+            float3 arbitraryUp = float3(0.0, 1.0, 0.0);
+            if (abs(dot(tangent, arbitraryUp)) > 0.95)
+            {
+                arbitraryUp = float3(1.0, 0.0, 0.0);
+            }
+            currentNormal = normalize(cross(tangent, arbitraryUp));
+        }
+        else
+        {
+            // 2手目以降（毛先まで）は「前の頂点の法線」をベースに変形させる！
+            // 現在の接線(tangent)に対して垂直になるように、前の法線をスライド（射影）させる
+            currentNormal = normalize(currentNormal - tangent * dot(currentNormal, tangent));
         }
         
-        float3 normal = normalize(cross(tangent, arbitraryUp));
+        float3 normal = currentNormal;
         float3 binormal = cross(tangent, normal);
 
         float3 offset3D = (normal * child.offset.x) + (binormal * child.offset.y);
@@ -138,6 +145,6 @@ void main(uint3 dispatchThreadID : SV_DispatchThreadID)
         outVertex.color = currentColor;
         outVertex.padding = 0.0;
 
-        g_OutVertexBuffer[outStartIndex + i] = outVertex;
+        g_OutVertexBuffer[info.vertexStartIndex + i] = outVertex;
     }
 }

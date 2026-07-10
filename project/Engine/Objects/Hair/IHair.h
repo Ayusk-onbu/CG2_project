@@ -11,15 +11,20 @@ struct HairCamera {
 	float padding;             // 4の倍数にするためのパディング
 };
 
+// 全てのGuideは違う頂点数が可能であり、
+// 全てのStrandsは違う頂点数が可能である。
+// 以上のことから、和が国家はStrandsInfoとGuideInfoをセーブする必要がある。
+
 class Hair {
 public:
-	void Initialize(Fngine* engine);
+	void Initialize(Fngine* engine, bool isLoad, const Strands::HairSaveData& savedata);
 	void Update(float deltaTime, const Matrix4x4& mat);
+	
 	void Render(D3D12_GPU_DESCRIPTOR_HANDLE depthHandle);
-
 	void PreHair(ID3D12Resource* randerTargetResource, D3D12_RESOURCE_STATES preState, ID3D12Resource* depthResource);
 	void PostHair(ID3D12Resource* randerTargetResource, D3D12_RESOURCE_STATES postState, ID3D12Resource* depthResource);
 public:
+
 	void RequestNotifyUpdate() {
 		isGpuUpdateRequested_ = true;
 	}
@@ -32,6 +37,48 @@ public:
 	// エディタ側で Slider の最大値を決めるために、要素数も一緒に取得できるようにする
 	uint32_t GetCPUGuideCount() const {
 		return uploadGuideBuffer->GetNumElements();
+	}
+	uint32_t GetCPUActiveGuideCount() const {
+		uint32_t count = 0;
+		if (guideInfoBuffer_) {
+			for (uint32_t i = 0; i < guideInfoBuffer_->GetNumElements(); ++i) {
+				if (guideInfoBuffer_->GetMappedData()[i].vertexCount > 0) {
+					count += guideInfoBuffer_->GetMappedData()[i].vertexCount;
+				}
+				else {
+					break;
+				}
+			}
+		}
+		return count;
+	}
+
+	GuideCurve::GuideInfo* GetCPUGuideInfoData() {
+		return guideInfoBuffer_ ? guideInfoBuffer_->GetMappedData() : nullptr;
+	}
+	uint32_t GetCPUGuideInfoCount() const {
+		return guideInfoBuffer_ ? guideInfoBuffer_->GetNumElements() : 0;
+	}
+	Strands::StrandInfo* GetCPUStrandInfoData() {
+		return strandInfoBuffer_ ? strandInfoBuffer_->GetMappedData() : nullptr;
+	}
+	uint32_t GetCPUStrandInfoCount() const {
+		return strandInfoBuffer_ ? strandInfoBuffer_->GetNumElements() : 0;
+	}
+
+	Strands::SegmentData* GetCPUSegmentData() {
+		return segmentBuffer_ ? segmentBuffer_->GetMappedData() : nullptr;
+	}
+
+	Strands::ChildStrand* GetCPUChildStrandData() {
+		return gpuChildStrandBuffer_ ? gpuChildStrandBuffer_->GetMappedData() : nullptr;
+	}
+
+	GuideCurve::HairPhysicsConfig* GetCPUPhysicsConfig() {
+		return gpuPhysicsConfigBuffer_ ? gpuPhysicsConfigBuffer_->GetMappedData() : nullptr;
+	}
+	Strands::HairMakeConfig* GetCPUMakeConfig() {
+		return gpuMakeConfigBuffer_ ? gpuMakeConfigBuffer_->GetMappedData() : nullptr;
 	}
 private:
 	Microsoft::WRL::ComPtr<ID3D12StateObject> CreateHairRaytracingPSO(
@@ -54,22 +101,30 @@ private:
 	bool isGpuUpdateRequested_ = false; // フラグ
 
 	GuideCurve::Main hairData_;
-	std::unique_ptr<Structured<Strands::ChildStrand>>gpuChildStrandBuffer_;// ストランド生成に必要な情報
+	//【定数バッファ】
 	std::unique_ptr<ConstantBuffer<GuideCurve::HairPhysicsConfig>>gpuPhysicsConfigBuffer_;// 髪全体の情報その物理
 	std::unique_ptr<ConstantBuffer<GuideCurve::FrameConfig>>gpuFrameConfigBuffer_;// 髪全体の情報その物理
 	std::unique_ptr<ConstantBuffer<Strands::HairConfig>>gpuConfigBuffer_;// 髪全体の情報その性質
 	std::unique_ptr<ConstantBuffer<Strands::HairMakeConfig>>gpuMakeConfigBuffer_;// 髪全体の情報その性質
 
-	std::unique_ptr<Structured<GuideCurve::ControllerPoint>> uploadGuideBuffer;
+	std::unique_ptr<Structured<GuideCurve::ControllerPoint>> uploadGuideBuffer;// データ転送用バッファ
+	std::unique_ptr<Structured<GuideCurve::GuideInfo>>guideInfoBuffer_;
+	std::unique_ptr<Structured<Strands::ChildStrand>>gpuChildStrandBuffer_;// ストランド生成に必要な情報
+	std::unique_ptr<Structured<Strands::StrandInfo>> strandInfoBuffer_;
+	
+	std::unique_ptr<Structured<Strands::SegmentData>> segmentBuffer_; // レイトレ＆AABB用
 	std::unique_ptr<RWStructured<GuideCurve::ControllerPoint>>gpuGuideBuffer_;// 全てのガイドの情報
 	std::unique_ptr<RWStructured<Strands::StrandVertex>> hairVertexBuffer_;
 	std::unique_ptr<RWStructured<D3D12_RAYTRACING_AABB>> hairAABBBuffer_;
 	std::unique_ptr<Structured<D3D12_RAYTRACING_INSTANCE_DESC>> instanceBuffer;
+	// レイトレ専用のフラット頂点バッファ(二重参照をしないため)
+	std::unique_ptr<RWStructured<Strands::StrandVertex>> hairFlatVertexBuffer_;
 
 	// 加速構造体（BLAS）用のリソース
 	Microsoft::WRL::ComPtr<ID3D12Resource> scratchBuffer_;
 	Microsoft::WRL::ComPtr<ID3D12Resource> blasResultBuffer_;
-	// 加速構造体（TLAS）用のリソース
+	
+	// 加速構造体（TLAS）用のリソース：これは世界で一個のみかな
 	Microsoft::WRL::ComPtr<ID3D12Resource> tlasScratchBuffer_;
 	Microsoft::WRL::ComPtr<ID3D12Resource> tlasResultBuffer_;
 
@@ -88,4 +143,19 @@ private:
 public:
 	// 追従させているキャラクターの行列
 	Matrix4x4 characterMatrix_;
+
+public:
+	/**
+     * @brief 現在の巨大な固定長バッファから、アクティブなデータのみをバイナリとして保存する
+     * @param filename 保存先ファイルパス
+     * @return 成功したら true
+     */
+    bool SaveToFile(const std::string& filename);
+
+    /**
+     * @brief バイナリファイルからデータを読み込み、既存の固定長バッファに数値を直接上書き（再登録）する
+     * @param filename 読み込み元ファイルパス
+     * @return 成功したら true
+     */
+    bool LoadFromFile(const std::string& filename);
 };

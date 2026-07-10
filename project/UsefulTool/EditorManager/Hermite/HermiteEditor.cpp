@@ -186,7 +186,7 @@ void HermiteEditor::DrawUI() {
         // まずはjson型としてファイルからそのまま読み込む
         if (FileSystem::LoadWithDialog(loadedJson)) {
 
-            // 🚀 最初からある関数で、jsonからノード配列を一発復元！
+            // 最初からある関数で、jsonからノード配列を一発復元！
             auto loadedContainer = MathUtils::Spline::DeserializeNodes<Vector3>(loadedJson);
 
                 // --- あとは古いポインタを消してnewし直すだけ ---
