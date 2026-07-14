@@ -2,6 +2,7 @@
 #include "../IEditor.h"
 #include "Hair/IHair.h"
 #include "HairEditorCommand.h"
+#include "../Hermite/HermiteEditor.h"
 
 class HairGuideEditor :
 	public BaseEditor<GuideCurve::ControllerPoint>
@@ -37,6 +38,13 @@ private:
     void AddGuide(const Vector3& rootPosition, const Vector3& direction, float totalLength,
         float rootRadius, float tipRadius, const Vector3& rootColor, const Vector3& tipColor);
     int addGuideNum_ = 8;// 追加するガイドのポイントの数
+
+    void AddGuideFromSpline(const std::vector<MathUtils::Spline::Node<Vector3>*>& splineNodes,
+        float rootRadius, float tipRadius, const Vector3& rootColor, const Vector3& tipColor);
+
+    // リアルタイムスプライン編集用の変数
+    std::unique_ptr<HermiteEditor> hermiteEditor_ = nullptr;
+    bool isEditingSpline_ = false;
 
     // 
     // 【 Strandを追加する機能 】

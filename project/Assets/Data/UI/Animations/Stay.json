@@ -1,0 +1,43 @@
+{
+    "alphaTrack": [],
+    "name": "Stay",
+    "posTrack": [
+        {
+            "easeType": 3,
+            "time": 0.0,
+            "value": [
+                640.0,
+                360.0,
+                0.0
+            ]
+        },
+        {
+            "easeType": 3,
+            "time": 0.25,
+            "value": [
+                640.0,
+                380.0,
+                0.0
+            ]
+        },
+        {
+            "easeType": 2,
+            "time": 0.5,
+            "value": [
+                640.0,
+                340.0,
+                0.0
+            ]
+        },
+        {
+            "easeType": 0,
+            "time": 0.75,
+            "value": [
+                640.0,
+                360.0,
+                0.0
+            ]
+        }
+    ],
+    "scaleTrack": []
+}

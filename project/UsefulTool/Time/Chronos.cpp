@@ -5,9 +5,6 @@
 #include <thread>
 
 #pragma comment(lib,"winmm.lib")
-
-std::unique_ptr<Chronos> Chronos::instance_ = nullptr;
-
 void Chronos::SetTargetFPS(float targetFPS) {
 	if (targetFPS > 0.0f) {
 		targetFPS_ = targetFPS;
@@ -33,6 +30,9 @@ void Chronos::Initialize()
 	frameCount_ = 0;
 	fps_ = 0;
 
+	previousFrameTime_ = std::chrono::high_resolution_clock::now();
+	deltaTime_ = 0.0f;
+
 	// FPS固定用の初期化
 	referenceTime_ = std::chrono::steady_clock::now();
 	SetTargetFPS(60.0f);
@@ -40,6 +40,11 @@ void Chronos::Initialize()
 }
 
 void Chronos::Update() {
+	auto currentFrameTime = std::chrono::high_resolution_clock::now();
+	std::chrono::duration<float> elapsed = currentFrameTime - previousFrameTime_;
+	deltaTime_ = elapsed.count();
+	previousFrameTime_ = currentFrameTime; // 次のフレームのために現在の時間を保存
+
 	FixedUpdate();
 	CalculateFPS();
 }
@@ -69,13 +74,13 @@ void Chronos::FixedUpdate() {
 	auto now = std::chrono::steady_clock::now();
 
 	if (now < targetTime) {
-		// 【1】スリープの誤差を考慮し、目標時刻の2ミリ秒前まではSleepで待機（CPU使用率削減）
+		// スリープの誤差を考慮し、目標時刻の2ミリ秒前まではSleepで待機（CPU使用率削減）
 		auto sleepTime = targetTime - now - std::chrono::milliseconds(2);
 		if (sleepTime > std::chrono::microseconds(0)) {
 			std::this_thread::sleep_for(sleepTime);
 		}
 
-		// 【2】残りのわずかな時間はスピンロック（空ループ）で1マイクロ秒単位で正確に待つ
+		// 残りのわずかな時間はスピンロック（空ループ）で1マイクロ秒単位で正確に待つ
 		while (std::chrono::steady_clock::now() < targetTime) {
 			// 何もしない（ビジーウェイト）
 		}
@@ -88,4 +93,12 @@ void Chronos::FixedUpdate() {
 
 void Chronos::ChangeIsFixed() {
 	isFixedFPS_ = isFixedFPS_ == true ? false : true;
+}
+
+void Timer::Initialize(const TimerData& data) {
+	data_ = data;
+}
+
+bool Timer::Update(float deltaTime) {
+	return true;
 }

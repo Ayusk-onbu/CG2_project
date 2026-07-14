@@ -1,0 +1,26 @@
+{
+    "colorTrack": [],
+    "name": "FadeInTitleScale",
+    "posTrack": [],
+    "rotateTrack": [],
+    "scaleTrack": [
+        {
+            "easeType": 29,
+            "time": 0.0,
+            "value": [
+                0.0,
+                0.0,
+                1.0
+            ]
+        },
+        {
+            "easeType": 0,
+            "time": 1.5,
+            "value": [
+                59.0,
+                31.0,
+                1.0
+            ]
+        }
+    ]
+}

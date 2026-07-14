@@ -382,6 +382,30 @@ void HairGuideEditor::Update(){
     auto* cpuData = hairSystem_->GetCPUGuideData();
     const int POINTS_PER_GUIDE = hairSystem_->GetCPUGuideConfig()->pointPerGuide;
 
+    if (isDrawPoint_) {
+        float scale = 0.005f;
+        for (uint32_t i = 0; i < hairSystem_->GetCPUActiveGuideCount(); ++i) {
+            PrimitiveSphereData data;
+            data.worldTransform.Initialize();
+
+            Vector3 localPos = cpuData[i].position;
+            Vector4 localPos4 = { localPos.x, localPos.y, localPos.z, 1.0f };
+            Vector4 worldPos4 = Matrix4x4::Transform(hairSystem_->characterMatrix_, localPos4);
+            Vector3 worldPos = { worldPos4.x / worldPos4.w, worldPos4.y / worldPos4.w, worldPos4.z / worldPos4.w };
+
+            data.worldTransform.set_.Translation(worldPos);
+            data.worldTransform.set_.Scale({ scale,scale,scale });
+            data.worldTransform.LocalToWorld();
+            data.color = { 1.0f,1.0f,1.0f,1.0f };
+            DrawManager::GetInstance()->GetSphere()->AddInstance(data);
+        }
+    }
+
+    if (isEditingSpline_ && hermiteEditor_) {
+        hermiteEditor_->Update();
+       // return;
+    }
+
     if (ImGui::IsMouseClicked(0) && !ImGui::GetIO().WantCaptureMouse) {
 
         ImVec2 mousePos = ImGui::GetMousePos();
@@ -434,21 +458,28 @@ void HairGuideEditor::Update(){
                     selectedPointIndices_.push_back(i);
                 }
             }
-            else if (io.KeyAlt) {
-                // Alt: 同じ行（同じガイド）を選択
-                int guideIndex = closestPoint / POINTS_PER_GUIDE;
-                for (int i = 0; i < POINTS_PER_GUIDE; ++i) {
-                    int idx = guideIndex * POINTS_PER_GUIDE + i;
-                    if (idx < (int)count) selectedPointIndices_.push_back(idx);
-                }
-            }
             else if (io.KeyShift) {
-                // Shift: 同じ列（各ガイドの同じ高さ）を選択
-                int depthIndex = closestPoint % POINTS_PER_GUIDE;
-                int totalGuides = count / POINTS_PER_GUIDE;
-                for (int i = 0; i < totalGuides; ++i) {
-                    int idx = i * POINTS_PER_GUIDE + depthIndex;
-                    if (idx < (int)count) selectedPointIndices_.push_back(idx);
+                // Alt: クリックしたポイントが属するガイド全体を選択
+                auto* guideInfoData = hairSystem_->GetCPUGuideInfoData();
+                uint32_t guideInfoCount = hairSystem_->GetCPUGuideInfoCount();
+
+                for (uint32_t guideIndex = 0; guideIndex < guideInfoCount; ++guideIndex) {
+                    const auto& info = guideInfoData[guideIndex];
+
+                    // 頂点が割り当てられていない（無効な）ガイドはスキップ
+                    if (info.vertexCount == 0) continue;
+
+                    uint32_t startIndex = info.vertexStartIndex;
+                    uint32_t endIndex = startIndex + info.vertexCount;
+
+                    // closestPoint がこのガイドの範囲内に含まれているかチェック
+                    if (closestPoint >= (int)startIndex && closestPoint < (int)endIndex) {
+                        // 属しているガイドの全頂点を選択リストに追加
+                        for (uint32_t i = startIndex; i < endIndex; ++i) {
+                            selectedPointIndices_.push_back(i);
+                        }
+                        break; // 該当するガイドが見つかったらループを抜ける
+                    }
                 }
             }
             else {
@@ -459,25 +490,6 @@ void HairGuideEditor::Update(){
         else {
             // 何も無い場所をクリックしたら選択解除
             selectedPointIndices_.clear();
-        }
-    }
-
-    if (isDrawPoint_) {
-        float scale = 0.005f;
-        for (uint32_t i = 0; i < hairSystem_->GetCPUActiveGuideCount(); ++i) {
-            PrimitiveSphereData data;
-            data.worldTransform.Initialize();
-
-            Vector3 localPos = cpuData[i].position;
-            Vector4 localPos4 = { localPos.x, localPos.y, localPos.z, 1.0f };
-            Vector4 worldPos4 = Matrix4x4::Transform(hairSystem_->characterMatrix_, localPos4);
-            Vector3 worldPos = { worldPos4.x / worldPos4.w, worldPos4.y / worldPos4.w, worldPos4.z / worldPos4.w };
-
-            data.worldTransform.set_.Translation(worldPos);
-            data.worldTransform.set_.Scale({ scale,scale,scale });
-            data.worldTransform.LocalToWorld();
-            data.color = { 1.0f,1.0f,1.0f,1.0f };
-            DrawManager::GetInstance()->GetSphere()->AddInstance(data);
         }
     }
 
@@ -882,7 +894,7 @@ void HairGuideEditor::DrawUI(){
         }
     }
 
-    ImGui::SameLine(); // ← これを入れると次のボタンが右隣に並びます
+    ImGui::SameLine();
 
     if (ImGui::Button("Load from JSON")) {
         // 1. ファイル選択ダイアログを開く
@@ -898,6 +910,52 @@ void HairGuideEditor::DrawUI(){
                 selectedGuideIndices_[2] = -1;
                 selectedPointIndices_ = { 0 };
             }
+        }
+    }
+
+    ImGui::Separator();
+
+    // ▼▼▼ スプライン編集モードのUI ▼▼▼
+    if (!isEditingSpline_) {
+        // 通常時：スプライン編集モードを開始するボタン
+        if (ImGui::Button("Start Spline Edit Mode", ImVec2(-1, 26))) {
+            // HermiteEditorをその時だけ生成する
+            hermiteEditor_ = std::make_unique<HermiteEditor>();
+
+            isEditingSpline_ = true;
+        }
+    }
+    else {
+        // スプライン編集中：専用のUIを表示
+        ImGui::TextColored(ImVec4(1.0f, 0.8f, 0.0f, 1.0f), "--- Spline Edit Mode Active ---");
+
+        // HermiteEditor側のUIを描画（HermiteEditor自体にUIがあれば）
+        if (hermiteEditor_) {
+            hermiteEditor_->DrawUI();
+        }
+
+        // 編集したスプラインからGuideを生成して終了
+        if (ImGui::Button("Apply Spline to Guide", ImVec2(-1, 30))) {
+            // 編集中のノードを取得
+            const auto& activeNodes = hermiteEditor_->GetTargetObject();
+
+            Vector3 rCol = { newGuideRootCol[0], newGuideRootCol[1], newGuideRootCol[2] };
+            Vector3 tCol = { newGuideTipCol[0],  newGuideTipCol[1],  newGuideTipCol[2] };
+
+            // Guideを生成
+            AddGuideFromSpline(activeNodes, newGuideRootRad, newGuideTipRad, rCol, tCol);
+
+            // 終了処理
+            isEditingSpline_ = false;
+            hermiteEditor_.reset();
+        }
+
+        ImGui::SameLine();
+
+        // 破棄してキャンセル
+        if (ImGui::Button("Cancel", ImVec2(-1, 30))) {
+            isEditingSpline_ = false;
+            hermiteEditor_.reset();
         }
     }
 }
@@ -961,6 +1019,98 @@ void HairGuideEditor::AddGuide(const Vector3& rootPosition, const Vector3& direc
 
     // GPU側に更新を通知
     hairSystem_->RequestNotifyUpdate();
+}
+
+void HairGuideEditor::AddGuideFromSpline(const std::vector<MathUtils::Spline::Node<Vector3>*>& splineNodePtrs,
+    float rootRadius, float tipRadius, const Vector3& rootColor, const Vector3& tipColor) {
+
+    if (addGuideNum_ < 2) {
+        Log::View("Invalid guide count. Please set a value greater than 1.");
+        return;
+    }
+    if (splineNodePtrs.size() < 2) {
+        Log::View("Spline must have at least 2 nodes to generate a guide.");
+        return;
+    }
+
+    std::vector<MathUtils::Spline::Node<Vector3>> splineNodes;
+    splineNodes.reserve(splineNodePtrs.size());
+    for (const auto* nodePtr : splineNodePtrs) {
+        if (nodePtr) {
+            splineNodes.push_back(*nodePtr); // 中身（実体）をコピー
+        }
+    }
+
+    auto* guideInfoData = hairSystem_->GetCPUGuideInfoData();
+    int targetGuideIndex = -1;
+    uint32_t nextVertexStartIndex = 0;
+
+    // 空きスロットの探索
+    for (uint32_t i = 0; i < hairSystem_->GetCPUGuideInfoCount(); ++i) {
+        if (guideInfoData[i].vertexCount == 0) {
+            targetGuideIndex = i;
+            break;
+        }
+        nextVertexStartIndex = guideInfoData[i].vertexStartIndex + guideInfoData[i].vertexCount;
+    }
+
+    if (targetGuideIndex == -1) {
+        Log::View("Guide limit reached. Cannot add more guides.");
+        return;
+    }
+
+    GuideCurve::GuideInfo info;
+    info.vertexStartIndex = nextVertexStartIndex;
+    info.vertexCount = static_cast<uint32_t>(addGuideNum_);
+
+    std::vector<GuideCurve::ControllerPoint> newPoints(addGuideNum_);
+
+    // スプライン曲線に沿って頂点を配置
+    for (int i = 0; i < addGuideNum_; ++i)
+    {
+        float t = static_cast<float>(i) / static_cast<float>(addGuideNum_ - 1);
+
+        GuideCurve::ControllerPoint p;
+
+        // Spline上から現在の座標を取得
+        p.position = MathUtils::Spline::GetPointSpline(splineNodes, t);
+        p.homePosition = p.position;
+
+        // 根元から毛先への補間
+        p.radius = rootRadius * (1.0f - t) + tipRadius * t;
+        p.color.x = rootColor.x * (1.0f - t) + tipColor.x * t;
+        p.color.y = rootColor.y * (1.0f - t) + tipColor.y * t;
+        p.color.z = rootColor.z * (1.0f - t) + tipColor.z * t;
+
+        // 次の点への距離(nextToLength)を正確に計算する
+        if (i < addGuideNum_ - 1) {
+            float nextT = static_cast<float>(i + 1) / static_cast<float>(addGuideNum_ - 1);
+            Vector3 nextPos = MathUtils::Spline::GetPointSpline(splineNodes, nextT);
+
+            float dx = nextPos.x - p.position.x;
+            float dy = nextPos.y - p.position.y;
+            float dz = nextPos.z - p.position.z;
+            p.nextToLength = std::sqrt(dx * dx + dy * dy + dz * dz);
+        }
+        else {
+            p.nextToLength = 0.0f;
+        }
+
+        p.physicsWeight = t; // 根元 0.0 (固定) ～ 毛先 1.0 (物理で揺れる)
+
+        newPoints[i] = p; // 一時配列に保存
+    }
+
+    // 変更前のGuideInfo（Undo用）を取得
+    GuideCurve::GuideInfo oldInfo = guideInfoData[targetGuideIndex];
+
+    // コマンドの発行
+    auto command = std::make_unique<AddGuideCommand>(
+        hairSystem_, targetGuideIndex, oldInfo, info, newPoints
+    );
+
+    // BaseEditorの機能を使ってコマンドを実行＆履歴に追加
+    ExecuteCommand(std::move(command));
 }
 
 void HairGuideEditor::AddChildStrand(
@@ -1031,31 +1181,57 @@ void HairGuideEditor::AddChildStrand(
     child.noise = 0.0f;
     // ※もしHLSL側の構造体に他にもメンバ（paddingや追加パラメータ）があればここで初期化
 
-    // 固定長バッファの空いたスロットに数値をぶち込む！
-    strandInfoData[targetStrandIndex] = info;
-    childStrandData[targetStrandIndex] = child;
-
-    // 1本の髪に含まれるセグメントの数は必ず (頂点数 - 1) 個になります
+    // セグメントデータを一時配列に格納
     uint32_t segmentCount = info.vertexCount - 1;
+    std::vector<Strands::SegmentData> newSegments(segmentCount);
     for (uint32_t j = 0; j < segmentCount; ++j) {
         Strands::SegmentData seg;
-        // このセグメントを構成する「始点」と「終点」の絶対頂点インデックスを計算
         seg.v0_Index = info.vertexStartIndex + j;
         seg.v1_Index = info.vertexStartIndex + j + 1;
-
-        // グローバルなAABB配列の正しいオフセット位置に流し込む
-        uint32_t globalAABBIndex = info.aabbStartIndex + j;
-        segmentData[globalAABBIndex] = seg;
+        newSegments[j] = seg;
     }
 
-    // もし ConstantBuffer 等の numStrands を有効数として使っている場合、更新する
-    // 現在のインデックス + 1 が、最低限必要な有効ストランド数になります
-    /*if (hairSystem_->GetNumStrands() <= targetStrandIndex) {
-        hairSystem_->SetNumStrands(targetStrandIndex + 1);
-    }*/
+    // 3. Undo用の古い状態を取得
+    Strands::StrandInfo oldInfo = strandInfoData[targetStrandIndex];
 
-    // GPU側に更新と、Compute Shaderによる髪再生成をリクエスト
-    hairSystem_->RequestNotifyUpdate();
+    // 4. コマンドを発行して履歴に積む
+    auto command = std::make_unique<AddChildStrandCommand>(
+        hairSystem_,
+        targetStrandIndex,
+        oldInfo,
+        info,
+        child,
+        newSegments
+    );
+    ExecuteCommand(std::move(command));
+
+    {
+        //// 固定長バッファの空いたスロットに数値をぶち込む！
+        //strandInfoData[targetStrandIndex] = info;
+        //childStrandData[targetStrandIndex] = child;
+
+        //// 1本の髪に含まれるセグメントの数は必ず (頂点数 - 1) 個になります
+        //uint32_t segmentCount = info.vertexCount - 1;
+        //for (uint32_t j = 0; j < segmentCount; ++j) {
+        //    Strands::SegmentData seg;
+        //    // このセグメントを構成する「始点」と「終点」の絶対頂点インデックスを計算
+        //    seg.v0_Index = info.vertexStartIndex + j;
+        //    seg.v1_Index = info.vertexStartIndex + j + 1;
+
+        //    // グローバルなAABB配列の正しいオフセット位置に流し込む
+        //    uint32_t globalAABBIndex = info.aabbStartIndex + j;
+        //    segmentData[globalAABBIndex] = seg;
+        //}
+
+        //// もし ConstantBuffer 等の numStrands を有効数として使っている場合、更新する
+        //// 現在のインデックス + 1 が、最低限必要な有効ストランド数になります
+        ///*if (hairSystem_->GetNumStrands() <= targetStrandIndex) {
+        //    hairSystem_->SetNumStrands(targetStrandIndex + 1);
+        //}*/
+
+        //// GPU側に更新と、Compute Shaderによる髪再生成をリクエスト
+        //hairSystem_->RequestNotifyUpdate();
+    }
 }
 
 bool HairGuideEditor::SaveHairSaveData(const std::string& filename, const Strands::HairSaveData& saveData) {

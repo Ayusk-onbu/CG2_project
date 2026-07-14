@@ -1,0 +1,73 @@
+{
+    "anchor": [
+        0.0,
+        0.0
+    ],
+    "children": [
+        {
+            "anchor": [
+                0.0,
+                0.0
+            ],
+            "color": [
+                0.9901960492134094,
+                0.9904844164848328,
+                1.0,
+                1.0
+            ],
+            "isVisible": true,
+            "name": "element : Title",
+            "pos": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "relativePos": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "rot": [
+                0.0,
+                0.0,
+                0.0
+            ],
+            "scale": [
+                59.0,
+                31.0,
+                1.0
+            ],
+            "texture": "Title"
+        }
+    ],
+    "color": [
+        1.0,
+        1.0,
+        1.0,
+        1.0
+    ],
+    "isVisible": true,
+    "name": "Titles",
+    "pos": [
+        632.0,
+        352.0,
+        0.0
+    ],
+    "relativePos": [
+        0.0,
+        0.0,
+        0.0
+    ],
+    "rot": [
+        0.0,
+        0.0,
+        0.0
+    ],
+    "scale": [
+        79.0,
+        44.0,
+        1.0
+    ],
+    "texture": "TitleBack",
+    "type": "Container"
+}

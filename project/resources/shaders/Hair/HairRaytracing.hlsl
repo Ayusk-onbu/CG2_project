@@ -279,74 +279,157 @@ void HairIntersectionShader()
     }
 }
 
-////////////////////////
-//
-//  ClosestHit Shader
-//
-////////////////////////
+// 物理ベース髪シェーディングのためのヘルパー関数（ガウス分布関数 M）
+// - sinThetaH: dot(T, H) の結果
+// - shift: キューティクルの傾き（ラジアン相当の近似）
+// - roughness: 髪の粗さ
+float32_t Hair_M(float32_t sinThetaH, float32_t shift, float32_t roughness)
+{
+    // ガウス分布の計算（powの代わりになるエネルギー保存型の関数）
+    // 本来は角度(theta)で計算しますが、高速化のため sin(theta) で近似することが多いです
+    float32_t x = sinThetaH - shift;
+    float32_t variance = roughness * roughness;
+    
+    // (1.0 / sqrt(2 * PI * variance)) * exp(-(x^2) / (2 * variance))
+    // ※ 0.39894228f は 1.0 / sqrt(2 * PI) の値
+    float32_t amplitude = 0.39894228f / roughness;
+    float32_t exponent = -(x * x) / (2.0f * variance);
+    
+    return amplitude * exp(exponent);
+}
+
 [shader("closesthit")]
 void HairClosestHitShader(inout RayPayload payload, in HairAttribute attribute)
 {
-   // レイトレーシングエンジンが教えてくれる「当たったAABBの通し番号」
     uint32_t aabbIndex = PrimitiveIndex();
     StrandVertex v0 = HairFlatVertices[aabbIndex * 2 + 0];
     StrandVertex v1 = HairFlatVertices[aabbIndex * 2 + 1];
     
-    //// セグメントバッファから、直接このAABBを構成する頂点インデックスを引く
-    //SegmentData seg = HairSegments[aabbIndex];
-    //// 頂点データを直接取得
-    //StrandVertex v0 = HairVertices[seg.v0_Index];
-    //StrandVertex v1 = HairVertices[seg.v1_Index];
-    
-    // 当たった場所の比率（attribute.uv.y）を使って、C++からきた頂点カラーを滑らかに補間！
     float32_t3 baseColor = lerp(v0.color, v1.color, attribute.uv.y);
-
-    // 固定値 (0,1,0) を廃止し、この節の「本物の傾きベクトル」を計算して接線 T とする！
     float32_t3 T = normalize(v1.position - v0.position);
 
-    // 2. 各種ベクトルの準備
-    float32_t3 L = normalize(float32_t3(1.0f, 1.0f, -1.0f)); // ライト方向
-    float32_t3 V = normalize(-WorldRayDirection()); // 視線方向 (レイの逆向き)
-    float32_t3 H = normalize(L + V); // ハーフベクトル（LとVの中間）
-    float32_t3 N = attribute.normal; // Intersectionから渡された法線
+    float32_t3 L = normalize(float32_t3(1.0f, 1.0f, -1.0f));
+    float32_t3 V = normalize(-WorldRayDirection());
+    float32_t3 H = normalize(L + V);
+    float32_t3 N = attribute.normal;
     
     // ------------------------------------------------------------
-    // ① Diffuse (拡散反射) - 髪の毛用のシリンダー（円柱）シェーディング
+    // PBRパラメータ（これらをマテリアルから渡せるようにするとさらに良いです）
     // ------------------------------------------------------------
-    float32_t dotLT = dot(L, T);
-    float32_t diffuse = sqrt(max(0.0f, 1.0f - dotLT * dotLT));
+    float32_t roughness = 0.25f; // 髪の粗さ（β）
+    float32_t shift = 0.05f; // キューティクルの傾き（α）
     
-    // 簡易的なライトの回り込み（Wrap-around）を入れて、髪の不透明な影を柔らかくする
-    diffuse = saturate(diffuse * 0.7f + 0.3f);
+    // ------------------------------------------------------------
+    // ① Diffuse (TTパス / 多重散乱の近似)
+    // ------------------------------------------------------------
+    // Epic流の「Giant artistic hack」に則り、N（法線）を使ったWrap Lambertを採用
+    // これにより、髪の毛の束全体の柔らかい透過感（ボリューム感）を出します。
+    float32_t wrap = 0.5f;
+    float32_t NdotL = saturate((dot(N, L) + wrap) / ((1.0f + wrap) * (1.0f + wrap)));
+    float32_t3 diffuseColor = baseColor * NdotL;
 
     // ------------------------------------------------------------
-    // ② Dual-Specular (天使の輪をリアルにする2重ハイライト)
+    // ② Dual-Specular (Rパス & TRTパス)
     // ------------------------------------------------------------
-    // 髪の表面（キューティクル）の傾きを模倣するため、接線を法線方向に少しシフト（傾斜）させる
-    float32_t3 T1 = normalize(T + N * 0.1f); // 第一ハイライト用（根元側へずれる）
-    float32_t3 T2 = normalize(T - N * 0.05f); // 第二ハイライト用（毛先側へずれる）
+    // 角度のサイン値（LとT、VとT、HとTの内積）
+    float32_t dotTH = dot(T, H);
+    
+    // 【第一ハイライト (Rパス)】：キューティクル表面での反射
+    // - shift: 根元側に少しずらす（+shift）
+    // - roughness: 表面の鋭い反射のため狭め（そのまま）
+    float32_t M_R = Hair_M(dotTH, shift, roughness);
+    
+    // 簡易的なフレネル（F）と方位角散乱（N_R）の近似
+    // （斜めから見るほど白く強く反射する）
+    float32_t LdotH = saturate(dot(L, H));
+    float32_t fresnel = lerp(0.04f, 1.0f, pow(1.0f - LdotH, 5.0f));
+    float32_t3 specR = float32_t3(1.0f, 1.0f, 1.0f) * M_R * fresnel;
 
-    // 【第一ハイライト (R成分)】: 表面のキューティクルで反射する、シャープで白い光
-    float32_t dotT1H = dot(T1, H);
-    float32_t sinT1H = sqrt(max(0.0f, 1.0f - dotT1H * dotT1H));
-    float32_t spec1 = pow(sinT1H, 80.0f); // 鋭いハイライト（数値大）
-    float32_t3 specularColor1 = float32_t3(1.0f, 1.0f, 1.0f) * spec1 * 0.6f; // 白い光
-
-    // 【第二ハイライト (TRT成分)】: 髪の内部に入り、後ろに透過して戻ってくる、少し鈍く「髪の色」を帯びた光
-    float32_t dotT2H = dot(T2, H);
-    float32_t sinT2H = sqrt(max(0.0f, 1.0f - dotT2H * dotT2H));
-    float32_t spec2 = pow(sinT2H, 30.0f); // 少し広がるハイライト（数値小）
-    float32_t3 specularColor2 = baseColor * spec2 * 0.4f; // 💡髪の毛の色（baseColor）が乗る！
+    // 【第二ハイライト (TRTパス)】：髪の内部透過・反射
+    // - shift: Rとは逆方向（毛先側）に、さらに大きくずらす（-shift * 1.5 等）
+    // - roughness: 内部で散乱するためRより少し広がる（roughness * 2.0 等）
+    float32_t M_TRT = Hair_M(dotTH, -shift * 1.5f, roughness * 2.0f);
+    
+    // TRTパスの横方向の散乱（N_TRT）と色の吸収
+    // 内部を通るのでBaseColorが強く乗る（暗い髪ほど吸収されて消える）
+    float32_t3 specTRT = baseColor * M_TRT * 0.8f;
 
     // ------------------------------------------------------------
     // ③ 環境光 ＆ 最終合成
     // ------------------------------------------------------------
-    float32_t3 ambient = baseColor * 0.05f;
+    float32_t3 ambient = baseColor * 0.05f; // 必要に応じてIBLなどに変更
     
-    // すべてを合算してペイロードに返す
-    payload.color = (baseColor * diffuse) + specularColor1 + specularColor2 + ambient;
-    //payload.color = baseColor;
+    payload.color = diffuseColor + specR + specTRT + ambient;
 }
+
+//////////////////////////
+////
+////  ClosestHit Shader
+////
+//////////////////////////
+//[shader("closesthit")]
+//void HairClosestHitShader(inout RayPayload payload, in HairAttribute attribute)
+//{
+//   // レイトレーシングエンジンが教えてくれる「当たったAABBの通し番号」
+//    uint32_t aabbIndex = PrimitiveIndex();
+//    StrandVertex v0 = HairFlatVertices[aabbIndex * 2 + 0];
+//    StrandVertex v1 = HairFlatVertices[aabbIndex * 2 + 1];
+    
+//    //// セグメントバッファから、直接このAABBを構成する頂点インデックスを引く
+//    //SegmentData seg = HairSegments[aabbIndex];
+//    //// 頂点データを直接取得
+//    //StrandVertex v0 = HairVertices[seg.v0_Index];
+//    //StrandVertex v1 = HairVertices[seg.v1_Index];
+    
+//    // 当たった場所の比率（attribute.uv.y）を使って、C++からきた頂点カラーを滑らかに補間！
+//    float32_t3 baseColor = lerp(v0.color, v1.color, attribute.uv.y);
+
+//    // 固定値 (0,1,0) を廃止し、この節の「本物の傾きベクトル」を計算して接線 T とする！
+//    float32_t3 T = normalize(v1.position - v0.position);
+
+//    // 2. 各種ベクトルの準備
+//    float32_t3 L = normalize(float32_t3(1.0f, 1.0f, -1.0f)); // ライト方向
+//    float32_t3 V = normalize(-WorldRayDirection()); // 視線方向 (レイの逆向き)
+//    float32_t3 H = normalize(L + V); // ハーフベクトル（LとVの中間）
+//    float32_t3 N = attribute.normal; // Intersectionから渡された法線
+    
+//    // ------------------------------------------------------------
+//    // ① Diffuse (拡散反射) - 髪の毛用のシリンダー（円柱）シェーディング
+//    // ------------------------------------------------------------
+//    float32_t dotLT = dot(L, T);
+//    float32_t diffuse = sqrt(max(0.0f, 1.0f - dotLT * dotLT));
+    
+//    // 簡易的なライトの回り込み（Wrap-around）を入れて、髪の不透明な影を柔らかくする
+//    diffuse = saturate(diffuse * 0.7f + 0.3f);
+
+//    // ------------------------------------------------------------
+//    // ② Dual-Specular (天使の輪をリアルにする2重ハイライト)
+//    // ------------------------------------------------------------
+//    // 髪の表面（キューティクル）の傾きを模倣するため、接線を法線方向に少しシフト（傾斜）させる
+//    float32_t3 T1 = normalize(T + N * 0.1f); // 第一ハイライト用（根元側へずれる）
+//    float32_t3 T2 = normalize(T - N * 0.05f); // 第二ハイライト用（毛先側へずれる）
+
+//    // 【第一ハイライト (R成分)】: 表面のキューティクルで反射する、シャープで白い光
+//    float32_t dotT1H = dot(T1, H);
+//    float32_t sinT1H = sqrt(max(0.0f, 1.0f - dotT1H * dotT1H));
+//    float32_t spec1 = pow(sinT1H, 80.0f); // 鋭いハイライト（数値大）
+//    float32_t3 specularColor1 = float32_t3(1.0f, 1.0f, 1.0f) * spec1 * 0.6f; // 白い光
+
+//    // 【第二ハイライト (TRT成分)】: 髪の内部に入り、後ろに透過して戻ってくる、少し鈍く「髪の色」を帯びた光
+//    float32_t dotT2H = dot(T2, H);
+//    float32_t sinT2H = sqrt(max(0.0f, 1.0f - dotT2H * dotT2H));
+//    float32_t spec2 = pow(sinT2H, 30.0f); // 少し広がるハイライト（数値小）
+//    float32_t3 specularColor2 = baseColor * spec2 * 0.4f; // 💡髪の毛の色（baseColor）が乗る！
+
+//    // ------------------------------------------------------------
+//    // ③ 環境光 ＆ 最終合成
+//    // ------------------------------------------------------------
+//    float32_t3 ambient = baseColor * 0.05f;
+    
+//    // すべてを合算してペイロードに返す
+//    payload.color = (baseColor * diffuse) + specularColor1 + specularColor2 + ambient;
+//    //payload.color = baseColor;
+//}
 
 ////////////////////////
 //

@@ -195,6 +195,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="UsefulTool\EditorManager\Hair\HairEditor.cpp" />
     <ClCompile Include="UsefulTool\EditorManager\Hermite\HermiteEditor.cpp" />
     <ClCompile Include="UsefulTool\EditorManager\Map\SceneEditor.cpp" />
+    <ClCompile Include="UsefulTool\EmitterSystem\EmitterSystem.cpp" />
     <ClCompile Include="UsefulTool\EventManager\EventManager.cpp" />
     <ClCompile Include="UsefulTool\FileSystem\FileSystem.cpp" />
     <ClCompile Include="UsefulTool\Light\AreaLight\AreaLight.cpp" />
@@ -399,6 +400,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="UsefulTool\EditorManager\IEditor.h" />
     <ClInclude Include="UsefulTool\EditorManager\Map\SceneEditor.h" />
     <ClInclude Include="UsefulTool\EditorManager\Map\SceneEditorCommand.h" />
+    <ClInclude Include="UsefulTool\EmitterSystem\EmitterSystem.h" />
     <ClInclude Include="UsefulTool\EventManager\EventManager.h" />
     <ClInclude Include="UsefulTool\EventManager\ICommand.h" />
     <ClInclude Include="UsefulTool\EventManager\IEvent.h" />

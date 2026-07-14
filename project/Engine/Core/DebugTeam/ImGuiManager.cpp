@@ -99,6 +99,7 @@ void ImGuiManager::DrawAll() {
 
 	ImGui::Text("FPS %f", static_cast<float>(Chronos::GetInstance()->GetFPS()));
 	ImGui::Text("FPS(ImGui) %f",ImGui::GetIO().Framerate);
+	ImGui::Text("DeltaTime %f", static_cast<float>(Chronos::GetInstance()->GetDeltaTime()));
 
 	ImGui::End();
 

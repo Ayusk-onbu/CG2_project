@@ -33,6 +33,10 @@ public:
         targetObjects_ = targets;
     }
 
+    const std::vector<T*>& GetTargetObject()const {
+        return targetObjects_;
+    }
+
     // コマンドを実行し、履歴に積む
     void ExecuteCommand(std::unique_ptr<ICommand> command) {
         // 過去に戻っている状態で新しいコマンドを実行した場合、それ以降のRedo履歴を破棄する
