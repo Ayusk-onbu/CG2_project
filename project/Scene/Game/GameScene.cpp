@@ -3,6 +3,7 @@
 #include "CameraSystem.h"
 #include "SceneDirector.h"
 #include "Hair/IHair.h"
+#include "Chronos.h"
 
 GameScene::GameScene()
 	: player_(std::make_unique<Player>()),
@@ -69,9 +70,16 @@ void GameScene::Initialize() {
 
 	particle_ = std::make_unique<Particle>(p_fngine_);
 	particle_->Initialize(1000, "FireVer2");
+
+	grassField_ = std::make_unique<GrassField>();
+	grassField_->Initialize(p_fngine_, 100, "noise0");
+
+	gpuParticle_ = std::make_unique<GPUParticleSystem>();
+	gpuParticle_->Initialize(p_fngine_, 1024);
 }
 
 void GameScene::Update(){
+	//float deltaTime = Chronos::GetInstance()->GetDeltaTime();
 	float deltaTime = 1.0f / 60.0f;
 	if (playGuide_->IsEnd() == true) {
 		playGuide_->Play({ {"PlayGuide","PlayGuideFadeInAnim"} }, false);
@@ -96,7 +104,9 @@ void GameScene::Update(){
 
 		ToScene();
 
-		
+		grassField_->Update();
+
+		gpuParticle_->Update(deltaTime);
 
 		//particle_->Update();
 	}
@@ -113,6 +123,7 @@ void GameScene::Draw() {
 	//boss_->Draw();
 	player_->Draw();
 	//particle_->Draw();
+	gpuParticle_->Draw();
 	//playUI_->Draw();
 	// Fade
 	//fadeUp_->Draw();

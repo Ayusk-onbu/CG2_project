@@ -741,6 +741,18 @@
     <ClCompile Include="UsefulTool\EmitterSystem\EmitterSystem.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
+    <ClCompile Include="Engine\Objects\Primitive\Grass\Grass.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="Game3D\GameMap\GrassField.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\Objects\GPUComputeModel\Base\GPUComputeBaseModel.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\Objects\GPUComputeModel\Particle\GPUParticle.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="externals\imgui\imconfig.h">
@@ -1253,6 +1265,18 @@
     <ClInclude Include="UsefulTool\EmitterSystem\EmitterSystem.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
+    <ClInclude Include="Engine\Objects\Primitive\Grass\Grass.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="Game3D\GameMap\GrassField.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Objects\GPUComputeModel\Base\GPUComputeBaseModel.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Objects\GPUComputeModel\Particle\GPUParticle.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Text Include="externals\imgui\LICENSE.txt">
@@ -1278,6 +1302,8 @@
     <None Include="resources\shaders\Sphere\Sphere.hlsli" />
     <None Include="resources\shaders\Cylinder\Cylinder.hlsli" />
     <None Include="resources\shaders\Line\Line.hlsli" />
+    <None Include="resources\shaders\Primitive\Grass\Grass.hlsli" />
+    <None Include="resources\shaders\Common.hlsli" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="resources\shaders\Object3d\Object3d.VS.hlsl">

@@ -4,25 +4,21 @@
 #include <string>
 #include <vector>
 #include <map>
+#include "../../../UsefulTool/ISingleton.h"
 
-class TextureManager {
+class TextureManager :
+	public ISingleton<TextureManager>
+{
+public:
+	friend class ISingleton<TextureManager>;
 public:
 	TextureManager() = default;
-public:
-	static TextureManager* GetInstance() {
-		if (instance_ == nullptr) {
-			instance_ = std::make_unique<TextureManager>();
-		}
-		return instance_.get();
-	}
-	void ReleaseInstance() { instance_.reset(); }
 public:
 	void Initialize(Fngine& fngine);
 	std::string LoadTexture(const std::string& filename,const std::string& filePath);
 	Texture& GetTexture(const std::string& name);
 	std::unordered_map<std::string, std::unique_ptr<Texture>>& GetData() { return textures_; }
 private:
-	static std::unique_ptr<TextureManager>instance_;
 	Fngine* p_fngine_ = nullptr;
 	std::unordered_map<std::string, std::unique_ptr<Texture>>textures_;
 	uint32_t textureCount_ = 0;

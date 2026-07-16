@@ -1,4 +1,4 @@
-#include "Cylinder.hlsli"
+#include "Particle.hlsli"
 
 struct PixelShaderOutPut
 {
@@ -12,12 +12,12 @@ PixelShaderOutPut main(VertexShaderOutput input)
 {
     PixelShaderOutPut output;
     float32_t4 textureColor = gTexture.Sample(gSampler, input.texcoord);
+    
+    // input.color * texture.color
     output.color = textureColor * input.color;
     if (output.color.a == 0.0)
     {
-        // You can Skip the caluculation from here.
         discard;
     }
-    
     return output;
 }

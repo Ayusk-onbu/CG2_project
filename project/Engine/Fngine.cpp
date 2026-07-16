@@ -1,6 +1,7 @@
 #include "Fngine.h"
 #include "TextureManager.h"
 #include "ModelManager.h"
+#include "DrawManager.h"
 #include "Chronos.h"
 #include "Hair/IHair.h"
 
@@ -20,6 +21,8 @@ Fngine::~Fngine() {
 	TextureManager::GetInstance()->ReleaseInstance();
 
 	ModelManager::GetInstance()->ReleaseInstance();
+
+	DrawManager::GetInstance()->ReleaseInstance();
 
 	Music::GetInstance()->UnLoad();
 

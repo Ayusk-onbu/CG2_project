@@ -1,0 +1,25 @@
+{
+      "pipelineType": "Compute",
+      "primitiveTopologyType": "Triangle",
+      "shaders": {
+        "cs": "resources/shaders/Particle/InitializeParticle.CS.hlsl"
+      },
+      "inputLayout": [
+      ],
+      "rasterizer": {
+        "fillMode": "Solid",
+        "cullMode": "None"
+      },
+      "depthStencilState": {
+        "depthEnable": false,
+        "depthWriteMask": "All",
+        "depthFunc": "LessEqual",
+        "format": "D24"
+      },
+      "blendMode": "AlphaBlend",
+      "rootSignature": [
+       { "type": "UAVTable", "register": 0, "count": 1, "visibility": "All" }
+      ],
+      "staticSamplers":[
+      ]
+}

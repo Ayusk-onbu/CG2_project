@@ -100,6 +100,8 @@ void ImGuiManager::DrawAll() {
 	ImGui::Text("FPS %f", static_cast<float>(Chronos::GetInstance()->GetFPS()));
 	ImGui::Text("FPS(ImGui) %f",ImGui::GetIO().Framerate);
 	ImGui::Text("DeltaTime %f", static_cast<float>(Chronos::GetInstance()->GetDeltaTime()));
+	ImGui::Text("ゲーム開始からのリアル経過時間 %f", static_cast<float>(Chronos::GetInstance()->GetTotalTime()));
+	ImGui::Text("ゲーム開始からのゲーム内経過時間 %f", static_cast<float>(Chronos::GetInstance()->GetGameTime()));
 
 	ImGui::End();
 

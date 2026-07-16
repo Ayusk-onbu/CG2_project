@@ -12,9 +12,14 @@ void DrawManager::Initialize(Fngine* engine) {
 
 	magicCircle_ = std::make_unique<MagicCircle>();
 	magicCircle_->Initialize(engine, 100);
+
+	grass_ = std::make_unique<Grass>();
+	grass_->Initialize(engine, 1000);
 }
 
 void DrawManager::Draw() {
+	grass_->DrawInstanced();
+
 	line_->DrawInstanced();
 
 	sphere_->DrawInstanced();

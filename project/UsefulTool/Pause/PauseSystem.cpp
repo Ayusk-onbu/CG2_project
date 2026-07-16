@@ -1,5 +1,6 @@
 #include "PauseSystem.h"
 #include "InputManager.h"
+#include "Chronos.h"
 
 std::unique_ptr<PauseSystem>PauseSystem::instance_ = nullptr;
 
@@ -25,6 +26,8 @@ bool PauseSystem::Update(bool canPause) {
 		if (canPause && inputPause) {
 			// [ ポーズ ]
 			pause_ = true;
+
+			Chronos::GetInstance()->SetPause(true);
 		}
 	}
 	// [ ポーズ中 ]
@@ -33,6 +36,8 @@ bool PauseSystem::Update(bool canPause) {
 		if (inputPause) {
 			// [ ポーズ解除 ]
 			pause_ = false;
+
+			Chronos::GetInstance()->SetPause(false);
 		}
 	}
 

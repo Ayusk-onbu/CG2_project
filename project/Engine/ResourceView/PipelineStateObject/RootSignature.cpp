@@ -426,6 +426,17 @@ void RootSignatureBuilder::AddCBV(UINT shaderRegister, D3D12_SHADER_VISIBILITY v
 	parameters_.push_back(param);// 登録
 }
 
+void RootSignatureBuilder::AddConstants(UINT num32BitValues, UINT shaderRegister, D3D12_SHADER_VISIBILITY visibility) {
+	D3D12_ROOT_PARAMETER param{};
+	param.ParameterType = D3D12_ROOT_PARAMETER_TYPE_32BIT_CONSTANTS; // 32ビット定数を使用
+	param.Constants.Num32BitValues = num32BitValues;                 // 送る数 (float 1個なら1)
+	param.Constants.ShaderRegister = shaderRegister;                 // レジスタ番号
+	param.Constants.RegisterSpace = 0;                               // スペースは基本0
+	param.ShaderVisibility = visibility;                             // 使用するシェーダー
+
+	parameters_.push_back(param); // 登録
+}
+
 void RootSignatureBuilder::AddSRVTable(UINT baseShaderRegister, UINT numDescriptors, D3D12_SHADER_VISIBILITY visibility) {
 	// Rangeを動的に生成してプールに突っ込む
 	auto range = std::make_unique<D3D12_DESCRIPTOR_RANGE>();

@@ -11,7 +11,13 @@ enum class EmitterShapeType {
     Triangle,   // 2D平面の三角形
     Circle,     // 2D平面の円
     Cube,       // 3Dの立方体
-    Sphere      // 3Dの球体
+    Sphere,     // 3Dの球体
+    Noise,      //
+};
+
+enum class EmitSpace {
+    Volume, // 領域の内部に発生させる
+    Surface,// 領域の表面のみに発生させる
 };
 
 // ---------------------------------------------------------
@@ -20,6 +26,8 @@ enum class EmitterShapeType {
 struct EmitterConfig {
     // 発生させる範囲の形状
     EmitterShapeType shapeType = EmitterShapeType::Rectangle;
+    // 発生させる領域
+    EmitSpace space = EmitSpace::Volume;
 
     // エミッター自体のワールド空間における基本設定
     Vector3 position = { 0.0f, 0.0f, 0.0f }; // 配置位置（中心座標）
@@ -34,8 +42,19 @@ struct EmitterConfig {
     Vector3 vA = { 0.0f,  1.0f, 0.0f };
     Vector3 vB = { 1.0f, -1.0f, 0.0f };
     Vector3 vC = { -1.0f, -1.0f, 0.0f };
+
+    // 初速の速さ
+    float initialSpeed = 5.0f;
+
+    std::string noiseTextureName = ""; // 使用するノイズテクスチャのキー
+    float noiseThreshold = 0.5f;       // 発生を許可する明るさの閾値 (0.0 ～ 1.0)
 };
 
+// 戻り値用の構造体
+struct EmissionResult {
+    Vector3 position; // 発生座標
+    Vector3 velocity; // 初期速度（方向 * スピード）
+};
 
 class EmitterSystem : 
     public ISingleton<EmitterSystem>
@@ -49,24 +68,17 @@ public:
     // @param config : エミッターの形状や位置、サイズなどの設定
     // @param count  : 生成したい座標の数
     // @return       : 生成されたワールド座標のリスト
-    std::vector<Vector3> GeneratePositions(const EmitterConfig& config, uint32_t count);
+    std::vector<EmissionResult> GeneratePositions(const EmitterConfig& config, uint32_t count);
 
 private:
     // 各形状の計算ロジック（前述のアルゴリズムをここに実装）
-    Vector3 CalculateRectangle(const EmitterConfig& config);
-
-    Vector3 CalculateCircle(const EmitterConfig& config);
-
-    Vector3 CalculateTriangle(const EmitterConfig& config);
-
-    Vector3 CalculateCube(const EmitterConfig& config);
-    
-    Vector3 CalculateSphere(const EmitterConfig& config);
+    EmissionResult CalculateRectangle(const EmitterConfig& config);
+    EmissionResult CalculateCircle(const EmitterConfig& config);
+    EmissionResult CalculateTriangle(const EmitterConfig& config);
+    EmissionResult CalculateCube(const EmitterConfig& config);
+    EmissionResult CalculateSphere(const EmitterConfig& config);
+    EmissionResult CalculateNoise(const EmitterConfig& config);
 
     // 3Dに戻して返す
-    Vector3 ApplyTransform(const Vector3& localPos, const EmitterConfig& config);
+    EmissionResult ApplyTransform(const EmissionResult& localRes, const EmitterConfig& config);
 };
-
-// ほしい機能
-// 初期速度も返す
-// VolumeかSurface

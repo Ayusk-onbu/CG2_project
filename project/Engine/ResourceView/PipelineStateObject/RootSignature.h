@@ -40,6 +40,8 @@ public:
 	/// <param name="visibility">何のShaderを使うか(VS..? PS..? ...etc)</param>
 	void AddCBV(UINT shaderRegister, D3D12_SHADER_VISIBILITY visibility);
 
+	void AddConstants(UINT num32BitValues,UINT shaderRegister, D3D12_SHADER_VISIBILITY visibility);
+
 	// ディスクリプタテーブル(SRV/UAVなど)の追加
 	void AddSRVTable(UINT baseShaderRegister, UINT numDescriptors, D3D12_SHADER_VISIBILITY visibility);
 

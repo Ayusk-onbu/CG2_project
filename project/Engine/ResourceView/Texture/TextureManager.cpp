@@ -1,8 +1,6 @@
 #include "TextureManager.h"
 #include "Trigonometric.h"
 
-std::unique_ptr<TextureManager> TextureManager::instance_ = nullptr;
-
 void TextureManager::Initialize(Fngine& fngine) {
 	p_fngine_ = &fngine;
 	textureCount_ = 0;

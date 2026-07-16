@@ -318,6 +318,10 @@ void PipelineStateObjectManager::LoadPSOsFromJson(const std::string& filepath, c
             else if (paramType == "UAVTable") {
                 builder.AddUAVTable(reg, param["count"], vis);
             }
+            else if (paramType == "Constants") {
+                // 定数の数（count）と、レジスタ番号（register）を渡す
+                builder.AddConstants(param["count"], reg, vis);
+            }
         }
     }
 

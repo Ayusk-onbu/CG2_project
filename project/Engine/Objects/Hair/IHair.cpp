@@ -981,6 +981,8 @@ void Hair::Initialize(Fngine* engine, bool isLoad, const Strands::HairSaveData& 
 		D3D12_RESOURCE_STATE_UNORDERED_ACCESS
 	);
 	dxrCmdList_->ResourceBarrier(1, &initBarrier);
+
+	LoadFromFile("resources/Data/Hair/202607141107.json");
 }
 //////////////////////////////
 //   ====================

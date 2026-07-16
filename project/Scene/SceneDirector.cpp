@@ -182,6 +182,7 @@ void SceneDirector::LoadModelData() {
 	ModelManager::GetInstance()->AddObject("Ring", MakeObjectVertices(RingData{ 32, 1.0f, 0.5f }), MakeObjectIndices(RingData{ 32, 1.0f, 0.5f }));
 	ModelManager::GetInstance()->AddObject("Sphere", ModelManager::GetInstance()->LoadModelData("Sphere").vertices, ModelManager::GetInstance()->LoadModelData("Sphere").indices);
 	ModelManager::GetInstance()->AddObject("Cylinder", MakeObjectVertices(CylinderData{ 32, 1.0f, 0.5f,1.0f }), MakeObjectIndices(CylinderData{ 32, 1.0f, 0.5f, 1.0f }));
+	ModelManager::GetInstance()->AddObject("Grass", MakeObjectVertices(CylinderData{ 3, 1.0f * 0.1f, 0.5f * 0.1f,0.5f }), MakeObjectIndices(CylinderData{ 3, 1.0f * 0.1f, 0.5f * 0.1f, 0.5f }));
 }
 
 void SceneDirector::LoadTexture() {

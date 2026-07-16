@@ -120,6 +120,33 @@ Microsoft::WRL::ComPtr <ID3D12Resource> Texture::UploadTextureData(Microsoft::WR
 	return intermediateResource;
 }
 
+float Texture::SampleNoiseCPU(float u, float v) const {
+	// 画像データがなければ 0 を返す
+	if (mipImages_.GetImageCount() == 0) return 0.0f;
+
+	// ミップレベル0、配列インデックス0、深度0の画像を取得
+	const DirectX::Image* image = mipImages_.GetImage(0, 0, 0);
+	if (!image || !image->pixels) return 0.0f;
+
+	// UV座標をテクスチャのピクセル座標（0 ～ Width-1, 0 ～ Height-1）に変換
+	// リピート（タイリング）するようにラップ処理を入れる
+	int x = static_cast<int>(std::floor(u * image->width)) % image->width;
+	int y = static_cast<int>(std::floor(v * image->height)) % image->height;
+	if (x < 0) x += (int)image->width;
+	if (y < 0) y += (int)image->height;
+
+	// ピクセル配列の先頭アドレス
+	const uint8_t* pixels = image->pixels;
+
+	// image->rowPitch は「横1行分のバイト数」
+	// 1ピクセル4バイト（RGBA）のデータ位置を計算
+	const uint8_t* targetPixel = pixels + (y * image->rowPitch) + (x * 4);
+
+	// R成分（インデックス0）を取り出して 0.0f ～ 1.0f に正規化して返す
+	// （白黒のノイズ画像ならRGBすべて同じ値なのでRだけでOK）
+	return targetPixel[0] / 255.0f;
+}
+
 //// DescriptorHandleを取得する関数(CPU)
 //D3D12_CPU_DESCRIPTOR_HANDLE Texture::GetCPUDescriptorHandle(ID3D12DescriptorHeap* descriptorHeap, uint32_t descriptorSize, uint32_t index) {
 //	D3D12_CPU_DESCRIPTOR_HANDLE handleCPU = descriptorHeap->GetCPUDescriptorHandleForHeapStart();

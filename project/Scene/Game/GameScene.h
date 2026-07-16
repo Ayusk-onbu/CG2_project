@@ -12,6 +12,8 @@
 #include "GameMap.h"
 #include "Player.h"
 #include "SkyBox.h"
+#include "GrassField.h"
+#include "GPUComputeModel/Particle/GPUParticle.h"
 
 class GameScene 
 	:public Scene
@@ -60,6 +62,10 @@ private:
 	std::unique_ptr<SkyBox>skyBox_;
 	std::unique_ptr<Particle>particle_;
 	std::unique_ptr<AnimModel>rotationBox_;
+
+	std::unique_ptr<GrassField>grassField_;
+
+	std::unique_ptr<GPUParticleSystem>gpuParticle_;
 };
 
 

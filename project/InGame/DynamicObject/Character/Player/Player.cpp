@@ -55,7 +55,6 @@ void Player::Initialize(Fngine* fngine) {
 	EventManager::GetInstance()->BindEventToTag(GAMEEVENTID::HairEditor, EVENTCATEGORY::UI, 0);
 }
 
-void Player::Update(float deltaTime) {
 	Character::Update(deltaTime);
 
 	skeleton_->Update();
