@@ -3,12 +3,25 @@
 #include <d3dx12.h>
 
 void GPUParticleSystem::Initialize(Fngine* engine, uint32_t numParticles) {
+    freeCounterBuffer_ = std::make_unique<RWStructured<int>>(engine);
+    freeCounterBuffer_->Initialize(1);
+    
     // 通常のインスタンス描画モードで初期化
     GPUComputeBaseModel::Initialize(engine, numParticles, GPURenderMode::Instanced);
 
     // 定数バッファの生成など
     perViewBuffer_ = std::make_unique<ConstantBuffer<PerView>>(p_engine_);
     perViewBuffer_->Initialize();
+
+    emitBuffer_ = std::make_unique<ConstantBuffer<GPUEmitter>>(p_engine_);
+    emitBuffer_->Initialize();
+    emitBuffer_->GetMappedData()->count = 10;
+    emitBuffer_->GetMappedData()->emit = 0;
+
+    timeIndex_ = TimeKeeper::GetInstance()->RegisterTimer(0.5f, 0.0f, true);
+
+    perFrameBuffer_ = std::make_unique<ConstantBuffer<PerFrame>>(p_engine_);
+    perFrameBuffer_->Initialize();
 
     SetCommand = [this]() {
         auto commandList = p_engine_->GetCommand().GetList().GetList();
@@ -45,7 +58,22 @@ void GPUParticleSystem::Update(float deltaTime) {
     // 定数バッファの更新 (経過時間やエミッター位置をGPUに送る)
     auto camera = CameraSystem::GetInstance()->GetActiveCamera();
     perViewBuffer_->GetMappedData()->viewProjection = camera->GetViewProjectionMatrix();
-    perViewBuffer_->GetMappedData()->billboardMatrix = Matrix4x4::Make::Identity();
+    Matrix4x4 view = camera->GetViewMatrix();
+    view.m[3][0] = 0.0f;
+    view.m[3][1] = 0.0f;
+    view.m[3][2] = 0.0f;
+    view.m[3][3] = 1.0f; // ここはW成分なので 1.0f
+    perViewBuffer_->GetMappedData()->billboardMatrix = Matrix4x4::Transpose(view);
+    
+    if (TimeKeeper::GetInstance()->IsEnd(timeIndex_)) {
+        emitBuffer_->GetMappedData()->emit = 1;
+    }
+    else {
+        emitBuffer_->GetMappedData()->emit = 0;
+    }
+
+    perFrameBuffer_->GetMappedData()->time = Chronos::GetInstance()->GetGameTime();
+    perFrameBuffer_->GetMappedData()->deltaTime = 1.0f / 60.0f;
 
     // 基底クラスのUpdate（Compute Shader起動）をキック
     GPUComputeBaseModel::Update();
@@ -61,21 +89,22 @@ void GPUParticleSystem::DispatchInitializeCS(){
     commandList->SetPipelineState(PSOManager::GetInstance()->GetPSO("InitializeParticle.CS").GetCPS().Get());
 
     commandList->SetComputeRootDescriptorTable(0, dataBuffer_->GetUAVHandleGPU());
+    commandList->SetComputeRootDescriptorTable(1, freeCounterBuffer_->GetUAVHandleGPU());
     // 今回はちょうど1024個なので
     commandList->Dispatch(1,1,1);
 }
 
 void GPUParticleSystem::DispatchUpdateCS(){
-    //auto commandList = p_engine_->GetCommandList();
+    auto commandList = p_engine_->GetCommand().GetList().GetList();
 
-    // 1. パイプライン(PSO)に更新用Compute Shaderをセット
-    // commandList->SetPipelineState(particleUpdatePSO_);
+    commandList->SetComputeRootSignature(PSOManager::GetInstance()->GetPSO("EmitParticle.CS").GetRootSignature().GetRS().Get());
+    commandList->SetPipelineState(PSOManager::GetInstance()->GetPSO("EmitParticle.CS").GetCPS().Get());
 
-    // 2. 定数バッファと構造化バッファ(UAV)をバインド
-    // commandList->SetComputeRootDescriptorTable(0, constantBuffer_->GetGPUHandle());
-    // commandList->SetComputeRootDescriptorTable(1, dataBuffer_->GetUAVHandle());
+    commandList->SetComputeRootDescriptorTable(0, dataBuffer_->GetUAVHandleGPU());
+    commandList->SetComputeRootDescriptorTable(1, freeCounterBuffer_->GetUAVHandleGPU());
+    commandList->SetComputeRootConstantBufferView(2, emitBuffer_->GetGPUVirtualAddress());
+    commandList->SetComputeRootConstantBufferView(3, perFrameBuffer_->GetGPUVirtualAddress());
 
-    // 3. スレッドを起動！ (1024スレッドずつグループ分けして計算)
-    //uint32_t groupCount = (numElements_ + 1023) / 1024;
-   // commandList->Dispatch(groupCount, 1, 1);
+    // 今回はちょうど1024個なので
+    commandList->Dispatch(1, 1, 1);
 }

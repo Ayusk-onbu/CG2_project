@@ -15,3 +15,9 @@ struct Particle
     float32_t currentTime;
     float32_t4 color;
 };
+
+struct Emitter
+{
+    uint32_t count; // 射出数
+    uint32_t emit; // 射出許可
+};

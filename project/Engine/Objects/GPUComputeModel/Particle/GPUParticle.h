@@ -1,4 +1,5 @@
 #pragma once
+#include "Chronos.h"
 #include "../Base/GPUComputeBaseModel.h"
 
 struct GPUParticleForGPU {
@@ -11,6 +12,10 @@ struct GPUParticleForGPU {
 };
 
 // エミッターの構造体データ
+struct GPUEmitter {
+    uint32_t count;// 射出数
+    uint32_t emit; // 射出許可
+};
 
 class GPUParticleSystem : public GPUComputeBaseModel<GPUParticleForGPU>
 {
@@ -29,4 +34,8 @@ protected:
 private:
     float time_ = 0.0f;
     std::unique_ptr<ConstantBuffer<PerView>>perViewBuffer_;
+    std::unique_ptr<ConstantBuffer<GPUEmitter>>emitBuffer_;
+    std::unique_ptr<ConstantBuffer<PerFrame>>perFrameBuffer_;
+    std::unique_ptr<RWStructured<int>> freeCounterBuffer_;
+    int timeIndex_;
 };

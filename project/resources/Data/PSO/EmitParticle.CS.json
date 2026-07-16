@@ -2,7 +2,7 @@
       "pipelineType": "Compute",
       "primitiveTopologyType": "Triangle",
       "shaders": {
-        "cs": "resources/shaders/Particle/InitializeParticle.CS.hlsl"
+        "cs": "resources/shaders/Particle/EmitParticle.CS.hlsl"
       },
       "inputLayout": [
       ],
@@ -19,7 +19,9 @@
       "blendMode": "AlphaBlend",
       "rootSignature": [
        { "type": "UAVTable", "register": 0, "count": 1, "visibility": "All" },
-       { "type": "UAVTable", "register": 1, "count": 1, "visibility": "All" }
+       { "type": "UAVTable", "register": 1, "count": 1, "visibility": "All" },
+       { "type": "CBV", "register": 0, "visibility": "All" },
+       { "type": "CBV", "register": 1, "visibility": "All" }
       ],
       "staticSamplers":[
       ]

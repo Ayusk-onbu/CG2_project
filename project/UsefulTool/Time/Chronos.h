@@ -5,7 +5,8 @@
 #include "../ISingleton.h"
 
 struct PerFrame {
-
+	float time;
+	float deltaTime;
 };
 
 //

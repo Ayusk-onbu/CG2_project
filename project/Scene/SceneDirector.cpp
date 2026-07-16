@@ -2,6 +2,7 @@
 #include "CameraSystem.h"
 #include "ModelManager.h"
 #include "UIAnimation.h"
+#include "Chronos.h"
 #include "DrawManager.h"
 #include "../Engine/Objects/Primitive/Box/PrimitiveBox.h"
 #include "../Engine/Objects/Primitive/Ring/Ring.h"
@@ -56,6 +57,8 @@ void SceneDirector::Update() {
 	CameraSystem::GetInstance()->Update();
 	// [ カメラの情報をGPUへ ]
 	p_fngine_->GetCameraForGPU().Update(CameraSystem::GetInstance()->GetActiveCamera()->GetTranslation());
+
+	TimeKeeper::GetInstance()->Update(1.0f / 60.0f);
 
 	bool pauseNow = PauseSystem::GetInstance()->Update(currentScene_->CanPause());
 
