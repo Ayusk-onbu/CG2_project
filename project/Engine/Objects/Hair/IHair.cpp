@@ -266,6 +266,20 @@ void Hair::Initialize(Fngine* engine, bool isLoad, const Strands::HairSaveData& 
 	gpuFrameConfigBuffer_->Initialize();
 	std::memcpy(gpuFrameConfigBuffer_->GetMappedData(), &frameConfig, sizeof(GuideCurve::FrameConfig));
 
+	// ------------------------
+	// 【 髪への光に関する情報 】
+	// ------------------------
+	HairLightingParams lightingConfig;
+	lightingConfig.lightDirection = { 1.0f, 1.0f, -1.0f };
+	lightingConfig.lightColor = { 1.0f, 1.0f, 1.0f };
+	lightingConfig.lightIntensity = 1.0f;
+	lightingConfig.ambientColor = { 0.05f, 0.05f, 0.05f };
+	lightingConfig.hairShift = 0.10f;     // 最初は少し根元寄りにシフト
+	lightingConfig.hairExponent = 80.0f;  // 程よい細さの天使の輪
+	hairLightingParamsBuffer_ = std::make_unique<ConstantBuffer<HairLightingParams>>(engine);
+	hairLightingParamsBuffer_->Initialize();
+	std::memcpy(hairLightingParamsBuffer_->GetMappedData(), &lightingConfig, sizeof(HairLightingParams));
+
 	// -------------------
 	//
 	// 【　Bufferの初期化　】
@@ -904,16 +918,19 @@ void Hair::Initialize(Fngine* engine, bool isLoad, const Strands::HairSaveData& 
 	// ---------------------------------------------------------
 	// 配線図のパラメーターを4つ定義する
 	// ---------------------------------------------------------
-	CD3DX12_ROOT_PARAMETER rootParameters[5]{};
+	CD3DX12_ROOT_PARAMETER rootParameters[6]{};
 
 	// [0] b0: カメラ情報 (Constant Buffer)
 	rootParameters[0].InitAsConstantBufferView(0); // レジスタ b0 に直接繋ぐ
 
+	// [0] b0: カメラ情報 (Constant Buffer)
+	rootParameters[1].InitAsConstantBufferView(1); // レジスタ b1 に直接繋ぐ
+
 	// [1] t0: TLAS (Shader Resource View)
-	rootParameters[1].InitAsShaderResourceView(0); // レジスタ t0 に直接繋ぐ
+	rootParameters[2].InitAsShaderResourceView(0); // レジスタ t0 に直接繋ぐ
 
 	// [2] t1: 髪の毛の頂点バッファ (Shader Resource View)
-	rootParameters[2].InitAsShaderResourceView(1); // レジスタ t1 に直接繋ぐ
+	rootParameters[3].InitAsShaderResourceView(1); // レジスタ t1 に直接繋ぐ
 
 	// [3] t3: Segmentバッファ (Shader Resource View)
 	//rootParameters[3].InitAsShaderResourceView(3); // レジスタ t3 に直接繋ぐ
@@ -921,11 +938,11 @@ void Hair::Initialize(Fngine* engine, bool isLoad, const Strands::HairSaveData& 
 	// [4] u0: 出力先のキャンバス (Unordered Access View)
 	CD3DX12_DESCRIPTOR_RANGE uavRange;
 	uavRange.Init(D3D12_DESCRIPTOR_RANGE_TYPE_UAV, 1, 0); // u0 を1個
-	rootParameters[3].InitAsDescriptorTable(1, &uavRange);
+	rootParameters[4].InitAsDescriptorTable(1, &uavRange);
 
 	CD3DX12_DESCRIPTOR_RANGE srvRange;
 	srvRange.Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 2); // t2 を1個
-	rootParameters[4].InitAsDescriptorTable(1, &srvRange);
+	rootParameters[5].InitAsDescriptorTable(1, &srvRange);
 
 	// ---------------------------------------------------------
 	// 配線図を1つにまとめる
@@ -1240,6 +1257,30 @@ void Hair::Update(float deltaTime, const Matrix4x4& mat) {
 	ImGui::DragFloat("stiffness：剛性 ", &gpuPhysicsConfigBuffer_->GetMappedData()->stiffness, 0.0001f, 0.0f, 1.0f);
 	ImGui::DragFloat("restoringForce：復元力", &gpuPhysicsConfigBuffer_->GetMappedData()->restoringForce, 0.0001f, 0.0f, 1.0f);
 	ImGui::DragFloat("damping：減衰力", &gpuPhysicsConfigBuffer_->GetMappedData()->damping, 0.0001f, 0.0f, 1.0f);
+
+	// --- ライティング・見た目の設定 ---
+	ImGui::Separator(); // 境界線
+	ImGui::Text("【 ライティング ＆ ツヤ（天使の輪）設定 】");
+
+	// ライト方向
+	ImGui::DragFloat3("ライトの照射方向", &hairLightingParamsBuffer_->GetMappedData()->lightDirection.x, 0.01f, -1.0f, 1.0f);
+
+	// ライトカラー
+	ImGui::ColorEdit3("ライトの色", &hairLightingParamsBuffer_->GetMappedData()->lightColor.x);
+
+	// ライト強度
+	ImGui::DragFloat("ライトの明るさ", &hairLightingParamsBuffer_->GetMappedData()->lightIntensity, 0.05f, 0.0f, 10.0f);
+
+	// 環境光
+	ImGui::ColorEdit3("暗部の明るさ (環境光)", &hairLightingParamsBuffer_->GetMappedData()->ambientColor.x);
+
+	// 天使の輪のズレ（シフト）
+	// 左右にスライドすると、天使の輪が毛先側・根元側にリアルタイムで上下移動します
+	ImGui::DragFloat("天使の輪の位置 (シフト)", &hairLightingParamsBuffer_->GetMappedData()->hairShift, 0.005f, -0.5f, 0.5f);
+
+	// 天使の輪のシャープさ
+	// 小さいとボヤッと全体が光り、大きくするとキュッと細い綺麗な輪になります
+	ImGui::DragFloat("天使の輪の鋭さ (ツヤ)", &hairLightingParamsBuffer_->GetMappedData()->hairExponent, 0.5f, 1.0f, 500.0f);
 	ImGui::End();
 #endif// USE_IMGUI
 }
@@ -1263,16 +1304,18 @@ void Hair::Render(D3D12_GPU_DESCRIPTOR_HANDLE depthHandle) {
 	commandList->SetComputeRootSignature(globalRootSignature_.Get());
 
 	commandList->SetComputeRootConstantBufferView(0, hairCameraBuffer_->GetGPUVirtualAddress());
+	
+	commandList->SetComputeRootConstantBufferView(1, hairLightingParamsBuffer_->GetGPUVirtualAddress());
 
-	commandList->SetComputeRootShaderResourceView(1, tlasResultBuffer_->GetGPUVirtualAddress());
+	commandList->SetComputeRootShaderResourceView(2, tlasResultBuffer_->GetGPUVirtualAddress());
 	// hairVertex->flat
-	commandList->SetComputeRootShaderResourceView(2, hairFlatVertexBuffer_->GetResource()->GetGPUVirtualAddress());
+	commandList->SetComputeRootShaderResourceView(3, hairFlatVertexBuffer_->GetResource()->GetGPUVirtualAddress());
 
 	//commandList->SetComputeRootShaderResourceView(3, segmentBuffer_->GetResource()->GetGPUVirtualAddress());
 
-	commandList->SetComputeRootDescriptorTable(3, renderTargetUAVHandleGPU_);
+	commandList->SetComputeRootDescriptorTable(4, renderTargetUAVHandleGPU_);
 
-	commandList->SetComputeRootDescriptorTable(4, depthHandle);
+	commandList->SetComputeRootDescriptorTable(5, depthHandle);
 
 	// --- 2. パイプライン（RTPSO）のセット ---
 	// コマンドリストにレイトレ専用パイプラインを設定（StateObjectをセットします）

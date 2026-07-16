@@ -72,7 +72,7 @@ void GameScene::Initialize() {
 	particle_->Initialize(1000, "FireVer2");
 
 	grassField_ = std::make_unique<GrassField>();
-	grassField_->Initialize(p_fngine_, 100, "noise0");
+	grassField_->Initialize(p_fngine_, 5000, "RevealTex_Circle");
 
 	gpuParticle_ = std::make_unique<GPUParticleSystem>();
 	gpuParticle_->Initialize(p_fngine_, 1024);

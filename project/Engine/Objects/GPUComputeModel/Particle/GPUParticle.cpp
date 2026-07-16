@@ -105,6 +105,20 @@ void GPUParticleSystem::DispatchUpdateCS(){
     commandList->SetComputeRootConstantBufferView(2, emitBuffer_->GetGPUVirtualAddress());
     commandList->SetComputeRootConstantBufferView(3, perFrameBuffer_->GetGPUVirtualAddress());
 
+    D3D12_RESOURCE_BARRIER particleBarrier{};
+    particleBarrier.Type = D3D12_RESOURCE_BARRIER_TYPE_UAV;
+    particleBarrier.UAV.pResource = dataBuffer_->GetResource();
+    commandList->ResourceBarrier(1, &particleBarrier);
+
+    // 今回はちょうど1024個なので
+    commandList->Dispatch(1, 1, 1);
+
+    commandList->SetComputeRootSignature(PSOManager::GetInstance()->GetPSO("UpdateParticle.CS").GetRootSignature().GetRS().Get());
+    commandList->SetPipelineState(PSOManager::GetInstance()->GetPSO("UpdateParticle.CS").GetCPS().Get());
+
+    commandList->SetComputeRootDescriptorTable(0, dataBuffer_->GetUAVHandleGPU());
+    commandList->SetComputeRootConstantBufferView(1, perFrameBuffer_->GetGPUVirtualAddress());
+
     // 今回はちょうど1024個なので
     commandList->Dispatch(1, 1, 1);
 }

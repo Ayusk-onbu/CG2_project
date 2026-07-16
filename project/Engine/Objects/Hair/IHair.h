@@ -11,6 +11,17 @@ struct HairCamera {
 	float padding;             // 4の倍数にするためのパディング
 };
 
+struct HairLightingParams {
+	Vector3 lightDirection = { 1.0f, 1.0f, -1.0f };
+	float pad0 = 0.0f;
+	Vector3 lightColor = { 1.0f, 1.0f, 1.0f };
+	float lightIntensity = 1.0f;
+	Vector3 ambientColor = { 0.05f, 0.05f, 0.05f };
+	float hairShift = 0.1f;
+	float hairExponent = 80.0f;
+	Vector3 pad1 = { 0.0f, 0.0f, 0.0f };
+};
+
 // 全てのGuideは違う頂点数が可能であり、
 // 全てのStrandsは違う頂点数が可能である。
 // 以上のことから、和が国家はStrandsInfoとGuideInfoをセーブする必要がある。
@@ -106,6 +117,7 @@ private:
 	std::unique_ptr<ConstantBuffer<GuideCurve::FrameConfig>>gpuFrameConfigBuffer_;// 髪全体の情報その物理
 	std::unique_ptr<ConstantBuffer<Strands::HairConfig>>gpuConfigBuffer_;// 髪全体の情報その性質
 	std::unique_ptr<ConstantBuffer<Strands::HairMakeConfig>>gpuMakeConfigBuffer_;// 髪全体の情報その性質
+	std::unique_ptr<ConstantBuffer<HairLightingParams>>hairLightingParamsBuffer_;// 髪の光の情報
 
 	std::unique_ptr<Structured<GuideCurve::ControllerPoint>> uploadGuideBuffer;// データ転送用バッファ
 	std::unique_ptr<Structured<GuideCurve::GuideInfo>>guideInfoBuffer_;

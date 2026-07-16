@@ -5,7 +5,7 @@ void GrassField::Initialize(Fngine* engine, uint32_t maxGrass, const std::string
 	// 【ノイズテクスチャを使った草の群生配置】
 	grassConfig_.shapeType = EmitterShapeType::Noise;
 	grassConfig_.noiseTextureName = densityMapName; // 白黒の配置マップ
-	grassConfig_.noiseThreshold = 0.7f;             // 白い部分(threshold以上)にだけ配置
+	grassConfig_.noiseThreshold = 0.4f;             // 白い部分(threshold以上)にだけ配置
 	grassConfig_.size = { 10.0f, 10.0f, 0.0f };     // size.x * size.yの範囲に散布
 
 	// エミッターに座標を計算してもらう
