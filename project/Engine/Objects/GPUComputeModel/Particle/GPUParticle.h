@@ -36,6 +36,7 @@ private:
     std::unique_ptr<ConstantBuffer<PerView>>perViewBuffer_;
     std::unique_ptr<ConstantBuffer<GPUEmitter>>emitBuffer_;
     std::unique_ptr<ConstantBuffer<PerFrame>>perFrameBuffer_;
-    std::unique_ptr<RWStructured<int>> freeCounterBuffer_;
+    std::unique_ptr<RWStructured<int>> freeListIndexBuffer_;
+    std::unique_ptr<RWStructured<uint32_t>> freeListBuffer_;
     int timeIndex_;
 };

@@ -3,8 +3,11 @@
 #include <d3dx12.h>
 
 void GPUParticleSystem::Initialize(Fngine* engine, uint32_t numParticles) {
-    freeCounterBuffer_ = std::make_unique<RWStructured<int>>(engine);
-    freeCounterBuffer_->Initialize(1);
+    freeListIndexBuffer_ = std::make_unique<RWStructured<int>>(engine);
+    freeListIndexBuffer_->Initialize(1);
+
+    freeListBuffer_ = std::make_unique<RWStructured<uint32_t>>(engine);
+    freeListBuffer_->Initialize(numParticles);
     
     // 通常のインスタンス描画モードで初期化
     GPUComputeBaseModel::Initialize(engine, numParticles, GPURenderMode::Instanced);
@@ -89,7 +92,8 @@ void GPUParticleSystem::DispatchInitializeCS(){
     commandList->SetPipelineState(PSOManager::GetInstance()->GetPSO("InitializeParticle.CS").GetCPS().Get());
 
     commandList->SetComputeRootDescriptorTable(0, dataBuffer_->GetUAVHandleGPU());
-    commandList->SetComputeRootDescriptorTable(1, freeCounterBuffer_->GetUAVHandleGPU());
+    commandList->SetComputeRootDescriptorTable(1, freeListIndexBuffer_->GetUAVHandleGPU());
+    commandList->SetComputeRootDescriptorTable(2, freeListBuffer_->GetUAVHandleGPU());
     // 今回はちょうど1024個なので
     commandList->Dispatch(1,1,1);
 }
@@ -101,9 +105,10 @@ void GPUParticleSystem::DispatchUpdateCS(){
     commandList->SetPipelineState(PSOManager::GetInstance()->GetPSO("EmitParticle.CS").GetCPS().Get());
 
     commandList->SetComputeRootDescriptorTable(0, dataBuffer_->GetUAVHandleGPU());
-    commandList->SetComputeRootDescriptorTable(1, freeCounterBuffer_->GetUAVHandleGPU());
-    commandList->SetComputeRootConstantBufferView(2, emitBuffer_->GetGPUVirtualAddress());
-    commandList->SetComputeRootConstantBufferView(3, perFrameBuffer_->GetGPUVirtualAddress());
+    commandList->SetComputeRootDescriptorTable(1, freeListIndexBuffer_->GetUAVHandleGPU());
+    commandList->SetComputeRootDescriptorTable(2, freeListBuffer_->GetUAVHandleGPU());
+    commandList->SetComputeRootConstantBufferView(3, emitBuffer_->GetGPUVirtualAddress());
+    commandList->SetComputeRootConstantBufferView(4, perFrameBuffer_->GetGPUVirtualAddress());
 
     D3D12_RESOURCE_BARRIER particleBarrier{};
     particleBarrier.Type = D3D12_RESOURCE_BARRIER_TYPE_UAV;
@@ -117,7 +122,9 @@ void GPUParticleSystem::DispatchUpdateCS(){
     commandList->SetPipelineState(PSOManager::GetInstance()->GetPSO("UpdateParticle.CS").GetCPS().Get());
 
     commandList->SetComputeRootDescriptorTable(0, dataBuffer_->GetUAVHandleGPU());
-    commandList->SetComputeRootConstantBufferView(1, perFrameBuffer_->GetGPUVirtualAddress());
+    commandList->SetComputeRootDescriptorTable(1, freeListIndexBuffer_->GetUAVHandleGPU());
+    commandList->SetComputeRootDescriptorTable(2, freeListBuffer_->GetUAVHandleGPU());
+    commandList->SetComputeRootConstantBufferView(3, perFrameBuffer_->GetGPUVirtualAddress());
 
     // 今回はちょうど1024個なので
     commandList->Dispatch(1, 1, 1);
