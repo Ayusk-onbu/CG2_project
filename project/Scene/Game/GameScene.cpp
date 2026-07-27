@@ -4,11 +4,11 @@
 #include "SceneDirector.h"
 #include "Hair/IHair.h"
 #include "Chronos.h"
+#include "CollisionManager.h"
 
 GameScene::GameScene()
 	: player_(std::make_unique<Player>()),
 	  boss_(std::make_unique<BossEnemy>()),
-	  collisionManager_(std::make_unique<CollisionManager>()),
 	  gameMap_(std::make_unique<GameMap>()),
 	  skyBox_(std::make_unique<SkyBox>())
 {
@@ -96,6 +96,11 @@ void GameScene::Update(){
 		ImGuiManager::GetInstance()->Text("Not Game");
 	}
 	else {
+		// 中身をclear
+		CollisionManager::GetInstance()->Begin();
+
+		// -----------------
+
 		player_->Update(deltaTime);
 		rotationBox_->Update();
 		//boss_->Update();
@@ -138,20 +143,15 @@ void GameScene::Draw() {
 }
 
 void GameScene::CollisionCheck() {
-	// 中身をclear
-	collisionManager_->Begin();
 
 	// マップの情報を登録
-	collisionManager_->SetMap(gameMap_->GetBVH());
-
-	// ここからColliderを設定
-	collisionManager_->SetColliders(player_->GetCollider());
+	CollisionManager::GetInstance()->SetMap(gameMap_->GetBVH());
 
 	// Map と 動的な物体（Player等）当たり判定をCheck！
-	collisionManager_->CheckMapCollisions();
+	CollisionManager::GetInstance()->CheckMapCollisions();
 
 	// 動的な物体 と 動的な物体の当たり判定をCheck!
-	collisionManager_->CheckAllCollisions();
+	CollisionManager::GetInstance()->CheckAllCollisions();
 }
 
 void GameScene::ToScene() {
@@ -168,7 +168,7 @@ void GameScene::ToScene() {
 	if (boss_->IsDead()) {
 		ToClearScene();
 	}
-	else if (player_->GetStatus().IsDead()) {
+	else if (false/*player_->GetStatus().IsDead()*/) {
 		ToGameOverScene();
 	}
 }

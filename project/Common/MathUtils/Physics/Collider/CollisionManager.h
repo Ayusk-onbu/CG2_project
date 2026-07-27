@@ -1,13 +1,17 @@
 #pragma once
 #include "Collider.h"
+#include "ISingleton.h"
 #include <list>
 #include <vector>
 
 // マップと動的な物体の当たり判定　と　動的な物体同士の当たり判定を作る
 // ただし、
 
-class CollisionManager
+class CollisionManager :
+	public ISingleton<CollisionManager>
 {
+public:
+	friend class ISingleton<CollisionManager>;
 ///////////////////////////
 /// 
 ///  共通処理

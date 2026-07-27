@@ -4,7 +4,6 @@
 #include "WorldTransform.h"
 #include "Player3D.h"
 #include "Enemy.h"
-#include "CollisionManager.h"
 #include "SpriteObject.h"
 #include "Particle.h"
 #include "Ground.h"
@@ -57,7 +56,6 @@ private:
 	//std::unique_ptr<Player3D>player_;
 	std::unique_ptr<Player>player_;
 	std::unique_ptr<BossEnemy>boss_;
-	std::unique_ptr<CollisionManager>collisionManager_;
 	std::unique_ptr<GameMap>gameMap_;
 	std::unique_ptr<ConvenienceModel>skySphere_;
 	std::unique_ptr<SkyBox>skyBox_;

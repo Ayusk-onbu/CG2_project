@@ -15,7 +15,7 @@ void Character::Update(float deltaTime) {
 		input_ = controller_->GetCommandState(input_);
 	}
 
-	moveAmount_ = Vector3{ 0.0f, 0.0f, 0.0f };
+	//moveAmount_ = Vector3{ 0.0f, 0.0f, 0.0f };
 
 	DynamicObject::Update(deltaTime);
 
@@ -26,7 +26,7 @@ void Character::Update(float deltaTime) {
 		ac_currentState_->Update(deltaTime);
 	}
 
-	moveAmount_ = (myVelocity_ + externalVelocity_) * deltaTime;
+	/*moveAmount_ = (myVelocity_ + externalVelocity_) * deltaTime;
 
 	obj_->worldTransform_.set_.Translation(obj_->worldTransform_.get_.Translation() + moveAmount_);
 
@@ -34,7 +34,7 @@ void Character::Update(float deltaTime) {
 
 	obj_->worldTransform_.LookAtToDirection(moveDirectionXZ);
 
-	onGround_ = false;
+	onGround_ = false;*/
 }
 
 void Character::Draw() {
@@ -47,9 +47,9 @@ void Character::Draw() {
 ///
 //////////////////////////
 void Character::Jump() {
-	externalVelocity_.y = status_.GetCurrentSpeed();
+	/*externalVelocity_.y = status_.GetCurrentSpeed();
 
-	onGround_ = false;
+	onGround_ = false;*/
 
 	jumpCoyoteTimer_ = 0.0f;
 
