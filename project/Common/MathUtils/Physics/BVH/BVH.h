@@ -26,6 +26,28 @@ struct BVHNode {
 	}
 };
 
+// GPUへ送るBVHノード構造体
+struct GPUBVHNode {
+	Vector3 minBounds;
+	int leftChildIndex;  // -1 なら葉ノード（Leaf）
+
+	Vector3 maxBounds;
+	int rightChildIndex; // 葉ノードの場合、この値は「polygonStartIndex」として使う
+
+	int polygonCount;    // 葉ノードに含まれるポリゴン数（0なら内部ノード）
+	int padding[3];      // 16バイトアライメント用のパディング
+};
+
+// GPUへ送るポリゴン構造体
+struct GPUPolygon {
+	Vector3 v0;
+	float pad0;
+	Vector3 v1;
+	float pad1;
+	Vector3 v2;
+	float pad2;
+};
+
 // BVHを管理する
 class BVH {
 public:
@@ -45,12 +67,20 @@ public:
 	
 	// プレイヤーのAABBと重なる可能性のある三角形をすべて抽出する
 	void QueryTriangles(const AABB& targetAABB, std::vector<PhysicsTriangle>& outTriangles) const;
+
+	/// <summary>
+	/// GPUへ転送するために、ポインタツリーを1次元の配列構造へ変換する
+	/// </summary>
+	void Flatten(std::vector<GPUBVHNode>& outNodes, std::vector<GPUPolygon>& outPolygons) const;
 private:
 	// 再帰的にノードを構築(Buildで使用)
 	std::unique_ptr<BVHNode> BuildRecursive(std::vector<PhysicsTriangle>& triangle, size_t start, size_t end);
 	
 	// 再帰的にノードを辿る
 	void QueryRecursive(const BVHNode* node, const AABB& targetAABB, std::vector<PhysicsTriangle>& outTriangles) const;
+
+	int FlattenRecursive(const BVHNode* node, std::vector<GPUBVHNode>& outNodes, std::vector<GPUPolygon>& outPolygons) const;
+
 private:
 	// 構築したBVHの情報
 	std::unique_ptr<BVHNode> root_ = nullptr;

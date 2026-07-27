@@ -136,7 +136,7 @@ void HermiteEditor::DrawUI() {
     // これの型は std::vector<SplineNode*>& になります
     auto& nodes_ = targetObjects_;
 
-    ImGui::DragFloat3("Scale", &scale_.x,0.01f);
+    ImGui::DragFloat3("Scale", &scale_.x,0.01f,0.01f);
 
     // ---------------------------------------------------
     // 全体操作：ノードの追加ボタン

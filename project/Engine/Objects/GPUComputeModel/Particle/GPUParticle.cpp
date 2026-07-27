@@ -84,7 +84,7 @@ void GPUParticleSystem::Update(float deltaTime) {
 
 void GPUParticleSystem::DispatchInitializeCS(){
     auto commandList = p_engine_->GetCommand().GetList().GetList();
-    ID3D12DescriptorHeap* ppHeaps[] = { p_engine_->GetSRV().GetDescriptorHeap().GetHeap().Get() };
+    ID3D12DescriptorHeap* ppHeaps[] = { SRVManager::GetInstance()->GetHeap()};
     // コマンドリストにヒープをセット（テーブルをセットするより【前】に呼ぶ！）
     commandList->SetDescriptorHeaps(_countof(ppHeaps), ppHeaps);
 
@@ -109,14 +109,13 @@ void GPUParticleSystem::DispatchUpdateCS(){
     commandList->SetComputeRootDescriptorTable(2, freeListBuffer_->GetUAVHandleGPU());
     commandList->SetComputeRootConstantBufferView(3, emitBuffer_->GetGPUVirtualAddress());
     commandList->SetComputeRootConstantBufferView(4, perFrameBuffer_->GetGPUVirtualAddress());
+    // 今回はちょうど1024個なので
+    commandList->Dispatch(1, 1, 1);
 
     D3D12_RESOURCE_BARRIER particleBarrier{};
     particleBarrier.Type = D3D12_RESOURCE_BARRIER_TYPE_UAV;
     particleBarrier.UAV.pResource = dataBuffer_->GetResource();
     commandList->ResourceBarrier(1, &particleBarrier);
-
-    // 今回はちょうど1024個なので
-    commandList->Dispatch(1, 1, 1);
 
     commandList->SetComputeRootSignature(PSOManager::GetInstance()->GetPSO("UpdateParticle.CS").GetRootSignature().GetRS().Get());
     commandList->SetPipelineState(PSOManager::GetInstance()->GetPSO("UpdateParticle.CS").GetCPS().Get());

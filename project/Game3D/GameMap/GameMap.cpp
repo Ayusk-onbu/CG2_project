@@ -1,4 +1,5 @@
 #include "GameMap.h"
+#include "ModelManager.h"
 
 void GameMap::Initialize(Fngine* engine) {
 	obj_ = std::make_unique<ModelObject>();
@@ -14,11 +15,11 @@ void GameMap::Initialize(Fngine* engine) {
 	obj_->worldTransform_.LocalToWorld();
 
 	// 当たり判定用のBVHを作成
-	bvh_ = std::make_unique<BVH>();
-	
-	auto triangle = obj_->ExtractPhysicsTriangles();
+	//bvh_ = std::make_unique<BVH>();
+	//
+	//auto triangle = obj_->ExtractPhysicsTriangles();
 
-	bvh_->Build(triangle);
+	//bvh_->Build(triangle);
 }
 
 void GameMap::Update() {
@@ -28,4 +29,8 @@ void GameMap::Update() {
 void GameMap::Draw() {
 	obj_->SetWVPData(CameraSystem::GetInstance()->GetActiveCamera()->DrawCamera(obj_->worldTransform_.mat_));
 	obj_->Draw();
+}
+
+const BVH* GameMap::GetBVH() const {
+	return ModelManager::GetInstance()->GetBVH(obj_->modelName_);
 }

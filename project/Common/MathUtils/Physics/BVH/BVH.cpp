@@ -109,3 +109,54 @@ void BVH::QueryRecursive(const BVHNode* node, const AABB& targetAABB, std::vecto
 	if (node->left) QueryRecursive(node->left.get(), targetAABB, outTriangles);
 	if (node->right) QueryRecursive(node->right.get(), targetAABB, outTriangles);
 }
+
+void BVH::Flatten(std::vector<GPUBVHNode>& outNodes, std::vector<GPUPolygon>& outPolygons) const {
+	outNodes.clear();
+	outPolygons.clear();
+
+	if (!root_) return;
+
+	// 再帰的にノードとポリゴンを配列に詰めていく
+	FlattenRecursive(root_.get(), outNodes, outPolygons);
+}
+
+int BVH::FlattenRecursive(const BVHNode* node, std::vector<GPUBVHNode>& outNodes, std::vector<GPUPolygon>& outPolygons) const {
+	if (!node) return -1;
+
+	// 自分自身のノードを配列に確保（インデックスを取得）
+	int currentIndex = static_cast<int>(outNodes.size());
+	outNodes.push_back(GPUBVHNode{}); // 一旦仮置き
+
+	GPUBVHNode gpuNode{};
+	gpuNode.minBounds = node->bounds.min;
+	gpuNode.maxBounds = node->bounds.max;
+
+	// 葉ノード（Leaf）の場合
+	if (node->IsLeaf()) {
+		gpuNode.leftChildIndex = -1;
+		gpuNode.rightChildIndex = static_cast<int>(outPolygons.size()); // ポリゴンの開始位置
+		gpuNode.polygonCount = static_cast<int>(node->triangleIndices.size());
+
+		// 含まれる三角形を GPUPolygon 形式で追加
+		for (int triIdx : node->triangleIndices) {
+			const auto& tri = allTriangles_[triIdx];
+			GPUPolygon poly;
+			poly.v0 = tri.v0;
+			poly.v1 = tri.v1;
+			poly.v2 = tri.v2;
+			outPolygons.push_back(poly);
+		}
+	}
+	// 内部ノード（Branch）の場合
+	else {
+		gpuNode.polygonCount = 0;
+		// 子ノードを再帰的に変換し、帰ってきた配列インデックスを記録する
+		gpuNode.leftChildIndex = FlattenRecursive(node->left.get(), outNodes, outPolygons);
+		gpuNode.rightChildIndex = FlattenRecursive(node->right.get(), outNodes, outPolygons);
+	}
+
+	// 完成したノード情報を配列の正しい位置に書き戻す
+	outNodes[currentIndex] = gpuNode;
+
+	return currentIndex;
+}

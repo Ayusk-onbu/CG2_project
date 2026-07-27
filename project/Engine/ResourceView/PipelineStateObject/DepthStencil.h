@@ -25,7 +25,7 @@ public:
 	void InitializeHeap(D3D12System& d3d12);
 
 	// リソースと複数のビュー(DSV)を作成
-	void MakeResource(D3D12System& d3d12, int32_t width, int32_t height, SRV& srv);
+	void MakeResource(D3D12System& d3d12, int32_t width, int32_t height);
 
 	// 特定のタイプのハンドルを取得する
 	D3D12_CPU_DESCRIPTOR_HANDLE GetCPUHandle(DSV_HANDLE_TYPE type);
@@ -41,7 +41,7 @@ public:
 	D3D12_DEPTH_STENCIL_VIEW_DESC& GetDSVDesc() { return dsvDesc_; }
 	DescriptorHeap GetHeap() { return heap_; }
 	Microsoft::WRL::ComPtr <ID3D12Resource>& GetResource() { return depthStencilResource_; }
-	D3D12_GPU_DESCRIPTOR_HANDLE GetSRVHandleGPU()const { return srvHandleGPU_; }
+	D3D12_GPU_DESCRIPTOR_HANDLE GetSRVHandleGPU()const { return srvAllocation_.gpu; }
 private:
 	/// <summary>
 	/// 深度テストを使うか否かの設定
@@ -70,8 +70,7 @@ private:
 	Microsoft::WRL::ComPtr <ID3D12Resource> depthStencilResource_;
 	// ヒープ内でのオフセット計算用
 	uint32_t descriptorSize_;
-	D3D12_CPU_DESCRIPTOR_HANDLE srvHandleCPU_{};
-	D3D12_GPU_DESCRIPTOR_HANDLE srvHandleGPU_{};
+	SRVAllocation srvAllocation_;
 };
 
 using DSV = DepthStencil;

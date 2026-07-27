@@ -23,7 +23,7 @@
       "blendMode": "AlphaBlend",
       "rootSignature": [
        { "type": "SRVTable", "register": 0, "count": 1, "visibility": "Vertex" },
-       { "type": "SRVTable", "register": 0, "count": 1, "visibility": "Pixel" },
+       { "type": "SRVTable", "register": 0, "count": -1, "visibility": "Pixel" },
        { "type": "Constants", "register": 0, "count": 1,"visibility": "Vertex" }
       ],
       "staticSamplers":[

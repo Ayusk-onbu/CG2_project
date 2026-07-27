@@ -2,6 +2,7 @@
 #include "ModelObject.h"
 #include "Collider.h"
 #include "StatusComponent.h"
+#include "Component.h"
 
 class DynamicObject
 {
@@ -27,13 +28,51 @@ public:
 	/// </summary>
 	/// <param name="deltaTime"></param>
 	virtual void Update(float deltaTime);
+	/// <summary>
+	/// 描画関数
+	/// </summary>
 	virtual void Draw();
 	
+	WorldTransform GetTransform() const { transform_; }
+
 	Matrix4x4 GetMatrix() const { return obj_->worldTransform_.mat_; }
 
 	ModelObject* GetObj() { return obj_.get(); }
 protected:
 	std::unique_ptr<ModelObject> obj_;
+	WorldTransform transform_;
+
+	int type_;// 識別子：ほぼEnumだが、Enumだと追加するたびに書かないといけないのが面倒なので
+
+///////////////////////////
+/// 
+/// コンポーネント関係
+///
+//////////////////////////
+protected:
+	std::vector<std::unique_ptr<Component>> components_;
+
+public:
+	// コンポーネントの追加
+	template<typename T>
+	T* AddComponent() {
+		auto comp = std::make_unique<T>();
+		comp->master = this; // 自分を親としてセット
+		T* ptr = comp.get();
+		components_.push_back(std::move(comp));
+		return ptr;
+	}
+
+	Component* AddComponent(const std::string& componentName) {
+		// ファクトリーを使って名前から生成
+		auto comp = ComponentFactory::GetInstance()->Create(componentName);
+		if (!comp) return nullptr;
+
+		comp->master_ = this;
+		Component* ptr = comp.get();
+		components_.push_back(std::move(comp));
+		return ptr;
+	}
 
 ///////////////////////////
 /// 

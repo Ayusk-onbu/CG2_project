@@ -31,13 +31,13 @@ class OffScreenRendering
 {
 public:
 
-	void Initialize(D3D12System& d3d12, SRV& srv, float width,float height,
+	void Initialize(D3D12System& d3d12, float width,float height,
 		DXGI_FORMAT fmt = DXGI_FORMAT_R8G8B8A8_UNORM_SRGB, 
 		D3D12_RTV_DIMENSION dimension = D3D12_RTV_DIMENSION_TEXTURE2D
 		);
 	void Begin(TheOrderCommand &command);
 	void End(TheOrderCommand& command);
-	D3D12_GPU_DESCRIPTOR_HANDLE& GetHandleGPU() { return textureSrvHandleGPU_; }
+	D3D12_GPU_DESCRIPTOR_HANDLE& GetHandleGPU() { return srvAllocation_.gpu; }
 	Microsoft::WRL::ComPtr <ID3D12Resource> GetResource() {return offScreenTexture_;}
 	void ChangeDSVHandleType(TheOrderCommand& command,DSV_HANDLE_TYPE type);
 
@@ -50,7 +50,5 @@ private:
 	OffRTV offRTV_;
 	DSV dsv_;
 	PSO pso_;
-	D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc_{};
-	D3D12_CPU_DESCRIPTOR_HANDLE textureSrvHandleCPU_;
-	D3D12_GPU_DESCRIPTOR_HANDLE textureSrvHandleGPU_;
+	SRVAllocation srvAllocation_;
 };

@@ -19,7 +19,7 @@ struct HairAttribute
     float32_t3 normal; // ワールド空間における法線
 };
 
-struct Camera 
+struct Camera
 {
     float32_t4x4 inverseViewProj;
     float32_t3 position;
@@ -281,7 +281,7 @@ void HairIntersectionShader()
     HairAttribute attr;
 
     // 数学テストを実行：ここに改良の余地あり
-    if (RayCapsuleIntersectionTest(ray, v0.position, v1.position, radius, rayTCurrent,thit, attr))
+    if (RayCapsuleIntersectionTest(ray, v0.position, v1.position, radius, rayTCurrent, thit, attr))
     {
         // 計算された交点 t が、現在のレイトレーシングの有効範囲内（一番手前）にあるか確認
         if (thit > rayTMin && thit < rayTCurrent)
@@ -299,106 +299,541 @@ void HairIntersectionShader()
 // =================================================================
 // 髪の毛の最近接ヒットシェーダー (Kajiya-Kayモデル版)
 // =================================================================
+
+float3 ShapeHairR_Dual(float rawR, float3 lightColor)
+{
+    // ① 周辺の裾野用：広くて柔らかいツヤ (範囲: 0.0 ~ 0.6)
+    //    pow(rawR, 1.5) で少し広げてから 0.6 を掛ける
+    float baseScatter = pow(saturate(rawR), 1.5f) * 0.6f;
+
+    // ② 中心のハイライトコア用：鋭く強いツヤ (範囲: 0.0 ~ 8.0)
+    //    pow(rawR, 16.0) で鋭く絞ってから 8.0 を掛ける
+    float coreHighlight = pow(saturate(rawR), 16.0f) * 8.0f;
+
+    // ③ 両方を合算！ 
+    //    ・ハイライトがない場所 ＝ 0.0
+    //    ・ハイライトの周辺     ＝ 0.0 ~ 0.6
+    //    ・ハイライトの中心     ＝ 0.6 + 8.4 ≒ 1.0 ~ 9.0 (HDR輝度)
+    float finalIntensity = baseScatter + coreHighlight;
+
+    return lightColor * finalIntensity;
+}
+
+// =================================================================
+// Marschner Model: R-Path (Primary Specular)
+// =================================================================
+float3 EvaluateHair_RPath(
+    float3 L, // 光源への方向 (World Space, Normalized)
+    float3 V, // カメラへの方向 (World Space, Normalized)
+    float3 T, // 髪の接線ベクトル (World Space, Normalized)
+    float roughness, // 表面粗さ Beta (0.15 ~ 0.25 推奨)
+    float cuticleTilt, // キューティクルの傾き Alpha (例: -0.035 rad ≒ -2度)
+    float3 lightColor // ライトの色・強度
+)
+{
+    // -------------------------------------------------------------
+    // 1. 縦方向の角度計算 (Theta)
+    // -------------------------------------------------------------
+    float sinThetaI = clamp(dot(L, T), -0.999f, 0.999f);
+    float sinThetaR = clamp(dot(V, T), -0.999f, 0.999f);
+    float cosThetaI = sqrt(1.0f - sinThetaI * sinThetaI);
+    float cosThetaR = sqrt(1.0f - sinThetaR * sinThetaR);
+
+    // -------------------------------------------------------------
+    // 2. 縦方向の差分角 (theta_d)
+    // -------------------------------------------------------------
+    float cosThetaD = sqrt(max(0.001f, 0.5f * (1.0f + cosThetaI * cosThetaR + sinThetaI * sinThetaR)));
+    float invCos2ThetaD = 1.0f / (cosThetaD * cosThetaD);
+
+    // -------------------------------------------------------------
+    // 3. 横方向の方位角 (Phi)
+    // -------------------------------------------------------------
+    float3 L_proj = L - sinThetaI * T;
+    float3 V_proj = V - sinThetaR * T;
+    float lenL = length(L_proj);
+    float lenV = length(V_proj);
+
+    float cosHalfPhi = 1.0f;
+    if (lenL > 0.001f && lenV > 0.001f)
+    {
+        float3 L_perp = L_proj / lenL;
+        float3 V_perp = V_proj / lenV;
+        float cosPhi = clamp(dot(L_perp, V_perp), -1.0f, 1.0f);
+        cosHalfPhi = sqrt(max(0.0f, 0.5f * (1.0f + cosPhi)));
+    }
+
+    // -------------------------------------------------------------
+    // 4. 縦方向散乱 Mp (ガウス分布)
+    // -------------------------------------------------------------
+    float betaR = max(0.05f, roughness);
+    float shift = sinThetaI + sinThetaR - cuticleTilt;
+    float Mp = (1.0f / (betaR * 2.50662827f)) * exp(-(shift * shift) / (2.0f * betaR * betaR));
+
+    // -------------------------------------------------------------
+    // 5. 横方向散乱 Np & Schlick フレネル
+    // -------------------------------------------------------------
+    float F0 = 0.046f; // 髪の屈折率 n ≈ 1.55
+    float Fresnel = F0 + (1.0f - F0) * pow(clamp(1.0f - cosThetaD, 0.0f, 1.0f), 5.0f);
+    float Np = cosHalfPhi * Fresnel;
+
+    // -------------------------------------------------------------
+    // 6. 最終 BSDF 出力 (BSDF * cosThetaI)
+    // -------------------------------------------------------------
+    float specIntensity = g_LightingParams.lightIntensity;
+    float3 S_R = lightColor * (Mp * Np * invCos2ThetaD * cosThetaI) * specIntensity;
+    
+    return S_R;
+}
+
+// -------------------------------------------------------------
+// Epic Games (UE4/UE5) Hair TT-Path (透過光) 高速実装
+// -------------------------------------------------------------
+float3 EvaluateHair_TTPath(
+    float3 L, // ライト方向 (表面 -> 光源)
+    float3 V, // カメラ方向 (表面 -> カメラ)
+    float3 T, // 髪の接線 (毛根 -> 毛先)
+    float roughness, // 粗さ (0.0 ~ 1.0)
+    float3 baseColor, // 髪のベースカラー (RGB)
+    float lightIntensity, // ライト強度
+    float3 lightColor // ライトカラー
+)
+{
+    // -------------------------------------------------------------
+    // 1. 縦方向の角度計算 (Sin / Cos)
+    // -------------------------------------------------------------
+    float sinThetaI = clamp(dot(L, T), -0.999f, 0.999f);
+    float sinThetaR = clamp(dot(V, T), -0.999f, 0.999f);
+    float cosThetaI = sqrt(max(0.0f, 1.0f - sinThetaI * sinThetaI));
+    float cosThetaR = sqrt(max(0.0f, 1.0f - sinThetaR * sinThetaR));
+
+    // 差分角 cos(theta_d)
+    float cosThetaD = sqrt(max(0.001f, 0.5f * (1.0f + cosThetaI * cosThetaR + sinThetaI * sinThetaR)));
+    float invCos2ThetaD = 1.0f / (cosThetaD * cosThetaD);
+
+    // -------------------------------------------------------------
+    // 2. M_TT : 縦方向散乱 (ガウス分布)
+    // TTパスは Rパスより広がり(粗さ)が半減し、シフト角も逆向きになる
+    // -------------------------------------------------------------
+    float betaR = max(0.05f, roughness * roughness);
+    float betaTT = betaR * 0.5f; // TT用の粗さ (Rの半分)
+    
+    float alphaR = -0.06f; // Rパスのシフト角 (約 -3.5度)
+    float alphaTT = -alphaR * 0.5f; // TTパスのシフト角 (+1.75度)
+
+    float shiftTT = sinThetaI + sinThetaR - alphaTT;
+    float Mp_TT = (1.0f / (betaTT * 2.50662827f)) * exp(-(shiftTT * shiftTT) / (2.0f * betaTT * betaTT));
+
+    // -------------------------------------------------------------
+    // 3. cosPhi & cosHalfPhi の計算 (逆三角関数なし)
+    // -------------------------------------------------------------
+    float3 L_proj = L - sinThetaI * T;
+    float3 V_proj = V - sinThetaR * T;
+    float lenL = length(L_proj);
+    float lenV = length(V_proj);
+
+    float cosPhi = 1.0f;
+    float cosHalfPhi = 1.0f;
+
+    if (lenL > 0.001f && lenV > 0.001f)
+    {
+        cosPhi = clamp(dot(L_proj / lenL, V_proj / lenV), -1.0f, 1.0f);
+        cosHalfPhi = sqrt(max(0.0f, 0.5f * (1.0f + cosPhi)));
+    }
+
+    // -------------------------------------------------------------
+    // 4. 修正屈折率 n' & a (Slide 26)
+    // -------------------------------------------------------------
+    float etaPrime = (1.19f / cosThetaD) + (0.36f * cosThetaD);
+    float a = 1.0f / etaPrime;
+
+    // -------------------------------------------------------------
+    // 5. オフセット h_TT の計算 (Slide 25)
+    // -------------------------------------------------------------
+    float h_TT = (1.0f + a * (0.6f - 0.8f * cosPhi)) * cosHalfPhi;
+
+    // -------------------------------------------------------------
+    // 6. 吸収項 Absorption (Slide 28)
+    // -------------------------------------------------------------
+    float sqrtTerm = sqrt(max(0.0f, 1.0f - h_TT * h_TT * a * a));
+    
+    // BaseColor (C) による着色
+    float3 safeColor = max(float3(0.001f, 0.001f, 0.001f), baseColor);
+    float3 Absorption = pow(safeColor, float3(sqrtTerm / cosThetaD, sqrtTerm / cosThetaD, sqrtTerm / cosThetaD));
+
+    // -------------------------------------------------------------
+    // 7. 横方向散乱 D_TT (Slide 29)
+    // -------------------------------------------------------------
+    float D_TT = exp(-3.65f * cosPhi - 3.98f);
+
+    // -------------------------------------------------------------
+    // 8. フレネル透過率 F_TT (Slide 20, 23)
+    // 表面と裏面の2回透過するので (1 - F)^2
+    // -------------------------------------------------------------
+    float F0 = 0.046f;
+    float Fresnel = F0 + (1.0f - F0) * pow(saturate(1.0f - cosThetaD), 5.0f);
+    float F_TT = (1.0f - Fresnel) * (1.0f - Fresnel);
+
+    // -------------------------------------------------------------
+    // 9. 最終合成 (S_TT)
+    // -------------------------------------------------------------
+    float3 Np_TT = D_TT * F_TT * Absorption;
+    float3 S_TT = lightColor * (Mp_TT * Np_TT * invCos2ThetaD * cosThetaI) * lightIntensity;
+
+    return S_TT;
+}
+
+// -------------------------------------------------------------
+// Epic Games (UE4/UE5) Hair TRT-Path (二次内部反射光) 高速実装
+// -------------------------------------------------------------
+float3 EvaluateHair_TRTPath(
+    float3 L, // ライト方向 (表面 -> 光源)
+    float3 V, // カメラ方向 (表面 -> カメラ)
+    float3 T, // 髪の接線 (毛根 -> 毛先)
+    float roughness, // 粗さ (0.0 ~ 1.0)
+    float3 baseColor, // 髪のベースカラー (RGB)
+    float lightIntensity, // ライト強度
+    float3 lightColor // ライトカラー
+)
+{
+    // -------------------------------------------------------------
+    // 1. 縦方向の角度計算 (Sin / Cos)
+    // -------------------------------------------------------------
+    float sinThetaI = clamp(dot(L, T), -0.999f, 0.999f);
+    float sinThetaR = clamp(dot(V, T), -0.999f, 0.999f);
+    float cosThetaI = sqrt(max(0.0f, 1.0f - sinThetaI * sinThetaI));
+    float cosThetaR = sqrt(max(0.0f, 1.0f - sinThetaR * sinThetaR));
+
+    // 差分角 cos(theta_d)
+    float cosThetaD = sqrt(max(0.001f, 0.5f * (1.0f + cosThetaI * cosThetaR + sinThetaI * sinThetaR)));
+    float invCos2ThetaD = 1.0f / (cosThetaD * cosThetaD);
+
+    // -------------------------------------------------------------
+    // 2. M_TRT : 縦方向散乱 (ガウス分布)
+    // TRTは粗さが2倍に広がり、シフト角も逆方向(根元側)にずれる
+    // -------------------------------------------------------------
+    float betaR = max(0.05f, roughness * roughness);
+    float betaTRT = betaR * 2.0f; // TRT用の粗さ (Rの2倍)
+
+    float alphaR = -0.06f; // Rパスのシフト角 (毛先方向約 -3.5度)
+    float alphaTRT = -3.0f * alphaR; // TRTパスのシフト角 (根元方向約 +10.5度)
+
+    float shiftTRT = sinThetaI + sinThetaR - alphaTRT;
+    float Mp_TRT = (1.0f / (betaTRT * 2.50662827f)) * exp(-(shiftTRT * shiftTRT) / (2.0f * betaTRT * betaTRT));
+
+    // -------------------------------------------------------------
+    // 3. cosPhi の計算 (逆三角関数なし)
+    // -------------------------------------------------------------
+    float3 L_proj = L - sinThetaI * T;
+    float3 V_proj = V - sinThetaR * T;
+    float lenL = length(L_proj);
+    float lenV = length(V_proj);
+
+    float cosPhi = 1.0f;
+    if (lenL > 0.001f && lenV > 0.001f)
+    {
+        cosPhi = clamp(dot(L_proj / lenL, V_proj / lenV), -1.0f, 1.0f);
+    }
+
+    // -------------------------------------------------------------
+    // 4. 横方向散乱 D_TRT (Slide 32)
+    // -------------------------------------------------------------
+    float D_TRT = exp(17.0f * cosPhi - 16.78f);
+
+    // -------------------------------------------------------------
+    // 5. 吸収項 Absorption_TRT (Slide 32)
+    // 内部を2回往復通過するため BaseColor (C) で色づく
+    // -------------------------------------------------------------
+    float3 safeColor = max(float3(0.001f, 0.001f, 0.001f), baseColor);
+    float expTerm = 0.8f / cosThetaD;
+    float3 Absorption_TRT = pow(safeColor, float3(expTerm, expTerm, expTerm));
+
+    // -------------------------------------------------------------
+    // 6. フレネル & 減衰 F_TRT (h = sqrt(3)/2 固定)
+    // 屈折2回 + 内部反射1回: F * (1 - F)^2
+    // -------------------------------------------------------------
+    float F0 = 0.046f;
+    float Fresnel = F0 + (1.0f - F0) * pow(saturate(1.0f - cosThetaD), 5.0f);
+    float F_TRT = Fresnel * (1.0f - Fresnel) * (1.0f - Fresnel);
+
+    // -------------------------------------------------------------
+    // 7. 最終 TRT 出力 (S_TRT)
+    // -------------------------------------------------------------
+    float3 Np_TRT = D_TRT * F_TRT * Absorption_TRT;
+    float3 S_TRT = lightColor * (Mp_TRT * Np_TRT * invCos2ThetaD * cosThetaI) * lightIntensity;
+
+    return S_TRT;
+}
+
+// -------------------------------------------------------------
+// Marschner / Epic Games 完全統合ライティング関数
+// -------------------------------------------------------------
+float3 EvaluateHair_Epic_Unified(
+    float3 L, // 光源方向 (表面 -> ライト)
+    float3 V, // カメラ方向 (表面 -> カメラ)
+    float3 T, // 髪の接線 (毛根 -> 毛先)
+    float3 baseColor, // C : ベースカラー
+    float roughness, // Roughness : 0.0 ~ 1.0
+    float shift, // Shift : キューティクルの傾き (例: 0.03 rad ≒ 約1.7度)
+    float specular, // Specular : R パスの強度スケール (通常 1.0)
+    float scatter, // Scatter : 多重散乱の強度スケール (通常 1.0)
+    float lightIntensity, // ライト強度
+    float3 lightColor // ライトカラー
+)
+{
+    // =========================================================
+    // 1. アーティストパラメータの内部マッピング (Slide 44)
+    // =========================================================
+    // 粗さ (Beta) の変換: Beta_R = Roughness^2
+    float betaR = max(0.001f, roughness * roughness);
+    float betaTT = 0.5f * betaR; // Beta_TT  = 0.5 * Roughness^2
+    float betaTRT = 2.0f * betaR; // Beta_TRT = 2.0 * Roughness^2
+
+    // シフト角 (Alpha) の変換
+    float alphaR = -2.0f * shift; // Alpha_R   = -2 * Shift
+    float alphaTT = 1.0f * shift; // Alpha_TT  =  1 * Shift
+    float alphaTRT = 4.0f * shift; // Alpha_TRT =  4 * Shift
+
+    // =========================================================
+    // 2. 共通の角度・ベクトル計算
+    // =========================================================
+    float sinThetaI = clamp(dot(L, T), -0.999f, 0.999f);
+    float sinThetaR = clamp(dot(V, T), -0.999f, 0.999f);
+    float cosThetaI = sqrt(max(0.0f, 1.0f - sinThetaI * sinThetaI));
+    float cosThetaR = sqrt(max(0.0f, 1.0f - sinThetaR * sinThetaR));
+
+    // 縦方向の差分角 (theta_d)
+    float cosThetaD = sqrt(max(0.001f, 0.5f * (1.0f + cosThetaI * cosThetaR + sinThetaI * sinThetaR)));
+    float invCos2ThetaD = 1.0f / (cosThetaD * cosThetaD);
+
+    // 横方向の方位角 (Phi)
+    float3 L_proj = L - sinThetaI * T;
+    float3 V_proj = V - sinThetaR * T;
+    float lenL = length(L_proj);
+    float lenV = length(V_proj);
+
+    float cosPhi = 1.0f;
+    float cosHalfPhi = 1.0f;
+    if (lenL > 0.001f && lenV > 0.001f)
+    {
+        cosPhi = clamp(dot(L_proj / lenL, V_proj / lenV), -1.0f, 1.0f);
+        cosHalfPhi = sqrt(max(0.0f, 0.5f * (1.0f + cosPhi)));
+    }
+
+    // フレネル (屈折率 n ≈ 1.55, F0 ≈ 0.046)
+    float F0 = 0.046f;
+    float Fresnel = F0 + (1.0f - F0) * pow(saturate(1.0f - cosThetaD), 5.0f);
+    float3 safeColor = max(float3(0.001f, 0.001f, 0.001f), baseColor);
+
+    // =========================================================
+    // 3. R パス (一次表面反射・白ツヤ)
+    // =========================================================
+    float shiftR = sinThetaI + sinThetaR - alphaR;
+    float Mp_R = (1.0f / (betaR * 2.50662827f)) * exp(-(shiftR * shiftR) / (2.0f * betaR * betaR));
+    float Np_R = cosHalfPhi;
+    // Specular パラメータでスケール
+    float3 S_R = lightColor * (Mp_R * Np_R * Fresnel * invCos2ThetaD * cosThetaI) * specular;
+
+    // =========================================================
+    // 4. TT パス (透過光)
+    // =========================================================
+    float shiftTT = sinThetaI + sinThetaR - alphaTT;
+    float Mp_TT = (1.0f / (betaTT * 2.50662827f)) * exp(-(shiftTT * shiftTT) / (2.0f * betaTT * betaTT));
+
+    float etaPrime = (1.19f / cosThetaD) + (0.36f * cosThetaD);
+    float a = 1.0f / etaPrime;
+    float h_TT = (1.0f + a * (0.6f - 0.8f * cosPhi)) * cosHalfPhi;
+    
+    float sqrtTerm = sqrt(max(0.0f, 1.0f - h_TT * h_TT * a * a));
+    float3 Abs_TT = pow(safeColor, float3(sqrtTerm / cosThetaD, sqrtTerm / cosThetaD, sqrtTerm / cosThetaD));
+    float D_TT = exp(-3.65f * cosPhi - 3.98f);
+    float F_TT = (1.0f - Fresnel) * (1.0f - Fresnel);
+
+    float3 Np_TT = D_TT * F_TT * Abs_TT;
+    float3 S_TT = lightColor * (Mp_TT * Np_TT * invCos2ThetaD * cosThetaI);
+
+    // =========================================================
+    // 5. TRT パス (二次内部反射・色付きツヤ)
+    // =========================================================
+    float shiftTRT = sinThetaI + sinThetaR - alphaTRT;
+    float Mp_TRT = (1.0f / (betaTRT * 2.50662827f)) * exp(-(shiftTRT * shiftTRT) / (2.0f * betaTRT * betaTRT));
+
+    float D_TRT = exp(17.0f * cosPhi - 16.78f);
+    float3 Abs_TRT = pow(safeColor, float3(0.8f / cosThetaD, 0.8f / cosThetaD, 0.8f / cosThetaD));
+    float F_TRT = Fresnel * (1.0f - Fresnel) * (1.0f - Fresnel);
+
+    float3 Np_TRT = D_TRT * F_TRT * Abs_TRT;
+    float3 S_TRT = lightColor * (Mp_TRT * Np_TRT * invCos2ThetaD * cosThetaI);
+
+    // =========================================================
+    // 6. 多重散乱ハック (Multiple Scattering / Slide 39)
+    // =========================================================
+    float3 fakeNormal = normalize(V - T * dot(V, T));
+    
+    // Wrapped Lambert で影側・裏側にも光を包み込ませる
+    float wrap = 0.5f;
+    float fakeNdotL = saturate((dot(fakeNormal, L) + wrap) / (1.0f + wrap));
+    
+    float shadowValue = 1.0f; // シャドウマップ非使用時は 1.0
+    float depth = 1.0f - shadowValue;
+    float3 scatterAbs = pow(safeColor, float3(1.0f + depth, 1.0f + depth, 1.0f + depth));
+    
+    // Scatter パラメータでスケール
+    float3 S_scatter = scatterAbs * fakeNdotL * lightColor * scatter;
+
+    // =========================================================
+    // 7. 全光パスの統合
+    // =========================================================
+    return (S_R + S_TT + S_TRT + S_scatter) * lightIntensity;
+}
+
+// -------------------------------------------------------------
+// DXR Ray Tracing Closest Hit Shader
+// -------------------------------------------------------------
 [shader("closesthit")]
 void HairClosestHitShader(inout RayPayload payload, in HairAttribute attribute)
 {
     uint32_t aabbIndex = PrimitiveIndex();
-    
-    // 💡 安全対策: バッファの最大要素数を取得して、配列外アクセスによるクラッシュを防ぐ
-    uint32_t numVertices = 0;
-    uint32_t stride = 0;
-    HairFlatVertices.GetDimensions(numVertices, stride);
-    uint32_t maxAABBIndex = (numVertices / 2) - 1;
 
-    // 現在のセグメントの頂点
+    // 頂点データ・BaseColor の取得
     StrandVertex v0 = HairFlatVertices[aabbIndex * 2 + 0];
     StrandVertex v1 = HairFlatVertices[aabbIndex * 2 + 1];
+    float3 baseColor = lerp(v0.color, v1.color, attribute.uv.y);
     
-    // 現在のセグメントの方向ベクトル（基本軸）
-    float32_t3 W_curr = normalize(v1.position - v0.position);
+    // ワールド空間のベクトルの準備
+    float3 localT = normalize(v1.position - v0.position);
+    float3 worldT = normalize(mul(ObjectToWorld3x4(), float4(localT, 0.0f)));
 
-    // ------------------------------------------------------------
-    // 💡 魔法の処理1: 前後のセグメントを覗き見て、シームレスな接線 T を作る！
-    // ------------------------------------------------------------
-    float32_t3 T0 = W_curr; // 始点 v0 での接線（初期値）
-    float32_t3 T1 = W_curr; // 終点 v1 での接線（初期値）
+    float3 V = normalize(-WorldRayDirection());
+    float3 L = normalize(-g_LightingParams.lightDirection);
 
-    // ① 【前隣のセグメントとの接続を自動判定】
-    if (aabbIndex > 0)
-    {
-        StrandVertex prev_v1 = HairFlatVertices[(aabbIndex - 1) * 2 + 1];
-        // 頂点座標がほぼ同じ位置なら「同じ髪の毛の続き」とみなす
-        if (distance(prev_v1.position, v0.position) < 0.001f)
-        {
-            StrandVertex prev_v0 = HairFlatVertices[(aabbIndex - 1) * 2 + 0];
-            float32_t3 W_prev = normalize(prev_v1.position - prev_v0.position);
-            T0 = normalize(W_prev + W_curr); // 前後の向きをブレンドして滑らかに繋ぐ
-        }
-    }
+    // アーティスト用パラメータの設定
+    float roughness = 0.35f; // UI Roughness (0.0 ~ 1.0)
+    float shift = 0.03f; // UI Shift (約 1.7度)
+    float specular = 1.00f; // UI Specular
+    float scatter = 1.00f; // UI Scatter
 
-    // ② 【次隣のセグメントとの接続を自動判定】
-    if (aabbIndex < maxAABBIndex)
-    {
-        StrandVertex next_v0 = HairFlatVertices[(aabbIndex + 1) * 2 + 0];
-        // 頂点座標がほぼ同じ位置なら「同じ髪の毛の続き」とみなす
-        if (distance(next_v0.position, v1.position) < 0.001f)
-        {
-            StrandVertex next_v1 = HairFlatVertices[(aabbIndex + 1) * 2 + 1];
-            float32_t3 W_next = normalize(next_v1.position - next_v0.position);
-            T1 = normalize(W_curr + W_next); // 前後の向きをブレンドして滑らかに繋ぐ
-        }
-    }
-
-    // ③ 【接線の LERP（線形補間）】
-    // 当たった位置 attribute.uv.y (0.0:根元 〜 1.0:毛先) に応じて、接線を完全にブレンド！
-    float32_t3 T = normalize(lerp(T0, T1, attribute.uv.y));
-
-    // ------------------------------------------------------------
-    // 💡 魔法の処理2: 補間された接線 T に合わせて、法線 N も再直交化する
-    // ------------------------------------------------------------
-    float32_t3 N_raw = attribute.normal;
-    // 新しい滑らかな接線 T に直交する平面へ、法線 N を再投影
-    // これにより、関節部分でも法線がカクッと折れず、完全な曲面が維持されます
-    float32_t3 N = normalize(N_raw - dot(N_raw, T) * T);
-
-    // ------------------------------------------------------------
-    // 3. ライティング計算 (ここからは前回同様)
-    // ------------------------------------------------------------
-    float32_t3 baseColor = lerp(v0.color, v1.color, attribute.uv.y);
-    float32_t3 L = normalize(g_LightingParams.lightDirection);
+    // 統合シェーダーによる一括ライティング計算
+    float3 finalColor = EvaluateHair_Epic_Unified(
+        L, V, worldT,
+        baseColor,
+        roughness,
+        shift,
+        specular,
+        scatter,
+        g_LightingParams.lightIntensity,
+        g_LightingParams.lightColor
+    );
     
-    // エッジフェード
-    float32_t distFromCenter = attribute.uv.x;
-    float32_t edgeFade = saturate(1.0f - pow(distFromCenter, 3.0f));
+    // 環境光 (完全な暗闇を防止)
+    float3 ambient = baseColor * 0.05f;
+    finalColor += ambient;
 
-    float32_t3 V = normalize(-WorldRayDirection());
-    float32_t3 H = normalize(L + V);
-
-    // Wrap Lambert
-    float32_t wrap = 0.4f;
-    float32_t NdotL = saturate((dot(N, L) + wrap) / (1.0f + wrap));
-    
-    float32_t dotTL = dot(T, L);
-    float32_t sinTL = sqrt(max(0.0f, 1.0f - dotTL * dotTL));
-    float32_t3 diffuseColor = baseColor * sinTL * NdotL * g_LightingParams.lightColor * g_LightingParams.lightIntensity;
-
-    // Specular (天使の輪)
-    float32_t3 shiftedT = normalize(T + N * g_LightingParams.hairShift);
-    float32_t dotTH = dot(shiftedT, H);
-    float32_t sinTH = sqrt(max(0.0f, 1.0f - dotTH * dotTH));
-    
-    float32_t specularPower = pow(max(0.0f, sinTH), g_LightingParams.hairExponent);
-    float32_t3 specularColor = g_LightingParams.lightColor * g_LightingParams.lightIntensity * specularPower;
-
-    // フェード適用
-    diffuseColor *= edgeFade;
-    specularColor *= edgeFade;
-
-    // 環境光
-    float32_t3 ambient = baseColor * g_LightingParams.ambientColor * edgeFade;
-    
-    payload.color = diffuseColor + specularColor + ambient;
+    // Reinhard トーンマッピング
+    payload.color = finalColor / (finalColor + 1.0f);
 }
+
+
+//[shader("closesthit")]
+//void HairClosestHitShader(inout RayPayload payload, in HairAttribute attribute)
+//{
+//    uint32_t aabbIndex = PrimitiveIndex();
+    
+//    // 💡 安全対策: バッファの最大要素数を取得して、配列外アクセスによるクラッシュを防ぐ
+//    uint32_t numVertices = 0;
+//    uint32_t stride = 0;
+//    HairFlatVertices.GetDimensions(numVertices, stride);
+//    uint32_t maxAABBIndex = (numVertices / 2) - 1;
+
+//    // 現在のセグメントの頂点
+//    StrandVertex v0 = HairFlatVertices[aabbIndex * 2 + 0];
+//    StrandVertex v1 = HairFlatVertices[aabbIndex * 2 + 1];
+    
+//    // 現在のセグメントの方向ベクトル（基本軸）
+//    float32_t3 W_curr = normalize(v1.position - v0.position);
+
+//    // ------------------------------------------------------------
+//    // 💡 魔法の処理1: 前後のセグメントを覗き見て、シームレスな接線 T を作る！
+//    // ------------------------------------------------------------
+//    float32_t3 T0 = W_curr; // 始点 v0 での接線（初期値）
+//    float32_t3 T1 = W_curr; // 終点 v1 での接線（初期値）
+
+//    // ① 【前隣のセグメントとの接続を自動判定】
+//    if (aabbIndex > 0)
+//    {
+//        StrandVertex prev_v1 = HairFlatVertices[(aabbIndex - 1) * 2 + 1];
+//        // 頂点座標がほぼ同じ位置なら「同じ髪の毛の続き」とみなす
+//        if (distance(prev_v1.position, v0.position) < 0.001f)
+//        {
+//            StrandVertex prev_v0 = HairFlatVertices[(aabbIndex - 1) * 2 + 0];
+//            float32_t3 W_prev = normalize(prev_v1.position - prev_v0.position);
+//            T0 = normalize(W_prev + W_curr); // 前後の向きをブレンドして滑らかに繋ぐ
+//        }
+//    }
+
+//    // ② 【次隣のセグメントとの接続を自動判定】
+//    if (aabbIndex < maxAABBIndex)
+//    {
+//        StrandVertex next_v0 = HairFlatVertices[(aabbIndex + 1) * 2 + 0];
+//        // 頂点座標がほぼ同じ位置なら「同じ髪の毛の続き」とみなす
+//        if (distance(next_v0.position, v1.position) < 0.001f)
+//        {
+//            StrandVertex next_v1 = HairFlatVertices[(aabbIndex + 1) * 2 + 1];
+//            float32_t3 W_next = normalize(next_v1.position - next_v0.position);
+//            T1 = normalize(W_curr + W_next); // 前後の向きをブレンドして滑らかに繋ぐ
+//        }
+//    }
+
+//    // ③ 【接線の LERP（線形補間）】
+//    // 当たった位置 attribute.uv.y (0.0:根元 〜 1.0:毛先) に応じて、接線を完全にブレンド！
+//    float32_t3 T = normalize(lerp(T0, T1, attribute.uv.y));
+
+//    // ------------------------------------------------------------
+//    // 💡 魔法の処理2: 補間された接線 T に合わせて、法線 N も再直交化する
+//    // ------------------------------------------------------------
+//    float32_t3 N_raw = attribute.normal;
+//    // 新しい滑らかな接線 T に直交する平面へ、法線 N を再投影
+//    // これにより、関節部分でも法線がカクッと折れず、完全な曲面が維持されます
+//    float32_t3 N = normalize(N_raw - dot(N_raw, T) * T);
+
+//    // ------------------------------------------------------------
+//    // 3. ライティング計算 (ここからは前回同様)
+//    // ------------------------------------------------------------
+//    float32_t3 baseColor = lerp(v0.color, v1.color, attribute.uv.y);
+//    float32_t3 L = normalize(g_LightingParams.lightDirection);
+    
+//    // エッジフェード
+//    float32_t distFromCenter = attribute.uv.x;
+//    float32_t edgeFade = saturate(1.0f - pow(distFromCenter, 3.0f));
+
+//    float32_t3 V = normalize(-WorldRayDirection());
+//    float32_t3 H = normalize(L + V);
+
+//    // Wrap Lambert
+//    float32_t wrap = 0.4f;
+//    float32_t NdotL = saturate((dot(N, L) + wrap) / (1.0f + wrap));
+    
+//    float32_t dotTL = dot(T, L);
+//    float32_t sinTL = sqrt(max(0.0f, 1.0f - dotTL * dotTL));
+//    float32_t3 diffuseColor = baseColor * sinTL * NdotL * g_LightingParams.lightColor * g_LightingParams.lightIntensity;
+
+//    // Specular (天使の輪)
+//    float32_t3 shiftedT = normalize(T + N * g_LightingParams.hairShift);
+//    float32_t dotTH = dot(shiftedT, H);
+//    float32_t sinTH = sqrt(max(0.0f, 1.0f - dotTH * dotTH));
+    
+//    float32_t specularPower = pow(max(0.0f, sinTH), g_LightingParams.hairExponent);
+//    float32_t3 specularColor = g_LightingParams.lightColor * g_LightingParams.lightIntensity * specularPower;
+
+//    // フェード適用
+//    diffuseColor *= edgeFade;
+//    specularColor *= edgeFade;
+
+//    // 環境光
+//    float32_t3 ambient = baseColor * g_LightingParams.ambientColor * edgeFade;
+    
+//    payload.color = diffuseColor + specularColor + ambient;
+//}
+
 
 //// 物理ベース髪シェーディングのためのヘルパー関数（ガウス分布関数 M）
 //// - sinThetaH: dot(T, H) の結果
@@ -561,4 +996,6 @@ void HairClosestHitShader(inout RayPayload payload, in HairAttribute attribute)
 void MyMissShader(inout RayPayload payload)
 {
     // 背景はゲームの画像なので特に何もしない
+    //payload.color = float32_t3(0.0f, 0.0f, 0.0f);
+
 }

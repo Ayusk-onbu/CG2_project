@@ -13,6 +13,7 @@
 #include "Player.h"
 #include "SkyBox.h"
 #include "GrassField.h"
+#include "ColumnInstance.h"
 #include "GPUComputeModel/Particle/GPUParticle.h"
 
 class GameScene 
@@ -64,6 +65,8 @@ private:
 	std::unique_ptr<AnimModel>rotationBox_;
 
 	std::unique_ptr<GrassField>grassField_;
+
+	std::unique_ptr<ColumnInstance>column_;
 
 	std::unique_ptr<GPUParticleSystem>gpuParticle_;
 };

@@ -1,20 +1,28 @@
 #include "ShaderResourceView.h"
+#include <cassert>
+
+SRVAllocation ShaderResourceView::Allocate() {
+    // 限界値を超えないかチェック（重要）
+    assert(descriptorIndex_ < (int)kMaxSRVCount_ && "SRV Descriptor Heap is full!");
+
+    SRVAllocation alloc;
+    alloc.index = descriptorIndex_;
+
+    // CPUハンドルの計算
+    alloc.cpu = descriptorHeap_.GetHeap()->GetCPUDescriptorHandleForHeapStart();
+    alloc.cpu.ptr += descriptorSizeSRV_ * descriptorIndex_;
+
+    // GPUハンドルの計算
+    alloc.gpu = descriptorHeap_.GetHeap()->GetGPUDescriptorHandleForHeapStart();
+    alloc.gpu.ptr += descriptorSizeSRV_ * descriptorIndex_;
+
+    // 次の割り当てに向けてインデックスを進める
+    descriptorIndex_++;
+
+    return alloc;
+}
 
 void ShaderResourceView::InitializeHeap(D3D12System& d3d12) {
 	MakeDescriptorHeap(d3d12);
 	SetSize(d3d12);
-}
-
-// DescriptorHandleを取得する関数(CPU)
-D3D12_CPU_DESCRIPTOR_HANDLE ShaderResourceView::GetCPUDescriptorHandle() {
-	descriptorIndex_ += 1;
-	D3D12_CPU_DESCRIPTOR_HANDLE handleCPU = descriptorHeap_.GetHeap().Get()->GetCPUDescriptorHandleForHeapStart();
-	handleCPU.ptr += descriptorSizeSRV_ * descriptorIndex_;
-	return handleCPU;
-}
-// DescriptorHandleを取得する関数(GPU)
-D3D12_GPU_DESCRIPTOR_HANDLE ShaderResourceView::GetGPUDescriptorHandle() {
-	D3D12_GPU_DESCRIPTOR_HANDLE handleGPU = descriptorHeap_.GetHeap().Get()->GetGPUDescriptorHandleForHeapStart();
-	handleGPU.ptr += descriptorSizeSRV_ * descriptorIndex_;
-	return handleGPU;
 }

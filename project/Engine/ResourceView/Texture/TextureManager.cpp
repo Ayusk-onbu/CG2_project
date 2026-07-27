@@ -32,7 +32,7 @@ std::string TextureManager::LoadTexture(const std::string& filename, const std::
 	std::string path = filePath + "/" + filename;
 	// [ Textureを作成 ]
 	// [ 中間リソースを取得 ]
-	intermediateResources_.push_back(texture->Initialize(p_fngine_->GetD3D12System(), p_fngine_->GetSRV(), path, textureCount_, p_fngine_->GetCommand().GetList().GetList().Get()));
+	intermediateResources_.push_back(texture->Initialize(p_fngine_->GetD3D12System(),path, textureCount_, p_fngine_->GetCommand().GetList().GetList().Get()));
 	// [ 登録 ]
 	textures_.emplace(name, std::move(texture));
 

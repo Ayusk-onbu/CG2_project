@@ -20,6 +20,8 @@ Fngine::~Fngine() {
 
 	TextureManager::GetInstance()->ReleaseInstance();
 
+	SRVManager::GetInstance()->ReleaseInstance();
+
 	ModelManager::GetInstance()->ReleaseInstance();
 
 	DrawManager::GetInstance()->ReleaseInstance();
@@ -74,10 +76,14 @@ void Fngine::Initialize() {
 	swapChain_.Initialize(window_);
 	dxgi_.AssignTaskToEngineer(command_.GetQueue().GetQueue(), window_, swapChain_);
 	swapChain_.MakeResource();
-	srv_.InitializeHeap(d3d12_);
+	//srv_.InitializeHeap(d3d12_);
+
+	SRVManager::GetInstance()->Initialize(d3d12_.GetDevice().Get(), 1024);
+	auto srv = SRVManager::GetInstance();
+
 	rtv_.Initialize(&d3d12_, swapChain_);
 	dsv_.InitializeHeap(d3d12_);
-	dsv_.MakeResource(d3d12_, kClienWidth_, kClienHeight_,srv_);
+	dsv_.MakeResource(d3d12_, kClienWidth_, kClienHeight_);
 	//d3d12_.GetDevice()->CreateDepthStencilView(dsv_.GetResource().Get(), &dsv_.GetDSVDesc(), dsv_.GetHeap().GetHeap()->GetCPUDescriptorHandleForHeapStart());
 	tachyonSync_.GetCGPU().Initialize(d3d12_.GetDevice());
 
@@ -101,7 +107,7 @@ void Fngine::Initialize() {
 	scissorRect_.bottom = window_.GetWindowRect().bottom;
 
 	InputManager::Initialize(window_.GetWindowClass(), window_.GetHwnd());
-	ImGuiManager::GetInstance()->SetImGui(window_.GetHwnd(), d3d12_.GetDevice().Get(), srv_.GetDescriptorHeap().GetHeap().Get());
+	ImGuiManager::GetInstance()->SetImGui(window_.GetHwnd(), d3d12_.GetDevice().Get(), srv->GetHeap());
 	ModelManager::GetInstance()->Initialize(this);
 	TextureManager::GetInstance()->Initialize(*this);
 	Music::GetInstance()->Initialize();
@@ -124,7 +130,7 @@ void Fngine::Initialize() {
 	randomForGPU_ = std::make_unique<ConstantBuffer<RandomConfigForGPU>>(this);
 	randomForGPU_->Initialize();
 
-	osr_.Initialize(d3d12_, srv_, float(kClienWidth_), float(kClienHeight_));
+	osr_.Initialize(d3d12_, float(kClienWidth_), float(kClienHeight_));
 	hair_ = std::make_unique<Hair>();
 }
 
@@ -133,7 +139,7 @@ void Fngine::BeginOSRFrame() {
 	barrierO.SetBarrier(command_.GetList().GetList().Get(), osr_.GetResource().Get(),
 		D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_RENDER_TARGET);
 	osr_.Begin(command_);
-	ID3D12DescriptorHeap* descriptorHeaps[] = { srv_.GetDescriptorHeap().GetHeap().Get() };
+	ID3D12DescriptorHeap* descriptorHeaps[] = { SRVManager::GetInstance()->GetHeap()};
 	command_.GetList().GetList()->SetDescriptorHeaps(1, descriptorHeaps);
 	/////////////////////////////////////////////////////////////////////////
 	//描画0200
@@ -170,7 +176,7 @@ void Fngine::BeginFrame() {
 	command_.GetList().GetList()->ClearDepthStencilView(dsvHandle, D3D12_CLEAR_FLAG_DEPTH, 1.0f, 0, 0, nullptr);//
 	command_.GetList().GetList()->ClearRenderTargetView(rtv_.GetHandle(backBufferIndex), clearColor, 0, nullptr);
 
-	ID3D12DescriptorHeap* descriptorHeaps[] = { srv_.GetDescriptorHeap().GetHeap().Get() };
+	ID3D12DescriptorHeap* descriptorHeaps[] = { SRVManager::GetInstance()->GetHeap() };
 	command_.GetList().GetList()->SetDescriptorHeaps(1, descriptorHeaps);
 	/////////////////////////////////////////////////////////////////////////
 	//描画0200
@@ -180,7 +186,7 @@ void Fngine::BeginFrame() {
 
 void Fngine::EndFrame() {
 
-	usePostEffectName_ = "DepthBasedOutline";
+	usePostEffectName_ = "CopyImage";
 	// Pre 
 	if (usePostEffectName_ == "DepthBasedOutline"){
 		auto transitionDepth = CD3DX12_RESOURCE_BARRIER::Transition(

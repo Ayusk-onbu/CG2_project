@@ -21,6 +21,7 @@
 #include "RenderTargetView.h"
 #include "Texture.h"
 #include "PipelineStateObjectManager.h"
+#include "SRVManager.h"
 #include "OffScreenRendering.h"
 #include "DirectionLight.h"
 #include "PointLight.h"
@@ -29,6 +30,7 @@
 #include "CameraForGPU.h"
 #include "ImGuiManager.h"
 #include "Structures.h"
+#include "Constant.h"
 #include "ResourceBarrier.h"
 #include "InputManager.h"
 #include "CameraSystem.h"
@@ -38,7 +40,6 @@
 #include "Easing.h"
 #include "../UsefulTool/ISingleton.h"
 #include "externals/DirectXTex/DirectXTex.h"
-#include "Constant.h"
 #include "../UsefulTool/EditorManager/EditorManager.h"
 
 //#define pi float(3.14159265358979323846f)
@@ -59,7 +60,6 @@ public:
 public:
 	D3D12System& GetD3D12System() { return d3d12_; }
 	TheOrderCommand& GetCommand() { return command_; }
-	SRV& GetSRV() { return srv_; }
 	DXC& GetDXC() { return dxc_; }
 	TachyonSync& GetTachyonSync() { return tachyonSync_; }
 
@@ -85,7 +85,6 @@ private:
 	OmnisTechOracle omnisTechOracle_;
 	TachyonSync tachyonSync_;
 
-	SRV srv_;
 	RTV rtv_;
 	DSV dsv_;
 	// 複数のPSOを作らないといけないのでManagerを作成する

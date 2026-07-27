@@ -16,11 +16,11 @@
       },
       "depthStencilState": {
         "depthEnable": true,
-        "depthWriteMask": "All",
+        "depthWriteMask": "Zero",
         "depthFunc": "LessEqual",
         "format": "D24"
       },
-      "blendMode": "AlphaBlend",
+      "blendMode": "Add",
       "rootSignature": [
         { "type": "CBV", "register": 0, "visibility": "Vertex" },
        { "type": "SRVTable", "register": 0, "count": 1, "visibility": "Vertex" },

@@ -15,7 +15,7 @@ public:
 	T* GetMappedData()const { return mappedData_; }
 
 	// GPU側のSRV Descriptor Handleを取得
-	D3D12_GPU_DESCRIPTOR_HANDLE GetSRVHandleGPU()const { return srvHandleGPU_; }
+	D3D12_GPU_DESCRIPTOR_HANDLE GetSRVHandleGPU()const { return srvAllocation_.gpu; }
 
     // リソースの取得
 	ID3D12Resource* GetResource() const { return resource_.Get(); } // バリア処理用に公開しておく
@@ -28,10 +28,7 @@ private:
 	T* mappedData_ = nullptr;
 	uint32_t numElements_ = 0;
 
-	// SRV設定
-	D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc_{};
-	D3D12_CPU_DESCRIPTOR_HANDLE srvHandleCPU_{};
-	D3D12_GPU_DESCRIPTOR_HANDLE srvHandleGPU_{};
+    SRVAllocation srvAllocation_;
 };
 
 template<typename T>
@@ -48,21 +45,27 @@ void Structured<T>::Initialize(uint32_t numElements) {
 
 	resource_->SetName(L"StructuredBuffer");
 
-	// SRVの作成
-	srvDesc_.Format = DXGI_FORMAT_UNKNOWN;
-	srvDesc_.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
-	srvDesc_.ViewDimension = D3D12_SRV_DIMENSION_BUFFER;
-	srvDesc_.Buffer.FirstElement = 0;
-	srvDesc_.Buffer.Flags = D3D12_BUFFER_SRV_FLAG_NONE;
-	srvDesc_.Buffer.NumElements = numElements_;
-	srvDesc_.Buffer.StructureByteStride = sizeof(T);
+    auto srv = SRVManager::GetInstance();
 
-	srvHandleCPU_ = p_fngine_->GetSRV().GetCPUDescriptorHandle();
-	srvHandleGPU_ = p_fngine_->GetSRV().GetGPUDescriptorHandle();
+    SRVAllocation alloc = srv->Allocate();
+
+	// SRVの作成
+    D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc{};
+	srvDesc.Format = DXGI_FORMAT_UNKNOWN;
+	srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+	srvDesc.ViewDimension = D3D12_SRV_DIMENSION_BUFFER;
+	srvDesc.Buffer.FirstElement = 0;
+	srvDesc.Buffer.Flags = D3D12_BUFFER_SRV_FLAG_NONE;
+	srvDesc.Buffer.NumElements = numElements_;
+	srvDesc.Buffer.StructureByteStride = sizeof(T);
 
 	p_fngine_->GetD3D12System().GetDevice()->CreateShaderResourceView(
-		resource_.Get(), &srvDesc_, srvHandleCPU_
+		resource_.Get(), 
+        &srvDesc, 
+        alloc.cpu
 	);
+
+    this->srvAllocation_ = alloc;
 
 	// 初期化
 	std::memset(mappedData_, 0, sizeof(T) * numElements_);
@@ -80,6 +83,10 @@ public:
 
 		resource_ = CreateBufferResource(device, size, true);
 
+        auto srv = SRVManager::GetInstance();
+
+        SRVAllocation uavAlloc = srv->Allocate();
+
         // --- UAVの作成 (ComputeShaderで書き込む用) ---
         D3D12_UNORDERED_ACCESS_VIEW_DESC uavDesc{};
         uavDesc.Format = DXGI_FORMAT_UNKNOWN;
@@ -89,9 +96,14 @@ public:
 		uavDesc.Buffer.Flags = D3D12_BUFFER_UAV_FLAG_NONE;
 		uavDesc.Buffer.StructureByteStride = sizeof(T);
 
-        uavHandleCPU_ = p_fngine_->GetSRV().GetCPUDescriptorHandle();
-        uavHandleGPU_ = p_fngine_->GetSRV().GetGPUDescriptorHandle();
-        device->CreateUnorderedAccessView(resource_.Get(), nullptr, &uavDesc, uavHandleCPU_);
+        device->CreateUnorderedAccessView(
+            resource_.Get(), nullptr, 
+            &uavDesc, uavAlloc.cpu
+        );
+
+        this->uavAllocation_ = uavAlloc;
+
+        SRVAllocation srvAlloc = srv->Allocate();
 
         // --- SRVの作成 (VertexShader等で読み込む用) ---
         D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc{};
@@ -101,15 +113,19 @@ public:
         srvDesc.Buffer.NumElements = numElements_;
         srvDesc.Buffer.StructureByteStride = sizeof(T);
 
-        srvHandleCPU_ = p_fngine_->GetSRV().GetCPUDescriptorHandle();
-        srvHandleGPU_ = p_fngine_->GetSRV().GetGPUDescriptorHandle();
-        device->CreateShaderResourceView(resource_.Get(), &srvDesc, srvHandleCPU_);
+        device->CreateShaderResourceView(
+            resource_.Get(), 
+            &srvDesc, 
+            srvAlloc.cpu
+        );
+
+        this->srvAllocation_ = srvAlloc;
     }
 
     // Compute Shaderにセットする用
-    D3D12_GPU_DESCRIPTOR_HANDLE GetUAVHandleGPU() const { return uavHandleGPU_; }
+    D3D12_GPU_DESCRIPTOR_HANDLE GetUAVHandleGPU() const { return uavAllocation_.gpu; }
     // Vertex/Pixel Shaderにセットする用
-    D3D12_GPU_DESCRIPTOR_HANDLE GetSRVHandleGPU() const { return srvHandleGPU_; }
+    D3D12_GPU_DESCRIPTOR_HANDLE GetSRVHandleGPU() const { return srvAllocation_.gpu; }
 
     ID3D12Resource* GetResource() const { return resource_.Get(); } // バリア処理用に公開しておく
 
@@ -121,10 +137,8 @@ private:
     uint32_t numElements_ = 0;
 	// mappedData_ は無い！CPUからは直接触れない。
 
-    D3D12_CPU_DESCRIPTOR_HANDLE uavHandleCPU_{};
-    D3D12_GPU_DESCRIPTOR_HANDLE uavHandleGPU_{};
-    D3D12_CPU_DESCRIPTOR_HANDLE srvHandleCPU_{};
-    D3D12_GPU_DESCRIPTOR_HANDLE srvHandleGPU_{};
+    SRVAllocation uavAllocation_;
+    SRVAllocation srvAllocation_;
 };
 
 class RWTexture2D {
@@ -151,14 +165,23 @@ public:
             &heapProps, D3D12_HEAP_FLAG_NONE, &resDesc,
             D3D12_RESOURCE_STATE_COMMON, nullptr, IID_PPV_ARGS(&resource_));
 
+        auto srv = SRVManager::GetInstance();
+
+        SRVAllocation uavAlloc = srv->Allocate();
+
         // --- UAVの作成 (書き込み用) ---
         D3D12_UNORDERED_ACCESS_VIEW_DESC uavDesc{};
         uavDesc.Format = format;
         uavDesc.ViewDimension = D3D12_UAV_DIMENSION_TEXTURE2D;
 
-        uavHandleCPU_ = fngine->GetSRV().GetCPUDescriptorHandle();
-        uavHandleGPU_ = fngine->GetSRV().GetGPUDescriptorHandle();
-        device->CreateUnorderedAccessView(resource_.Get(), nullptr, &uavDesc, uavHandleCPU_);
+        device->CreateUnorderedAccessView(
+            resource_.Get(), nullptr, 
+            &uavDesc, uavAlloc.cpu
+        );
+
+        this->uavAllocation_ = uavAlloc;
+
+        SRVAllocation srvAlloc = srv->Allocate();
 
         // --- SRVの作成 (読み込み用) ---
         D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc{};
@@ -167,21 +190,95 @@ public:
         srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
         srvDesc.Texture2D.MipLevels = 1;
 
-        srvHandleCPU_ = fngine->GetSRV().GetCPUDescriptorHandle();
-        srvHandleGPU_ = fngine->GetSRV().GetGPUDescriptorHandle();
-        device->CreateShaderResourceView(resource_.Get(), &srvDesc, srvHandleCPU_);
+        device->CreateShaderResourceView(
+            resource_.Get(), 
+            &srvDesc, 
+            srvAlloc.cpu
+        );
+
+        this->srvAllocation_ = srvAlloc;
     }
 
-    D3D12_GPU_DESCRIPTOR_HANDLE GetUAVHandleGPU() const { return uavHandleGPU_; }
-    D3D12_GPU_DESCRIPTOR_HANDLE GetSRVHandleGPU() const { return srvHandleGPU_; }
+    D3D12_GPU_DESCRIPTOR_HANDLE GetUAVHandleGPU() const { return uavAllocation_.gpu; }
+    D3D12_GPU_DESCRIPTOR_HANDLE GetSRVHandleGPU() const { return srvAllocation_.gpu; }
     ID3D12Resource* GetResource() const { return resource_.Get(); }
 
 private:
     Microsoft::WRL::ComPtr<ID3D12Resource> resource_;
 
-    D3D12_CPU_DESCRIPTOR_HANDLE uavHandleCPU_{};
-    D3D12_GPU_DESCRIPTOR_HANDLE uavHandleGPU_{};
-    D3D12_CPU_DESCRIPTOR_HANDLE srvHandleCPU_{};
-    D3D12_GPU_DESCRIPTOR_HANDLE srvHandleGPU_{};
+    SRVAllocation uavAllocation_;
+    SRVAllocation srvAllocation_;
 };
 
+class RWTexture3D {
+public:
+    // depth (奥行き) を引数に追加
+    void Initialize(Fngine* fngine, uint32_t width, uint32_t height, uint32_t depth) {
+        auto device = fngine->GetD3D12System().GetDevice().Get();
+
+        // Defaultヒープで作成
+        D3D12_HEAP_PROPERTIES heapProps{};
+        heapProps.Type = D3D12_HEAP_TYPE_DEFAULT;
+
+        // Texture3D ＋ UAVフラグ
+        D3D12_RESOURCE_DESC resDesc{};
+        resDesc.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE3D;
+        resDesc.Width = width;
+        resDesc.Height = height;
+        resDesc.DepthOrArraySize = static_cast<UINT16>(depth); // ★ depth を設定
+        resDesc.MipLevels = 1;
+        resDesc.Format = DXGI_FORMAT_R32_FLOAT;
+        resDesc.SampleDesc.Count = 1;
+        resDesc.Flags = D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS;
+
+        device->CreateCommittedResource(
+            &heapProps, D3D12_HEAP_FLAG_NONE, &resDesc,
+            D3D12_RESOURCE_STATE_COMMON, nullptr, IID_PPV_ARGS(&resource_));
+
+        auto srv = SRVManager::GetInstance();
+
+        // --- UAVの作成 (書き込み用) ---
+        SRVAllocation uavAlloc = srv->Allocate();
+
+        D3D12_UNORDERED_ACCESS_VIEW_DESC uavDesc{};
+        uavDesc.Format = DXGI_FORMAT_R32_FLOAT;
+        uavDesc.ViewDimension = D3D12_UAV_DIMENSION_TEXTURE3D; // ★ TEXTURE3D に変更
+        uavDesc.Texture3D.MipSlice = 0;
+        uavDesc.Texture3D.FirstWSlice = 0;
+        uavDesc.Texture3D.WSize = depth;                      // ★ 全スライスを指定
+
+        device->CreateUnorderedAccessView(
+            resource_.Get(), nullptr,
+            &uavDesc, uavAlloc.cpu
+        );
+
+        this->uavAllocation_ = uavAlloc;
+
+        // --- SRVの作成 (読み込み用) ---
+        SRVAllocation srvAlloc = srv->Allocate();
+
+        D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc{};
+        srvDesc.Format = DXGI_FORMAT_R32_FLOAT;
+        srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+        srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE3D; // ★ TEXTURE3D に変更
+        srvDesc.Texture3D.MipLevels = 1;
+        srvDesc.Texture3D.MostDetailedMip = 0;
+
+        device->CreateShaderResourceView(
+            resource_.Get(),
+            &srvDesc,
+            srvAlloc.cpu
+        );
+
+        this->srvAllocation_ = srvAlloc;
+    }
+
+    D3D12_GPU_DESCRIPTOR_HANDLE GetUAVHandleGPU() const { return uavAllocation_.gpu; }
+    D3D12_GPU_DESCRIPTOR_HANDLE GetSRVHandleGPU() const { return srvAllocation_.gpu; }
+    ID3D12Resource* GetResource() const { return resource_.Get(); }
+
+private:
+    Microsoft::WRL::ComPtr<ID3D12Resource> resource_;
+    SRVAllocation uavAllocation_;
+    SRVAllocation srvAllocation_;
+};

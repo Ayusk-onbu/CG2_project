@@ -1,5 +1,6 @@
 #include "GrassField.h"
 #include "DrawManager.h"
+#include "TextureManager.h"
 
 void GrassField::Initialize(Fngine* engine, uint32_t maxGrass, const std::string& densityMapName) {
 	// 【ノイズテクスチャを使った草の群生配置】
@@ -13,6 +14,11 @@ void GrassField::Initialize(Fngine* engine, uint32_t maxGrass, const std::string
 		EmitterSystem::GetInstance()->GeneratePositions(grassConfig_, maxGrass);
 
 	auto& rand = RandomUtils::GetInstance()->GetHighRandom();
+
+	// 使いたいTextureのIndex
+	auto texture = TextureManager::GetInstance();
+	uint32_t gridlineIndex = texture->GetTexture("GridLine").GetSrvIndex();
+	uint32_t monsterBallIndex = texture->GetTexture("monsterBall").GetSrvIndex();
 
 	// 配置データの作成
 	for (const auto& point : spawnPoints) {
@@ -31,6 +37,13 @@ void GrassField::Initialize(Fngine* engine, uint32_t maxGrass, const std::string
 
 		// 風の揺れのタイミングをバラバラにする
 		grass.windPhase = rand.GetFloat(0.0f, 6.28f);
+
+		if (grass.color.y <= 0.85f) {
+			grass.textureIndex = gridlineIndex;
+		}
+		else {
+			grass.textureIndex = monsterBallIndex;
+		}
 
 		staticGrassList_.push_back(grass);
 	}

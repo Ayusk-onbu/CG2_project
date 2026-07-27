@@ -50,5 +50,31 @@ class RandomGenerator
         return result;
     }
 };
+
+
+
+// 【共通関数】法線テクスチャと各種情報から、ワールド空間の法線を計算する
+float32_t3 CalculateWorldNormal(float32_t3 normalMapColor, float32_t3 worldPosition, float32_t2 texcoord, float32_t3 vertexNormal)
+{
+    // 法線マップの色を [-1, 1] のベクトルに変換
+    float32_t3 normalMap = normalMapColor * 2.0f - 1.0f;
+    
+    // ddx/ddy を使ってその場でTangent(接線)を計算
+    float32_t3 p_dx = ddx(worldPosition);
+    float32_t3 p_dy = ddy(worldPosition);
+    float32_t2 tc_dx = ddx(texcoord);
+    float32_t2 tc_dy = ddy(texcoord);
+
+    // UVの傾きから接空間の軸を割り出す
+    float32_t3 tangent = normalize(p_dx * tc_dy.y - p_dy * tc_dx.y);
+    float32_t3 normal = normalize(vertexNormal);
+    float32_t3 binormal = normalize(cross(normal, tangent));
+    
+    // TBN行列（接空間からワールド空間への変換行列）を作成
+    float32_t3x3 TBN = float32_t3x3(tangent, binormal, normal);
+    
+    // ワールド空間へ変換して正規化して返す
+    return normalize(mul(normalMap, TBN));
+}
 #endif// MY_COMMON_INCLUDED
 // pragma onceでもいいらしいがかっこいいからこっち

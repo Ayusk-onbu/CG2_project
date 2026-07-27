@@ -1,0 +1,42 @@
+#include "Column.hlsli"
+
+struct ColumnForGPU
+{
+    float32_t4x4 WVP;
+    float32_t4x4 World;
+    float32_t4x4 uvTransform;
+    float32_t4 color;
+    uint32_t colorTextureIndex;
+    uint32_t normalTextureIndex;
+    float32_t2 padding;
+};
+
+StructuredBuffer<ColumnForGPU> gColumn : register(t0);
+
+struct VertexShaderInput
+{
+    float32_t4 position : POSITION0;
+    float32_t2 texcoord : TEXCOORD0;
+    float32_t3 normal : NORMAL0;
+};
+
+VertexShaderOutput main(VertexShaderInput input, uint32_t instancedId : SV_InstanceID)
+{
+    VertexShaderOutput output;
+    ColumnForGPU instData = gColumn[instancedId];
+    
+    output.position = mul(input.position, instData.WVP);
+    output.texcoord = mul(float32_t4(input.texcoord, 0.0f, 1.0f), instData.uvTransform).xy;
+    output.color = instData.color;
+    
+    // 法線をワールド空間に変換
+    output.normal = normalize(mul(input.normal, (float32_t3x3) instData.World));
+    
+    // 【重要】頂点のワールド座標を計算してPSに送る
+    output.worldPosition = mul(input.position, instData.World).xyz;
+    
+    output.colorTextureIndex = instData.colorTextureIndex;
+    output.normalTextureIndex = instData.normalTextureIndex;
+    
+    return output;
+}

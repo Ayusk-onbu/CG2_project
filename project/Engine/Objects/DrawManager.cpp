@@ -15,10 +15,15 @@ void DrawManager::Initialize(Fngine* engine) {
 
 	grass_ = std::make_unique<Grass>();
 	grass_->Initialize(engine, 5000);
+
+	column_ = std::make_unique<Column>();
+	column_->Initialize(engine, 100);
 }
 
 void DrawManager::Draw() {
 	grass_->DrawInstanced();
+
+	column_->DrawInstanced();
 
 	line_->DrawInstanced();
 

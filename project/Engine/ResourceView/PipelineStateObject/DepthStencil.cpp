@@ -1,4 +1,5 @@
 #include "DepthStencil.h"
+#include "SRVManager.h"
 #include <cassert>
 
 void DepthStencil::InitializeHeap(D3D12System& d3d12) {
@@ -13,7 +14,7 @@ void DepthStencil::InitializeDesc(BOOL is, D3D12_DEPTH_WRITE_MASK mask, D3D12_CO
 	SetFunc(func);
 }
 
-void DepthStencil::MakeResource(D3D12System& d3d12, int32_t width, int32_t height, SRV& srv) {
+void DepthStencil::MakeResource(D3D12System& d3d12, int32_t width, int32_t height) {
 	// リソース作成
 	depthStencilResource_ = CreateDepthStencilTextureResource(d3d12.GetDevice().Get(), width, height);
 
@@ -37,18 +38,21 @@ void DepthStencil::MakeResource(D3D12System& d3d12, int32_t width, int32_t heigh
 		GetCPUHandle(DSV_HANDLE_TYPE::ReadOnly)
 	);
 
+	SRVAllocation alloc = SRVManager::GetInstance()->Allocate();
+
 	D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc{};
 	srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
 	srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
 	srvDesc.Format = DXGI_FORMAT_R24_UNORM_X8_TYPELESS;
 	srvDesc.Texture2D.MipLevels = 1;
 
-	srvHandleCPU_ = srv.GetCPUDescriptorHandle();
-	srvHandleGPU_ = srv.GetGPUDescriptorHandle();
-
 	d3d12.GetDevice()->CreateShaderResourceView(
-		depthStencilResource_.Get(), &srvDesc, srvHandleCPU_
+		depthStencilResource_.Get(), 
+		&srvDesc, 
+		alloc.cpu
 	);
+
+	this->srvAllocation_ = alloc;
 }
 
 //DepthStencilTexture(奥行きの根幹をなすもの大量に読み書きするらしい)

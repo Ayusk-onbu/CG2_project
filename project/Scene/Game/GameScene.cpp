@@ -74,6 +74,8 @@ void GameScene::Initialize() {
 	grassField_ = std::make_unique<GrassField>();
 	grassField_->Initialize(p_fngine_, 5000, "RevealTex_Circle");
 
+	column_ = std::make_unique<ColumnInstance>();
+
 	gpuParticle_ = std::make_unique<GPUParticleSystem>();
 	gpuParticle_->Initialize(p_fngine_, 1024);
 }
@@ -105,6 +107,8 @@ void GameScene::Update(){
 		ToScene();
 
 		grassField_->Update();
+
+		column_->Update();
 
 		gpuParticle_->Update(deltaTime);
 

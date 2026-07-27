@@ -17,7 +17,7 @@ void Grass::Initialize(Fngine* engine, uint32_t numInstance){
 		commandList->IASetIndexBuffer(&object.GetIndexBufferView());
 
 		commandList->SetGraphicsRootDescriptorTable(0, instancingBuffer_->GetSRVHandleGPU());
-		commandList->SetGraphicsRootDescriptorTable(1, TextureManager::GetInstance()->GetTexture("GridLine").GetHandleGPU());
+		commandList->SetGraphicsRootDescriptorTable(1, SRVManager::GetInstance()->GetHeap()->GetGPUDescriptorHandleForHeapStart());
 
 		// シェーダー（HLSL）側で風のうねりをSin波で計算
 		float time = static_cast<float>(Chronos::GetInstance()->GetTotalTime());
@@ -33,5 +33,6 @@ GrassForGPU Grass::ConvertToGPUData(const GrassObjectData& data){
 	returnData.World = data.worldTransform.mat_;
 	returnData.color = data.color;
 	returnData.windPhase = data.windPhase; // シェーダーに送る
+	returnData.textureIndex = data.textureIndex;
 	return returnData;
 }

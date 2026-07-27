@@ -1,6 +1,8 @@
 #include "IHair.h"
 #include <d3dx12.h>
 #include "CameraSystem.h"
+#include "Chronos.h"
+#include "SDFManager.h"
 #include "../Engine/Objects/Primitive/Box/PrimitiveBox.h"
 #include "FileSystem.h"
 #include <pix3.h>
@@ -450,7 +452,7 @@ void Hair::Initialize(Fngine* engine, bool isLoad, const Strands::HairSaveData& 
 	//   =====================
 	// 【 HairGuideの物理演算 】
 	//   =====================
-	ID3D12DescriptorHeap* ppHeaps[] = { engine_->GetSRV().GetDescriptorHeap().GetHeap().Get()};
+	ID3D12DescriptorHeap* ppHeaps[] = { SRVManager::GetInstance()->GetHeap() };
 	// コマンドリストにヒープをセット（テーブルをセットするより【前】に呼ぶ！）
 	dxrCmdList_->SetDescriptorHeaps(_countof(ppHeaps), ppHeaps);
 
@@ -460,8 +462,10 @@ void Hair::Initialize(Fngine* engine, bool isLoad, const Strands::HairSaveData& 
 	dxrCmdList_->SetComputeRootConstantBufferView(0, gpuPhysicsConfigBuffer_->GetGPUVirtualAddress());
 	dxrCmdList_->SetComputeRootConstantBufferView(1, gpuFrameConfigBuffer_->GetGPUVirtualAddress());
 	dxrCmdList_->SetComputeRootConstantBufferView(2, gpuConfigBuffer_->GetGPUVirtualAddress());
-	dxrCmdList_->SetComputeRootDescriptorTable(3, guideInfoBuffer_->GetSRVHandleGPU());
-	dxrCmdList_->SetComputeRootDescriptorTable(4, gpuGuideBuffer_->GetUAVHandleGPU());
+	dxrCmdList_->SetComputeRootConstantBufferView(3, SDFManager::GetInstance()->configBuffer_->GetGPUVirtualAddress());
+	dxrCmdList_->SetComputeRootDescriptorTable(4, guideInfoBuffer_->GetSRVHandleGPU());
+	dxrCmdList_->SetComputeRootDescriptorTable(5, SDFManager::GetInstance()->GetSDF("Naira_ExportTest")->texture.GetSRVHandleGPU());
+	dxrCmdList_->SetComputeRootDescriptorTable(6, gpuGuideBuffer_->GetUAVHandleGPU());
 	
 	dxrCmdList_->Dispatch(physicsGroupX, 1, 1);
 
@@ -733,9 +737,12 @@ void Hair::Initialize(Fngine* engine, bool isLoad, const Strands::HairSaveData& 
 
 	// -----------------------------------------------
 
-		// 作業用のBuffer
+	// Rebuild用とUpdate用の「大きい方のサイズ」を取得する
+	UINT64 maxScratchSize = (std::max)(prebuildInfo.ScratchDataSizeInBytes, prebuildInfo.UpdateScratchDataSizeInBytes);
+
+	// 作業用のBuffer（最大サイズで確保）
 	scratchBuffer_ = CreateBufferResource(
-		pDevice, prebuildInfo.ScratchDataSizeInBytes, true
+		pDevice, maxScratchSize, true
 	);
 	scratchBuffer_->SetName(L"BLAS Scratch Buffer");
 
@@ -999,7 +1006,7 @@ void Hair::Initialize(Fngine* engine, bool isLoad, const Strands::HairSaveData& 
 	);
 	dxrCmdList_->ResourceBarrier(1, &initBarrier);
 
-	LoadFromFile("resources/Data/Hair/202607141107.json");
+	//LoadFromFile("resources/Data/Hair/202607141107.json");
 }
 //////////////////////////////
 //   ====================
@@ -1008,7 +1015,12 @@ void Hair::Initialize(Fngine* engine, bool isLoad, const Strands::HairSaveData& 
 //////////////////////////////
 void Hair::Update(float deltaTime, const Matrix4x4& mat) {
 	
-	ID3D12DescriptorHeap* ppHeaps[] = { engine_->GetSRV().GetDescriptorHeap().GetHeap().Get() };
+	auto chronos = Chronos::GetInstance();
+
+	gpuFrameConfigBuffer_->GetMappedData()->deltaTime = chronos->GetGameDeltaTime();
+	gpuFrameConfigBuffer_->GetMappedData()->time = chronos->GetGameTime();
+
+	ID3D12DescriptorHeap* ppHeaps[] = { SRVManager::GetInstance()->GetHeap() };
 	// コマンドリストにヒープをセット（テーブルをセットするより【前】に呼ぶ！）
 	dxrCmdList_->SetDescriptorHeaps(_countof(ppHeaps), ppHeaps);
 
@@ -1017,6 +1029,9 @@ void Hair::Update(float deltaTime, const Matrix4x4& mat) {
 	PIXScopedEvent(dxrCmdList_.Get(), PIX_COLOR_INDEX(2), "Update Hair Pass");
 #endif// USEIMGUI
 
+	bool isRebuildBLAS = isGpuUpdateRequested_;
+
+	// おそらくisGpuUpdateRequested_がTrueになるとPhysicsCSが動かなくなるバグがある。
 	if (isGpuUpdateRequested_) {
 		// コピー先に遷移
 		auto transitionToCopyDest = CD3DX12_RESOURCE_BARRIER::Transition(
@@ -1062,8 +1077,8 @@ void Hair::Update(float deltaTime, const Matrix4x4& mat) {
 	// 【 HairGuideの物理演算 】
 	//   =====================
 	uint32_t totalGuides = gpuConfigBuffer_->GetMappedData()->numGuides;
-	//uint32_t physicsGroupX = (totalGuides + 63) / 64;
-	uint32_t physicsGroupX = (totalGuides) / 64;
+	uint32_t physicsGroupX = (totalGuides + 63) / 64;
+	//uint32_t physicsGroupX = (totalGuides) / 64;
 
 	dxrCmdList_->SetComputeRootSignature(PSOManager::GetInstance()->GetPSO("HairPhysicsCS").GetRootSignature().GetRS().Get());
 	dxrCmdList_->SetPipelineState(PSOManager::GetInstance()->GetPSO("HairPhysicsCS").GetCPS().Get());
@@ -1071,11 +1086,13 @@ void Hair::Update(float deltaTime, const Matrix4x4& mat) {
 	dxrCmdList_->SetComputeRootConstantBufferView(0, gpuPhysicsConfigBuffer_->GetGPUVirtualAddress());
 	dxrCmdList_->SetComputeRootConstantBufferView(1, gpuFrameConfigBuffer_->GetGPUVirtualAddress());
 	dxrCmdList_->SetComputeRootConstantBufferView(2, gpuConfigBuffer_->GetGPUVirtualAddress());
-	dxrCmdList_->SetComputeRootDescriptorTable(3, guideInfoBuffer_->GetSRVHandleGPU());
-	dxrCmdList_->SetComputeRootDescriptorTable(4, gpuGuideBuffer_->GetUAVHandleGPU());
+	dxrCmdList_->SetComputeRootConstantBufferView(3, SDFManager::GetInstance()->configBuffer_->GetGPUVirtualAddress());
+	dxrCmdList_->SetComputeRootDescriptorTable(4, guideInfoBuffer_->GetSRVHandleGPU());
+	dxrCmdList_->SetComputeRootDescriptorTable(5, SDFManager::GetInstance()->GetSDF("Naira_ExportTest")->texture.GetSRVHandleGPU());
+	dxrCmdList_->SetComputeRootDescriptorTable(6, gpuGuideBuffer_->GetUAVHandleGPU());
 
 	dxrCmdList_->Dispatch(physicsGroupX, 1, 1);
-
+	
 	auto barrierGuide = CD3DX12_RESOURCE_BARRIER::Transition(
 		gpuGuideBuffer_->GetResource(),
 		D3D12_RESOURCE_STATE_UNORDERED_ACCESS,
@@ -1170,20 +1187,36 @@ void Hair::Update(float deltaTime, const Matrix4x4& mat) {
 	// ビルド用のインプットを再設定
 	D3D12_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_INPUTS blasInputs{};
 	blasInputs.Type = D3D12_RAYTRACING_ACCELERATION_STRUCTURE_TYPE_BOTTOM_LEVEL;
-	blasInputs.Flags = D3D12_RAYTRACING_ACCELERATION_STRUCTURE_BUILD_FLAG_PREFER_FAST_TRACE
+	/*blasInputs.Flags = D3D12_RAYTRACING_ACCELERATION_STRUCTURE_BUILD_FLAG_PREFER_FAST_TRACE
 					 | D3D12_RAYTRACING_ACCELERATION_STRUCTURE_BUILD_FLAG_ALLOW_UPDATE
-					 | D3D12_RAYTRACING_ACCELERATION_STRUCTURE_BUILD_FLAG_PERFORM_UPDATE;
+					 | D3D12_RAYTRACING_ACCELERATION_STRUCTURE_BUILD_FLAG_PERFORM_UPDATE;*/
 	blasInputs.NumDescs = 1;
 	blasInputs.DescsLayout = D3D12_ELEMENTS_LAYOUT_ARRAY;
 	blasInputs.pGeometryDescs = &geometryDesc;
 
 	D3D12_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_DESC blasBuildDesc{};
-	blasBuildDesc.Inputs = blasInputs;
 	// アップデートなので、結果を既存のBLASバッファに上書きする
 	blasBuildDesc.DestAccelerationStructureData = blasResultBuffer_->GetGPUVirtualAddress();
-	blasBuildDesc.SourceAccelerationStructureData = blasResultBuffer_->GetGPUVirtualAddress();
-	//blasBuildDesc.SourceAccelerationStructureData = 0;
 	blasBuildDesc.ScratchAccelerationStructureData = scratchBuffer_->GetGPUVirtualAddress();
+	if (isRebuildBLAS) {
+		// 【 FULL REBUILD 】ツリー構造をゼロから再構築
+		// 次回の軽量更新を許可するために ALLOW_UPDATE を付与
+		blasInputs.Flags = D3D12_RAYTRACING_ACCELERATION_STRUCTURE_BUILD_FLAG_PREFER_FAST_TRACE
+			| D3D12_RAYTRACING_ACCELERATION_STRUCTURE_BUILD_FLAG_ALLOW_UPDATE;
+
+		// 新規作成時は Source に 0 を指定
+		blasBuildDesc.SourceAccelerationStructureData = 0;
+	}
+	else {
+		// 【 UPDATE 】既存の BVH 構造を維持したまま AABB 位置のみを更新
+		blasInputs.Flags = D3D12_RAYTRACING_ACCELERATION_STRUCTURE_BUILD_FLAG_PREFER_FAST_TRACE
+			| D3D12_RAYTRACING_ACCELERATION_STRUCTURE_BUILD_FLAG_ALLOW_UPDATE
+			| D3D12_RAYTRACING_ACCELERATION_STRUCTURE_BUILD_FLAG_PERFORM_UPDATE; // ← Updateフラグ
+
+		// 更新元（Source）として現在の BLAS アドレスを指定
+		blasBuildDesc.SourceAccelerationStructureData = blasResultBuffer_->GetGPUVirtualAddress();
+	}
+	blasBuildDesc.Inputs = blasInputs;
 
 	// GPUに向けて、BLASのアップデートコマンドを発行！
 	dxrCmdList_->BuildRaytracingAccelerationStructure(&blasBuildDesc, 0, nullptr);

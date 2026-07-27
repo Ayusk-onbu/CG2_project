@@ -1037,7 +1037,7 @@ void HairGuideEditor::AddGuideFromSpline(const std::vector<MathUtils::Spline::No
     splineNodes.reserve(splineNodePtrs.size());
     for (const auto* nodePtr : splineNodePtrs) {
         if (nodePtr) {
-            splineNodes.push_back(*nodePtr); // 中身（実体）をコピー
+            splineNodes.push_back(*nodePtr);
         }
     }
 
@@ -1045,7 +1045,6 @@ void HairGuideEditor::AddGuideFromSpline(const std::vector<MathUtils::Spline::No
     int targetGuideIndex = -1;
     uint32_t nextVertexStartIndex = 0;
 
-    // 空きスロットの探索
     for (uint32_t i = 0; i < hairSystem_->GetCPUGuideInfoCount(); ++i) {
         if (guideInfoData[i].vertexCount == 0) {
             targetGuideIndex = i;
@@ -1059,21 +1058,27 @@ void HairGuideEditor::AddGuideFromSpline(const std::vector<MathUtils::Spline::No
         return;
     }
 
+    // 1. ループ外でキャラクターのワールド行列の逆行列を事前計算
+    Matrix4x4 invCharMatrix = Matrix4x4::Inverse(hairSystem_->characterMatrix_);
+
     GuideCurve::GuideInfo info;
     info.vertexStartIndex = nextVertexStartIndex;
     info.vertexCount = static_cast<uint32_t>(addGuideNum_);
 
     std::vector<GuideCurve::ControllerPoint> newPoints(addGuideNum_);
 
-    // スプライン曲線に沿って頂点を配置
+    // 2. スプライン上の座標を取得してローカル座標に変換
     for (int i = 0; i < addGuideNum_; ++i)
     {
         float t = static_cast<float>(i) / static_cast<float>(addGuideNum_ - 1);
 
         GuideCurve::ControllerPoint p;
 
-        // Spline上から現在の座標を取得
-        p.position = MathUtils::Spline::GetPointSpline(splineNodes, t);
+        // ワールド座標を取得
+        Vector3 worldPos = MathUtils::Spline::GetPointSpline(splineNodes, t);
+
+        // キャラクターのローカル空間座標へ変換
+        p.position = Matrix4x4::Transform(worldPos, invCharMatrix);
         p.homePosition = p.position;
 
         // 根元から毛先への補間
@@ -1082,34 +1087,31 @@ void HairGuideEditor::AddGuideFromSpline(const std::vector<MathUtils::Spline::No
         p.color.y = rootColor.y * (1.0f - t) + tipColor.y * t;
         p.color.z = rootColor.z * (1.0f - t) + tipColor.z * t;
 
-        // 次の点への距離(nextToLength)を正確に計算する
+        // 次の点への距離(nextToLength)の計算
         if (i < addGuideNum_ - 1) {
             float nextT = static_cast<float>(i + 1) / static_cast<float>(addGuideNum_ - 1);
-            Vector3 nextPos = MathUtils::Spline::GetPointSpline(splineNodes, nextT);
 
-            float dx = nextPos.x - p.position.x;
-            float dy = nextPos.y - p.position.y;
-            float dz = nextPos.z - p.position.z;
-            p.nextToLength = std::sqrt(dx * dx + dy * dy + dz * dz);
+            Vector3 nextWorldPos = MathUtils::Spline::GetPointSpline(splineNodes, nextT);
+            Vector3 nextLocalPos = Matrix4x4::Transform(nextWorldPos, invCharMatrix);
+
+            // ローカル空間での距離（必要に応じてVector3::Distanceなどのヘルパー関数を使用）
+            p.nextToLength = Length(nextLocalPos - p.position);
         }
         else {
             p.nextToLength = 0.0f;
         }
 
-        p.physicsWeight = t; // 根元 0.0 (固定) ～ 毛先 1.0 (物理で揺れる)
+        p.physicsWeight = t;
 
-        newPoints[i] = p; // 一時配列に保存
+        newPoints[i] = p;
     }
 
-    // 変更前のGuideInfo（Undo用）を取得
     GuideCurve::GuideInfo oldInfo = guideInfoData[targetGuideIndex];
 
-    // コマンドの発行
     auto command = std::make_unique<AddGuideCommand>(
         hairSystem_, targetGuideIndex, oldInfo, info, newPoints
     );
 
-    // BaseEditorの機能を使ってコマンドを実行＆履歴に追加
     ExecuteCommand(std::move(command));
 }
 

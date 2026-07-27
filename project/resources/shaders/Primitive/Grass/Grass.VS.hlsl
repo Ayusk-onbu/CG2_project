@@ -5,7 +5,8 @@ struct GrassForGPU
     float32_t4x4 World;
     float32_t4 color;
     float32_t windPhase;
-    float32_t3 padding;
+    uint32_t textureIndex;
+    float32_t2 padding;
 };
 
 cbuffer cbTime : register(b0)
@@ -56,6 +57,8 @@ VertexShaderOutput main(VertexShaderInput input,uint32_t instancedId : SV_Instan
     output.texcoord = input.texcoord;
     output.color = instData.color;
     output.normal = normalize(mul(input.normal,(float32_t3x3) instData.World));
+    
+    output.textureIndex = instData.textureIndex;
     
     return output;
 }

@@ -332,7 +332,8 @@ void PipelineStateObjectManager::LoadPSOsFromJson(const std::string& filepath, c
             D3D12_TEXTURE_ADDRESS_MODE v = ParseAddressMode(samp.value("addressV", "Wrap"));
             D3D12_TEXTURE_ADDRESS_MODE w = ParseAddressMode(samp.value("addressW", "Wrap"));
 			D3D12_FILTER filter = ParseFilter(samp.value("filter", "Linear"));
-            builder.AddStaticSampler(samp["register"], filter, u, v, w);
+            D3D12_SHADER_VISIBILITY vis = ParseVisibility(samp.value("visibility", "All"));
+            builder.AddStaticSampler(samp["register"], filter, u, v, w,vis);
         }
     }
 

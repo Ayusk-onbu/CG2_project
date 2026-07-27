@@ -53,9 +53,9 @@ public:
 
 private:
 	// ゲームに一個しかないはずのマップの情報(複数個になったらドンマイ俺)
-	BVH* map_ = nullptr;
+	const BVH* map_ = nullptr;
 
 public:
 	// マップ用の三角形データをセットする
-	void SetMap(BVH* map) { map_ = map; }
+	void SetMap(const BVH* map) { map_ = map; }
 };

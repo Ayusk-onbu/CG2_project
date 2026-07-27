@@ -14,6 +14,7 @@ enum EVENTCATEGORY : int {
 enum GAMEEVENTID : int {
 	OnPlayerAttack = 0,
 	HairEditor,
+	EventBox,
 };
 
 //struct PairHash{

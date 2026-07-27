@@ -6,6 +6,7 @@
 #include "Primitive/MagicPlane.h"
 #include "Primitive/Line/Line.h"
 #include "Primitive/Grass/Grass.h"
+#include "Primitive/Column/Column.h"
 
 class DrawManager :
 	public ISingleton<DrawManager>
@@ -54,6 +55,12 @@ private:
 	std::unique_ptr<Grass>grass_;
 
 
+	//   =======
+	// 【 Column 】
+	//   =======
+	std::unique_ptr<Column>column_;
+
+
 	//=============
 	//  Getの関数 
 	//=============
@@ -67,5 +74,7 @@ public:
 	MagicCircle* GetMagicCircle() { return magicCircle_.get(); }
 
 	Grass* GetGrass() { return grass_.get(); }
+
+	Column* GetColumn() { return column_.get(); }
 };
 

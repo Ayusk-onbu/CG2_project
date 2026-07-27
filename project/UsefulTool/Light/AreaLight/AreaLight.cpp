@@ -11,6 +11,14 @@ void AreaLight::Initialize(Fngine* fngine) {
 	ltc1Resource_ = CreateLTCLevelTexture(fngine, const_cast<float*>(LTC1));
 	ltc2Resource_ = CreateLTCLevelTexture(fngine, const_cast<float*>(LTC2));
 
+
+	// ここの処理絶対ここじゃない
+
+	auto srv = SRVManager::GetInstance();
+
+	SRVAllocation ltc1Alloc = srv->Allocate();
+	SRVAllocation ltc2Alloc = srv->Allocate();
+
 	// LTCテクスチャ用のSRV設定
 	D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
 	srvDesc.Format = DXGI_FORMAT_R32G32B32A32_FLOAT; // 重要：LTCデータはFloat4
@@ -18,19 +26,24 @@ void AreaLight::Initialize(Fngine* fngine) {
 	srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D; // テクスチャとして扱う
 	srvDesc.Texture2D.MipLevels = 1;
 
-	ltc1CPUHandle_ = fngine->GetSRV().GetCPUDescriptorHandle();
-	ltc1GPUHandle_ = fngine->GetSRV().GetGPUDescriptorHandle();
-
-	ltc2CPUHandle_ = fngine->GetSRV().GetCPUDescriptorHandle();
-	ltc2GPUHandle_ = fngine->GetSRV().GetGPUDescriptorHandle();
-
 	// デスクリプタヒープの「次の空き」を取得して作成
 	// ※LTC1用のSRVを作成
 	ID3D12Device* device = fngine->GetD3D12System().GetDevice().Get();
-	device->CreateShaderResourceView(ltc1Resource_.Get(), &srvDesc, ltc1CPUHandle_);
+	device->CreateShaderResourceView(
+		ltc1Resource_.Get(), 
+		&srvDesc, 
+		ltc1Alloc.cpu
+	);
 
 	// ※LTC2用のSRVを作成
-	device->CreateShaderResourceView(ltc2Resource_.Get(), &srvDesc, ltc2CPUHandle_);
+	device->CreateShaderResourceView(
+		ltc2Resource_.Get(), 
+		&srvDesc, 
+		ltc2Alloc.cpu
+	);
+
+	this->ltc1Allocation_ = ltc1Alloc;
+	this->ltc2Allocation_ = ltc2Alloc;
 
 	data_->color = { 1.0f,1.0f,1.0f,1.0f };
 	data_->intensity = 0.0f;

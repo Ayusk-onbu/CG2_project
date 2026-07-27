@@ -1,30 +1,39 @@
 #include "Texture.h"
 #include "Log.h"
 #include "ResourceFunc.h"
+#include "SRVManager.h"
 #include "externals/DirectXTex/d3dx12.h"
 
-Microsoft::WRL::ComPtr<ID3D12Resource> Texture::Initialize(D3D12System& d3d12, SRV& srv, const std::string& filePath, int num, ID3D12GraphicsCommandList* commandList) {
+Microsoft::WRL::ComPtr<ID3D12Resource> Texture::Initialize(D3D12System& d3d12, const std::string& filePath, int num, ID3D12GraphicsCommandList* commandList) {
 	mipImages_ = LoadTexture(filePath);
 	const DirectX::TexMetadata metaData_ = mipImages_.GetMetadata();
 	textureResource_ = std::move(CreateTextureResource(d3d12.GetDevice().Get(), metaData_));
 	textureResource_->SetName(L"TextureResource");
 
-	srvDesc_.Format = metaData_.format;
-	srvDesc_.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+	auto srv = SRVManager::GetInstance();
+	SRVAllocation alloc = srv->Allocate();
+
+	D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc{};
+	srvDesc.Format = metaData_.format;
+	srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
 	if (metaData_.IsCubemap()) {
 		// キューブマップの場合は、SRVの設定をキューブマップ用に変更する
-		srvDesc_.ViewDimension = D3D12_SRV_DIMENSION_TEXTURECUBE;
-		srvDesc_.TextureCube.MipLevels = UINT_MAX;
-		srvDesc_.TextureCube.MostDetailedMip = 0;
-		srvDesc_.TextureCube.ResourceMinLODClamp = 0.0f;
+		srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURECUBE;
+		srvDesc.TextureCube.MipLevels = UINT_MAX;
+		srvDesc.TextureCube.MostDetailedMip = 0;
+		srvDesc.TextureCube.ResourceMinLODClamp = 0.0f;
 	}
 	else {
-		srvDesc_.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
-		srvDesc_.Texture2D.MipLevels = UINT(metaData_.mipLevels);
+		srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
+		srvDesc.Texture2D.MipLevels = UINT(metaData_.mipLevels);
 	}
-	textureSrvHandleCPU_ = srv.GetCPUDescriptorHandle();
-	textureSrvHandleGPU_ = srv.GetGPUDescriptorHandle();
-	d3d12.GetDevice().Get()->CreateShaderResourceView(textureResource_.Get(), &srvDesc_, textureSrvHandleCPU_);
+	d3d12.GetDevice().Get()->CreateShaderResourceView(
+		textureResource_.Get(), 
+		&srvDesc, 
+		alloc.cpu
+	);
+
+	this->srvAllocation_ = alloc;
 
 	textureSize_ = {
 		static_cast<float>(metaData_.width),
@@ -32,13 +41,6 @@ Microsoft::WRL::ComPtr<ID3D12Resource> Texture::Initialize(D3D12System& d3d12, S
 	};
 
 	return UploadTextureData(textureResource_, mipImages_, d3d12.GetDevice().Get(), commandList);
-}
-
-void Texture::SetDesc(DXGI_FORMAT fmt, UINT mapping, D3D12_SRV_DIMENSION dimension, UINT mipLevel) {
-	srvDesc_.Format = fmt;
-	srvDesc_.Shader4ComponentMapping = mapping;
-	srvDesc_.ViewDimension = dimension;
-	srvDesc_.Texture2D.MipLevels = mipLevel;
 }
 
 // 1,Textureデータを読み込む

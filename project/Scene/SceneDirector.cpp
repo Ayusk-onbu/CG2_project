@@ -4,12 +4,14 @@
 #include "UIAnimation.h"
 #include "Chronos.h"
 #include "DrawManager.h"
+#include "SDFManager.h"
 #include "../Engine/Objects/Primitive/Box/PrimitiveBox.h"
 #include "../Engine/Objects/Primitive/Ring/Ring.h"
 #include "../Engine/Objects/Primitive/MagicPlane.h"
 #include "../UsefulTool/EditorManager/Hair/HairEditor.h"
 #include "../UsefulTool/EditorManager/Map/SceneEditor.h"
 #include "../UsefulTool/EditorManager/Hermite/HermiteEditor.h"
+#include <pix3.h>
 
 import MotionManager;
 
@@ -26,6 +28,9 @@ void SceneDirector::Initialize(Scene& firstScene) {
 	LoadMusic();
 	UIHAnimationManager::GetInstance()->Load();
 	MotionManager::GetInstance()->LoadMotions("resources/Data/Motion/Hermite/");
+
+	SDFManager::GetInstance()->Initialize(p_fngine_);
+	SDFManager::GetInstance()->LoadAndBake(p_fngine_->GetCommand().GetList().GetList().Get(), "Naira_ExportTest", 256);
 
 	// 最初のシーンの初期化処理
 	currentScene_ = &firstScene;
@@ -108,9 +113,9 @@ void SceneDirector::Draw() {
 void SceneDirector::ImGui() {
 	ImGuiManager::GetInstance()->DrawSlider("DirectionalLight : pos", p_fngine_->GetLight().directionalLightData_->direction, -1.0f, 1.0f);
 	ImGuiManager::GetInstance()->DrawSlider("DirectionalLight : color", p_fngine_->GetLight().directionalLightData_->color, 0.0f, 1.0f);
-	ImGuiManager::GetInstance()->DrawSlider("Dissolve : threshold", p_fngine_->dissolveForGPU_->GetMappedData()->threshold, 0.0f, 1.0f);
-	ImGuiManager::GetInstance()->DrawSlider("Dissolve : edgeMin", p_fngine_->dissolveForGPU_->GetMappedData()->edgeMin, 0.0f, 1.0f);
-	ImGuiManager::GetInstance()->DrawSlider("Dissolve : edgeMax", p_fngine_->dissolveForGPU_->GetMappedData()->edgeMax, 0.0f, 1.0f);
+	//ImGuiManager::GetInstance()->DrawSlider("Dissolve : threshold", p_fngine_->dissolveForGPU_->GetMappedData()->threshold, 0.0f, 1.0f);
+	//ImGuiManager::GetInstance()->DrawSlider("Dissolve : edgeMin", p_fngine_->dissolveForGPU_->GetMappedData()->edgeMin, 0.0f, 1.0f);
+	//ImGuiManager::GetInstance()->DrawSlider("Dissolve : edgeMax", p_fngine_->dissolveForGPU_->GetMappedData()->edgeMax, 0.0f, 1.0f);
 	PSOManager::GetInstance()->ImGui();
 #ifdef USE_IMGUI
 	if (ImGui::TreeNode("SceneDirector")) {
@@ -175,6 +180,7 @@ void SceneDirector::LoadModelData() {
 	name = ModelManager::GetInstance()->LoadObj("debugBlock.obj", "resources", LoadFileType::OBJ);
 	name = ModelManager::GetInstance()->LoadObj("plane.gltf", "resources");
 	name = ModelManager::GetInstance()->LoadObj("Cylinder.obj", "resources");
+	name = ModelManager::GetInstance()->LoadObj("Column.obj", "resources");
 	name = ModelManager::GetInstance()->LoadObj("Sphere.obj", "resources");
 	name = ModelManager::GetInstance()->LoadObj("ulthimaSky.obj", "resources", LoadFileType::OBJ);
 	name = ModelManager::GetInstance()->LoadObj("Map_City.obj", "resources/Data/Map");
@@ -186,6 +192,7 @@ void SceneDirector::LoadModelData() {
 	ModelManager::GetInstance()->AddObject("Sphere", ModelManager::GetInstance()->LoadModelData("Sphere").vertices, ModelManager::GetInstance()->LoadModelData("Sphere").indices);
 	ModelManager::GetInstance()->AddObject("Cylinder", MakeObjectVertices(CylinderData{ 32, 1.0f, 0.5f,1.0f }), MakeObjectIndices(CylinderData{ 32, 1.0f, 0.5f, 1.0f }));
 	ModelManager::GetInstance()->AddObject("Grass", MakeObjectVertices(CylinderData{ 3, 0.05f * 0.1f, 0.5f * 0.1f,0.5f }), MakeObjectIndices(CylinderData{ 3, 0.05f * 0.1f, 0.5f * 0.1f, 0.5f }));
+	ModelManager::GetInstance()->AddObject("Column", ModelManager::GetInstance()->LoadModelData("Column").vertices, ModelManager::GetInstance()->LoadModelData("Column").indices);
 }
 
 void SceneDirector::LoadTexture() {
@@ -204,6 +211,8 @@ void SceneDirector::LoadTexture() {
 	name = TextureManager::GetInstance()->LoadTexture("UI.png", "resources");
 	name = TextureManager::GetInstance()->LoadTexture("TitleBack.png", "resources/Title");
 	name = TextureManager::GetInstance()->LoadTexture("Title.png", "resources/Title");
+	name = TextureManager::GetInstance()->LoadTexture("Tiles083_1K-PNG_Color.png", "Assets/Textures/Color");
+	name = TextureManager::GetInstance()->LoadTexture("Tiles083_1K-PNG_NormalDX.png", "Assets/Textures/Normal");
 	name = TextureManager::GetInstance()->LoadTexture("monsterBall.png", "resources");
 	name = TextureManager::GetInstance()->LoadTexture("PlayGuide.png", "resources/Game");
 	name = TextureManager::GetInstance()->LoadTexture("rostock_laage_airport_4k.dds", "resources");
@@ -212,6 +221,9 @@ void SceneDirector::LoadTexture() {
 	name = TextureManager::GetInstance()->LoadTexture("noise0.png", "resources/Texture/Effect");
 	name = TextureManager::GetInstance()->LoadTexture("gradationLine.png", "resources/Texture/Effect");
 	TextureManager::GetInstance()->EndLoad();
+
+	//Created using <asset name> from ambientCG.com,
+	//licensed under the Creative Commons CC0 1.0 Universal License.
 }
 
 void SceneDirector::LoadMusic() {

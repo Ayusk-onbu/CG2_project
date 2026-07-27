@@ -7,13 +7,15 @@ struct GrassForGPU {
 	Matrix4x4 World;
 	Vector4 color;
 	float windPhase; // 草ごとに揺れるタイミングをズラすためのフェーズ値
-	float padding[3];
+	uint32_t textureIndex;
+	float padding[2];
 };
 
 struct GrassObjectData {
 	WorldTransform worldTransform;
 	Vector4 color;
 	float windPhase; // 0.0 ～ 6.28 などのランダム値
+	uint32_t textureIndex;
 };
 
 class Grass :

@@ -17,6 +17,10 @@ void DynamicObject::Initialize(Fngine* engine, std::string modelName, std::strin
 
 void DynamicObject::Update(float deltaTime) {
 	status_.Update(deltaTime);
+	for (auto& comp : components_) {
+		comp->Update(deltaTime);
+	}
+
 	// 死んだとき処理はどこに書こう
 	// 重力処理：毎フレーム externalVelocity_ の Y軸を下向きに加速させる
 	externalVelocity_.y -= gravity_ * deltaTime;

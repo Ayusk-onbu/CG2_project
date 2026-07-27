@@ -12,5 +12,5 @@ private:
 	std::unique_ptr<BVH>bvh_;
 
 public:
-	BVH* GetBVH() { return bvh_.get(); }
+	const BVH* GetBVH()const;
 };

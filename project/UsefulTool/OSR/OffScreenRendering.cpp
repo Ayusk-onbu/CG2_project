@@ -3,8 +3,9 @@
 #include <d3d12.h>
 #include <cassert>
 #include "ResourceBarrier.h"
+#include "SRVManager.h"
 
-void OffScreenRendering::Initialize(D3D12System& d3d12, SRV& srv, float width, float height,
+void OffScreenRendering::Initialize(D3D12System& d3d12, float width, float height,
 	DXGI_FORMAT fmt,D3D12_RTV_DIMENSION dimension) {
 	
 
@@ -54,23 +55,26 @@ void OffScreenRendering::Initialize(D3D12System& d3d12, SRV& srv, float width, f
 
 	//////////////////// ここまでがRTVの設定 ///////////////////////////
 
-	srvDesc_.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
-	//ZeroMemory(&srvDesc_, sizeof(srvDesc_));
-	srvDesc_.Format = offScreenTexture_->GetDesc().Format;
-	srvDesc_.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
-	srvDesc_.Texture2D.MostDetailedMip = 0;
-	srvDesc_.Texture2D.MipLevels = renderingDesc.MipLevels;
-	textureSrvHandleCPU_ = srv.GetCPUDescriptorHandle();
-	textureSrvHandleGPU_ = srv.GetGPUDescriptorHandle();
-	d3d12.GetDevice()->CreateShaderResourceView(offScreenTexture_.Get(), &srvDesc_, textureSrvHandleCPU_);
+	SRVAllocation alloc = SRVManager::GetInstance()->Allocate();
 
+	D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc{};
+	srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+	//ZeroMemory(&srvDesc_, sizeof(srvDesc_));
+	srvDesc.Format = offScreenTexture_->GetDesc().Format;
+	srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
+	srvDesc.Texture2D.MostDetailedMip = 0;
+	srvDesc.Texture2D.MipLevels = renderingDesc.MipLevels;
+	
+	d3d12.GetDevice()->CreateShaderResourceView(
+		offScreenTexture_.Get(), 
+		&srvDesc, 
+		alloc.cpu
+	);
+
+	this->srvAllocation_ = alloc;
 
 	dsv_.InitializeHeap(d3d12);
-	dsv_.MakeResource(d3d12,int32_t(width),int32_t(height),srv); 
-	//d3d12.GetDevice()->CreateDepthStencilView(dsv_.GetResource().Get(), &dsv_.GetDSVDesc(), dsv_.GetHeap().GetHeap()->GetCPUDescriptorHandleForHeapStart());
-
-	//pso_.Initialize(, PSOTYPE::Normal);
-	
+	dsv_.MakeResource(d3d12,int32_t(width),int32_t(height)); 
 }
 
 void OffScreenRendering::Begin(TheOrderCommand& command) {
