@@ -64,6 +64,8 @@ public:
 	///
 	/////////////////////////////////
 
+	virtual Matrix4x4 GetWorldMatrix() const { return Matrix4x4::Make::Identity(); }
+
 	Vector3 const& GetWorldPosition() const noexcept { return worldPosition_; }
 	void SetWorldPosition(const Vector3& pos) { worldPosition_ = pos; }
 
@@ -75,11 +77,16 @@ public:
 
 	uint32_t GetYourType() const noexcept { return collisionMask_; }
 	void SetYourType(uint32_t type) { collisionMask_ = type; }
+
+	void SetModelName(const std::string& name) { colliderModelName_ = name; }
+	const std::string& GetModelName() const { return colliderModelName_; }
+
+	virtual const BVH* GetBVH() const;
 protected:
 	// AABB
 	AABB aabb_;
-
 	Vector3 worldPosition_ = { 0.0f,0.0f,0.0f };
+	std::string colliderModelName_;
 
 	uint32_t collisionAttribute_ = 0xffffffff;
 	uint32_t collisionMask_ = 0xffffffff;
@@ -90,7 +97,6 @@ public:
 
 private:
 	void* userData_ = nullptr; // 持ち主のポインタを保存
-
 /////////////////////////////////
 /// 
 ///   当たり判定の保存に関する機能
@@ -104,6 +110,8 @@ private:
 	bool enableHitHistory = false; // デフォルトはOFF（体や壁用）
 	std::vector<Collider*> hitHistory_;
 };
+
+
 
 class MeshCollider : public Collider
 {
@@ -137,25 +145,50 @@ public:
 	// GJKに必要な頂点データ
 	void SetVertices(std::vector<Vector3> const& vertices) { vertices_ = vertices; }
 	std::vector<Vector3> const& GetVertices() const { return vertices_; }
-	void ClearVertices() { vertices_.clear(); }
-
+	void ClearVertices() {
+		vertices_.clear();
+		worldVertices_.clear();
+		localAABB_ = AABB{};
+	}
 	// 自身の頂点群からAABBを計算して更新する
-	void UpdateAABB() override;
-
+	void UpdateAABB() override {
+		aabb_ = AABB::TransformAABB(localAABB_, *worldMatrix_);
+	}
 	void Update()override;
 public:
 	// PositionではなくMatrixを持たせる
 	void SetWorldMatrix(Matrix4x4 const& mat) { *worldMatrix_ = mat; }
-	Matrix4x4 const& GetWorldMatrix() const { return *worldMatrix_; }
+	Matrix4x4 GetWorldMatrix() const override { return *worldMatrix_; }
+private:
+	void CalculateLocalAABB() {
+		if (vertices_.empty()) return;
+
+		Vector3 minLocal = vertices_[0];
+		Vector3 maxLocal = vertices_[0];
+
+		for (size_t i = 1; i < vertices_.size(); ++i) {
+			minLocal.x = (std::min)(minLocal.x, vertices_[i].x);
+			minLocal.y = (std::min)(minLocal.y, vertices_[i].y);
+			minLocal.z = (std::min)(minLocal.z, vertices_[i].z);
+
+			maxLocal.x = (std::max)(maxLocal.x, vertices_[i].x);
+			maxLocal.y = (std::max)(maxLocal.y, vertices_[i].y);
+			maxLocal.z = (std::max)(maxLocal.z, vertices_[i].z);
+		}
+
+		localAABB_.min = minLocal;
+		localAABB_.max = maxLocal;
+	}
 
 private:
 	std::vector<Vector3> vertices_;
 	std::vector<Vector3> worldVertices_;
 	std::unique_ptr<Matrix4x4> worldMatrix_;
+	AABB localAABB_;
 };
 
 
-// 静的なMapのためのもの
+
 class TriangleCollider : public Collider {
 public:
 	TriangleCollider(const PhysicsTriangle& tri) : triangle_(tri) {
@@ -182,11 +215,38 @@ public:
 	}
 
 	// マップは動かないので空のまま
-	void UpdateAABB() override {}
-
+	void UpdateAABB() override {
+		aabb_ = triangle_.GetAABB();
+	}
 	void Update()override {}
 
 private:
 	PhysicsTriangle triangle_;
 };
 
+class BVHCollider : public Collider {
+public:
+	BVHCollider() = default;
+	virtual ~BVHCollider() = default;
+
+	ColliderShape GetShapeType() const override { return ColliderShape::Triangle; }
+
+	// BVH全体のローカルAABBを取り出し、ワールド行列で変換して更新
+	void UpdateAABB() override {
+		if (const BVH* bvh = GetBVH()) {
+			// bvh->GetRootAABB() 等でローカル全体AABBを取得して変換
+			aabb_ = AABB::TransformAABB(bvh->GetRoot()->bounds, worldMatrix_);
+		}
+	}
+
+	void Update() override {}
+
+	// GJK用（BVHはポリゴン抽出で判定するため使用しない）
+	Vector3 FindFurthestPoint(Vector3 direction) const override { return {}; }
+
+	void SetWorldMatrix(const Matrix4x4& mat) { worldMatrix_ = mat; }
+	Matrix4x4 GetWorldMatrix() const override { return worldMatrix_; }
+
+private:
+	Matrix4x4 worldMatrix_ = Matrix4x4::Make::Identity();
+};

@@ -1,56 +1,95 @@
 #pragma once
 #include "ICommand.h"
-#include "../../../InGame/DynamicObject/DynamicObject.h"
+#include "InGame/Map/SceneMap.h"
 
-class DynamicObjectMoveCommand : public ICommand
-{
+using ObjectPtrVector = std::vector<DynamicObject*>;
+
+// トランスフォーム保存用の簡易構造体
+struct TransformState {
+    Vector3 position{ 0,0,0 };
+    Vector3 rotation{ 0,0,0 };
+    Vector3 scale{ 1,1,1 };
+};
+
+// =================================================================
+// 1. Transform変更コマンド（位置・回転・スケールのUndo/Redo）
+// =================================================================
+class DynamicObjectTransformCommand : public ICommand {
 public:
-    DynamicObjectMoveCommand(DynamicObject* obj,Vector3 moveAmount) : obj_(obj), moveAmount_(moveAmount) {}
-    // 基本情報
-public:
-    void Execute()override {
-        // 移動
-        obj_->GetObj()->worldTransform_.set_.Translation(obj_->GetObj()->worldTransform_.get_.Translation() + moveAmount_);
+    DynamicObjectTransformCommand(DynamicObject* obj, TransformState oldState, TransformState newState)
+        : obj_(obj), oldState_(oldState), newState_(newState) {
     }
-    void Undo()override {
-        obj_->GetObj()->worldTransform_.set_.Translation(obj_->GetObj()->worldTransform_.get_.Translation() - moveAmount_);
+
+    void Execute() override {
+        ApplyState(newState_);
     }
-    void Redo()override {
-        Execute();
+    void Undo() override {
+        ApplyState(oldState_);
     }
+    void Redo() override { Execute(); }
+
 private:
-    Vector3 moveAmount_;
+    void ApplyState(const TransformState& state) {
+        if (!obj_) return;
+        obj_->SetPosition(state.position);
+        obj_->SetRotation(state.rotation);
+        obj_->SetScale(state.scale);
+    }
+
+private:
     DynamicObject* obj_;
+    TransformState oldState_;
+    TransformState newState_;
 };
 
-class TestCommand : public ICommand
-{
+// =================================================================
+// 2. オブジェクト追加コマンド
+// =================================================================
+class SceneObjectAddCommand : public ICommand {
 public:
-    TestCommand(){}
-public:
-    void Execute()override {
-        Log::View("Test Birth");
+    SceneObjectAddCommand(ObjectPtrVector* objects, DynamicObject* newObj)
+        : objects_(objects), createdObj_(newObj) {
     }
-    void Undo()override {
-        Log::View("Test Break");
+
+    void Execute() override {
+        objects_->push_back(createdObj_);
     }
-    void Redo()override {
-        Execute();
+    void Undo() override {
+        // 配列から取り除く（メモリは保持してRedoに備える）
+        std::erase(*objects_, createdObj_);
     }
+    void Redo() override { Execute(); }
+
+private:
+    ObjectPtrVector* objects_;
+    DynamicObject* createdObj_;
 };
 
-class TestCommandND : public ICommand
-{
+// =================================================================
+// 3. オブジェクト削除コマンド
+// =================================================================
+class SceneObjectDeleteCommand : public ICommand {
 public:
-    TestCommandND() {}
-public:
-    void Execute()override {
-        Log::View("Test Birth My Baby");
+    SceneObjectDeleteCommand(ObjectPtrVector* objects, int index)
+        : objects_(objects), index_(index) {
+        if (index >= 0 && index < (int)objects->size()) {
+            removedObj_ = (*objects)[index];
+        }
     }
-    void Undo()override {
-        Log::View("Test Break My Baby");
+
+    void Execute() override {
+        if (index_ >= 0 && index_ < (int)objects_->size()) {
+            objects_->erase(objects_->begin() + index_);
+        }
     }
-    void Redo()override {
-        Execute();
+    void Undo() override {
+        // 元の位置に復元
+        objects_->insert(objects_->begin() + index_, removedObj_);
     }
+    void Redo() override { Execute(); }
+
+private:
+    ObjectPtrVector* objects_;
+    int index_;
+    DynamicObject* removedObj_ = nullptr;
 };

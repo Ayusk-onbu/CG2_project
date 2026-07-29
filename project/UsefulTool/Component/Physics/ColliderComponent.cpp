@@ -2,6 +2,7 @@
 #include "DynamicObject.h"
 #include "CollisionManager.h"
 #include "CollisionLayerManager.h"
+#include "RigidBody.h"
 
 void ColliderComponent::Initialize() {
     if (collider_ && master_) {
@@ -10,6 +11,12 @@ void ColliderComponent::Initialize() {
         // C++ のコールバックが発火したら、親（DynamicObject）に丸投げする！
         collider_->onCollisionCallBack = [this](Collider* other, const Vector3& pushOut) {
             if (!master_) return;
+
+            // 同じオブジェクトについている RigidBody を取得して、めり込み補正・着地・速度減衰を適用
+            if (auto* rb = master_->GetComponent<RigidBody>()) {
+                rb->ResolveCollision(pushOut);
+            }
+
             auto* otherObject = static_cast<DynamicObject*>(other->GetUserData());
             master_->OnCollision(otherObject, pushOut);
         };
@@ -19,18 +26,15 @@ void ColliderComponent::Initialize() {
 void ColliderComponent::Update(float deltaTime) {
     if (!master_ || !collider_) return;
 
-    // UserData が空なら親をセット
-    if (!collider_->GetUserData()) {
-        collider_->SetUserData(master_);
-    }
-
-    // 親の WorldTransform に合わせて判定用の座標/行列を更新
+    // Transformの同期
     if (auto* meshCol = dynamic_cast<MeshCollider*>(collider_.get())) {
         meshCol->SetWorldMatrix(master_->GetTransform().mat_);
         meshCol->Update();
     }
+    else if (auto* bvhCol = dynamic_cast<BVHCollider*>(collider_.get())) {
+        bvhCol->SetWorldMatrix(master_->GetTransform().mat_);
+    }
     else {
-        // 通常の球やAABBコライダーは位置情報を同期
         collider_->SetWorldPosition(master_->GetTransform().get_.Translation());
     }
 

@@ -8,6 +8,27 @@ Vector3& Vector3::operator+=(const Vector3& other) {
 	return *this;
 }
 
+Vector3& Vector3::operator-=(const Vector3& other) {
+	x -= other.x;
+	y -= other.y;
+	z -= other.z;
+	return *this;
+}
+
+Vector3& Vector3::operator*=(const Vector3& other) {
+	x *= other.x;
+	y *= other.y;
+	z *= other.z;
+	return *this;
+}
+
+Vector3& Vector3::operator*=(const float& other) {
+	x *= other;
+	y *= other;
+	z *= other;
+	return *this;
+}
+
 bool Vector3::operator==(const Vector3& other)const {
 	return (x == other.x && y == other.y && z == other.z);
 }
@@ -78,6 +99,11 @@ Vector3 Multiply(float scaler, const Vector3& v) {
 float Dot(const Vector3& v1, const Vector3& v2) {
 	float ret;
 	ret = v1.x * v2.x + v1.y * v2.y + v1.z * v2.z;
+	return ret;
+}
+// 大きさを比べるよう
+float LengthSquared(const Vector3& v) {
+	float ret = v.x * v.x + v.y * v.y + v.z * v.z;
 	return ret;
 }
 //長さ

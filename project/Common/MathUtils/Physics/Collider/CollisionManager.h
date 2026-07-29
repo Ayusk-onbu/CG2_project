@@ -28,7 +28,8 @@ private:
 	bool GJK(Collider* a, Collider* b, Vector3& outPush);
 	// me->YourType と other->MyType が同じか調べる
 	bool CheckFilter(Collider* colA, Collider* colB);
-
+	bool CheckTriangleVsCollider(Collider* triCol, Collider* otherCol, Vector3& outPush);
+	bool CheckBVHVsBVH(Collider* colA, Collider* colB, Vector3& outPush);
 ///////////////////////////
 /// 
 ///  動的なオブジェクト関連の情報
@@ -45,21 +46,4 @@ private:
 public:
 	// 当たり判定を取りたいColliderを登録する
 	void SetColliders(Collider* collider);
-
-///////////////////////////
-/// 
-///  Map関連の情報
-///
-///////////////////////////
-public:
-	// マップとの当たり判定（動的オブジェクト同士の後に呼ぶ）
-	void CheckMapCollisions();
-
-private:
-	// ゲームに一個しかないはずのマップの情報(複数個になったらドンマイ俺)
-	const BVH* map_ = nullptr;
-
-public:
-	// マップ用の三角形データをセットする
-	void SetMap(const BVH* map) { map_ = map; }
 };

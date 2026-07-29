@@ -143,13 +143,6 @@ void GameScene::Draw() {
 }
 
 void GameScene::CollisionCheck() {
-
-	// マップの情報を登録
-	CollisionManager::GetInstance()->SetMap(gameMap_->GetBVH());
-
-	// Map と 動的な物体（Player等）当たり判定をCheck！
-	CollisionManager::GetInstance()->CheckMapCollisions();
-
 	// 動的な物体 と 動的な物体の当たり判定をCheck!
 	CollisionManager::GetInstance()->CheckAllCollisions();
 }

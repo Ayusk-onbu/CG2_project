@@ -203,6 +203,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="Scene\Title\TitleScene.cpp" />
     <ClCompile Include="UsefulTool\Component\ComponentFactory.cpp" />
     <ClCompile Include="UsefulTool\Component\Physics\ColliderComponent.cpp" />
+    <ClCompile Include="UsefulTool\Component\Physics\RigidBody.cpp" />
     <ClCompile Include="UsefulTool\Component\Render\RenderComponent.cpp" />
     <ClCompile Include="UsefulTool\EditorManager\Hair\HairEditor.cpp" />
     <ClCompile Include="UsefulTool\EditorManager\Hermite\HermiteEditor.cpp" />
@@ -412,10 +413,12 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="InGame\InputHandler\InputHandler.h" />
     <ClInclude Include="Engine\Objects\Primitive\Base\PrimitiveBaseModel.h" />
     <ClInclude Include="Engine\Objects\Primitive\Box\PrimitiveBox.h" />
+    <ClInclude Include="InGame\Map\SceneMap.h" />
     <ClInclude Include="Scene\Title\TitleScene.h" />
     <ClInclude Include="UsefulTool\Component\Component.h" />
     <ClInclude Include="UsefulTool\Component\ComponentFactory.h" />
     <ClInclude Include="UsefulTool\Component\Physics\ColliderComponent.h" />
+    <ClInclude Include="UsefulTool\Component\Physics\RigidBody.h" />
     <ClInclude Include="UsefulTool\Component\Render\Providers.h" />
     <ClInclude Include="UsefulTool\Component\Render\RenderComponent.h" />
     <ClInclude Include="UsefulTool\EditorManager\EditorManager.h" />

@@ -34,11 +34,20 @@ public:
 	/// </summary>
 	virtual void Draw();
 	
-	WorldTransform& GetTransform(){ transform_; }
+	WorldTransform& GetTransform(){ return transform_; }
+
+	void SetPosition(const Vector3& pos) { transform_.set_.Translation(pos); }
+	void SetRotation(const Vector3& rot) { transform_.set_.Rotation(rot); }
+	void SetScale(const Vector3& scale) { transform_.set_.Scale(scale); }
+
+	void SetName(const std::string& name) { name_ = name; }
+	std::string& GetName() { return name_; }
 protected:
 	WorldTransform transform_;
 
-	int type_;// 識別子：ほぼEnumだが、Enumだと追加するたびに書かないといけないのが面倒なので
+	std::string name_;
+
+	int type_;// 識別子
 
 ///////////////////////////
 /// 
@@ -70,6 +79,18 @@ public:
 		return ptr;
 	}
 
+	// 型 T のコンポーネントを探してポインタを返すテンプレート関数
+	template <typename T>
+	T* GetComponent() {
+		for (auto& comp : components_) {
+			// dynamic_cast でキャストを試み、成功すればその型のポインタを返す
+			if (auto* ptr = dynamic_cast<T*>(comp.get())) {
+				return ptr;
+			}
+		}
+		return nullptr; // 見つからなかったら nullptr
+	}
+
 	void OnCollision(DynamicObject* other, const Vector3& pushOut);
 
 /////////////////////////////
@@ -83,56 +104,5 @@ public:
 //protected:
 //	StatusComponent status_;
 //
-/////////////////////////////
-///// 
-///// 物理的な存在達
-/////
-////////////////////////////
-//public:
-//	bool OnGround()const { return onGround_; }
-//	void SetMyVelocity(const Vector3& velocity) { myVelocity_ = velocity; }
-//	Vector3 GetMyVelocity()const { return myVelocity_; }
-//	float GetCurrentGroundFriction()const { return currentGroundFriction_; }
-//protected:
-//	Vector3 moveAmount_;// 最終的な移動量
-//
-//	// 速度関係
-//	Vector3 myVelocity_;// 自発的な速度
-//	Vector3 externalVelocity_;// 外部からの速度(ノックバック、重力 etc)
-//
-//	float currentGroundFriction_ = 0.0f;// 現在の地面の摩擦力
-//
-//	bool onGround_ = false;// 地面にいるかの判断
-//
-//	float gravity_ = 9.8f;
-//	const float MAX_FALL_VELOCITY = -2.5f;
-/////////////////////////////
-///// 
-///// Collider関係
-/////
-////////////////////////////
-//public:
-//	Collider* GetCollider() { return collider_.get(); }
-//protected:
-//	void OnCollisionGround(Collider* other, const Vector3& outPush);
-//
-//protected:
-//	template<typename T, typename ...ARGs>
-//	T* CreateCollider(ARGs&&... args) {
-//		auto newCollider = std::make_unique<T>(std::forward<ARGs>(args)...);
-//
-//		T* rawPtr = newCollider.get();
-//
-//		collider_ = std::move(newCollider);
-//
-//		collider_->SetUserData(this);
-//
-//		return rawPtr;
-//	}
-//
-//protected:
-//	std::unique_ptr<Collider>collider_;
-//	std::unique_ptr<BVH>bvh_;
-
 };
 
