@@ -2,6 +2,7 @@
 #include "TextureManager.h"
 #include "ModelManager.h"
 #include "DrawManager.h"
+#include "EventManager.h"
 #include "Chronos.h"
 #include "Hair/IHair.h"
 
@@ -130,11 +131,67 @@ void Fngine::Initialize() {
 	randomForGPU_ = std::make_unique<ConstantBuffer<RandomConfigForGPU>>(this);
 	randomForGPU_->Initialize();
 
+	postPerfectForGPU_ = std::make_unique<ConstantBuffer<PostEffectConfig>>(this);
+	postPerfectForGPU_->Initialize();
+
+	postPerfectForGPU_->GetMappedData()->enableLuminanceOutline = 1;
+	postPerfectForGPU_->GetMappedData()->enableDepthOutline = 1;
+
 	osr_.Initialize(d3d12_, float(kClienWidth_), float(kClienHeight_));
 	hair_ = std::make_unique<Hair>();
+
+	EventManager::GetInstance()->RegisterAction(
+		EVENTCATEGORY::EFFECT, 10, this, &Fngine::UseBoxFilter
+	);
+	EventManager::GetInstance()->RegisterAction(
+		EVENTCATEGORY::EFFECT, 11, this, &Fngine::UseRandom
+	);
+	EventManager::GetInstance()->RegisterAction(
+		EVENTCATEGORY::EFFECT, 12, this, &Fngine::UseRadialBlur
+	);
+	EventManager::GetInstance()->RegisterAction(
+		EVENTCATEGORY::EFFECT, 13, this, &Fngine::UseVignette
+	);
+	EventManager::GetInstance()->RegisterAction(
+		EVENTCATEGORY::EFFECT, 15, this, &Fngine::UseGrayscale
+	);
+
+	EventManager::GetInstance()->BindEventToTag(GAMEEVENTID::PlayerTakeDamage, EVENTCATEGORY::EFFECT, 10);
+	EventManager::GetInstance()->BindEventToTag(GAMEEVENTID::PlayerTakeDamage, EVENTCATEGORY::EFFECT, 11);
+	EventManager::GetInstance()->BindEventToTag(GAMEEVENTID::PlayerDash, EVENTCATEGORY::EFFECT, 12);
+	EventManager::GetInstance()->BindEventToTag(GAMEEVENTID::PlayerOMG, EVENTCATEGORY::EFFECT, 13);
+	//EventManager::GetInstance()->BindEventToTag(GAMEEVENTID::PlayerOMG, EVENTCATEGORY::EFFECT, 14);
+	EventManager::GetInstance()->BindEventToTag(GAMEEVENTID::PlayerDie, EVENTCATEGORY::EFFECT, 15);
+}
+
+void Fngine::UseBoxFilter() { 
+	if (hitTimeIndex_ == -1) {
+		hitTimeIndex_ = TimeKeeper::GetInstance()->RegisterTimer(0.1f, 0.0f, false);
+	}
+}
+
+void Fngine::UseRandom() { 
+	
 }
 
 void Fngine::BeginOSRFrame() {
+	postPerfectForGPU_->GetMappedData()->enableVignette = 0;
+	postPerfectForGPU_->GetMappedData()->enableRadialBlur = 0;
+	postPerfectForGPU_->GetMappedData()->enableGaussian = 1;
+	postPerfectForGPU_->GetMappedData()->enableGrayscale = 0;
+
+	if (hitTimeIndex_ != -1) {
+		postPerfectForGPU_->GetMappedData()->enableBoxFilter = 1;
+		postPerfectForGPU_->GetMappedData()->enableRandom = 1;
+		if (TimeKeeper::GetInstance()->IsEnd(hitTimeIndex_)) {
+			hitTimeIndex_ = -1;
+		}
+	}
+	else {
+		postPerfectForGPU_->GetMappedData()->enableBoxFilter = 0;
+		postPerfectForGPU_->GetMappedData()->enableRandom = 0;
+	}
+
 	ResourceBarrier barrierO = {};
 	barrierO.SetBarrier(command_.GetList().GetList().Get(), osr_.GetResource().Get(),
 		D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE, D3D12_RESOURCE_STATE_RENDER_TARGET);
@@ -185,8 +242,6 @@ void Fngine::BeginFrame() {
 }
 
 void Fngine::EndFrame() {
-
-	usePostEffectName_ = "CopyImage";
 	// Pre 
 	if (usePostEffectName_ == "DepthBasedOutline"){
 		auto transitionDepth = CD3DX12_RESOURCE_BARRIER::Transition(
@@ -200,6 +255,18 @@ void Fngine::EndFrame() {
 	}
 	else if (usePostEffectName_ == "Random") {
 		randomForGPU_->GetMappedData()->time += 1.0f / 60.0f;
+	}
+	else if (usePostEffectName_ == "PostPerfect") {
+		auto transitionDepth = CD3DX12_RESOURCE_BARRIER::Transition(
+			osr_.GetDSVResource().Get(),
+			D3D12_RESOURCE_STATE_DEPTH_WRITE,                  // 元の状態
+			D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE      // レイトレ(Compute)で読める状態
+		);
+		command_.GetList().GetList()->ResourceBarrier(1, &transitionDepth);
+
+		postPerfectForGPU_->GetMappedData()->projectionInverse = Matrix4x4::Inverse(CameraSystem::GetInstance()->GetActiveCamera()->GetViewProjectionMatrix());
+
+		postPerfectForGPU_->GetMappedData()->time += Chronos::GetInstance()->GetGameDeltaTime();
 	}
 
 	command_.GetList().GetList()->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
@@ -219,12 +286,24 @@ void Fngine::EndFrame() {
 	else if (usePostEffectName_ == "Random") {
 		command_.GetList().GetList()->SetGraphicsRootConstantBufferView(1, randomForGPU_->GetGPUVirtualAddress());
 	}
+	else if (usePostEffectName_ == "PostPerfect") {
+		command_.GetList().GetList()->SetGraphicsRootDescriptorTable(1, osr_.GetDSVDepthHandleGPU());
+		command_.GetList().GetList()->SetGraphicsRootConstantBufferView(2, postPerfectForGPU_->GetGPUVirtualAddress());
+	}
 
 	command_.GetList().GetList()->DrawInstanced(3, 1, 0, 0);
 
 	// Post
 	if (usePostEffectName_ == "DepthBasedOutline")
 	{
+		auto depthTransition = CD3DX12_RESOURCE_BARRIER::Transition(
+			osr_.GetDSVResource().Get(),
+			D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE,
+			D3D12_RESOURCE_STATE_DEPTH_WRITE
+		);
+		command_.GetList().GetList()->ResourceBarrier(1, &depthTransition);
+	}
+	else if (usePostEffectName_ == "PostPerfect") {
 		auto depthTransition = CD3DX12_RESOURCE_BARRIER::Transition(
 			osr_.GetDSVResource().Get(),
 			D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE,

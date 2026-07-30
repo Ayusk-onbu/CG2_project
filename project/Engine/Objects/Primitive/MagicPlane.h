@@ -37,6 +37,8 @@ class MagicCircle :
 public:
 	void Initialize(Fngine* engine, uint32_t numInstance)override;
 	void Update();
+	bool IsActive() { return currentState == MagicState::Active; }
+	float GetActiveTimer() { return activeTimer; }
 private:
 	MagicCircleForGPU ConvertToGPUData(const MagicCircleData& data)override;
 	std::unique_ptr<ConstantBuffer<MagicCircleConfig>>gpuConfig_;

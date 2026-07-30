@@ -13,7 +13,7 @@ void PrimitiveBox::Initialize(Fngine* engine, uint32_t numInstance) {
 	materialData_->uvTransform = Matrix4x4::Make::Identity();
 	materialData_->shininess = 0.0f;
 
-	useModelName_ = "Cube";
+	useModelName_ = "Plane";
 
 	SetCommand = [this]() {
 		auto commandList = p_engine_->GetCommand().GetList().GetList();

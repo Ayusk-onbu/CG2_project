@@ -1006,7 +1006,7 @@ void Hair::Initialize(Fngine* engine, bool isLoad, const Strands::HairSaveData& 
 	);
 	dxrCmdList_->ResourceBarrier(1, &initBarrier);
 
-	//LoadFromFile("resources/Data/Hair/202607141107.json");
+	LoadFromFile("resources/Data/Hair/202607141107.json");
 }
 //////////////////////////////
 //   ====================

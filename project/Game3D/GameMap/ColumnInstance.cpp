@@ -17,6 +17,7 @@ void ColumnInstance::Update() {
 }
 
 void ColumnInstance::DrawImGui(int id) {
+#ifdef USE_IMGUI
     {
         std::string label = "Column_" + std::to_string(id);
         if (ImGui::TreeNode(label.c_str())) {
@@ -37,4 +38,5 @@ void ColumnInstance::DrawImGui(int id) {
             ImGui::TreePop();
         }
     }
+#endif // USE_IMGUI
 }

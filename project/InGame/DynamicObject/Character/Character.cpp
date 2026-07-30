@@ -11,10 +11,6 @@ void Character::Initialize(Fngine* engine, std::string modelName, std::string te
 // 【 更新処理 】
 //   ==========
 void Character::Update(float deltaTime) {
-	if (controller_) {
-		input_ = controller_->GetCommandState(input_);
-	}
-
 	moveAmount_ = Vector3{ 0.0f, 0.0f, 0.0f };
 
 	DynamicObject::Update(deltaTime);

@@ -14,10 +14,10 @@ public:
     // 更新処理（行列の計算など）
     void Update();
 
-#ifdef _DEBUG
+
     // エディタ（ImGui）用の編集画面を表示する関数
     void DrawImGui(int id);
-#endif
+
 
 public:
     // マネージャーがデータを回収するために公開しておく（またはGetterを作る）

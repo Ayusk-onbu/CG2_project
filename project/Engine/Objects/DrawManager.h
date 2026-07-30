@@ -7,6 +7,7 @@
 #include "Primitive/Line/Line.h"
 #include "Primitive/Grass/Grass.h"
 #include "Primitive/Column/Column.h"
+#include "Primitive/Bone/Bone.h"
 
 class DrawManager :
 	public ISingleton<DrawManager>
@@ -61,6 +62,11 @@ private:
 	std::unique_ptr<Column>column_;
 
 
+	//   =======
+	// 【 Bone 】
+	//   =======
+	std::unique_ptr<BoneDrawer>bone_;
+
 	//=============
 	//  Getの関数 
 	//=============
@@ -76,5 +82,7 @@ public:
 	Grass* GetGrass() { return grass_.get(); }
 
 	Column* GetColumn() { return column_.get(); }
+
+	BoneDrawer* GetBone() { return bone_.get(); }
 };
 

@@ -18,6 +18,9 @@ void DrawManager::Initialize(Fngine* engine) {
 
 	column_ = std::make_unique<Column>();
 	column_->Initialize(engine, 100);
+
+	bone_ = std::make_unique<BoneDrawer>();
+	bone_->Initialize(engine, 100);
 }
 
 void DrawManager::Draw() {
@@ -28,6 +31,8 @@ void DrawManager::Draw() {
 	line_->DrawInstanced();
 
 	sphere_->DrawInstanced();
+
+	bone_->DrawInstanced();
 
 	magicCircle_->DrawInstanced();
 

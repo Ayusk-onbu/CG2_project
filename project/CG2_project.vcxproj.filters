@@ -765,6 +765,9 @@
     <ClCompile Include="Engine\ResourceView\Texture\SDFManager.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
+    <ClCompile Include="Engine\Objects\Primitive\Bone\Bone.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="externals\imgui\imconfig.h">
@@ -1304,6 +1307,9 @@
     <ClInclude Include="UsefulTool\Component\Component.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
+    <ClInclude Include="Engine\Objects\Primitive\Bone\Bone.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Text Include="externals\imgui\LICENSE.txt">
@@ -1332,6 +1338,7 @@
     <None Include="resources\shaders\Primitive\Grass\Grass.hlsli" />
     <None Include="resources\shaders\Common.hlsli" />
     <None Include="resources\shaders\Primitive\Column\Column.hlsli" />
+    <None Include="resources\shaders\Bone\Bone.hlsli" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="resources\shaders\Object3d\Object3d.VS.hlsl">

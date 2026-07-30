@@ -25,7 +25,7 @@ void Animation::LoadAnimationFile(const std::string& directoryPath, const std::s
 	assert(scene->mNumAnimations != 0);
 
 	// 最初のアニメーションだけ採用(後々複数対応すると良い)
-	aiAnimation* animationAssimp = scene->mAnimations[0];
+	aiAnimation* animationAssimp = scene->mAnimations[scene->mNumAnimations - 1];
 
 	// 時間の単位を秒に変換
 	// mTickParSecond：周波数

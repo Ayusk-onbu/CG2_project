@@ -104,9 +104,11 @@ void MagicCircle::Update() {
 		break;
 	}
 
+#ifdef USE_IMGUI
 	ImGui::Begin("MagicCircle");
 	ImGui::DragFloat("DrawThreshold byougaguai", &gpuConfig_->GetMappedData()->DrawThreshold, 0.01f, 0.0f, 1.0f);
 	ImGui::DragFloat("DissolveThreshold syousitu", &gpuConfig_->GetMappedData()->DissolveThreshold, 0.01f, 0.0f, 1.0f);
 	ImGui::DragFloat("rotation kaitenn", &gpuConfig_->GetMappedData()->RotationAngle, 0.01f, 0.0f, 1.0f);
 	ImGui::End();
+#endif
 }

@@ -1,5 +1,6 @@
 #pragma once
 #include "Character.h"
+#include "Animation.h"
 
 struct HitEffectInfo {
 	WorldTransform transform;
@@ -14,6 +15,8 @@ public:
 	Player();
 	~Player()override = default;
 
+	void TakeDamage();
+
 ///////////////////////////
 /// 
 /// 基本的な存在
@@ -26,6 +29,9 @@ public:
 
 private:
 	std::unique_ptr<Skeleton>skeleton_ = nullptr;
+
+	std::unique_ptr<Animation>animation_ = nullptr;
+
 ///////////////////////////
 /// 
 /// 物理的な存在達
@@ -47,6 +53,10 @@ public:
 private:
 	std::vector<HitEffectInfo>hitEffect_;
 	float hitEffectCoolTimer_ = 0.0f;
+
+public:
+	// ビームCollider
+	std::unique_ptr<MeshCollider>beamCollider_ = nullptr;
 
 ///////////////////////////
 /// 

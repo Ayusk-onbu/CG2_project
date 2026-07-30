@@ -7,6 +7,7 @@
 // 軌道だけ見える機能が欲しい
 
 void HermiteEditor::Update() {
+#ifdef USE_IMGUI
     auto& nodes_ = targetObjects_;
 
     if (ImGui::IsMouseClicked(0) && !ImGui::GetIO().WantCaptureMouse) {
@@ -129,9 +130,11 @@ void HermiteEditor::Update() {
             prevPoint = currentPoint;
         }
     }
+#endif
 }
 
 void HermiteEditor::DrawUI() {
+#ifdef USE_IMGUI
     // targetObjects_ のあだ名（参照）を作る
     // これの型は std::vector<SplineNode*>& になります
     auto& nodes_ = targetObjects_;
@@ -373,4 +376,5 @@ void HermiteEditor::DrawUI() {
             }
         }
     }
+#endif
 }

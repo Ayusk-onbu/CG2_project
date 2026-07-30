@@ -147,6 +147,8 @@ void GameScene::CollisionCheck() {
 	// ここからColliderを設定
 	collisionManager_->SetColliders(player_->GetCollider());
 
+	collisionManager_->SetColliders(player_->beamCollider_.get());
+
 	// Map と 動的な物体（Player等）当たり判定をCheck！
 	collisionManager_->CheckMapCollisions();
 
@@ -169,7 +171,7 @@ void GameScene::ToScene() {
 		ToClearScene();
 	}
 	else if (player_->GetStatus().IsDead()) {
-		ToGameOverScene();
+		//ToGameOverScene();
 	}
 }
 
@@ -187,7 +189,6 @@ void GameScene::ToGameOverScene() {
 
 	if (toSceneTimer_ > 3.0f) {
 		p_sceneDirector_->RequestChangeScene(new GameOverScene());
-		return;
 	}
 }
 

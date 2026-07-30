@@ -163,6 +163,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="Engine\Objects\GPUComputeModel\Particle\GPUParticle.cpp" />
     <ClCompile Include="Engine\Objects\Hair\IHair.cpp" />
     <ClCompile Include="Engine\Objects\Hair\Strands.cpp" />
+    <ClCompile Include="Engine\Objects\Primitive\Bone\Bone.cpp" />
     <ClCompile Include="Engine\Objects\Primitive\Column\Column.cpp" />
     <ClCompile Include="Engine\Objects\Primitive\Cylinder\Cylinder.cpp" />
     <ClCompile Include="Engine\Objects\Primitive\Grass\Grass.cpp" />
@@ -173,12 +174,24 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="Engine\Objects\Primitive\Sphere\PrimitiveSphere.cpp" />
     <ClCompile Include="Engine\ResourceView\SRV\SRVManager.cpp" />
     <ClCompile Include="Engine\ResourceView\Texture\SDFManager.cpp" />
-    <ClCompile Include="externals\imgui\GraphEditor.cpp" />
-    <ClCompile Include="externals\imgui\ImCurveEdit.cpp" />
-    <ClCompile Include="externals\imgui\ImGradient.cpp" />
-    <ClCompile Include="externals\imgui\ImGuizmo.cpp" />
-    <ClCompile Include="externals\imgui\ImSequencer.cpp" />
-    <ClCompile Include="externals\imgui\ImVectorEditor.cpp" />
+    <ClCompile Include="externals\imgui\GraphEditor.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="externals\imgui\ImCurveEdit.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="externals\imgui\ImGradient.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="externals\imgui\ImGuizmo.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="externals\imgui\ImSequencer.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="externals\imgui\ImVectorEditor.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="Game3D\GameMap\ColumnInstance.cpp" />
     <ClCompile Include="Game3D\GameMap\GrassField.cpp" />
     <ClCompile Include="InGame\DynamicObject\AttackInfo\AttackInfo.cpp" />
@@ -368,6 +381,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="Engine\Objects\Hair\GuideCurve.h" />
     <ClInclude Include="Engine\Objects\Hair\IHair.h" />
     <ClInclude Include="Engine\Objects\Primitive\Base\PrimitiveBaseModelData.h" />
+    <ClInclude Include="Engine\Objects\Primitive\Bone\Bone.h" />
     <ClInclude Include="Engine\Objects\Primitive\Column\Column.h" />
     <ClInclude Include="Engine\Objects\Primitive\Cylinder\Cylinder.h" />
     <ClInclude Include="Engine\Objects\Primitive\Grass\Grass.h" />
@@ -551,6 +565,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
+    <None Include="resources\shaders\Bone\Bone.hlsli" />
     <None Include="resources\shaders\Common.hlsli" />
     <None Include="resources\shaders\CopyImage\Fullscreen.hlsli" />
     <None Include="resources\shaders\Cylinder\Cylinder.hlsli" />

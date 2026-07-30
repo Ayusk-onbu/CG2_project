@@ -18,10 +18,18 @@ void Player::Initialize(Fngine* fngine) {
 
 	obj_->skinCluster_.Create(fngine, *skeleton_, obj_->GetModelData());
 
+	beamCollider_ = std::make_unique<MeshCollider>();
+	beamCollider_->SetUserData(this);
+	beamCollider_-> SetMyType(COL_None);
+	beamCollider_-> SetYourType(COL_Player);
+	
+	beamCollider_->onCollisionCallBack = [this](Collider* other, const Vector3& pushOut) {
+		
+	};
 
 	MeshCollider* myCollider = CreateCollider<MeshCollider>();
 	myCollider->SetMyType(COL_Player);
-	myCollider->SetYourType(COL_Static_Map);
+	myCollider->SetYourType(COL_Static_Map | COL_Enemy_Attack);
 
 	auto aabb = bvh_->GetRoot()->bounds;
 	float lengthX = aabb.GetSize().x / 1.5f;
@@ -41,8 +49,14 @@ void Player::Initialize(Fngine* fngine) {
 		OnCollisionGround(other, pushOut);
 		if (other->GetMyType() == COL_Static_Map) {
 			//MakeHitEffect();
+
+			//TakeDamage();
 		}
 	};
+
+	animation_ = std::make_unique<Animation>();
+	animation_->LoadAnimationFile("resources/Model/Character/Test", "walk.gltf");
+	animation_->SetIsLoop(true);
 
 	EventManager::GetInstance()->RegisterAction(
 		EVENTCATEGORY::EFFECT, 0, this, &Player::MakeHitEffect
@@ -56,14 +70,22 @@ void Player::Initialize(Fngine* fngine) {
 }
 
 void Player::Update(float deltaTime) {
+	if (controller_) {
+		input_ = controller_->GetCommandState(input_);
+	}
+
 	Character::Update(deltaTime);
 
+	animation_->TimeFlow();
+	animation_->ApplyAnimation(*skeleton_.get());
 	skeleton_->Update();
 	obj_->skinCluster_.Update(*skeleton_);
 
 	collider_->SetWorldPosition(obj_->worldTransform_.get_.Translation());
 	MeshCollider* meshCollider = dynamic_cast<MeshCollider*>(collider_.get());
 	meshCollider->SetWorldMatrix(obj_->worldTransform_.mat_);
+
+	MakeHitEffect();
 
 	for (auto& effect : hitEffect_) {
 		// エフェクトの更新
@@ -79,9 +101,44 @@ void Player::Update(float deltaTime) {
 		[](const HitEffectInfo& effect) { return effect.currentTime >= effect.lifeTime; }),
 		hitEffect_.end());
 
+	WorldTransform testTransform;
+	testTransform.Initialize();
+	testTransform.set_.Scale({ 10.0f,10.0f,10.0f });
+	testTransform.set_.Rotation({ 270.0f,0.0f, 0.0f });
+	testTransform.set_.Translation({ obj_->worldTransform_.GetWorldPos().x,0.12f,obj_->worldTransform_.GetWorldPos().z });
+	testTransform.LocalToWorld();
+
+	WorldTransform testUVTransform;
+	testUVTransform.Initialize();
+	float scale = 1.0f;
+	testUVTransform.set_.Scale({ scale,scale,scale });
+	testUVTransform.set_.Rotation({ 0.0f,0.0f, 0.0f });
+	testUVTransform.set_.Translation({ 0.0f,0.0f,0.0f });
+	testUVTransform.LocalToWorld();
+
+	DrawManager::GetInstance()->GetMagicCircle()->AddInstance({
+		testTransform,
+		testUVTransform,
+		{1.0f,0.0f,0.0f,1.0f}
+	});
+
+	DrawManager::GetInstance()->GetMagicCircle()->Update();
+
+	if (DrawManager::GetInstance()->GetMagicCircle()->IsActive()) {
+		TakeDamage();
+	}
+	else {
+		
+	}
+
+	DrawManager::GetInstance()->GetBone()->AddSkeleton(
+		*skeleton_, obj_->worldTransform_.mat_
+	);
+
 	// この処理はここに書きたくない
-	/*CameraSystem::GetInstance()->GetActiveCamera()->SetTargetPos(
-		{ obj_->worldTransform_.get_.Translation().x,obj_->worldTransform_.get_.Translation().y + 1.0f ,obj_->worldTransform_.get_.Translation().z });*/
+	CameraSystem::GetInstance()->GetActiveCamera()->SetTargetPos(
+		{ obj_->worldTransform_.get_.Translation().x,obj_->worldTransform_.get_.Translation().y + 1.0f ,obj_->worldTransform_.get_.Translation().z }
+	);
 
 	obj_->LocalToWorld();
 }
@@ -93,21 +150,24 @@ void Player::Draw() {
 
 void Player::MakeHitEffect() {
 	hitEffectCoolTimer_ -= 1.0f / 60.0f;
-	//if (hitEffectCoolTimer_ > 0.0f)return;
+	if (hitEffectCoolTimer_ > 0.0f)return;
 	auto rand = RandomUtils::GetInstance();
-	for (int i = 0; i < 5; ++i) {
+
+	Vector3 headPos = GetHeadPos();
+
+	for (int i = 0; i < 8; ++i) {
 		HitEffectInfo info;
 		info.transform.Initialize();
-		info.transform.set_.Scale({ 0.05f,0.3f + 0.5f * rand->GetHighRandom().GetFloat(0.0f,1.0f),0.05f });
+		//info.transform.set_.Scale({});
 		info.transform.set_.Rotation({ ((float)rand->GetHighRandom().GetInt(0,360)),180.0f, ((float)rand->GetHighRandom().GetInt(0,360)) });
-		info.transform.set_.Translation({ obj_->worldTransform_.GetWorldPos().x,obj_->worldTransform_.GetWorldPos().y + 0.2f,obj_->worldTransform_.GetWorldPos().z });
+		info.transform.set_.Translation({ headPos.x,headPos.y,headPos.z });
 		info.transform.LocalToWorld();
 		info.lifeTime = 1.0f;
 		info.currentTime = 0.0f;
-		info.color = Vector4(1.0f, 0.5f, 0.5f, 1.0f);
+		info.color = Vector4(1.0f, 0.0f, 0.0f, 1.0f);
 		hitEffect_.push_back(info);
 	}
-	hitEffectCoolTimer_ = 1.2f;
+	hitEffectCoolTimer_ = 0.2f;
 }
 
 Matrix4x4 Player::GetHeadMatrix()const {
@@ -124,4 +184,10 @@ Vector3 Player::GetHeadPos()const {
 void Player::SetHeadPosToCameraTarget() {
 	auto headPos = GetHeadPos();
 	CameraSystem::GetInstance()->GetActiveCamera()->SetTargetPos(headPos);
+}
+
+void Player::TakeDamage() {
+	//status_.TakeDamage(5.0f, Element::Fire);
+
+	//EventManager::GetInstance()->FireEvent(GAMEEVENTID::PlayerTakeDamage);
 }

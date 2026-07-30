@@ -46,6 +46,26 @@
 
 class Hair;
 
+struct PostEffectConfig
+{
+	Matrix4x4 projectionInverse;
+
+	int enableVignette = 0;          
+	int enableRadialBlur = 0;        
+	int enableRandom = 0;            
+	int enableLuminanceOutline = 1;  
+
+	int enableGaussian = 0;          
+	int enableDepthOutline = 0;      
+	int enableBoxFilter = 0;
+	int enableGrayscale = 0;
+
+	float vignetteIntensity = 1.0f;  
+	float radialBlurWidth = 0.01f;   
+	float time = 0.0f;               
+	float pad[1] = { 0.0f };   
+};
+
 class Fngine
 {
 public:
@@ -113,8 +133,55 @@ public:
 /////////////////
 public:
 	void SetUsePostEffect(const std::string& name) { usePostEffectName_ = name; }
+
+	// --- 1. Box Filter (軽量ぼかし) ---
+	void UseBoxFilter();
+
+	// --- 2. Gaussian Blur (高品質ぼかし) ---
+	void UseGaussian(){postPerfectForGPU_->GetMappedData()->enableGaussian = 1;}
+
+	// --- 3. Grayscale (モノクロ化) ---
+	void UseGrayscale(){postPerfectForGPU_->GetMappedData()->enableGrayscale = 1;}
+
+	// --- 4. Vignetting (画面端の減光・赤み) ---
+	// intensity: 0.0f (変化なし) ～ 1.0f (最大減光)
+	void UseVignette()
+	{
+		auto* data = postPerfectForGPU_->GetMappedData();
+		data->enableVignette = 1;
+		data->vignetteIntensity = 1.0f;
+	}
+
+	// --- 5. Radial Blur (放射状ぼかし) ---
+	// width: ブラーの広がり幅 (デフォルト: 0.01f)
+	void UseRadialBlur()
+	{
+		auto* data = postPerfectForGPU_->GetMappedData();
+		data->enableRadialBlur = 1;
+		data->radialBlurWidth = 0.01f;
+	}
+
+	// --- 6. Random (グリッチノイズ) ---
+	void UseRandom();
+
+	// --- 7. Luminance Based Outline (輝度輪郭) ---
+	void UseLuminanceOutline()
+	{
+		postPerfectForGPU_->GetMappedData()->enableLuminanceOutline = 1;
+	}
+
+	// --- 8. Depth Based Outline (深度輪郭・トゥーン調) ---
+	// projectionInverse: カメラの逆プロジェクション行列
+	void UseDepthOutline()
+	{
+		auto* data = postPerfectForGPU_->GetMappedData();
+		data->enableDepthOutline = 1;
+	}
 private:
-	std::string usePostEffectName_;
+	std::string usePostEffectName_ = "PostPerfect";
+
+	std::unique_ptr<ConstantBuffer<PostEffectConfig>> postPerfectForGPU_;
+	int hitTimeIndex_ = -1;
 
 	std::unique_ptr<ConstantBuffer<OutlineForGPU>> outlineForGPU_;
 public:

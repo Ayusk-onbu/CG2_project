@@ -15,6 +15,10 @@ enum GAMEEVENTID : int {
 	OnPlayerAttack = 0,
 	HairEditor,
 	EventBox,
+	PlayerTakeDamage,// BoxFilter Random
+	PlayerDash,// Radial Blur
+	PlayerOMG,// Vignette, Gaussian Blur
+	PlayerDie,// Grayscale
 };
 
 //struct PairHash{

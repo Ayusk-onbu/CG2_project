@@ -378,6 +378,7 @@ void HairGuideEditor::GenerateDefaultShortHair2(GuideCurve::ControllerPoint* dat
 }
 
 void HairGuideEditor::Update(){
+#ifdef USE_IMGUI
     EventManager::GetInstance()->FireEvent(GAMEEVENTID::HairEditor);
     auto* cpuData = hairSystem_->GetCPUGuideData();
     const int POINTS_PER_GUIDE = hairSystem_->GetCPUGuideConfig()->pointPerGuide;
@@ -516,6 +517,8 @@ void HairGuideEditor::Update(){
     lineData.endPoint = worldPos;
 	lineData.color = { 1.0f,0.0f,1.0f,1.0f };
     DrawManager::GetInstance()->GetLine()->AddInstance(lineData);
+
+#endif
 }
 
 ////////////////////////////////
@@ -524,6 +527,7 @@ void HairGuideEditor::Update(){
 //
 ////////////////////////////////
 void HairGuideEditor::DrawUI(){
+#ifdef USE_IMGUI
     uint32_t count = hairSystem_->GetCPUGuideCount();
     auto* cpuData = hairSystem_->GetCPUGuideData();
 
@@ -958,10 +962,12 @@ void HairGuideEditor::DrawUI(){
             hermiteEditor_.reset();
         }
     }
+#endif
 }
 
 void HairGuideEditor::AddGuide(const Vector3& rootPosition, const Vector3& direction, float totalLength,
     float rootRadius, float tipRadius, const Vector3& rootColor, const Vector3& tipColor) {
+#ifdef USE_IMGUI
     if (addGuideNum_ < 2) {
         // ガイドの頂点数が1以下の場合は無効なので処理を中断
         Log::View("Invalid guide count. Please set a value greater than 1.");
@@ -1019,11 +1025,12 @@ void HairGuideEditor::AddGuide(const Vector3& rootPosition, const Vector3& direc
 
     // GPU側に更新を通知
     hairSystem_->RequestNotifyUpdate();
+#endif
 }
 
 void HairGuideEditor::AddGuideFromSpline(const std::vector<MathUtils::Spline::Node<Vector3>*>& splineNodePtrs,
     float rootRadius, float tipRadius, const Vector3& rootColor, const Vector3& tipColor) {
-
+#ifdef USE_IMGUI
     if (addGuideNum_ < 2) {
         Log::View("Invalid guide count. Please set a value greater than 1.");
         return;
@@ -1234,6 +1241,7 @@ void HairGuideEditor::AddChildStrand(
         //// GPU側に更新と、Compute Shaderによる髪再生成をリクエスト
         //hairSystem_->RequestNotifyUpdate();
     }
+#endif
 }
 
 bool HairGuideEditor::SaveHairSaveData(const std::string& filename, const Strands::HairSaveData& saveData) {

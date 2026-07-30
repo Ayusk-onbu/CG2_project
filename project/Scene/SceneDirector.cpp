@@ -180,6 +180,7 @@ void SceneDirector::LoadModelData() {
 	name = ModelManager::GetInstance()->LoadObj("debugBlock.obj", "resources", LoadFileType::OBJ);
 	name = ModelManager::GetInstance()->LoadObj("plane.gltf", "resources");
 	name = ModelManager::GetInstance()->LoadObj("Cylinder.obj", "resources");
+	name = ModelManager::GetInstance()->LoadObj("BoneOctahedron.obj", "resources");
 	name = ModelManager::GetInstance()->LoadObj("Column.obj", "resources");
 	name = ModelManager::GetInstance()->LoadObj("Sphere.obj", "resources");
 	name = ModelManager::GetInstance()->LoadObj("ulthimaSky.obj", "resources", LoadFileType::OBJ);
@@ -193,6 +194,7 @@ void SceneDirector::LoadModelData() {
 	ModelManager::GetInstance()->AddObject("Cylinder", MakeObjectVertices(CylinderData{ 32, 1.0f, 0.5f,1.0f }), MakeObjectIndices(CylinderData{ 32, 1.0f, 0.5f, 1.0f }));
 	ModelManager::GetInstance()->AddObject("Grass", MakeObjectVertices(CylinderData{ 3, 0.05f * 0.1f, 0.5f * 0.1f,0.5f }), MakeObjectIndices(CylinderData{ 3, 0.05f * 0.1f, 0.5f * 0.1f, 0.5f }));
 	ModelManager::GetInstance()->AddObject("Column", ModelManager::GetInstance()->LoadModelData("Column").vertices, ModelManager::GetInstance()->LoadModelData("Column").indices);
+	ModelManager::GetInstance()->AddObject("BoneOctahedron", ModelManager::GetInstance()->LoadModelData("BoneOctahedron").vertices, ModelManager::GetInstance()->LoadModelData("BoneOctahedron").indices);
 }
 
 void SceneDirector::LoadTexture() {
