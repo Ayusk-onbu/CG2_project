@@ -32,6 +32,16 @@ public:
         return 0;
     }
 
+    std::string GetNameByBit(uint32_t bit) const {
+        if (bit == 0) return "None";
+        for (size_t i = 0; i < layers_.size(); ++i) {
+            if ((1u << i) == bit) {
+                return layers_[i];
+            }
+        }
+        return "Unknown";
+    }
+
     // エディタ（ImGui等）でレイヤー一覧を表示するための参照
     const std::vector<std::string>& GetLayers() const { return layers_; }
 

@@ -1,6 +1,34 @@
 #include "RigidBody.h"
 #include "DynamicObject.h"
 
+void RigidBody::DrawUI() {
+#ifdef USE_IMGUI
+	ImGui::Text("RigidBody Component");
+	ImGui::Separator();
+	// BodyTypeの選択
+	const char* bodyTypeNames[] = { "Dynamic", "Kinematic", "Static" };
+	int currentType = static_cast<int>(bodyType_);
+	if (ImGui::Combo("Body Type", &currentType, bodyTypeNames, IM_ARRAYSIZE(bodyTypeNames))) {
+		bodyType_ = static_cast<BodyType>(currentType);
+	}
+	// 重力の有効化
+	ImGui::Checkbox("重力の有無", &useGravity_);
+	// 反発係数と摩擦係数のスライダー
+	ImGui::SliderFloat("反発係数", &restitution_, 0.0f, 1.0f);
+	ImGui::SliderFloat("摩擦係数", &friction_, 0.0f, 1.0f);
+	// 質量の入力
+	ImGui::InputFloat("質量", &mass_);
+	if (mass_ <= 0.0f) mass_ = 1.0f; // 質量は正の値に制限
+	// 移動方向に向くかどうかのチェックボックス
+	ImGui::Checkbox("移動方向に向くかどうか", &orientToMovement_);
+	// 現在の速度を表示
+	ImGui::Text("現在の速度: (%.2f, %.2f, %.2f)", myVelocity_.x, myVelocity_.y, myVelocity_.z);
+    if(ImGui::Button("リセット速度")) {
+        myVelocity_ = { 0.0f, 0.0f, 0.0f };
+    }
+#endif // USE_IMGUI
+}
+
 void RigidBody::Initialize() {
     myVelocity_ = { 0, 0, 0 };
     externalVelocity_ = { 0, 0, 0 };

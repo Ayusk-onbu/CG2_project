@@ -1,6 +1,5 @@
 #pragma once
 #include "ModelObject.h"
-#include "StatusComponent.h"
 #include "ComponentFactory.h"
 
 class DynamicObject
@@ -91,18 +90,37 @@ public:
 		return nullptr; // 見つからなかったら nullptr
 	}
 
-	void OnCollision(DynamicObject* other, const Vector3& pushOut);
+	const std::vector<std::unique_ptr<Component>>& GetComponents() const {
+		return components_;
+	}
 
-/////////////////////////////
-///// 
-///// ステータス関係
-/////
-////////////////////////////
-//public:
-//	StatusComponent& GetStatus() { return status_; }
-//
-//protected:
-//	StatusComponent status_;
-//
+	// 指定コンポーネントの削除
+	void RemoveComponent(Component* target) {
+		std::erase_if(components_, [target](const auto& comp) {
+			return comp.get() == target;
+			});
+	}
+
+	std::unique_ptr<Component> ExtractComponent(Component* target) {
+		auto it = std::find_if(components_.begin(), components_.end(),
+			[target](const auto& ptr) { return ptr.get() == target; });
+
+		if (it != components_.end()) {
+			std::unique_ptr<Component> ret = std::move(*it);
+			components_.erase(it);
+			return ret;
+		}
+		return nullptr;
+	}
+
+	// 退避していたコンポーネントの復元
+	Component* RestoreComponent(std::unique_ptr<Component> comp) {
+		if (!comp) return nullptr;
+		Component* ptr = comp.get();
+		components_.push_back(std::move(comp));
+		return ptr;
+	}
+
+	void OnCollision(DynamicObject* other, const Vector3& pushOut);
 };
 

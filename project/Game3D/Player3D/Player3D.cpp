@@ -182,6 +182,7 @@ void Player3D::Update()
 	animation_->TimeFlow();
 	animation_->ApplyAnimation(*skeleton_.get());
 	skeleton_->Update();
+
 	obj_->skinCluster_.Update(*skeleton_);
 
 	collider_->SetWorldPosition(GetPosition());

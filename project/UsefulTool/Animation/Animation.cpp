@@ -156,3 +156,20 @@ void Animation::TimeFlow() {
 		animationTime_ = std::fmod(animationTime_, duration_);
 	}
 }
+
+void AnimationClip::ApplyToSkeleton(Skeleton& skeleton, float time) const {
+	// 指定された再生時間 (time) で各 Joint の Transform を補間更新する
+	for (Joint& joint : skeleton.joints_) {
+		auto it = nodeAnimations_.find(joint.name);
+		if (it != nodeAnimations_.end()) {
+			const NodeAnimation& nodeAnim = it->second;
+
+			// 時間に応じた位置・回転・スケールを計算して代入
+			joint.transform.set_.Translation(CalculateValue(nodeAnim.translate.keyframes, time));
+			joint.transform.set_.Quaternion(CalculateValue(nodeAnim.rotate.keyframes, time));
+			joint.transform.set_.Scale(CalculateValue(nodeAnim.scale.keyframes, time));
+
+			joint.transform.isDirty_ = true;
+		}
+	}
+}

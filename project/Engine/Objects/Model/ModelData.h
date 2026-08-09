@@ -31,9 +31,27 @@ struct Joint {
 	std::optional<int32_t> parent;// 親ジョイントのIndex
 };
 
+// --------------------------------------------------
+// 骨格の静的テンプレート（名前・親子構造・初期姿勢）
+// --------------------------------------------------
+struct JointTemplate {
+	std::string name;
+	int32_t index;
+	std::optional<int32_t> parent;
+	std::vector<int32_t> children;
+	Transform initialTransform;
+};
+
+struct SkeletonTemplate {
+	int32_t rootIndex = -1;
+	std::map<std::string, int32_t> jointMap;
+	std::vector<JointTemplate> joints;
+};
+
 class Skeleton {
 public:
 	void CreateSkeleton(const Node& rootNode);
+	void CreateFromTemplate(const SkeletonTemplate& skelTemplate);
 	void Update();
 private:
 	int32_t CreateJoint(const Node& node, const std::optional<int32_t>& parent, std::vector<Joint>& joints);
@@ -78,12 +96,32 @@ struct SkinningInformation {
 	uint32_t numVertices;
 };
 
+// --------------------------------------------------
+// スキニング計算用の静的データ（逆バインドポーズ & 頂点ウェイト）
+// --------------------------------------------------
+struct SkinningStaticData {
+	std::vector<Matrix4x4> inverseBindPoseMatrices; // Jointごとの逆バインドポーズ行列
+	std::vector<VertexInfluence> influences;        // 頂点ごとのウェイト・JointIndex情報 (t2用)
+};
+
+class ObjectData;
+
 class SkinCluster {
 public:
 	void Create(Fngine* engine,const Skeleton& skeleton,const ModelData& modelData);
+	void Create(Fngine* engine, const std::string& modelID, const ObjectData& objectData);
 	void Update(const Skeleton& skeleton);
 	void DispatchComputeShader(ID3D12GraphicsCommandList* commandList);
 	uint32_t GetNumVertices() const { return numVertices_; }
+	D3D12_VERTEX_BUFFER_VIEW GetOutputVertexBufferView() const {
+		D3D12_VERTEX_BUFFER_VIEW vbView{};
+		if (outputVertices_ && outputVertices_->GetResource()) {
+			vbView.BufferLocation = outputVertices_->GetResource()->GetGPUVirtualAddress();
+			vbView.SizeInBytes = sizeof(VertexData) * numVertices_;
+			vbView.StrideInBytes = sizeof(VertexData);
+		}
+		return vbView;
+	}
 public:
 	std::vector<Matrix4x4> inverseBindPoseMatrices_;
 	uint32_t numVertices_ = 0;

@@ -5,12 +5,14 @@
 #include "Chronos.h"
 #include "DrawManager.h"
 #include "SDFManager.h"
+#include "AnimationManager.h"
 #include "../Engine/Objects/Primitive/Box/PrimitiveBox.h"
 #include "../Engine/Objects/Primitive/Ring/Ring.h"
 #include "../Engine/Objects/Primitive/MagicPlane.h"
 #include "../UsefulTool/EditorManager/Hair/HairEditor.h"
 #include "../UsefulTool/EditorManager/Map/SceneEditor.h"
 #include "../UsefulTool/EditorManager/Hermite/HermiteEditor.h"
+#include "../UsefulTool/Component/ComponentFactory.h"
 #include <pix3.h>
 
 import MotionManager;
@@ -44,13 +46,14 @@ void SceneDirector::Initialize(Scene& firstScene) {
 	CameraSystem::GetInstance()->MakeCamera("GameCamera", CameraType::Game);
 	CameraSystem::GetInstance()->SetActiveCamera("GameCamera");
 
+	ComponentFactory::GetInstance()->Initialize();
+
 	DrawManager::GetInstance()->Initialize(p_fngine_);
 	PrimitiveBox::GetInstance()->Initialize(p_fngine_, 1500);
 	PrimitiveRing::GetInstance()->Initialize(p_fngine_, 1000);
 
 	auto editorMgr = EditorManager::GetInstance();
 	auto* hairEditor = editorMgr->CreateEditor<HairGuideEditor>(p_fngine_->hair_.get());
-	auto* sceneEditor = editorMgr->CreateEditor<SceneEditor>();
 	auto* hermiteEditor = editorMgr->CreateEditor<HermiteEditor>();
 	editorMgr->SetActiveEditor(hermiteEditor);
 }
@@ -191,8 +194,12 @@ void SceneDirector::LoadModelData() {
 	ModelManager::GetInstance()->AddObject("Ring", MakeObjectVertices(RingData{ 32, 1.0f, 0.5f }), MakeObjectIndices(RingData{ 32, 1.0f, 0.5f }));
 	ModelManager::GetInstance()->AddObject("Sphere", ModelManager::GetInstance()->LoadModelData("Sphere").vertices, ModelManager::GetInstance()->LoadModelData("Sphere").indices);
 	ModelManager::GetInstance()->AddObject("Cylinder", MakeObjectVertices(CylinderData{ 32, 1.0f, 0.5f,1.0f }), MakeObjectIndices(CylinderData{ 32, 1.0f, 0.5f, 1.0f }));
-	ModelManager::GetInstance()->AddObject("Grass", MakeObjectVertices(CylinderData{ 3, 0.05f * 0.1f, 0.5f * 0.1f,0.5f }), MakeObjectIndices(CylinderData{ 3, 0.05f * 0.1f, 0.5f * 0.1f, 0.5f }));
+	//ModelManager::GetInstance()->AddObject("Grass", MakeObjectVertices(CylinderData{ 3, 0.05f * 0.1f, 0.5f * 0.1f,0.5f }), MakeObjectIndices(CylinderData{ 3, 0.05f * 0.1f, 0.5f * 0.1f, 0.5f }));
+	ModelManager::GetInstance()->AddObject("Grass", ModelManager::GetInstance()->LoadModelData("AnimatedCube").vertices, ModelManager::GetInstance()->LoadModelData("AnimatedCube").indices);
 	ModelManager::GetInstance()->AddObject("Column", ModelManager::GetInstance()->LoadModelData("Column").vertices, ModelManager::GetInstance()->LoadModelData("Column").indices);
+
+
+	AnimationManager::GetInstance()->LoadAnimationFile("resources/Human", "walk.gltf");
 }
 
 void SceneDirector::LoadTexture() {

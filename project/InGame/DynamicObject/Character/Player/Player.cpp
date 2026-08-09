@@ -5,7 +5,7 @@
 #include "DrawManager.h"
 
 Player::Player() {
-	controller_ = std::make_unique<PlayerController>();
+	//controller_ = std::make_unique<PlayerController>();
 }
 
 void Player::Initialize(Fngine* fngine) {
@@ -111,8 +111,9 @@ void Player::MakeHitEffect() {
 }
 
 Matrix4x4 Player::GetHeadMatrix()const {
-	int headIndex = skeleton_->jointMap_.find("Head")->second;
-	auto headMatrix = skeleton_->joints_[headIndex].skeletonSpaceMatrix;
+	//int headIndex = skeleton_->jointMap_.find("Head")->second;
+	//auto headMatrix = skeleton_->joints_[headIndex].skeletonSpaceMatrix;
+	auto headMatrix = Matrix4x4::Make::Identity();
 	return headMatrix/* * obj_->worldTransform_.mat_*/;
 }
 

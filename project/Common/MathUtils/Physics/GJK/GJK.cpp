@@ -22,7 +22,22 @@ namespace GJK {
 			Vector3 ao = -a;
 
 			if (SameDirection(ab, ao)) {
-				direction = CrossProduct(CrossProduct(ab, ao), ab);
+				//direction = CrossProduct(CrossProduct(ab, ao), ab);
+				Vector3 perp = CrossProduct(ab, ao);
+
+				// ★ 原点と線分abが完全な一直線上に並んだ場合（外積がほぼ0）のゼロ除算/ゼロベクトル対策
+				if (LengthSquared(perp) < 1e-6f) {
+					// ab に直交する任意のベクトルを作る
+					if (std::abs(ab.x) >= std::abs(ab.y)) {
+						direction = Vector3(-ab.z, 0.0f, ab.x);
+					}
+					else {
+						direction = Vector3(0.0f, ab.z, -ab.y);
+					}
+				}
+				else {
+					direction = CrossProduct(perp, ab);
+				}
 			}
 
 			else {
@@ -239,8 +254,13 @@ namespace GJK {
 		}
 
 		bool GJK_GetSimplex(const Collider& colliderA, const Collider& colliderB, std::vector<Vector3>& outSimplex) {
+			Vector3 initDir = colliderA.GetWorldPosition() - colliderB.GetWorldPosition();
+			if (LengthSquared(initDir) < 1e-6f) {
+				initDir = Vector3(0, 1, 0); // 同一座標の場合はY上向き
+			}
+			
 			// 初期サポート
-			Vector3 support = Support(colliderA, colliderB, Vector3(1, 0, 0));
+			Vector3 support = Support(colliderA, colliderB, initDir);
 			Simplex points;
 			points.push_front(support);
 
@@ -248,8 +268,9 @@ namespace GJK {
 			int iterations = 0;
 			while (iterations++ < 64) {
 				support = Support(colliderA, colliderB, direction);
+				
 				if (Dot(support, direction) <= 0.0f) {
-					return false; // 衝突なし
+					return false; // 本当に当たっていない
 				}
 				points.push_front(support);
 				if (NextSimplex(points, direction)) {

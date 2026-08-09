@@ -1,4 +1,7 @@
 #include "ModelData.h"
+#include "../ObjectBase.h"
+#include "../SkinningManager.h"
+#include "../ObjectBase.h"
 
 void SkinCluster::Create(Fngine* engine, const Skeleton& skeleton, const ModelData& modelData) {
 	uint32_t numVertices = static_cast<uint32_t>(modelData.vertices.size());
@@ -69,6 +72,40 @@ void SkinCluster::Create(Fngine* engine, const Skeleton& skeleton, const ModelDa
 			}
 		}
 	}
+}
+
+void SkinCluster::Create(Fngine* engine, const std::string& modelID, const ObjectData& objectData) {
+	const SkinningStaticData* staticData = SkinningManager::GetInstance()->GetSkinningStaticData(modelID);
+	const SkeletonTemplate* skelTemplate = SkinningManager::GetInstance()->GetSkeletonTemplate(modelID);
+
+	if (!staticData || !skelTemplate) return;
+
+	uint32_t numVertices = objectData.GetVertexCount();
+	uint32_t numJoints = static_cast<uint32_t>(skelTemplate->joints.size());
+	numVertices_ = numVertices;
+
+	// --- インスタンス固有のバッファ作成 ---
+	palette_ = std::make_unique<Structured<WellForGPU>>(engine);
+	palette_->Initialize(numJoints);
+
+	outputVertices_ = std::make_unique<RWStructured<VertexData>>(engine);
+	outputVertices_->Initialize(numVertices);
+
+	skinningInfo_ = std::make_unique<ConstantBuffer<SkinningInformation>>(engine);
+	skinningInfo_->Initialize();
+	skinningInfo_->GetMappedData()->numVertices = numVertices;
+
+	// --- 静的バッファの初期化（マネージャーの静的データから一括コピー） ---
+	inputVertices_ = std::make_unique<Structured<VertexData>>(engine);
+	inputVertices_->Initialize(numVertices);
+	std::memcpy(inputVertices_->GetMappedData(), objectData.GetVertexData(), sizeof(VertexData) * numVertices);
+
+	influences_ = std::make_unique<Structured<VertexInfluence>>(engine);
+	influences_->Initialize(numVertices);
+	std::memcpy(influences_->GetMappedData(), staticData->influences.data(), sizeof(VertexInfluence) * numVertices);
+
+	// 静的な InverseBindPoseMatrix を保持
+	inverseBindPoseMatrices_ = staticData->inverseBindPoseMatrices;
 }
 
 void SkinCluster::Update(const Skeleton& skeleton) {

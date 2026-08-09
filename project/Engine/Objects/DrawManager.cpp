@@ -14,7 +14,7 @@ void DrawManager::Initialize(Fngine* engine) {
 	magicCircle_->Initialize(engine, 100);
 
 	grass_ = std::make_unique<Grass>();
-	grass_->Initialize(engine, 5000);
+	grass_->Initialize(engine, 5500);
 
 	column_ = std::make_unique<Column>();
 	column_->Initialize(engine, 100);

@@ -21,7 +21,7 @@ bool AABB::IsHitAABB2AABB(const AABB& a, const AABB& b) {
 	return false;
 }
 
-static AABB TransformAABB(const AABB& aabb, const Matrix4x4& mat) {
+AABB AABB::TransformAABB(const AABB& aabb, const Matrix4x4& mat) {
 	// 元の AABB の 8 つの頂点を抽出
 	Vector3 corners[8] = {
 		{ aabb.min.x, aabb.min.y, aabb.min.z },

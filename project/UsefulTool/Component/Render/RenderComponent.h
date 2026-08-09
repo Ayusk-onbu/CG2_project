@@ -12,8 +12,9 @@ public:
         provider_ = std::move(provider);
         return ptr;
     }
-
-    void Draw() override;
+    void Update(float deltaTime)override;
+    void DrawUI()override;
+    /*void Draw() override;*/
 
 private:
     std::unique_ptr<IRenderProvider> provider_;

@@ -50,6 +50,14 @@ public:
 
 	void AddObject(const std::string& ID,const std::vector<VertexData>& vertices, const std::vector<uint32_t>& indices);
 
+	// 登録されている BVH モデルの名前一覧を取得（エディタのCombo表示用）
+	std::vector<std::string> GetBVHNames() const {
+		std::vector<std::string> names;
+		for (const auto& [name, _] : bvhs_) {
+			names.push_back(name);
+		}
+		return names;
+	}
 private:
 	// 図鑑的な存在
 	// [ 最初ModelDataだけでいいかと思ったが、表示したいかもだし別にいいかという判断。ただ、オブジェクトプールしたいから将来的に変更の可能性 ]

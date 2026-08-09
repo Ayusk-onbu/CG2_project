@@ -15,6 +15,7 @@ public:
 
     void Initialize() override;
     void Update(float deltaTime) override;
+    void DrawUI()override;
 
     // 外力を加える（Dynamic用）
     void AddForce(const Vector3& force);
@@ -49,7 +50,7 @@ public:
     void SetOrientToMovement(bool enable) { orientToMovement_ = enable; }
 
 private:
-    BodyType bodyType_ = BodyType::Dynamic;
+    BodyType bodyType_ = BodyType::Static;
 
     Vector3 myVelocity_{ 0, 0, 0 };       // 自身の入力や意思による速度
     Vector3 externalVelocity_{ 0, 0, 0 }; // 外部環境からの速度

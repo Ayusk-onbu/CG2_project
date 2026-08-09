@@ -13,6 +13,7 @@
 #include "SkyBox.h"
 #include "GrassField.h"
 #include "ColumnInstance.h"
+#include "../../InGame/Map/SceneMap.h"
 #include "GPUComputeModel/Particle/GPUParticle.h"
 
 class GameScene 
@@ -57,6 +58,7 @@ private:
 	std::unique_ptr<Player>player_;
 	std::unique_ptr<BossEnemy>boss_;
 	std::unique_ptr<GameMap>gameMap_;
+	std::unique_ptr<SceneMap>sceneMap_;
 	std::unique_ptr<ConvenienceModel>skySphere_;
 	std::unique_ptr<SkyBox>skyBox_;
 	std::unique_ptr<Particle>particle_;

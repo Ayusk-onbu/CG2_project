@@ -17,7 +17,7 @@ Vector3 PhysicsTriangle::GetCenter()const {
     };
 }
 
-inline PhysicsTriangle TransformTriangle(const PhysicsTriangle& tri, const Matrix4x4& mat) {
+PhysicsTriangle TransformTriangle(const PhysicsTriangle& tri, const Matrix4x4& mat) {
     PhysicsTriangle worldTri = tri;
 
     // 頂点をワールド座標へ変換

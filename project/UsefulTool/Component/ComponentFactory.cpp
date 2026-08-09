@@ -1,30 +1,84 @@
 #include "ComponentFactory.h"
 #include "Render/RenderComponent.h"
+#include "Physics/RigidBody.h"
+#include "Physics/ColliderComponent.h"
+#include "Status/Status.h"
+#include "Status/DamageSource.h"
+#include "State/Movement/Movement.h"
+#include "Controller/Controller.h"
+#include "Skinning/SkinningComponent.h"
 
 void ComponentFactory::Initialize() {
     // --------------------------------------------------
     // 描画系コンポーネントの登録
     // --------------------------------------------------
-    Register("GrassRender", []() {
+    Register("Render", []() {
         auto comp = std::make_unique<RenderComponent>();
-        comp->SetProvider<GrassRenderProvider>();
+        return comp;
+    });
+
+    // --------------------------------------------------
+    // 物理系コンポーネント (RigidBody)
+    // --------------------------------------------------
+    Register("RigidBody", []() {
+        auto comp = std::make_unique<RigidBody>();
+        comp->Initialize();
         return comp;
         });
 
-    /*Register("SphereRender", []() {
-        auto comp = std::make_unique<RenderComponent>();
-        comp->SetProvider<SphereRenderProvider>();
+    // --------------------------------------------------
+    // 衝突判定系コンポーネント (ColliderComponent)
+    // --------------------------------------------------
+    Register("ColliderComponent", []() {
+        auto comp = std::make_unique<ColliderComponent>();
+        comp->Initialize();
         return comp;
-        });*/
+        });
 
     // --------------------------------------------------
-    // 物理・ロジック系コンポーネントの登録
+    // ステータス系コンポーネント (StatusComponent)
     // --------------------------------------------------
-    /*
-    Register("RigidBody", []() {
-        return std::make_unique<RigidBodyComponent>();
+    Register("StatusComponent", []() {
+        auto comp = std::make_unique<StatusComponent>();
+        comp->Initialize();
+        return comp;
+        });
+
+    // --------------------------------------------------
+    // ダメージソース系コンポーネント (DamageSourceComponent)
+    // --------------------------------------------------
+    Register("DamageSourceComponent", []() {
+        auto comp = std::make_unique<DamageSourceComponent>();
+        comp->Initialize();
+        return comp;
+        });
+
+    // --------------------------------------------------
+    // 移動系コンポーネント (MovementComponent)
+    // --------------------------------------------------
+    Register("MovementComponent", []() {
+        auto comp = std::make_unique<MovementComponent>();
+        comp->Initialize();
+        return comp;
     });
-    */
+
+    // --------------------------------------------------
+    // 脳みそコンポーネント (ControllerComponent)
+    // --------------------------------------------------
+    Register("ControllerComponent", []() {
+        auto comp = std::make_unique<ControllerComponent>();
+        comp->Initialize();
+        return comp;
+        });
+
+    // --------------------------------------------------
+    // スキニングコンポーネント (SkinningComponent) 
+    // --------------------------------------------------
+    Register("SkinningComponent", []() {
+        auto comp = std::make_unique<SkinningComponent>();
+        comp->Initialize();
+        return comp;
+    });
 }
 
 std::unique_ptr<Component> ComponentFactory::Create(const std::string& name) {

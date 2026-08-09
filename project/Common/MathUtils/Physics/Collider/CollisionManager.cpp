@@ -57,8 +57,8 @@ void CollisionManager::CheckAllCollisions() {
 				if (CheckNarrowPhase(colA, colB, pushOut))
 				{
 					// 最終的に当たっていたらコールバック呼び出し！
-					colA->OnCollision(colB, pushOut);
-					colB->OnCollision(colA, -pushOut);
+					colA->OnCollision(colB, -pushOut);
+					colB->OnCollision(colA, pushOut);
 				}
 			}
 		}
@@ -117,69 +117,70 @@ bool CollisionManager::GJK(Collider* a, Collider* b, Vector3& outPush) {
 	return false; // 当たっていない
 }
 
+////////////////////////////////////////////////////////////////
+// メッシュ (triCol) vs Convex (otherCol)
+////////////////////////////////////////////////////////////////
 bool CollisionManager::CheckTriangleVsCollider(Collider* triCol, Collider* otherCol, Vector3& outPush) {
 	const BVH* bvh = triCol->GetBVH();
 	if (bvh) {
-		// triCol（BVH所有者）のワールド行列とその逆行列を取得
 		Matrix4x4 worldMat = triCol->GetWorldMatrix();
 		Matrix4x4 invWorldMat = Matrix4x4::Inverse(worldMat);
 
-		// 相手 (otherCol) のワールド AABB をローカル空間に変換する
-		// (AABB を逆行列で変換してローカル AABB を作成)
 		AABB localAABB = AABB::TransformAABB(otherCol->GetAABB(), invWorldMat);
 
 		std::vector<PhysicsTriangle> localTriangles;
-		// ローカル AABB で BVH を高速検索！
 		bvh->QueryTriangles(localAABB, localTriangles);
 
 		if (localTriangles.empty()) return false;
 
 		bool hit = false;
-		Vector3 maxPush{ 0, 0, 0 };
+		Vector3 bestPush{ 0, 0, 0 };
 
 		for (const auto& localTri : localTriangles) {
-			// 得られたローカル三角形をワールド空間へ変換！[cite: 7]
 			PhysicsTriangle worldTri = TransformTriangle(localTri, worldMat);
 
-			// ワールド空間の三角形 AABB で事前チェック
 			if (!AABB::IsHitAABB2AABB(otherCol->GetAABB(), worldTri.GetAABB())) continue;
 
-			// ワールド座標の頂点を持った TriangleCollider を作成！
 			TriangleCollider singleTriCol(worldTri);
 			Vector3 localPush{ 0, 0, 0 };
 
-			// ワールド空間同士で GJK 判定！
-			if (GJK(otherCol, &singleTriCol, localPush)) {
+			// ★ 修正ポイント: GJK(&singleTriCol, otherCol, localPush) の順で呼び出す
+			// これにより localPush は 「singleTriCol (＝triCol) を押し戻すベクトル」 になる
+			if (GJK(&singleTriCol, otherCol, localPush)) {
 				hit = true;
-				if (LengthSquared(localPush) > LengthSquared(maxPush)) {
-					maxPush = localPush;
+
+				// 最も有効な（めり込みを正しく押し戻せる）ベクトルを選定
+				if (LengthSquared(bestPush) == 0.0f || LengthSquared(localPush) > LengthSquared(bestPush)) {
+					bestPush = localPush;
 				}
 			}
 		}
 
 		if (hit) {
-			outPush = -maxPush;
+			// GJK(&singleTriCol, otherCol) の結果なので、既に triCol 用の向きになっている
+			outPush = bestPush;
 		}
 		return hit;
 	}
 
-	// 単一の TriangleCollider の場合
-	return GJK(otherCol, triCol, outPush);
+	// 単一 TriangleCollider の場合
+	return GJK(triCol, otherCol, outPush);
 }
 
+////////////////////////////////////////////////////////////////
+// メッシュ (colA) vs メッシュ (colB)
+////////////////////////////////////////////////////////////////
 bool CollisionManager::CheckBVHVsBVH(Collider* colA, Collider* colB, Vector3& outPush) {
 	const BVH* bvhA = colA->GetBVH();
 	const BVH* bvhB = colB->GetBVH();
 	if (!bvhA || !bvhB) return false;
 
-	// ★ 1. お互いの「ワールド行列」と「逆行列」を取得
 	Matrix4x4 worldMatA = colA->GetWorldMatrix();
 	Matrix4x4 invWorldMatA = Matrix4x4::Inverse(worldMatA);
 
 	Matrix4x4 worldMatB = colB->GetWorldMatrix();
 	Matrix4x4 invWorldMatB = Matrix4x4::Inverse(worldMatB);
 
-	// ★ 2. colA のワールド AABB を colB のローカル空間に変換して bvhB を検索
 	AABB localAABBForB = AABB::TransformAABB(colA->GetAABB(), invWorldMatB);
 	std::vector<PhysicsTriangle> localTrianglesB;
 	bvhB->QueryTriangles(localAABBForB, localTrianglesB);
@@ -187,42 +188,36 @@ bool CollisionManager::CheckBVHVsBVH(Collider* colA, Collider* colB, Vector3& ou
 	if (localTrianglesB.empty()) return false;
 
 	bool hit = false;
-	Vector3 maxPush{ 0, 0, 0 };
+	Vector3 bestPush{ 0, 0, 0 };
 
-	// ★ 3. 絞り込まれた B のポリゴン群をループ
 	for (const auto& localTriB : localTrianglesB) {
-		// B のポリゴンをワールド空間に変換
 		PhysicsTriangle worldTriB = TransformTriangle(localTriB, worldMatB);
 
-		// ★ 4. Bのポリゴンのワールド AABB を colA のローカル空間に変換して bvhA を検索
 		AABB localAABBForA = AABB::TransformAABB(worldTriB.GetAABB(), invWorldMatA);
 		std::vector<PhysicsTriangle> localTrianglesA;
 		bvhA->QueryTriangles(localAABBForA, localTrianglesA);
 
-		// ★ 5. 抽出された A と B のポリゴン同士（両方ワールド空間）で GJK
 		for (const auto& localTriA : localTrianglesA) {
-			// A のポリゴンをワールド空間に変換
 			PhysicsTriangle worldTriA = TransformTriangle(localTriA, worldMatA);
 
-			// ワールド空間の AABB で最終チェック
 			if (!AABB::IsHitAABB2AABB(worldTriA.GetAABB(), worldTriB.GetAABB())) continue;
 
-			// ワールド座標で生成した TriangleCollider 同士で GJK 実行！
 			TriangleCollider singleTriA(worldTriA);
 			TriangleCollider singleTriB(worldTriB);
 			Vector3 localPush{ 0, 0, 0 };
 
+			// ★ GJK(&singleTriA, &singleTriB) -> localPush は singleTriA (colA) 用のベクトル
 			if (GJK(&singleTriA, &singleTriB, localPush)) {
 				hit = true;
-				if (LengthSquared(localPush) > LengthSquared(maxPush)) {
-					maxPush = localPush;
+				if (LengthSquared(bestPush) == 0.0f || LengthSquared(localPush) > LengthSquared(bestPush)) {
+					bestPush = localPush;
 				}
 			}
 		}
 	}
 
 	if (hit) {
-		outPush = maxPush;
+		outPush = bestPush;
 	}
 	return hit;
 }

@@ -13,4 +13,6 @@ public:
 	virtual void Draw() {}
 	// 衝突が起きたときに呼ぶ関数
 	virtual void OnCollision(DynamicObject* other, const Vector3& pushOut) {}
+	// エディタ編集用
+	virtual void DrawUI() {}
 };

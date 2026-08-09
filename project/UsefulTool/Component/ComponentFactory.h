@@ -21,6 +21,15 @@ public:
 
 	// 名前（文字列）からコンポーネントを作って返す
 	std::unique_ptr<Component> Create(const std::string& name);
+
+	// 登録済みのコンポーネント一覧の取得
+	std::vector<std::string> GetRegisteredNames() const {
+		std::vector<std::string> names;
+		for (const auto& [name, _] : registry_) {
+			names.push_back(name);
+		}
+		return names;
+	}
 private:
 	std::unordered_map<std::string, ComponentCreatorFunc> registry_;
 };

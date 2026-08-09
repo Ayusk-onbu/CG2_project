@@ -52,3 +52,22 @@ private:
 	bool isLoop_ = false;
 };
 
+// --------------------------------------------------
+// 1つのアニメーションデータ（アセット / 読み取り専用）
+// --------------------------------------------------
+class AnimationClip {
+public:
+	/// <summary>
+	/// 指定した時刻 (time) の姿勢を Skeleton に適用する
+	/// </summary>
+	/// <param name="skeleton">適用対象のスケルトン</param>
+	/// <param name="time">現在の再生時間(秒)</param>
+	void ApplyToSkeleton(Skeleton& skeleton, float time) const;
+
+public:
+	std::string name_;      // アニメーション名 (例: "Take 001", "Walk")
+	float duration_ = 0.0f; // 全体の尺 (秒)
+
+	// Node名 (Joint名) ごとのキーフレーム集合
+	std::map<std::string, NodeAnimation> nodeAnimations_;
+};

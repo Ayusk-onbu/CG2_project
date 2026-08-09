@@ -5,6 +5,7 @@
 #include "Hair/IHair.h"
 #include "Chronos.h"
 #include "CollisionManager.h"
+#include "../../UsefulTool/EditorManager/Map/SceneEditor.h"
 
 GameScene::GameScene()
 	: player_(std::make_unique<Player>()),
@@ -78,6 +79,12 @@ void GameScene::Initialize() {
 
 	gpuParticle_ = std::make_unique<GPUParticleSystem>();
 	gpuParticle_->Initialize(p_fngine_, 1024);
+
+	sceneMap_ = std::make_unique<SceneMap>();
+	sceneMap_->Initialize();
+
+	auto editorMgr = EditorManager::GetInstance();
+	auto* sceneEditor = editorMgr->CreateEditor<SceneEditor>(sceneMap_.get());
 }
 
 void GameScene::Update(){
@@ -106,12 +113,13 @@ void GameScene::Update(){
 		//boss_->Update();
 
 		gameMap_->Update();
+		sceneMap_->Update();
 
 		CollisionCheck();
 
 		ToScene();
 
-		grassField_->Update();
+		//grassField_->Update();
 
 		column_->Update();
 
