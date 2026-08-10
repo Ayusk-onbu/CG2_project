@@ -53,6 +53,37 @@ public:
 	void CreateSkeleton(const Node& rootNode);
 	void CreateFromTemplate(const SkeletonTemplate& skelTemplate);
 	void Update();
+
+	// --- ボーン行列の取得 ---
+
+	/// <summary>
+	/// ボーン名から指定したボーンの skeletonSpaceMatrix を取得する
+	/// </summary>
+	std::optional<Matrix4x4> GetJointMatrix(const std::string& jointName) const {
+		auto it = jointMap_.find(jointName);
+		if (it != jointMap_.end()) {
+			return joints_[it->second].skeletonSpaceMatrix;
+		}
+		return std::nullopt; // ボーンが存在しない場合
+	}
+
+	/// <summary>
+	/// インデックスから指定したボーンの skeletonSpaceMatrix を取得する（毎フレーム呼ぶなら高速）
+	/// </summary>
+	std::optional<Matrix4x4> GetJointMatrix(int32_t jointIndex) const {
+		if (jointIndex >= 0 && jointIndex < static_cast<int32_t>(joints_.size())) {
+			return joints_[jointIndex].skeletonSpaceMatrix;
+		}
+		return std::nullopt;
+	}
+
+	/// <summary>
+	/// ボーン名からインデックスを取得する（事前にキャッシュしたい時用）
+	/// </summary>
+	int32_t GetJointIndex(const std::string& jointName) const {
+		auto it = jointMap_.find(jointName);
+		return (it != jointMap_.end()) ? it->second : -1;
+	}
 private:
 	int32_t CreateJoint(const Node& node, const std::optional<int32_t>& parent, std::vector<Joint>& joints);
 public:

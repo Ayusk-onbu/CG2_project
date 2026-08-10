@@ -32,6 +32,8 @@ public:
 	/// 描画関数
 	/// </summary>
 	virtual void Draw();
+
+	virtual void DrawUI();
 	
 	WorldTransform& GetTransform(){ return transform_; }
 
@@ -88,6 +90,11 @@ public:
 			}
 		}
 		return nullptr; // 見つからなかったら nullptr
+	}
+
+	template <typename T>
+	const T* GetComponent() const {
+		return const_cast<DynamicObject*>(this)->GetComponent<T>();
 	}
 
 	const std::vector<std::unique_ptr<Component>>& GetComponents() const {

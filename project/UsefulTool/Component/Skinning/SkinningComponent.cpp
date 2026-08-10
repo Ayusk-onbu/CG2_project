@@ -1,4 +1,5 @@
 #include "SkinningComponent.h"
+#include "DynamicObject.h"
 #include "ModelManager.h"
 #include "Log.h"
 
@@ -134,4 +135,25 @@ void SkinningComponent::DrawUI() {
         ImGui::TreePop();
     }
 #endif
+}
+
+std::optional<Matrix4x4> SkinningComponent::GetJointWorldMatrix(const std::string& jointName) const {
+    auto localMatOpt = skeleton_.GetJointMatrix(jointName);
+    if (!localMatOpt || !master_) return std::nullopt;
+
+    // キャラクター本体のワールド行列 × ボーンのローカル行列
+    Matrix4x4 characterWorldMat = master_->GetTransform().mat_;
+    return (*localMatOpt) * characterWorldMat;
+}
+
+std::optional<Vector3> SkinningComponent::GetJointWorldPosition(const std::string& jointName) const {
+    auto worldMatOpt = GetJointWorldMatrix(jointName);
+    if (!worldMatOpt) return std::nullopt;
+
+    // 行列の平行移動成分(4列目: m[3][0], m[3][1], m[3][2])を抜く
+    return Vector3(
+        worldMatOpt->m[3][0],
+        worldMatOpt->m[3][1],
+        worldMatOpt->m[3][2]
+    );
 }

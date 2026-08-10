@@ -53,6 +53,32 @@ public:
     bool IsPlaying() const { return isPlaying_; }
     float GetAnimationTime() const { return animationTime_; }
 
+    // --- ボーン情報取得用インターフェース ---
+
+    /// <summary>
+    /// ボーンのモデルローカル行列（skeletonSpaceMatrix）を取得する
+    /// </summary>
+    std::optional<Matrix4x4> GetJointLocalMatrix(const std::string& jointName) const {
+        return skeleton_.GetJointMatrix(jointName);
+    }
+
+    /// <summary>
+    /// ボーンの「ワールド行列」を取得する（武器のアタッチやカメラ追従に最適）
+    /// </summary>
+    std::optional<Matrix4x4> GetJointWorldMatrix(const std::string& jointName) const;
+
+    /// <summary>
+    /// ボーンの「ワールド座標」を取得する（頭や足元の絶対位置を取得）
+    /// </summary>
+    std::optional<Vector3> GetJointWorldPosition(const std::string& jointName) const;
+
+    /// <summary>
+    /// インデックス検索用（ボーン名をあらかじめ保持して毎フレーム呼び出す場合）
+    /// </summary>
+    int32_t GetJointIndex(const std::string& jointName) const {
+        return skeleton_.GetJointIndex(jointName);
+    }
+
 private:
     Fngine* engine_ = nullptr;
     std::string modelID_ = "";
