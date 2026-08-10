@@ -2,6 +2,7 @@
 #include <sstream>
 #include "Log.h"
 #include "Trigonometric.h"
+#include "SkinningManager.h"
 
 void ModelManager::Initialize(Fngine* fngine) {
 	pFngine_ = fngine;
@@ -13,19 +14,36 @@ void ModelManager::Initialize(Fngine* fngine) {
 //   =====================
 
 std::string ModelManager::LoadObj(const std::string& filename, const std::string& directoryPath, LoadFileType type) {
-	// model を生成
-	std::unique_ptr<ModelObject>model = std::make_unique<ModelObject>();
-	// Model 初期化 -この処理はObjファイルのみになってしまっている
-	model->Initialize(pFngine_->GetD3D12System(),filename, directoryPath,type);
 	// Model Name を生成
 	std::string modelName = filename;
 	// ファイルの名前から.以降の拡張子を削除
 	remove_extension_in_place(modelName);
 	
+	// 二重ロード防止：すでに登録済みならそのままIDを返す
+	if (objects_.find(modelName) != objects_.end()) {
+		return modelName;
+	}
+
+	// model を生成
+	std::unique_ptr<ModelObject>model = std::make_unique<ModelObject>();
+	// Model 初期化 -この処理はObjファイルのみになってしまっている
+	model->Initialize(pFngine_->GetD3D12System(),filename, directoryPath,type);
+	
 	// -------------------------------------------------------------
 	// モデルの物理三角形を抽出し、静的BVHを構築・保存する
 	// -------------------------------------------------------------
 	const auto& modelData = model->GetModelData();
+	
+	// 3. スキニングデータが存在する場合、SkinningManager に静的データを自動登録！
+	if (!modelData.skinClusterData.empty()) {
+		SkinningManager::GetInstance()->RegisterFromModelData(
+			modelName,
+			modelData.rootNode,
+			modelData.skinClusterData,
+			static_cast<uint32_t>(modelData.vertices.size())
+		);
+	}
+
 	auto triangles = ExtractPhysicsTriangles(modelData.vertices, modelData.indices, Matrix4x4::Make::Identity());
 	if (!triangles.empty()) {
 		auto bvh = std::make_unique<BVH>();

@@ -72,3 +72,38 @@ CommandState PlayerController::GetCommandState(CommandState preState) {
 
 	return cmd;
 }
+
+CommandState HermiteSplineController::GetCommandState(CommandState preState){
+	CommandState cmd{};
+
+	if (nodes_.size() < 2) return cmd;
+
+	// 1. 現在位置 P(t) と、微小時間進んだ位置 P(t + dt) を取得
+	float dt = 0.001f;
+	Vector3 currentPos = MathUtils::Spline::GetPointSpline(nodes_, progress_);
+	Vector3 nextPos = MathUtils::Spline::GetPointSpline(nodes_, (std::min)(1.0f, progress_ + dt));
+
+	// 2. 接線ベクトル（進行方向 Direction）を算出！
+	Vector3 dir = nextPos - currentPos;
+	dir.y = 0.0f; // XZ平面上の移動入力として扱う
+
+	if (LengthSquared(dir) > 1e-6f) {
+		cmd.moveDirection = Normalize(dir); // 正規化して「左スティックの倒し量」にする
+	}
+
+	// 3. 進行度 t の更新（0.0 ～ 1.0）
+	// ※ 本来はDeltaTimeや距離補算を掛けますが、簡略化のため定速進行
+	progress_ += speed_ * 0.016f;
+
+	if (progress_ >= 1.0f) {
+		if (isLoop_) {
+			progress_ = 0.0f;
+		}
+		else {
+			progress_ = 1.0f;
+			cmd.moveDirection = { 0.0f, 0.0f, 0.0f }; // 終点に達したら停止
+		}
+	}
+
+	return cmd;
+}

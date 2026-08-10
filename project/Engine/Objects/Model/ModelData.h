@@ -31,10 +31,59 @@ struct Joint {
 	std::optional<int32_t> parent;// 親ジョイントのIndex
 };
 
+// --------------------------------------------------
+// 骨格の静的テンプレート（名前・親子構造・初期姿勢）
+// --------------------------------------------------
+struct JointTemplate {
+	std::string name;
+	int32_t index;
+	std::optional<int32_t> parent;
+	std::vector<int32_t> children;
+	Transform initialTransform;
+};
+
+struct SkeletonTemplate {
+	int32_t rootIndex = -1;
+	std::map<std::string, int32_t> jointMap;
+	std::vector<JointTemplate> joints;
+};
+
 class Skeleton {
 public:
 	void CreateSkeleton(const Node& rootNode);
+	void CreateFromTemplate(const SkeletonTemplate& skelTemplate);
 	void Update();
+
+	// --- ボーン行列の取得 ---
+
+	/// <summary>
+	/// ボーン名から指定したボーンの skeletonSpaceMatrix を取得する
+	/// </summary>
+	std::optional<Matrix4x4> GetJointMatrix(const std::string& jointName) const {
+		auto it = jointMap_.find(jointName);
+		if (it != jointMap_.end()) {
+			return joints_[it->second].skeletonSpaceMatrix;
+		}
+		return std::nullopt; // ボーンが存在しない場合
+	}
+
+	/// <summary>
+	/// インデックスから指定したボーンの skeletonSpaceMatrix を取得する（毎フレーム呼ぶなら高速）
+	/// </summary>
+	std::optional<Matrix4x4> GetJointMatrix(int32_t jointIndex) const {
+		if (jointIndex >= 0 && jointIndex < static_cast<int32_t>(joints_.size())) {
+			return joints_[jointIndex].skeletonSpaceMatrix;
+		}
+		return std::nullopt;
+	}
+
+	/// <summary>
+	/// ボーン名からインデックスを取得する（事前にキャッシュしたい時用）
+	/// </summary>
+	int32_t GetJointIndex(const std::string& jointName) const {
+		auto it = jointMap_.find(jointName);
+		return (it != jointMap_.end()) ? it->second : -1;
+	}
 private:
 	int32_t CreateJoint(const Node& node, const std::optional<int32_t>& parent, std::vector<Joint>& joints);
 public:
@@ -78,12 +127,32 @@ struct SkinningInformation {
 	uint32_t numVertices;
 };
 
+// --------------------------------------------------
+// スキニング計算用の静的データ（逆バインドポーズ & 頂点ウェイト）
+// --------------------------------------------------
+struct SkinningStaticData {
+	std::vector<Matrix4x4> inverseBindPoseMatrices; // Jointごとの逆バインドポーズ行列
+	std::vector<VertexInfluence> influences;        // 頂点ごとのウェイト・JointIndex情報 (t2用)
+};
+
+class ObjectData;
+
 class SkinCluster {
 public:
 	void Create(Fngine* engine,const Skeleton& skeleton,const ModelData& modelData);
+	void Create(Fngine* engine, const std::string& modelID, const ObjectData& objectData);
 	void Update(const Skeleton& skeleton);
 	void DispatchComputeShader(ID3D12GraphicsCommandList* commandList);
 	uint32_t GetNumVertices() const { return numVertices_; }
+	D3D12_VERTEX_BUFFER_VIEW GetOutputVertexBufferView() const {
+		D3D12_VERTEX_BUFFER_VIEW vbView{};
+		if (outputVertices_ && outputVertices_->GetResource()) {
+			vbView.BufferLocation = outputVertices_->GetResource()->GetGPUVirtualAddress();
+			vbView.SizeInBytes = sizeof(VertexData) * numVertices_;
+			vbView.StrideInBytes = sizeof(VertexData);
+		}
+		return vbView;
+	}
 public:
 	std::vector<Matrix4x4> inverseBindPoseMatrices_;
 	uint32_t numVertices_ = 0;

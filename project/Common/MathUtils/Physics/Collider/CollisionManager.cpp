@@ -4,13 +4,13 @@
 void CollisionManager::Begin() {
 	// Colliderの情報を初期化
 	colliders_.clear();
-
-	map_ = nullptr;
 }
 
 void CollisionManager::SetColliders(Collider* collider) {
 	// Colliderを登録
-	colliders_.push_back(collider);
+	if (collider) {
+		colliders_.push_back(collider);
+	}
 }
 
 /////////////////////////
@@ -57,9 +57,8 @@ void CollisionManager::CheckAllCollisions() {
 				if (CheckNarrowPhase(colA, colB, pushOut))
 				{
 					// 最終的に当たっていたらコールバック呼び出し！
-					colA->OnCollision(colB, pushOut);
-					Vector3 pushOutB = { -pushOut.x, -pushOut.y, -pushOut.z };
-					colB->OnCollision(colA, pushOutB);
+					colA->OnCollision(colB, -pushOut);
+					colB->OnCollision(colA, pushOut);
 				}
 			}
 		}
@@ -72,27 +71,35 @@ void CollisionManager::CheckAllCollisions() {
 ///
 //////////////////////
 bool CollisionManager::CheckFilter(Collider* colliderA, Collider* colliderB) {
-	if ((colliderA->GetMyType() & colliderB->GetYourType()) == 0 ||
-		(colliderB->GetMyType() & colliderA->GetYourType()) == 0) {
-		return false;
-	}
-	return true;
+	return (colliderA->GetMyType() & colliderB->GetYourType()) != 0
+		&& (colliderB->GetMyType() & colliderA->GetYourType()) != 0;
 }
 
 bool CollisionManager::CheckNarrowPhase(Collider* a, Collider* b, Vector3& outPush) {
 	// ここで GetShapeType() を見て分岐する
-	if (!a)return false;
-	if (!b)return false;
+	if (!a || !b) return false;
 
-	if (a->GetShapeType() == ColliderShape::Convex &&
-		b->GetShapeType() == ColliderShape::Convex)
-	{
-		// 両方ConvexならGJKアルゴリズムを実行！
-		return GJK(static_cast<MeshCollider*>(a), static_cast<MeshCollider*>(b), outPush);
+	// 両方が BVH を持っている場合 (メッシュ vs メッシュ)
+	if (a->GetBVH() && b->GetBVH()) {
+		return CheckBVHVsBVH(a, b, outPush);
 	}
 
-	// Sphere vs Convex などの他の組み合わせもここに書く
-	return false;
+	// 片方だけが BVH を持っている場合 (メッシュ vs Convex / 単一ポリゴン)
+	if (a->GetBVH()) {
+		return CheckTriangleVsCollider(a, b, outPush);
+	}
+	if (b->GetBVH()) {
+		Vector3 pushB;
+		if (CheckTriangleVsCollider(b, a, pushB)) {
+			outPush = -pushB; // 押し戻しベクトルの反転
+			return true;
+		}
+		return false;
+	}
+
+	// どちらも BVH を持たない場合 (Convex vs Convex, 単一Triangle vs Convex など)
+	// ※ 単一の TriangleCollider は Convex の一種なのでそのまま GJK でOK！
+	return GJK(a, b, outPush);
 }
 
 // GJKアルゴリズムの本体
@@ -110,47 +117,107 @@ bool CollisionManager::GJK(Collider* a, Collider* b, Vector3& outPush) {
 	return false; // 当たっていない
 }
 
-void CollisionManager::CheckMapCollisions() {
-	if (!map_) return;
+////////////////////////////////////////////////////////////////
+// メッシュ (triCol) vs Convex (otherCol)
+////////////////////////////////////////////////////////////////
+bool CollisionManager::CheckTriangleVsCollider(Collider* triCol, Collider* otherCol, Vector3& outPush) {
+	const BVH* bvh = triCol->GetBVH();
+	if (bvh) {
+		Matrix4x4 worldMat = triCol->GetWorldMatrix();
+		Matrix4x4 invWorldMat = Matrix4x4::Inverse(worldMat);
 
-	// 動くオブジェクト（プレイヤーや敵など）すべてに対してループ
-	for (Collider* dynamicCol : colliders_) {
+		AABB localAABB = AABB::TransformAABB(otherCol->GetAABB(), invWorldMat);
 
-		// 相手がGroundだったら判定しない
-		if ((dynamicCol->GetMyType() == COL_Ground) ||
-			(dynamicCol->GetMyType() == COL_Static_Map)) continue;
+		std::vector<PhysicsTriangle> localTriangles;
+		bvh->QueryTriangles(localAABB, localTriangles);
 
-		dynamicCol->UpdateAABB();
+		if (localTriangles.empty()) return false;
 
-		std::vector<PhysicsTriangle>triangles;
+		bool hit = false;
+		Vector3 bestPush{ 0, 0, 0 };
 
-		map_->QueryTriangles(dynamicCol->GetAABB(), triangles);
+		for (const auto& localTri : localTriangles) {
+			PhysicsTriangle worldTri = TransformTriangle(localTri, worldMat);
 
-		if (triangles.empty())continue;
+			if (!AABB::IsHitAABB2AABB(otherCol->GetAABB(), worldTri.GetAABB())) continue;
 
-		// 1. Broad-Phase: マップの全三角形とAABBで事前チェック
-		for (const PhysicsTriangle& tri : triangles) {
-			AABB triAABB = tri.GetAABB();
+			TriangleCollider singleTriCol(worldTri);
+			Vector3 localPush{ 0, 0, 0 };
 
-			// AABB同士が当たっていなければGJKはスキップ（爆速化）
-			if (!AABB::IsHitAABB2AABB(dynamicCol->GetAABB(), triAABB)) {
-				continue;
+			// ★ 修正ポイント: GJK(&singleTriCol, otherCol, localPush) の順で呼び出す
+			// これにより localPush は 「singleTriCol (＝triCol) を押し戻すベクトル」 になる
+			if (GJK(&singleTriCol, otherCol, localPush)) {
+				hit = true;
+
+				// 最も有効な（めり込みを正しく押し戻せる）ベクトルを選定
+				if (LengthSquared(bestPush) == 0.0f || LengthSquared(localPush) > LengthSquared(bestPush)) {
+					bestPush = localPush;
+				}
 			}
+		}
 
-			dynamicCol->Update();
+		if (hit) {
+			// GJK(&singleTriCol, otherCol) の結果なので、既に triCol 用の向きになっている
+			outPush = bestPush;
+		}
+		return hit;
+	}
 
-			// 2. Narrow-Phase: GJK-EPAで正確な判定と押し戻し計算
-			TriangleCollider triCollider(tri);
-			Vector3 outPush{ 0,0,0 };
+	// 単一 TriangleCollider の場合
+	return GJK(triCol, otherCol, outPush);
+}
 
-			// dynamicCol (Mesh等) vs triCollider (Triangle) の異種格闘技！
-			if (GJK(dynamicCol, &triCollider, outPush)) {
-				// コールバック関数があれば呼ぶ
-				dynamicCol->OnCollision(&triCollider, outPush);
+////////////////////////////////////////////////////////////////
+// メッシュ (colA) vs メッシュ (colB)
+////////////////////////////////////////////////////////////////
+bool CollisionManager::CheckBVHVsBVH(Collider* colA, Collider* colB, Vector3& outPush) {
+	const BVH* bvhA = colA->GetBVH();
+	const BVH* bvhB = colB->GetBVH();
+	if (!bvhA || !bvhB) return false;
 
-				// 押し戻された結果、次の三角形との判定がおかしくならないようAABBを更新
-				dynamicCol->UpdateAABB();
+	Matrix4x4 worldMatA = colA->GetWorldMatrix();
+	Matrix4x4 invWorldMatA = Matrix4x4::Inverse(worldMatA);
+
+	Matrix4x4 worldMatB = colB->GetWorldMatrix();
+	Matrix4x4 invWorldMatB = Matrix4x4::Inverse(worldMatB);
+
+	AABB localAABBForB = AABB::TransformAABB(colA->GetAABB(), invWorldMatB);
+	std::vector<PhysicsTriangle> localTrianglesB;
+	bvhB->QueryTriangles(localAABBForB, localTrianglesB);
+
+	if (localTrianglesB.empty()) return false;
+
+	bool hit = false;
+	Vector3 bestPush{ 0, 0, 0 };
+
+	for (const auto& localTriB : localTrianglesB) {
+		PhysicsTriangle worldTriB = TransformTriangle(localTriB, worldMatB);
+
+		AABB localAABBForA = AABB::TransformAABB(worldTriB.GetAABB(), invWorldMatA);
+		std::vector<PhysicsTriangle> localTrianglesA;
+		bvhA->QueryTriangles(localAABBForA, localTrianglesA);
+
+		for (const auto& localTriA : localTrianglesA) {
+			PhysicsTriangle worldTriA = TransformTriangle(localTriA, worldMatA);
+
+			if (!AABB::IsHitAABB2AABB(worldTriA.GetAABB(), worldTriB.GetAABB())) continue;
+
+			TriangleCollider singleTriA(worldTriA);
+			TriangleCollider singleTriB(worldTriB);
+			Vector3 localPush{ 0, 0, 0 };
+
+			// ★ GJK(&singleTriA, &singleTriB) -> localPush は singleTriA (colA) 用のベクトル
+			if (GJK(&singleTriA, &singleTriB, localPush)) {
+				hit = true;
+				if (LengthSquared(bestPush) == 0.0f || LengthSquared(localPush) > LengthSquared(bestPush)) {
+					bestPush = localPush;
+				}
 			}
 		}
 	}
+
+	if (hit) {
+		outPush = bestPush;
+	}
+	return hit;
 }

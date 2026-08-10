@@ -9,6 +9,8 @@ public:
 	// AABBとAABBの当たり判定
 	static bool IsHitAABB2AABB(const AABB& a, const AABB& b);
 
+	static AABB TransformAABB(const AABB& aabb, const Matrix4x4& mat);
+
 	// AABBの中心を取得
 	Vector3 center()const;
 

@@ -1,5 +1,7 @@
 #pragma once
 #include "Vector3.h"
+#include <vector>
+import Hermite;
 
 enum class ButtonState {
 	None,    // 0 - 0
@@ -70,4 +72,31 @@ class PlayerController : public Controller
 public:
 	~PlayerController() = default;
 	CommandState GetCommandState(CommandState preState)override;
+};
+
+class HermiteSplineController : public Controller {
+public:
+	HermiteSplineController() = default;
+	virtual ~HermiteSplineController() = default;
+
+	// スプラインデータをアタッチする
+	bool AttachSpline(const std::vector<MathUtils::Spline::Node<Vector3>>& spline) {
+		nodes_ = spline;
+		return !nodes_.empty();
+	}
+
+	// 進行速度やループ設定
+	void SetSpeed(float speed) { speed_ = speed; }
+	void SetLoop(bool isLoop) { isLoop_ = isLoop; }
+	void ResetProgress() { progress_ = 0.0f; }
+	float GetProgress() const { return progress_; }
+
+	// --- Controller（脳みそ）のインターフェース実装 ---
+	CommandState GetCommandState(CommandState preState) override;
+
+private:
+	std::vector<MathUtils::Spline::Node<Vector3>> nodes_;
+	float progress_ = 0.0f; // 0.0 ~ 1.0
+	float speed_ = 0.2f;    // 進行速度
+	bool isLoop_ = true;    // ループ再生するか
 };

@@ -18,6 +18,25 @@ public:
 	std::string LoadTexture(const std::string& filename,const std::string& filePath);
 	Texture& GetTexture(const std::string& name);
 	std::unordered_map<std::string, std::unique_ptr<Texture>>& GetData() { return textures_; }
+
+    // 登録されているテクスチャ名の一覧を取得
+    std::vector<std::string> GetTextureNames() const {
+        std::vector<std::string> names;
+        for (const auto& [name, _] : textures_) {
+            names.push_back(name);
+        }
+        return names;
+    }
+
+    // SRVインデックス(Bindless ID)からテクスチャ名を取得（逆引き用）
+    std::string GetTextureNameBySrvIndex(uint32_t srvIndex) const {
+        for (const auto& [name, tex] : textures_) {
+            if (tex && tex->GetSrvIndex() == srvIndex) {
+                return name;
+            }
+        }
+        return "None / Unknown";
+    }
 private:
 	Fngine* p_fngine_ = nullptr;
 	std::unordered_map<std::string, std::unique_ptr<Texture>>textures_;

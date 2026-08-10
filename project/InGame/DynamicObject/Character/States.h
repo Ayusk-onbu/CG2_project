@@ -1,6 +1,34 @@
 #pragma once
+#include <memory>
 
 class Character;
+
+template <typename TState>
+class StateMachine {
+public:
+	StateMachine() = default;
+
+	void Update(float deltaTime) {
+		if (currentState_) {
+			currentState_->Update(deltaTime);
+		}
+	}
+
+	template <typename TConcreteState, typename... Args>
+	void ChangeState(Args&&... args) {
+		if (currentState_) {
+			currentState_->Exit();
+		}
+		auto newState = std::make_unique<TConcreteState>();
+		newState->Enter(std::forward<Args>(args)...);
+		currentState_ = std::move(newState);
+	}
+
+	TState* GetCurrentState() const { return currentState_.get(); }
+
+private:
+	std::unique_ptr<TState> currentState_ = nullptr;
+};
 
 namespace CharacterState {
 	class Base {
@@ -74,3 +102,21 @@ namespace CharacterState {
 		};
 	}
 }
+
+class ActionStateBase {
+public:
+	virtual ~ActionStateBase() = default;
+
+	virtual void Enter() {}
+	virtual void Update(float deltaTime) {}
+	virtual void Exit() {}
+
+	// ★ 移動を許可するか（大技や硬直中は false）
+	virtual bool IsMovementAllowed() const { return true; }
+
+	// ★ 移動速度への補正（例: ガード中 0.5倍速）
+	virtual float GetSpeedMultiplier() const { return 1.0f; }
+
+protected:
+	Character* owner_ = nullptr;
+};

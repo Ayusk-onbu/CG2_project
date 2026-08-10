@@ -3,60 +3,60 @@
 #include "../Engine/Objects/Primitive/Ring/Ring.h"
 #include "../Engine/Objects/Primitive/MagicPlane.h"
 #include "DrawManager.h"
+#include "Component/Controller/Controller.h"
+#include "Component/State/Movement/Movement.h"
+#include "Component/State/Movement/CommonMovementActions.h"
+#include "Component/Skinning/SkinningComponent.h"
+#include "Component/Status/Status.h"
+#include "Component/Physics/ColliderComponent.h"
+#include "Component/Physics/RigidBody.h"
 
 Player::Player() {
-	controller_ = std::make_unique<PlayerController>();
+	//controller_ = std::make_unique<PlayerController>();
 }
 
 void Player::Initialize(Fngine* fngine) {
-	Character::Initialize(fngine, "Naira_ExportTest", "ulthimaSky");
+	DynamicObject::Initialize(fngine, "Naira_ExportTest", "ulthimaSky");
 
-	status_.SetBaseSpeed(5.0f);
+	// =========================================================
+	// 物理 ＆ ステータスコンポーネント
+	// =========================================================
+	auto* rb = AddComponent<RigidBody>();
+	rb->SetBodyType(BodyType::Kinematic); // キャラクター物理
 
-	skeleton_ = std::make_unique<Skeleton>();
-	skeleton_->CreateSkeleton(obj_->GetNode());
+	auto* status = AddComponent<StatusComponent>();
+	status->SetBaseStats(1000.0f, 100.0f, 50.0f, 6.0f); // HP, ATK, DEF, Speed
 
-	obj_->skinCluster_.Create(fngine, *skeleton_, obj_->GetModelData());
+	// =========================================================
+	// 脳みそ (ControllerComponent) ➔ プレイヤー操作を代入
+	// =========================================================
+	auto* ctrl = AddComponent<ControllerComponent>();
+	ctrl->SetController(std::make_unique<PlayerController>(), "PlayerController");
 
-	beamCollider_ = std::make_unique<MeshCollider>();
-	beamCollider_->SetUserData(this);
-	beamCollider_-> SetMyType(COL_None);
-	beamCollider_-> SetYourType(COL_Player);
-	
-	beamCollider_->onCollisionCallBack = [this](Collider* other, const Vector3& pushOut) {
-		
-	};
+	// =========================================================
+	// 足腰 (MovementComponent) ➔ プレイヤー用のアクションを構築
+	// =========================================================
+	auto* moveComp = AddComponent<MovementComponent>();
+	moveComp->AddAction<IdleMovementAction>();
+	moveComp->AddAction<WalkMovementAction>();
+	moveComp->AddAction<AirMovementAction>();
+	moveComp->AddAction<JumpMovementAction>(9.0f); // ジャンプ力: 9.0f
 
-	MeshCollider* myCollider = CreateCollider<MeshCollider>();
-	myCollider->SetMyType(COL_Player);
-	myCollider->SetYourType(COL_Static_Map | COL_Enemy_Attack);
+	// =========================================================
+	// スキニング (SkinningComponent) ➔ 自動アニメーション
+	// =========================================================
+	auto* skinning = AddComponent<SkinningComponent>();
+	if (skinning->Setup(fngine, "Naira_ExportTest")) {
+		// デフォルト待機アニメーションを再生
+		skinning->PlayAnimation("Idle", true);
+	}
 
-	auto aabb = bvh_->GetRoot()->bounds;
-	float lengthX = aabb.GetSize().x / 1.5f;
-	myCollider->SetVertices({
-		{aabb.min.x + lengthX, aabb.min.y, aabb.min.z}, // 左下
-		{aabb.max.x - lengthX, aabb.min.y, aabb.min.z}, // 右下
-		{aabb.max.x - lengthX, aabb.max.y, aabb.min.z}, // 右上
-		{aabb.min.x + lengthX, aabb.max.y, aabb.min.z}, // 左上
-
-		{aabb.min.x + lengthX, aabb.min.y, aabb.max.z}, // 左下
-		{aabb.max.x - lengthX, aabb.min.y, aabb.max.z}, // 右下
-		{aabb.max.x - lengthX, aabb.max.y, aabb.max.z}, // 右上
-		{aabb.min.x + lengthX, aabb.max.y, aabb.max.z}, // 左上
-	});
-
-	myCollider->onCollisionCallBack = [this](Collider* other, const Vector3& pushOut) {
-		OnCollisionGround(other, pushOut);
-		if (other->GetMyType() == COL_Static_Map) {
-			//MakeHitEffect();
-
-			//TakeDamage();
-		}
-	};
-
-	animation_ = std::make_unique<Animation>();
-	animation_->LoadAnimationFile("resources/Model/Character/Test", "walk.gltf");
-	animation_->SetIsLoop(true);
+	// =========================================================
+	// 当たり判定 (ColliderComponent)
+	// =========================================================
+	auto* col = AddComponent<ColliderComponent>();
+	col->SetLayer("Player");
+	col->SetTargetLayers({ "Enemy", "StaticMap" });
 
 	EventManager::GetInstance()->RegisterAction(
 		EVENTCATEGORY::EFFECT, 0, this, &Player::MakeHitEffect
@@ -70,20 +70,8 @@ void Player::Initialize(Fngine* fngine) {
 }
 
 void Player::Update(float deltaTime) {
-	if (controller_) {
-		input_ = controller_->GetCommandState(input_);
-	}
+	DynamicObject::Update(deltaTime);
 
-	Character::Update(deltaTime);
-
-	animation_->TimeFlow();
-	animation_->ApplyAnimation(*skeleton_.get());
-	skeleton_->Update();
-	obj_->skinCluster_.Update(*skeleton_);
-
-	collider_->SetWorldPosition(obj_->worldTransform_.get_.Translation());
-	MeshCollider* meshCollider = dynamic_cast<MeshCollider*>(collider_.get());
-	meshCollider->SetWorldMatrix(obj_->worldTransform_.mat_);
 
 	MakeHitEffect();
 
@@ -101,7 +89,7 @@ void Player::Update(float deltaTime) {
 		[](const HitEffectInfo& effect) { return effect.currentTime >= effect.lifeTime; }),
 		hitEffect_.end());
 
-	WorldTransform testTransform;
+	/*WorldTransform testTransform;
 	testTransform.Initialize();
 	testTransform.set_.Scale({ 10.0f,10.0f,10.0f });
 	testTransform.set_.Rotation({ 270.0f,0.0f, 0.0f });
@@ -133,19 +121,19 @@ void Player::Update(float deltaTime) {
 
 	DrawManager::GetInstance()->GetBone()->AddSkeleton(
 		*skeleton_, obj_->worldTransform_.mat_
-	);
+	);*/
 
 	// この処理はここに書きたくない
-	CameraSystem::GetInstance()->GetActiveCamera()->SetTargetPos(
+	/*CameraSystem::GetInstance()->GetActiveCamera()->SetTargetPos(
 		{ obj_->worldTransform_.get_.Translation().x,obj_->worldTransform_.get_.Translation().y + 1.0f ,obj_->worldTransform_.get_.Translation().z }
-	);
+	);*/
 
-	obj_->LocalToWorld();
+	//obj_->LocalToWorld();
 }
 
 void Player::Draw() {
-	obj_->LocalToWorld();
-	Character::Draw();
+	//obj_->LocalToWorld();
+	DynamicObject::Draw();
 }
 
 void Player::MakeHitEffect() {
@@ -160,7 +148,7 @@ void Player::MakeHitEffect() {
 		info.transform.Initialize();
 		//info.transform.set_.Scale({});
 		info.transform.set_.Rotation({ ((float)rand->GetHighRandom().GetInt(0,360)),180.0f, ((float)rand->GetHighRandom().GetInt(0,360)) });
-		info.transform.set_.Translation({ headPos.x,headPos.y,headPos.z });
+		//info.transform.set_.Translation({ obj_->worldTransform_.GetWorldPos().x,obj_->worldTransform_.GetWorldPos().y + 0.2f,obj_->worldTransform_.GetWorldPos().z });
 		info.transform.LocalToWorld();
 		info.lifeTime = 1.0f;
 		info.currentTime = 0.0f;
@@ -171,14 +159,27 @@ void Player::MakeHitEffect() {
 }
 
 Matrix4x4 Player::GetHeadMatrix()const {
-	int headIndex = skeleton_->jointMap_.find("Head")->second;
-	auto headMatrix = skeleton_->joints_[headIndex].skeletonSpaceMatrix;
-	return headMatrix * obj_->worldTransform_.mat_;
+	if (auto* skinning = GetComponent<SkinningComponent>()) {
+		// "Head" ボーンのワールド行列を取得（skeletonSpaceMatrix * キャラクターのワールド行列）
+		if (auto headWorldMatOpt = skinning->GetJointWorldMatrix("Head")) {
+			return *headWorldMatOpt;
+		}
+	}
+
+	// スキニングコンポーネントがない、またはHeadボーンが見つからない場合のフォールバック（自身のワールド行列）
+	return transform_.mat_;
 }
 
 Vector3 Player::GetHeadPos()const {
-	auto headMatrix = GetHeadMatrix();
-	return Vector3(headMatrix.m[3][0], headMatrix.m[3][1] + 0.075f, headMatrix.m[3][2]);
+	if (auto* skinning = GetComponent<SkinningComponent>()) {
+		// "Head" ボーンのワールド座標を取得
+		if (auto posOpt = skinning->GetJointWorldPosition("Head")) {
+			return *posOpt + Vector3(0.0f, 0.075f, 0.0f);
+		}
+	}
+	// フォールバック（トランスフォームから補正）
+	Vector3 headPos = transform_.transform_.translation_ + Vector3(0.0f, 1.5f, 0.0f);
+	return headPos;
 }
 
 void Player::SetHeadPosToCameraTarget() {

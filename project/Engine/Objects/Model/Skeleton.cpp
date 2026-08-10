@@ -33,6 +33,25 @@ void Skeleton::CreateSkeleton(const Node& rootNode) {
 	}
 }
 
+void Skeleton::CreateFromTemplate(const SkeletonTemplate& skelTemplate) {
+	root_ = skelTemplate.rootIndex;
+	jointMap_ = skelTemplate.jointMap;
+
+	joints_.resize(skelTemplate.joints.size());
+	for (size_t i = 0; i < skelTemplate.joints.size(); ++i) {
+		const auto& jointDef = skelTemplate.joints[i];
+
+		joints_[i].name = jointDef.name;
+		joints_[i].index = jointDef.index;
+		joints_[i].parent = jointDef.parent;
+		joints_[i].children = jointDef.children;
+
+		joints_[i].transform.Initialize();
+		joints_[i].transform.transform_ = jointDef.initialTransform;
+		joints_[i].skeletonSpaceMatrix = Matrix4x4::Make::Identity();
+	}
+}
+
 void Skeleton::Update() {
 	// 全てのJointを更新。親が若いので通常ループで処理可能
 	for (Joint& joint : joints_) {

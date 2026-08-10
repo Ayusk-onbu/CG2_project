@@ -4,11 +4,12 @@
 #include "SceneDirector.h"
 #include "Hair/IHair.h"
 #include "Chronos.h"
+#include "CollisionManager.h"
+#include "../../UsefulTool/EditorManager/Map/SceneEditor.h"
 
 GameScene::GameScene()
 	: player_(std::make_unique<Player>()),
 	  boss_(std::make_unique<BossEnemy>()),
-	  collisionManager_(std::make_unique<CollisionManager>()),
 	  gameMap_(std::make_unique<GameMap>()),
 	  skyBox_(std::make_unique<SkyBox>())
 {
@@ -78,6 +79,12 @@ void GameScene::Initialize() {
 
 	gpuParticle_ = std::make_unique<GPUParticleSystem>();
 	gpuParticle_->Initialize(p_fngine_, 1024);
+
+	sceneMap_ = std::make_unique<SceneMap>();
+	sceneMap_->Initialize();
+
+	auto editorMgr = EditorManager::GetInstance();
+	auto* sceneEditor = editorMgr->CreateEditor<SceneEditor>(sceneMap_.get());
 }
 
 void GameScene::Update(){
@@ -96,17 +103,23 @@ void GameScene::Update(){
 		ImGuiManager::GetInstance()->Text("Not Game");
 	}
 	else {
+		// 中身をclear
+		CollisionManager::GetInstance()->Begin();
+
+		// -----------------
+
 		player_->Update(deltaTime);
 		rotationBox_->Update();
 		//boss_->Update();
 
 		gameMap_->Update();
+		sceneMap_->Update();
 
 		CollisionCheck();
 
 		ToScene();
 
-		grassField_->Update();
+		//grassField_->Update();
 
 		column_->Update();
 
@@ -138,22 +151,8 @@ void GameScene::Draw() {
 }
 
 void GameScene::CollisionCheck() {
-	// 中身をclear
-	collisionManager_->Begin();
-
-	// マップの情報を登録
-	collisionManager_->SetMap(gameMap_->GetBVH());
-
-	// ここからColliderを設定
-	collisionManager_->SetColliders(player_->GetCollider());
-
-	collisionManager_->SetColliders(player_->beamCollider_.get());
-
-	// Map と 動的な物体（Player等）当たり判定をCheck！
-	collisionManager_->CheckMapCollisions();
-
 	// 動的な物体 と 動的な物体の当たり判定をCheck!
-	collisionManager_->CheckAllCollisions();
+	CollisionManager::GetInstance()->CheckAllCollisions();
 }
 
 void GameScene::ToScene() {
@@ -170,8 +169,8 @@ void GameScene::ToScene() {
 	if (boss_->IsDead()) {
 		ToClearScene();
 	}
-	else if (player_->GetStatus().IsDead()) {
-		//ToGameOverScene();
+	else if (false/*player_->GetStatus().IsDead()*/) {
+		ToGameOverScene();
 	}
 }
 

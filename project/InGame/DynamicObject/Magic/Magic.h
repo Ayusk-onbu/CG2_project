@@ -1,6 +1,7 @@
 #pragma once
 #include <vector>
 #include <string>
+#include "../../../UsefulTool/Component/Status/Status.h"
 
 // --- 誰を対象にするか ---
 enum class TargetType {
@@ -14,35 +15,6 @@ enum class BehaviorType {
     Projectile, // 弾を飛ばす（スプライン軌道を使う）
     Instant,    // 即時発動（自分へのバフや、即着弾の雷など）
     Aura        // 自分の周囲に展開して追従する
-};
-
-enum class StatusType {
-    Attack,          // 攻撃力
-    Defense,         // 防御力
-    Speed,           // 移動速度
-    MaxHealth,       // 最大HP（バフ用）
-    SlipDamage,      // 毒や燃焼などのスリップダメージ
-    Stun             // スタン（麻痺・行動不能）
-};
-
-// --- バフ・デバフの詳細データ ---
-struct StatusEffect {
-    StatusType statusType;   // 何を変化させるか
-    float multiplier; // 倍率（例: 1.2f なら20%アップ、0.8f なら20%ダウン）
-    float duration;   // 効果時間（秒）
-};
-
-// --- 属性の定義 ---
-enum class Element {
-    None,       // 無属性
-    Fire,       // 炎
-    Water,      // 水
-    Ice,        // 氷
-    Wind,       // 風
-    Lightning,  // 雷
-    Earth,      // 土
-    Light,      // 光
-    Dark        // 闇
 };
 
 // --- 弾1発が知るべき情報（ProjectileData） ---

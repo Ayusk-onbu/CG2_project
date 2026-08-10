@@ -9,7 +9,7 @@ struct HitEffectInfo {
 	float currentTime;
 };
 
-class Player : public Character
+class Player : public DynamicObject
 {
 public:
 	Player();
@@ -27,21 +27,6 @@ public:
 	void Update(float deltaTime)override;
 	void Draw()override;
 
-private:
-	std::unique_ptr<Skeleton>skeleton_ = nullptr;
-
-	std::unique_ptr<Animation>animation_ = nullptr;
-
-///////////////////////////
-/// 
-/// 物理的な存在達
-///
-//////////////////////////
-public:
-
-
-private:
-	
 ///////////////////////////
 /// 
 /// 一時的なParticleの存在
@@ -56,7 +41,7 @@ private:
 
 public:
 	// ビームCollider
-	std::unique_ptr<MeshCollider>beamCollider_ = nullptr;
+	//std::unique_ptr<MeshCollider>beamCollider_ = nullptr;
 
 ///////////////////////////
 /// 

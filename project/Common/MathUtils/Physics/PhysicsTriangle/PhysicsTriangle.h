@@ -14,3 +14,5 @@ struct PhysicsTriangle {
 	// Triangleの中心（重心）を取得
 	Vector3 GetCenter()const;
 };
+
+PhysicsTriangle TransformTriangle(const PhysicsTriangle& tri, const Matrix4x4& mat);

@@ -4,6 +4,9 @@ struct Vector3 {
 	float x, y, z;
 
 	Vector3& operator+=(const Vector3& other);
+	Vector3& operator-=(const Vector3& other);
+	Vector3& operator*=(const Vector3& other);
+	Vector3& operator*=(const float& other);
 	bool operator==(const Vector3& other)const;
 	Vector3 operator-()const;
 };
@@ -27,6 +30,8 @@ Vector3 Multiply(float scaler, const Vector3& v);
 Vector3 Multiply(const Vector3& v, const Vector3& v2);
 //内積
 float Dot(const Vector3& v1, const Vector3& v2);
+// 大きさを比べるよう
+float LengthSquared(const Vector3& v);
 //長さ
 float Length(const Vector3& v);
 //正規化

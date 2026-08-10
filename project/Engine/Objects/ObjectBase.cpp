@@ -214,6 +214,7 @@ void ObjectData::MakeObjectData(Fngine* fngine, const std::vector<VertexData>& v
 	//   ========
 	// 【 Vertex 】
 	//   ========
+	vertexCount_ = static_cast<uint32_t>(vertices.size());
 	vertexResource_ = CreateBufferResource(d3d12.GetDevice().Get(), sizeof(VertexData) * vertices.size());
 	vertexResource_->Map(0, nullptr, reinterpret_cast<void**>(&vertexData_));
 	std::memcpy(vertexData_, vertices.data(), sizeof(VertexData) * vertices.size());
