@@ -1,6 +1,7 @@
 #pragma once
 #include "Vector3.h"
 #include <vector>
+#include <optional>
 import Hermite;
 
 enum class ButtonState {
@@ -8,6 +9,14 @@ enum class ButtonState {
 	Pressed, // 0 - 1
 	Held,    // 1 - 1
 	Released,// 1 - 0
+};
+
+enum class MoveType {
+	Raw,
+	Camera,
+	ReverseCamera,
+	Screen,
+	LockOn,
 };
 
 inline bool IsButtonDown(ButtonState input) {
@@ -36,6 +45,18 @@ inline ButtonState UpdateButtonState(ButtonState previousState, bool isPress) {
 		return ButtonState::None;
 	}
 }
+
+/// <summary>
+/// 入力をType別に変換する
+/// </summary>
+/// <param name="rawInput">キーの入力やスティックの入力</param>
+/// <param name="type">移動タイプ</param>
+/// <returns>変換後の移動ベクトル</returns>
+Vector3 CalculateMoveVector(
+	const Vector3& rawInput, 
+	MoveType type,
+	const Vector3& playerPos = Vector3(0.0f, 0.0f, 0.0f),
+	const std::optional<Vector3>& targetPos = std::nullopt);
 
 struct CommandState {
 	Vector3 moveDirection{};                          // 移動する方向(左スティック)

@@ -4,6 +4,7 @@
 #include "MathUtils.h"
 
 void SceneEditor::Update() {
+#ifdef USE_IMGUI
 	auto& objects_ = targetObjects_;
 
 	// ---------------------------------------------------
@@ -73,9 +74,11 @@ void SceneEditor::Update() {
 		}
 		DrawManager::GetInstance()->GetSphere()->AddInstance(data);
 	}
+#endif
 }
 
 void SceneEditor::DrawUI() {
+#ifdef USE_IMGUI
 	if (!sceneMap_) return;
 
 	// UI描画前に最新のオブジェクトリストに同期
@@ -330,4 +333,5 @@ void SceneEditor::DrawUI() {
 			isGizmoUsingLastFrame_ = false;
 		}
 	}
+#endif
 }

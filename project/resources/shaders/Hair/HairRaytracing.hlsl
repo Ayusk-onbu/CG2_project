@@ -258,12 +258,6 @@ void HairIntersectionShader()
     StrandVertex v0 = HairFlatVertices[aabbIndex * 2 + 0];
     StrandVertex v1 = HairFlatVertices[aabbIndex * 2 + 1];
     
-    //// セグメントバッファから、直接このAABBを構成する頂点インデックスを引く
-    //SegmentData seg = HairSegments[aabbIndex];
-    //// 頂点データを直接取得！
-    //StrandVertex v0 = HairVertices[seg.v0_Index];
-    //StrandVertex v1 = HairVertices[seg.v1_Index];
-    
     float radius = v0.radius;
 
     // レイの始点から、線分の両端点（v0, v1）への距離の最小値を大雑把にチェック。

@@ -38,7 +38,7 @@ public:
         return ptr;
     }
 
-    // ★ オブジェクトの所有権を抽出して渡す（SceneMapのリストからは外れるがメモリは解放されない）
+    // オブジェクトの所有権を抽出して渡す（SceneMapのリストからは外れるがメモリは解放されない）
     std::unique_ptr<DynamicObject> ExtractObject(DynamicObject* target) {
         auto it = std::find_if(objects_.begin(), objects_.end(),
             [target](const auto& ptr) { return ptr.get() == target; });
@@ -51,7 +51,7 @@ public:
         return nullptr;
     }
 
-    // ★ 保持していたオブジェクトの所有権を SceneMap に戻す
+    // 保持していたオブジェクトの所有権を SceneMap に戻す
     void RestoreObject(std::unique_ptr<DynamicObject> obj) {
         if (obj) {
             objects_.push_back(std::move(obj));

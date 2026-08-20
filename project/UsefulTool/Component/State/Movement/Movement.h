@@ -15,6 +15,13 @@ public:
     void Update(float deltaTime) override;
     void DrawUI() override;
 
+    // --- MoveType / Target 設定用のインターフェース ---
+    void SetMoveType(MoveType type) { moveType_ = type; }
+    MoveType GetMoveType() const { return moveType_; }
+
+    void SetTargetObject(DynamicObject* target) { targetObject_ = target; }
+    DynamicObject* GetTargetObject() const { return targetObject_; }
+
     // --- モジュールの追加 (テンプレートで簡単に登録) ---
     template <typename T, typename... Args>
     T* AddAction(Args&&... args) {
@@ -47,4 +54,7 @@ public:
 private:
     std::vector<std::unique_ptr<IMovementAction>> actions_;
     IMovementAction* currentAction_ = nullptr;
+
+    MoveType moveType_ = MoveType::Camera;
+    DynamicObject* targetObject_ = nullptr;
 };

@@ -6,6 +6,7 @@
 #include "DrawManager.h"
 #include "SDFManager.h"
 #include "AnimationManager.h"
+#include "SkinningManager.h"
 #include "../Engine/Objects/Primitive/Box/PrimitiveBox.h"
 #include "../Engine/Objects/Primitive/Ring/Ring.h"
 #include "../Engine/Objects/Primitive/MagicPlane.h"
@@ -32,7 +33,7 @@ void SceneDirector::Initialize(Scene& firstScene) {
 	MotionManager::GetInstance()->LoadMotions("resources/Data/Motion/Hermite/");
 
 	SDFManager::GetInstance()->Initialize(p_fngine_);
-	SDFManager::GetInstance()->LoadAndBake(p_fngine_->GetCommand().GetList().GetList().Get(), "Naira_ExportTest", 256);
+	SDFManager::GetInstance()->LoadAndBake(p_fngine_->GetCommand().GetList().GetList().Get(), "Naira_ExportTest", 64);
 
 	// 最初のシーンの初期化処理
 	currentScene_ = &firstScene;
@@ -44,7 +45,7 @@ void SceneDirector::Initialize(Scene& firstScene) {
 	CameraSystem::GetInstance()->MakeCamera("NormalCamera", CameraType::Normal);
 	CameraSystem::GetInstance()->MakeCamera("DebugCamera", CameraType::Debug);
 	CameraSystem::GetInstance()->MakeCamera("GameCamera", CameraType::Game);
-	CameraSystem::GetInstance()->SetActiveCamera("GameCamera");
+	CameraSystem::GetInstance()->SetActiveCamera("DebugCamera");
 
 	ComponentFactory::GetInstance()->Initialize();
 
@@ -99,10 +100,18 @@ void SceneDirector::Draw() {
 		// [ ゲーム ]
 		if (isGameRunning_) {
 			// [ シーン ]
+
+		// =========================================================
+		// 【Compute Shader パス】全 SkinCluster を一括 Dispatch！
+		// =========================================================
+			SkinningManager::GetInstance()->DispatchAll(p_fngine_->GetCommand().GetList().GetList().Get());
+
 			currentScene_->Draw();
 
 			PrimitiveBox::GetInstance()->DrawInstanced();
 			PrimitiveRing::GetInstance()->DrawInstanced();
+
+			SkinningManager::GetInstance()->ClearActiveSkinClusters();
 		}
 	}
 	// [ ポーズ中 ]
@@ -199,9 +208,11 @@ void SceneDirector::LoadModelData() {
 	ModelManager::GetInstance()->AddObject("Grass", ModelManager::GetInstance()->LoadModelData("AnimatedCube").vertices, ModelManager::GetInstance()->LoadModelData("AnimatedCube").indices);
 	ModelManager::GetInstance()->AddObject("Column", ModelManager::GetInstance()->LoadModelData("Column").vertices, ModelManager::GetInstance()->LoadModelData("Column").indices);
 	ModelManager::GetInstance()->AddObject("BoneOctahedron", ModelManager::GetInstance()->LoadModelData("BoneOctahedron").vertices, ModelManager::GetInstance()->LoadModelData("BoneOctahedron").indices);
+	ModelManager::GetInstance()->AddObject("Naira_ExportTest", ModelManager::GetInstance()->LoadModelData("Naira_ExportTest").vertices, ModelManager::GetInstance()->LoadModelData("Naira_ExportTest").indices);
 
 
-	AnimationManager::GetInstance()->LoadAnimationFile("resources/Human", "walk.gltf");
+	//AnimationManager::GetInstance()->LoadAnimationFile("resources/Human", "walk.gltf");
+	AnimationManager::GetInstance()->LoadAnimationFile("resources/Model/Character/Test", "Walk.gltf");
 }
 
 void SceneDirector::LoadTexture() {

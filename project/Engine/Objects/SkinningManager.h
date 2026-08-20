@@ -28,6 +28,24 @@ public:
         uint32_t numVertices
     );
 
+    // SkinCluster のポインタを登録
+    void RegisterActiveSkinCluster(SkinCluster* skinCluster) {
+        if (skinCluster) {
+            activeSkinClusters_.push_back(skinCluster);
+        }
+    }
+
+    // 登録された全 SkinCluster の CS を一括実行！
+    void DispatchAll(ID3D12GraphicsCommandList* commandList) {
+        for (auto* cluster : activeSkinClusters_) {
+            cluster->DispatchComputeShader(commandList); // SkinCluster自身のDispatchを呼ぶ
+        }
+    }
+
+    void ClearActiveSkinClusters() {
+        activeSkinClusters_.clear();
+    }
+
     // データ取得関数
     const SkeletonTemplate* GetSkeletonTemplate(const std::string& id) const;
     const SkinningStaticData* GetSkinningStaticData(const std::string& id) const;
@@ -40,5 +58,5 @@ private:
 private:
     std::unordered_map<std::string, SkeletonTemplate> skeletonTemplates_;
     std::unordered_map<std::string, SkinningStaticData> skinningStaticDatas_;
-
+    std::vector<SkinCluster*> activeSkinClusters_;
 };

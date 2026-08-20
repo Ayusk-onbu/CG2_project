@@ -165,6 +165,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="Engine\Objects\Hair\IHair.cpp" />
     <ClCompile Include="Engine\Objects\Hair\Strands.cpp" />
     <ClCompile Include="Engine\Objects\Primitive\Bone\Bone.cpp" />
+    <ClCompile Include="Engine\Objects\Primitive\Character\PrimitiveCharcter.cpp" />
     <ClCompile Include="Engine\Objects\Primitive\Column\Column.cpp" />
     <ClCompile Include="Engine\Objects\Primitive\Cylinder\Cylinder.cpp" />
     <ClCompile Include="Engine\Objects\Primitive\Grass\Grass.cpp" />
@@ -220,6 +221,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="UsefulTool\Component\Controller\Controller.cpp" />
     <ClCompile Include="UsefulTool\Component\Physics\ColliderComponent.cpp" />
     <ClCompile Include="UsefulTool\Component\Physics\RigidBody.cpp" />
+    <ClCompile Include="UsefulTool\Component\Render\Providers.cpp" />
     <ClCompile Include="UsefulTool\Component\Render\RenderComponent.cpp" />
     <ClCompile Include="UsefulTool\Component\Skinning\SkinningComponent.cpp" />
     <ClCompile Include="UsefulTool\Component\State\Action\Action.cpp" />
@@ -396,6 +398,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="Engine\Objects\Hair\IHair.h" />
     <ClInclude Include="Engine\Objects\Primitive\Base\PrimitiveBaseModelData.h" />
     <ClInclude Include="Engine\Objects\Primitive\Bone\Bone.h" />
+    <ClInclude Include="Engine\Objects\Primitive\Character\PrimitiveCharcter.h" />
     <ClInclude Include="Engine\Objects\Primitive\Column\Column.h" />
     <ClInclude Include="Engine\Objects\Primitive\Cylinder\Cylinder.h" />
     <ClInclude Include="Engine\Objects\Primitive\Grass\Grass.h" />
@@ -605,6 +608,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <None Include="resources\shaders\Object3d\Object3d.hlsli" />
     <None Include="resources\shaders\Particle\Particle.hlsli" />
     <None Include="resources\shaders\Plane\MagicCircle.hlsli" />
+    <None Include="resources\shaders\Primitive\Character\Character.hlsli" />
     <None Include="resources\shaders\Primitive\Column\Column.hlsli" />
     <None Include="resources\shaders\Primitive\Grass\Grass.hlsli" />
     <None Include="resources\shaders\Ring\Ring.hlsli" />

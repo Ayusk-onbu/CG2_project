@@ -1,6 +1,7 @@
 #include "SkinningComponent.h"
 #include "DynamicObject.h"
 #include "ModelManager.h"
+#include "DrawManager.h"
 #include "Log.h"
 
 bool SkinningComponent::Setup(Fngine* engine, const std::string& modelID) {
@@ -50,11 +51,15 @@ void SkinningComponent::Update(float deltaTime) {
         }
     }
 
-    // 2. 骨格の階層行列（skeletonSpaceMatrix）を計算・更新
+    // 骨格の階層行列（skeletonSpaceMatrix）を計算・更新
     skeleton_.Update();
 
-    // 3. GPU のパレットバッファ(WellForGPU)へ書き込み
+    // GPU のパレットバッファ(WellForGPU)へ書き込み
     skinCluster_.Update(skeleton_);
+
+    SkinningManager::GetInstance()->RegisterActiveSkinCluster(&skinCluster_);
+
+    StopAnimation();
 }
 
 void SkinningComponent::DispatchCS(ID3D12GraphicsCommandList* commandList) {
@@ -134,6 +139,8 @@ void SkinningComponent::DrawUI() {
 
         ImGui::TreePop();
     }
+
+    //DrawManager::GetInstance()->GetBone()->AddSkeleton(skeleton_, master_->GetTransform().mat_);
 #endif
 }
 

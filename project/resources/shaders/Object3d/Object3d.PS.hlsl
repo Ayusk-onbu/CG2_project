@@ -223,7 +223,6 @@ PixelShaderOutPut main(VertexShaderOutput input)
             light.color.rgb * light.intensity * specularSpotLightPow * float32_t3(1.0f, 1.0f, 1.0f) * attenuationFactor * falloffFactor;
         }
         
-        // *** New Code ***
         float32_t3 N = normalize(input.normal);
         float32_t3 V = normalize(gCamera.worldPosition - input.worldPosition);
         

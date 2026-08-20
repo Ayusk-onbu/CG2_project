@@ -15,7 +15,7 @@
         "cullMode": "Back"
       },
       "depthStencilState": {
-        "depthEnable": false,
+        "depthEnable": true,
         "depthWriteMask": "All",
         "depthFunc": "LessEqual",
         "format": "D24"

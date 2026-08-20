@@ -134,8 +134,8 @@ void Fngine::Initialize() {
 	postPerfectForGPU_ = std::make_unique<ConstantBuffer<PostEffectConfig>>(this);
 	postPerfectForGPU_->Initialize();
 
-	postPerfectForGPU_->GetMappedData()->enableLuminanceOutline = 1;
-	postPerfectForGPU_->GetMappedData()->enableDepthOutline = 1;
+	postPerfectForGPU_->GetMappedData()->enableLuminanceOutline = 0;
+	postPerfectForGPU_->GetMappedData()->enableDepthOutline = 0;
 
 	osr_.Initialize(d3d12_, float(kClienWidth_), float(kClienHeight_));
 	hair_ = std::make_unique<Hair>();
@@ -177,7 +177,7 @@ void Fngine::UseRandom() {
 void Fngine::BeginOSRFrame() {
 	postPerfectForGPU_->GetMappedData()->enableVignette = 0;
 	postPerfectForGPU_->GetMappedData()->enableRadialBlur = 0;
-	postPerfectForGPU_->GetMappedData()->enableGaussian = 1;
+	postPerfectForGPU_->GetMappedData()->enableGaussian = 0;
 	postPerfectForGPU_->GetMappedData()->enableGrayscale = 0;
 
 	if (hitTimeIndex_ != -1) {

@@ -384,8 +384,54 @@ void HairGuideEditor::Update(){
     const int POINTS_PER_GUIDE = hairSystem_->GetCPUGuideConfig()->pointPerGuide;
 
     if (isDrawPoint_) {
-        float scale = 0.005f;
+        float defaultScale = 0.005f;
+        float highlightScale = 0.008f; // 選択中の球を少し大きくして目立たせる
+
+        auto* guideInfoData = hairSystem_->GetCPUGuideInfoData();
+        uint32_t guideInfoCount = hairSystem_->GetCPUGuideInfoCount();
+
+        // 1. 選択中ガイド（4本）の頂点インデックス範囲と表示色を事前に設定
+        struct GuideRange {
+            uint32_t start = 0;
+            uint32_t end = 0;
+            Vector4 color;
+            bool isValid = false;
+        };
+
+        GuideRange targetRanges[4];
+        auto setupRange = [&](int slot, int guideIndex, Vector4 color) {
+            if (guideIndex >= 0 && guideIndex < static_cast<int>(guideInfoCount)) {
+                const auto& info = guideInfoData[guideIndex];
+                if (info.vertexCount > 0) {
+                    targetRanges[slot].start = info.vertexStartIndex;
+                    targetRanges[slot].end = info.vertexStartIndex + info.vertexCount;
+                    targetRanges[slot].color = color;
+                    targetRanges[slot].isValid = true;
+                }
+            }
+            };
+
+        // 優先度順にセット（0:単一編集=黄色, 1:親1=赤, 2:親2=緑, 3:親3=青）
+        setupRange(0, selectedGuideIndex_, { 1.0f, 0.85f, 0.0f,  1.0f }); // 黄色
+        setupRange(1, selectedGuideIndices_[0], { 1.0f, 0.25f, 0.25f, 1.0f }); // 赤色
+        setupRange(2, selectedGuideIndices_[1], { 0.25f, 1.0f, 0.25f, 1.0f }); // 緑色
+        setupRange(3, selectedGuideIndices_[2], { 0.25f, 0.65f, 1.0f, 1.0f }); // 青色
+
+        // 2. 既存のループ内で判定＆描画
         for (uint32_t i = 0; i < hairSystem_->GetCPUActiveGuideCount(); ++i) {
+            // デフォルト値（非選択時は白）
+            Vector4 pointColor = { 1.0f, 1.0f, 1.0f, 1.0f };
+            float pointScale = defaultScale;
+
+            // 現在の頂点インデックス(i)が選択中ガイドの範囲に含まれるか判定
+            for (int r = 0; r < 4; ++r) {
+                if (targetRanges[r].isValid && i >= targetRanges[r].start && i < targetRanges[r].end) {
+                    pointColor = targetRanges[r].color;
+                    pointScale = highlightScale;
+                    break; // 該当したら色を確定して抜ける
+                }
+            }
+
             PrimitiveSphereData data;
             data.worldTransform.Initialize();
 
@@ -395,9 +441,9 @@ void HairGuideEditor::Update(){
             Vector3 worldPos = { worldPos4.x / worldPos4.w, worldPos4.y / worldPos4.w, worldPos4.z / worldPos4.w };
 
             data.worldTransform.set_.Translation(worldPos);
-            data.worldTransform.set_.Scale({ scale,scale,scale });
+            data.worldTransform.set_.Scale({ pointScale, pointScale, pointScale });
             data.worldTransform.LocalToWorld();
-            data.color = { 1.0f,1.0f,1.0f,1.0f };
+            data.color = pointColor;
             DrawManager::GetInstance()->GetSphere()->AddInstance(data);
         }
     }
@@ -492,6 +538,28 @@ void HairGuideEditor::Update(){
             // 何も無い場所をクリックしたら選択解除
             selectedPointIndices_.clear();
         }
+
+        //if (!io.WantCaptureKeyboard) {
+        //    // [Delete] キー: 選択中頂点（非選択時は末尾頂点）を削除
+        //    if (ImGui::IsKeyPressed(ImGuiKey_Delete) && selectedGuideIndex_ >= 0) {
+        //        hairSystem_->RemoveVertexFromGuide(
+        //            static_cast<uint32_t>(selectedGuideIndex_),
+        //            selectedVertexIndexWithinGuide_
+        //        );
+        //        // 頂点が削除されたので選択解除/調整
+        //        selectedVertexIndexWithinGuide_ = -1;
+        //    }
+
+        //    // [Shift + A] キー: 選択中のガイドの末尾に頂点を追加
+        //    if (io.KeyShift && ImGui::IsKeyPressed(ImGuiKey_A) && selectedGuideIndex_ >= 0) {
+        //        hairSystem_->AddVertexToGuide(static_cast<uint32_t>(selectedGuideIndex_));
+        //    }
+
+        //    // [Shift + M] キー: 選択中のガイドをミラー複製
+        //    if (io.KeyShift && ImGui::IsKeyPressed(ImGuiKey_M) && selectedGuideIndex_ >= 0) {
+        //        CreateMirrorGuide(static_cast<uint32_t>(selectedGuideIndex_), mirrorAxisX_);
+        //    }
+        //}
     }
 
     // 髪を作成するガイドの可視化
@@ -530,6 +598,12 @@ void HairGuideEditor::DrawUI(){
 #ifdef USE_IMGUI
     uint32_t count = hairSystem_->GetCPUGuideCount();
     auto* cpuData = hairSystem_->GetCPUGuideData();
+
+    // 色識別用のカラーチップを描画するラムダ関数
+    auto DrawColorChip = [](const char* id, const ImVec4& color) {
+        ImGui::ColorButton(id, color, ImGuiColorEditFlags_NoTooltip | ImGuiColorEditFlags_NoInputs, ImVec2(16, 16));
+        ImGui::SameLine();
+    };
 
     if (ImGui::Button(("Draw Point" + std::string(isDrawPoint_ ? " On" : " Off")).c_str())) {
         isDrawPoint_ = !isDrawPoint_;
@@ -683,6 +757,71 @@ void HairGuideEditor::DrawUI(){
     ImGui::Separator();
 
     // ----------------------------------------------------------------
+    // 🆕 選択中ガイドの構造編集（頂点追加・削除・ミラー複製）
+    // ----------------------------------------------------------------
+    if (ImGui::CollapsingHeader("Selected Guide Operations", ImGuiTreeNodeFlags_DefaultOpen))
+    {
+        uint32_t totalGuideCount = hairSystem_->GetCPUGuideInfoCount();
+        auto* guideInfos = hairSystem_->GetCPUGuideInfoData();
+
+        // 有効なガイド総数を取得
+        int guideMaxCount = 0;
+        for (size_t i = 0; i < totalGuideCount; ++i) {
+            if (guideInfos[i].vertexCount > 0) {
+                guideMaxCount++;
+            }
+        }
+
+        if (guideMaxCount > 0) {
+            // ミラー・単一編集用に独立した selectedGuideIndex_ を直接選択
+            DrawColorChip("##YellowMarker", ImVec4(1.0f, 0.85f, 0.0f, 1.0f));
+            ImGui::SliderInt("Target Guide Index", &selectedGuideIndex_, 0, guideMaxCount - 1);
+
+            if (selectedGuideIndex_ >= 0 && selectedGuideIndex_ < static_cast<int>(totalGuideCount)) {
+                const auto& activeGuide = guideInfos[selectedGuideIndex_];
+                ImGui::Text("Vertex Count: %u", activeGuide.vertexCount);
+
+                // --- 頂点追加ボタン ---
+                if (ImGui::Button("+ Add Vertex (Tip)", ImVec2(150, 26))) {
+                    hairSystem_->AddVertexToGuide(static_cast<uint32_t>(selectedGuideIndex_));
+                }
+
+                ImGui::SameLine();
+
+                // --- 頂点削除ボタン ---
+                bool canRemove = (activeGuide.vertexCount > 2); // 最小2個維持
+                if (!canRemove) ImGui::BeginDisabled();
+
+                if (ImGui::Button("- Remove Tip Vertex", ImVec2(150, 26))) {
+                    hairSystem_->RemoveVertexFromGuide(static_cast<uint32_t>(selectedGuideIndex_));
+                }
+
+                if (!canRemove) {
+                    ImGui::EndDisabled();
+                    if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled)) {
+                        ImGui::SetTooltip("A guide must have at least 2 points.");
+                    }
+                }
+
+                ImGui::Spacing();
+
+                // --- ミラー複製 ---
+                static float mirrorAxisX = 0.0f;
+                ImGui::DragFloat("Mirror Axis X", &mirrorAxisX, 0.01f, -10.0f, 10.0f, "%.3f");
+
+                if (ImGui::Button("Mirror Copy Selected Guide", ImVec2(-1, 26))) {
+                    CreateMirrorGuide(static_cast<uint32_t>(selectedGuideIndex_), mirrorAxisX);
+                }
+            }
+        }
+        else {
+            ImGui::TextDisabled("No active guides available.");
+        }
+    }
+
+    ImGui::Separator();
+
+    // ----------------------------------------------------------------
     // 🆕 要素の動的追加セクション
     // ----------------------------------------------------------------
     if (ImGui::CollapsingHeader("Add New Hair Elements", ImGuiTreeNodeFlags_DefaultOpen))
@@ -701,14 +840,14 @@ void HairGuideEditor::DrawUI(){
         ImGui::ColorEdit3("Root Color", newGuideRootCol);
         ImGui::ColorEdit3("Tip Color", newGuideTipCol);
 
-        if (ImGui::Button("Spawn New Guide", ImVec2(-1, 26)))
-        {
-            Vector3 rCol = { newGuideRootCol[0], newGuideRootCol[1], newGuideRootCol[2] };
-            Vector3 tCol = { newGuideTipCol[0],  newGuideTipCol[1],  newGuideTipCol[2] };
+        //if (ImGui::Button("Spawn New Guide", ImVec2(-1, 26)))
+        //{
+        //    Vector3 rCol = { newGuideRootCol[0], newGuideRootCol[1], newGuideRootCol[2] };
+        //    Vector3 tCol = { newGuideTipCol[0],  newGuideTipCol[1],  newGuideTipCol[2] };
 
-            // ガイドを追加！
-            AddGuide(newGuidePos, newGuideDir, newGuideLength, newGuideRootRad, newGuideTipRad, rCol, tCol);
-        }
+        //    // ガイドを追加！
+        //    AddGuide(newGuidePos, newGuideDir, newGuideLength, newGuideRootRad, newGuideTipRad, rCol, tCol);
+        //}
 
         ImGui::Separator();
 
@@ -718,8 +857,16 @@ void HairGuideEditor::DrawUI(){
         ImGui::TextColored(ImVec4(0.4f, 1.0f, 0.4f, 1.0f), "--- Add New Child Strand ---");
 
         // エディタが現在選択しているガイド（selectedGuideIndex_）を親として自動指定
+        // 赤マーカー
+        DrawColorChip("##TxtRed", ImVec4(1.0f, 0.25f, 0.25f, 1.0f));
         ImGui::Text("Target Parent Guide ID.1: %d", selectedGuideIndices_[0]);
+
+        // 緑マーカー
+        DrawColorChip("##TxtGreen", ImVec4(0.25f, 1.0f, 0.25f, 1.0f));
         ImGui::Text("Target Parent Guide ID.2: %d", selectedGuideIndices_[1]);
+
+        // 青マーカー
+        DrawColorChip("##TxtBlue", ImVec4(0.25f, 0.65f, 1.0f, 1.0f));
         ImGui::Text("Target Parent Guide ID.3: %d", selectedGuideIndices_[2]);
 
         static Vector2 childOffset = { 0.03f, 0.0f }; // ガイドから少しずらす
@@ -743,17 +890,27 @@ void HairGuideEditor::DrawUI(){
             }
         }
         
-        if(blendMode_){// ブレンドモードが複数なら複数選べる
+        if (blendMode_) {
+            // 赤マーカー
+            DrawColorChip("##SldRed", ImVec4(1.0f, 0.25f, 0.25f, 1.0f));
             ImGui::SliderInt("Parent Guide ID.1", &selectedGuideIndices_[0], 0, (int)(guideMaxCount - 1));
+
+            // 緑マーカー
+            DrawColorChip("##SldGreen", ImVec4(0.25f, 1.0f, 0.25f, 1.0f));
             ImGui::SliderInt("Parent Guide ID.2", &selectedGuideIndices_[1], 0, (int)(guideMaxCount - 1));
+
+            // 青マーカー
+            DrawColorChip("##SldBlue", ImVec4(0.25f, 0.65f, 1.0f, 1.0f));
             ImGui::SliderInt("Parent Guide ID.3", &selectedGuideIndices_[2], 0, (int)(guideMaxCount - 1));
-        }   
-        else {// 単一なら一つ
+        }
+        else {
+            // 赤マーカー
+            DrawColorChip("##SldRedSingle", ImVec4(1.0f, 0.25f, 0.25f, 1.0f));
             ImGui::SliderInt("Parent Guide ID", &selectedGuideIndices_[0], 0, (int)(guideMaxCount - 1));
         }
 
         ImGui::DragFloat2("Offset (X, Y)", &childOffset.x, 0.002f, -0.2f, 0.2f);
-        ImGui::SliderInt("構成する頂点の数 / Vertex Count", &childVertexCount, 2, 64);
+        ImGui::SliderInt("構成する頂点の数 / Vertex Count", &childVertexCount, 2, 256);
         ImGui::SliderFloat("Length Scale", &childLengthScale, 0.1f, 2.0f);
         ImGui::SliderFloat("Twist Angle", &childTwistAngle, -3.14f, 3.14f);
         ImGui::SliderFloat("髪先がガイドに近づく強度 / Clump Force", &childClumpForce, 0.0f, 1.0f);
@@ -818,71 +975,6 @@ void HairGuideEditor::DrawUI(){
         }
     }
 
-
-
-    ImGui::TextColored(ImVec4(0.3f, 0.8f, 1.0f, 1.0f), "--- Auto Generation Parameters ---");
-
-    // クラスのメンバ変数にするのが理想ですが、手軽に試せるよう static 変数にしています
-    static float headRadius = 0.3f;       // 頭部（球体）の半径
-    static float segmentLength = 0.04f;   // 制御点の間隔（髪の長さに影響）
-    static Vector3 headCenter = {0.0f,0.0f,0.0f};   // 髪の原点
-    static float bangLength = 0.02f;  // 前髪の長さ（短め）
-    static float sideLength = 0.08f;  // 再度の長さ（短め）
-    static float backLength = 0.08f;  // 後ろ髪の長さ（長め）
-    // マウスドラッグで数値を微調整できるようにする（増減スピードを設定）
-    ImGui::DragFloat("Head Radius", &headRadius, 0.0005f, 0.005f, 2.0f, "%.3f");
-    ImGui::DragFloat("Segment Length", &segmentLength, 0.001f, 0.005f, 0.5f, "%.4f");
-    ImGui::DragFloat3("HeadCenter", &headCenter.x, 0.001f, -0.5f, 0.5f, "%.4f");
-    ImGui::DragFloat("Bang Length (前髪)", &bangLength, 0.001f, 0.005f, 0.5f, "%.4f");
-    ImGui::DragFloat("Side Length", &sideLength, 0.001f, 0.01f, 1.0f, "%.4f");
-    ImGui::DragFloat("Back/Side Length (後ろ髪)", &backLength, 0.001f, 0.01f, 1.0f, "%.4f");
-
-    static ImVec4 rootColor = ImVec4(0.1f, 0.08f, 0.08f, 1.0f); // 根元の色
-    static ImVec4 tipColor = ImVec4(0.25f, 0.18f, 0.12f, 1.0f);  // 毛先の色
-
-    ImGui::ColorEdit3("Root Color (根元)", &rootColor.x);
-    ImGui::ColorEdit3("Tip Color (毛先)", &tipColor.x);
-
-    // 現在の設定値での全体の髪の長さの目安を表示
-    ImGui::Text("Estimated Total Length: %.2f units", segmentLength * (hairSystem_->GetCPUGuideConfig()->pointPerGuide - 1));
-
-    ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.2f, 0.6f, 0.2f, 1.0f)); // 目立つように緑色にする
-    if (ImGui::Button("Reset to Photo Sphere Layout", ImVec2(-1, 35))) {
-
-        Vector3 cRoot = { rootColor.x, rootColor.y, rootColor.z };
-        Vector3 cTip = { tipColor.x,  tipColor.y,  tipColor.z };
-
-        // 関数を呼び出して16000点を一瞬で再計算
-        GenerateDefaultSphereHair(cpuData, count, headRadius, segmentLength, headCenter, cRoot, cTip);
-
-        // 即座にGPUバッファに全転送
-        hairSystem_->RequestNotifyUpdate();
-    }
-    if (ImGui::Button("Reset to Photo Sphere Layout 2", ImVec2(-1, 35))) {
-
-        Vector3 cRoot = { rootColor.x, rootColor.y, rootColor.z };
-        Vector3 cTip = { tipColor.x,  tipColor.y,  tipColor.z };
-
-        // 関数を呼び出して16000点を一瞬で再計算
-        GenerateDefaultShortHair(cpuData, count, headRadius, bangLength, backLength, headCenter, cRoot, cTip);
-
-        // 即座にGPUバッファに全転送
-        hairSystem_->RequestNotifyUpdate();
-    }
-    if (ImGui::Button("Reset to Photo Sphere Layout 3", ImVec2(-1, 35))) {
-
-        Vector3 cRoot = { rootColor.x, rootColor.y, rootColor.z };
-        Vector3 cTip = { tipColor.x,  tipColor.y,  tipColor.z };
-
-        // 関数を呼び出して16000点を一瞬で再計算
-        GenerateDefaultShortHair2(cpuData, count, headRadius, bangLength, sideLength,backLength, headCenter, cRoot, cTip);
-
-        // 即座にGPUバッファに全転送
-        hairSystem_->RequestNotifyUpdate();
-    }
-    
-    ImGui::PopStyleColor();
-
     // UIのボタン
     if (ImGui::Button("Save to JSON")) {
 
@@ -919,7 +1011,7 @@ void HairGuideEditor::DrawUI(){
 
     ImGui::Separator();
 
-    // ▼▼▼ スプライン編集モードのUI ▼▼▼
+    // スプライン編集モードのUI
     if (!isEditingSpline_) {
         // 通常時：スプライン編集モードを開始するボタン
         if (ImGui::Button("Start Spline Edit Mode", ImVec2(-1, 26))) {
@@ -1025,6 +1117,7 @@ void HairGuideEditor::AddGuide(const Vector3& rootPosition, const Vector3& direc
 
     // GPU側に更新を通知
     hairSystem_->RequestNotifyUpdate();
+    hairSystem_->MarkGuideTopologyDirty();
 #endif
 }
 
@@ -1492,5 +1585,62 @@ bool HairGuideEditor::LoadFromFile(const std::string& filename, Fngine* engine) 
     selectedGuideIndices_[2] = -1;
     selectedPointIndices_ = { 0 };
 
+    return true;
+}
+
+bool HairGuideEditor::CreateMirrorGuide(uint32_t sourceGuideIndex, float mirrorAxisX) {
+    if (!hairSystem_) return false;
+
+    // ガイドの構成情報
+    auto* guideInfos = hairSystem_->GetCPUGuideInfoData();
+    // ガイドの制御点情報
+    auto* points = hairSystem_->GetCPUGuideData();
+    // ガイドの総数（最大容量）
+    uint32_t totalGuideCount = hairSystem_->GetCPUGuideInfoCount();
+
+    // 引数のインデックスが範囲外なら処理不可能なので終了
+    if (sourceGuideIndex >= totalGuideCount) return false;
+    // 複製元のガイド情報を取得
+    const auto& srcInfo = guideInfos[sourceGuideIndex];
+    // 空のガイドは処理不可
+    if (srcInfo.vertexCount == 0) return false;
+
+    // 未使用のガイドスロットを検索
+    int targetGuideIndex = -1;
+    for (uint32_t g = 0; g < totalGuideCount; ++g) {
+        if (guideInfos[g].vertexCount == 0) {
+            targetGuideIndex = static_cast<int>(g);
+            break;
+        }
+    }
+
+    if (targetGuideIndex < 0) return false; // 空きスロットなし
+    
+    uint32_t totalActivePoints = hairSystem_->GetCPUActiveGuideCount();
+    uint32_t maxCapacity = hairSystem_->GetCPUGuideCount();
+    if (totalActivePoints + srcInfo.vertexCount > maxCapacity) return false; // バッファ容量オーバー
+
+    // アクティブ頂点配列の末尾を新ガイドの開始位置とする
+    uint32_t newStartIndex = totalActivePoints;
+
+    // 複製元データを反転してセット
+    for (uint32_t i = 0; i < srcInfo.vertexCount; ++i) {
+        const auto& srcPoint = points[srcInfo.vertexStartIndex + i];
+        GuideCurve::ControllerPoint mirrorPoint = srcPoint;
+
+        // X軸反転 ( mirrorAxisX - (x - mirrorAxisX) )
+        mirrorPoint.position.x = mirrorAxisX - (srcPoint.position.x - mirrorAxisX);
+        mirrorPoint.homePosition.x = mirrorAxisX - (srcPoint.homePosition.x - mirrorAxisX);
+
+        points[newStartIndex + i] = mirrorPoint;
+    }
+
+    // ガイド情報の登録
+    guideInfos[targetGuideIndex].vertexStartIndex = newStartIndex;
+    guideInfos[targetGuideIndex].vertexCount = srcInfo.vertexCount;
+
+    // GPU更新リクエスト
+    hairSystem_->RequestNotifyUpdate();
+    hairSystem_->MarkGuideTopologyDirty();
     return true;
 }

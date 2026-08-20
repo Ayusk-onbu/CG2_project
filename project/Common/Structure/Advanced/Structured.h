@@ -225,7 +225,7 @@ public:
         resDesc.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE3D;
         resDesc.Width = width;
         resDesc.Height = height;
-        resDesc.DepthOrArraySize = static_cast<UINT16>(depth); // ★ depth を設定
+        resDesc.DepthOrArraySize = static_cast<UINT16>(depth); // depth を設定
         resDesc.MipLevels = 1;
         resDesc.Format = DXGI_FORMAT_R32_FLOAT;
         resDesc.SampleDesc.Count = 1;
@@ -242,10 +242,10 @@ public:
 
         D3D12_UNORDERED_ACCESS_VIEW_DESC uavDesc{};
         uavDesc.Format = DXGI_FORMAT_R32_FLOAT;
-        uavDesc.ViewDimension = D3D12_UAV_DIMENSION_TEXTURE3D; // ★ TEXTURE3D に変更
+        uavDesc.ViewDimension = D3D12_UAV_DIMENSION_TEXTURE3D; // TEXTURE3D に変更
         uavDesc.Texture3D.MipSlice = 0;
         uavDesc.Texture3D.FirstWSlice = 0;
-        uavDesc.Texture3D.WSize = depth;                      // ★ 全スライスを指定
+        uavDesc.Texture3D.WSize = depth;                      // 全スライスを指定
 
         device->CreateUnorderedAccessView(
             resource_.Get(), nullptr,

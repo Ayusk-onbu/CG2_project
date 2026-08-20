@@ -1,7 +1,78 @@
 #include "InputHandler.h"
 #include "InputManager.h"
+#include "MathUtils.h"
+#include "CameraSystem.h"
 #include <dinput.h>
 #include <cmath>
+
+Vector3 CalculateMoveVector(
+	const Vector3& rawInput,
+	MoveType type,
+	const Vector3& playerPos,
+	const std::optional<Vector3>& targetPos) 
+{
+	// 入力がなければそのままゼロを返す
+	if (LengthSquared(rawInput) <= 0.0001f) {
+		return Vector3(0.0f, 0.0f, 0.0f);
+	}
+
+	Vector3 finalMove = Vector3(0.0f, 0.0f, 0.0f);
+	auto activeCamera = CameraSystem::GetInstance()->GetActiveCamera();
+
+	switch (type) {
+	case MoveType::Raw:
+		finalMove = rawInput;
+		break;
+
+	case MoveType::Camera:
+	case MoveType::ReverseCamera: {
+		Vector3 forward = activeCamera->zAxis_;
+		Vector3 right = activeCamera->xAxis_;
+
+		forward.y = 0.0f; right.y = 0.0f;
+		forward = Normalize(forward);
+		right = Normalize(right);
+
+		finalMove = rawInput.z * forward + rawInput.x * right;
+		if (type == MoveType::ReverseCamera) finalMove = -finalMove;
+		break;
+	}
+
+	case MoveType::Screen: {
+		Vector3 screenRight = activeCamera->xAxis_;
+		Vector3 screenUp = activeCamera->yAxis_;
+
+		screenRight.y = 0.0f;
+		screenUp.y = 0.0f;
+		screenRight = Normalize(screenRight);
+		screenUp = Normalize(screenUp);
+
+		finalMove = rawInput.z * screenUp + rawInput.x * screenRight;
+		break;
+	}
+
+	case MoveType::LockOn: {
+		if (!targetPos.has_value()) {
+			return CalculateMoveVector(rawInput, MoveType::Camera, playerPos);
+		}
+
+		Vector3 toTarget = targetPos.value() - playerPos;
+		toTarget.y = 0.0f;
+
+		if (LengthSquared(toTarget) <= 0.0001f) {
+			return Vector3(0.0f, 0.0f, 0.0f);
+		}
+
+		Vector3 forwardEye = Normalize(toTarget);
+		Vector3 rightEye = Vector3(forwardEye.z, 0.0f, -forwardEye.x);
+
+		finalMove = rawInput.z * forwardEye + rawInput.x * rightEye;
+		break;
+	}
+	}
+
+	return Normalize(finalMove);
+}
 
 CommandState PlayerController::GetCommandState(CommandState preState) {
 	auto key = InputManager::GetKey();               // 非 const コピーを取得して非 const メンバを呼べるようにする

@@ -14,6 +14,11 @@ private:
     std::vector<int> selectedPointIndices_ = { 0 }; // とりあえず最初のポイントをいじる用
 	float weights_[3] = { 1.0f, 0.0f, 0.0f }; // Blendモード時の重み（合計1.0になるように）
     
+    // (ミラー用)現在選択中のガイドおよび頂点インデックス
+    int selectedGuideIndex_ = -1;
+    int selectedVertexIndexWithinGuide_ = -1;
+    float mirrorAxisX_ = 0.0f; // ミラー面のX座標（標準は 0.0）
+
     // ドラッグ＆Undo管理用のフラグ
     bool isGizmoUsingLastFrame_ = false;
     std::map<int,Vector3> gizmoOldPositions_; // ギズモを触る前の位置
@@ -33,7 +38,6 @@ private:
 
     //
     // 【 Guideを追加する機能 】
-    // 将来てきにCommandになる
 private:
     void AddGuide(const Vector3& rootPosition, const Vector3& direction, float totalLength,
         float rootRadius, float tipRadius, const Vector3& rootColor, const Vector3& tipColor);
@@ -41,6 +45,14 @@ private:
 
     void AddGuideFromSpline(const std::vector<MathUtils::Spline::Node<Vector3>*>& splineNodes,
         float rootRadius, float tipRadius, const Vector3& rootColor, const Vector3& tipColor);
+
+    /// <summary>
+	/// 指定したガイドをX軸でミラーコピーして新しいガイドを作成する
+    /// </summary>
+    /// <param name="sourceGuideIndex">複製元のガイドのインデックス</param>
+    /// <param name="mirrorAxisX">ミラーコピーするX軸の位置</param>
+    /// <returns>新しいガイドの作成に成功した場合は true、失敗した場合は false</returns>
+    bool CreateMirrorGuide(uint32_t sourceGuideIndex, float mirrorAxisX = 0.0f);
 
     // リアルタイムスプライン編集用の変数
     std::unique_ptr<HermiteEditor> hermiteEditor_ = nullptr;

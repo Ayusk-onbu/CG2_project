@@ -6,13 +6,37 @@
 void MovementComponent::Update(float deltaTime) {
     if (!master_) return;
 
-    // 1. 脳みそ (ControllerComponent) から最新コマンドを取得 (無ければ空コマンド)
+    // 脳みそ (ControllerComponent) から最新コマンドを取得 (無ければ空コマンド)
     CommandState input{};
     if (auto* ctrl = master_->GetComponent<ControllerComponent>()) {
         input = ctrl->GetCommand();
     }
 
-    // 2. 優先度順に CanExecute を評価し、最初に true になったアクションを選択
+    // MoveDirectionを変換
+	Vector3 playerPos = master_->GetTransform().get_.Translation();
+    std::optional<Vector3> targetPos = std::nullopt;
+
+    if (targetObject_) {
+		targetPos = targetObject_->GetTransform().get_.Translation();
+    }
+
+    // 変換
+	input.moveDirection = CalculateMoveVector(
+        input.moveDirection, 
+        moveType_, 
+        playerPos, 
+        targetPos
+    );
+
+    if (moveType_ == MoveType::LockOn && targetPos.has_value()) {
+        Vector3 toTarget = targetPos.value() - playerPos;
+        toTarget.y = 0.0f;
+        if (LengthSquared(toTarget) > 0.0001f) {
+            master_->GetTransform().LookAtToDirection(Normalize(toTarget));
+        }
+    }
+
+    // 優先度順に CanExecute を評価し、最初に true になったアクションを選択
     IMovementAction* bestAction = nullptr;
     for (auto& action : actions_) {
         if (action->CanExecute(master_, input)) {
@@ -21,14 +45,14 @@ void MovementComponent::Update(float deltaTime) {
         }
     }
 
-    // 3. アクションの切り替え処理 (Exit ➔ Enter)
+    // アクションの切り替え処理 (Exit ➔ Enter)
     if (currentAction_ != bestAction) {
         if (currentAction_) currentAction_->OnExit(master_);
         currentAction_ = bestAction;
         if (currentAction_) currentAction_->OnEnter(master_);
     }
 
-    // 4. 現在のアクションを更新
+    // 現在のアクションを更新
     if (currentAction_) {
         currentAction_->OnUpdate(master_, input, deltaTime);
     }
@@ -41,7 +65,19 @@ void MovementComponent::DrawUI() {
         ImGui::Separator();
 
         // ---------------------------------------------------
-        // 1. アタッチ済み Action 一覧 & 削除ボタン
+        // MoveType切り替え
+        // ---------------------------------------------------
+        const char* moveTypeNames[] = { "Raw", "Camera", "Reverse", "Screen", "LockOn" };
+        int currentType = static_cast<int>(moveType_);
+        if (ImGui::Combo("Move Type", &currentType, moveTypeNames, IM_ARRAYSIZE(moveTypeNames))) {
+            moveType_ = static_cast<MoveType>(currentType);
+        }
+
+        ImGui::Separator();
+
+
+        // ---------------------------------------------------
+        // アタッチ済み Action 一覧 & 削除ボタン
         // ---------------------------------------------------
         ImGui::Text("Attached Actions (%zu):", actions_.size());
 
@@ -71,7 +107,7 @@ void MovementComponent::DrawUI() {
         ImGui::Separator();
 
         // ---------------------------------------------------
-        // 2. UIからの新規 Action アタッチ
+        // UIからの新規 Action アタッチ
         // ---------------------------------------------------
         const char* availableActions[] = {
             "Idle (IdleMovementAction)",

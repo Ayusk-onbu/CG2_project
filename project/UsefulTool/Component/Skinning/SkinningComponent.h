@@ -52,6 +52,7 @@ public:
     const std::string& GetCurrentAnimationName() const { return currentAnimationName_; }
     bool IsPlaying() const { return isPlaying_; }
     float GetAnimationTime() const { return animationTime_; }
+	std::string GetModelID() const { return modelID_; }
 
     // --- ボーン情報取得用インターフェース ---
 

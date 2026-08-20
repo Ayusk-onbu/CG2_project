@@ -2,36 +2,34 @@
 #include "DynamicObject.h"
 
 void RenderComponent::Update(float deltaTime) {
-    if (master_ && provider_) {
-        master_->GetTransform().LocalToWorld();
-        provider_->SendToDrawManager(master_->GetTransform());
-    }
+    if (!master_ || !provider_) return;
+    
+    master_->GetTransform().LocalToWorld();
+    provider_->SendToDrawManager(master_);
 }
 
 void RenderComponent::DrawUI() {
 #ifdef USE_IMGUI
     ImGui::Text("Render Provider Selection");
 
-    // --- プロバイダー切替ボタン ---
-    if (ImGui::Button("Set GrassRender")) {
-        SetProvider<GrassRenderProvider>();
-    }
+    // プロバイダー切り替え UI
+    const char* providers[] = { "Character", "Grass" };
+    static int currentIdx = 0;
 
-    /* 将来的に別の描画プロバイダー（例: ModelRenderProvider）が増えたらここに追加
-    ImGui::SameLine();
-    if (ImGui::Button("Set ModelRender")) {
-        SetProvider<ModelRenderProvider>();
-    }
-    */
-
-    if (!provider_) {
-        ImGui::TextColored(ImVec4(1, 0, 0, 1), "No RenderProvider Attached!");
-        return;
+    if (ImGui::Combo("Provider Type", &currentIdx, providers, IM_ARRAYSIZE(providers))) {
+        if (currentIdx == 0) SetProvider<CharacterRenderProvider>();
+        else if (currentIdx == 1) SetProvider<GrassRenderProvider>();
     }
 
     ImGui::Separator();
 
-    // 保持しているプロバイダー独自の UI を呼び出す
-    provider_->DrawUI();
+    // 現在保持している Provider 固有の UI を描画
+    if (provider_) {
+        provider_->DrawUI();
+    }
+    else {
+        ImGui::TextColored(ImVec4(1, 0, 0, 1), "No RenderProvider Attached!");
+        return;
+    }
 #endif
 }

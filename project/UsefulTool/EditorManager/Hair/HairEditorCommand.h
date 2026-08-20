@@ -66,6 +66,7 @@ public:
         auto* guideInfoData = hairSystem_->GetCPUGuideInfoData();
         guideInfoData[targetGuideIndex_] = oldInfo_;
         hairSystem_->RequestNotifyUpdate();
+        hairSystem_->MarkGuideTopologyDirty();
     }
 
     void Redo() override {
@@ -81,6 +82,7 @@ public:
         // ガイド情報の復元
         guideInfoData[targetGuideIndex_] = newInfo_;
         hairSystem_->RequestNotifyUpdate();
+        hairSystem_->MarkGuideTopologyDirty();
     }
 };
 

@@ -10,6 +10,7 @@
 #include "Component/Status/Status.h"
 #include "Component/Physics/ColliderComponent.h"
 #include "Component/Physics/RigidBody.h"
+#include "Component/Render/RenderComponent.h"
 
 Player::Player() {
 	//controller_ = std::make_unique<PlayerController>();
@@ -17,15 +18,10 @@ Player::Player() {
 
 void Player::Initialize(Fngine* fngine) {
 	DynamicObject::Initialize(fngine, "Naira_ExportTest", "ulthimaSky");
+	transform_.set_.Rotation({ 0.0f,180.0f,0.0f });
 
-	// =========================================================
-	// 物理 ＆ ステータスコンポーネント
-	// =========================================================
-	auto* rb = AddComponent<RigidBody>();
-	rb->SetBodyType(BodyType::Kinematic); // キャラクター物理
-
-	auto* status = AddComponent<StatusComponent>();
-	status->SetBaseStats(1000.0f, 100.0f, 50.0f, 6.0f); // HP, ATK, DEF, Speed
+	auto* render = AddComponent<RenderComponent>();
+	render->SetProvider<CharacterRenderProvider>();
 
 	// =========================================================
 	// 脳みそ (ControllerComponent) ➔ プレイヤー操作を代入
@@ -43,12 +39,22 @@ void Player::Initialize(Fngine* fngine) {
 	moveComp->AddAction<JumpMovementAction>(9.0f); // ジャンプ力: 9.0f
 
 	// =========================================================
+	// 物理 ＆ ステータスコンポーネント
+	// =========================================================
+	auto* rb = AddComponent<RigidBody>();
+	rb->SetBodyType(BodyType::Kinematic); // キャラクター物理
+	rb->SetUseGravity(false);
+
+	auto* status = AddComponent<StatusComponent>();
+	status->SetBaseStats(1000.0f, 100.0f, 50.0f, 6.0f); // HP, ATK, DEF, Speed
+
+	// =========================================================
 	// スキニング (SkinningComponent) ➔ 自動アニメーション
 	// =========================================================
 	auto* skinning = AddComponent<SkinningComponent>();
 	if (skinning->Setup(fngine, "Naira_ExportTest")) {
 		// デフォルト待機アニメーションを再生
-		skinning->PlayAnimation("Idle", true);
+		skinning->PlayAnimation("Armature|mixamo.com|Layer0 Retarget", true);
 	}
 
 	// =========================================================
@@ -85,50 +91,16 @@ void Player::Update(float deltaTime) {
 			effect.color
 		});
 	}
+
 	hitEffect_.erase(std::remove_if(hitEffect_.begin(), hitEffect_.end(),
 		[](const HitEffectInfo& effect) { return effect.currentTime >= effect.lifeTime; }),
 		hitEffect_.end());
-
-	/*WorldTransform testTransform;
-	testTransform.Initialize();
-	testTransform.set_.Scale({ 10.0f,10.0f,10.0f });
-	testTransform.set_.Rotation({ 270.0f,0.0f, 0.0f });
-	testTransform.set_.Translation({ obj_->worldTransform_.GetWorldPos().x,0.12f,obj_->worldTransform_.GetWorldPos().z });
-	testTransform.LocalToWorld();
-
-	WorldTransform testUVTransform;
-	testUVTransform.Initialize();
-	float scale = 1.0f;
-	testUVTransform.set_.Scale({ scale,scale,scale });
-	testUVTransform.set_.Rotation({ 0.0f,0.0f, 0.0f });
-	testUVTransform.set_.Translation({ 0.0f,0.0f,0.0f });
-	testUVTransform.LocalToWorld();
-
-	DrawManager::GetInstance()->GetMagicCircle()->AddInstance({
-		testTransform,
-		testUVTransform,
-		{1.0f,0.0f,0.0f,1.0f}
-	});
-
-	DrawManager::GetInstance()->GetMagicCircle()->Update();
-
-	if (DrawManager::GetInstance()->GetMagicCircle()->IsActive()) {
-		TakeDamage();
-	}
-	else {
-		
-	}
-
-	DrawManager::GetInstance()->GetBone()->AddSkeleton(
-		*skeleton_, obj_->worldTransform_.mat_
-	);*/
 
 	// この処理はここに書きたくない
 	/*CameraSystem::GetInstance()->GetActiveCamera()->SetTargetPos(
 		{ obj_->worldTransform_.get_.Translation().x,obj_->worldTransform_.get_.Translation().y + 1.0f ,obj_->worldTransform_.get_.Translation().z }
 	);*/
-
-	//obj_->LocalToWorld();
+	SetHeadPosToCameraTarget();
 }
 
 void Player::Draw() {

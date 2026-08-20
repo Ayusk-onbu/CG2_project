@@ -121,9 +121,9 @@ void GameScene::Update(){
 
 		//grassField_->Update();
 
-		column_->Update();
+		//column_->Update();
 
-		gpuParticle_->Update(deltaTime);
+		//gpuParticle_->Update(deltaTime);
 
 		//particle_->Update();
 	}
@@ -140,7 +140,7 @@ void GameScene::Draw() {
 	//boss_->Draw();
 	player_->Draw();
 	//particle_->Draw();
-	gpuParticle_->Draw();
+	//gpuParticle_->Draw();
 	//playUI_->Draw();
 	// Fade
 	//fadeUp_->Draw();

@@ -36,6 +36,10 @@ public:
 	void PostHair(ID3D12Resource* randerTargetResource, D3D12_RESOURCE_STATES postState, ID3D12Resource* depthResource);
 public:
 
+	bool AddVertexToGuide(uint32_t guideIndex, const GuideCurve::ControllerPoint* customPoint = nullptr);
+
+	bool RemoveVertexFromGuide(uint32_t guideIndex, int pointIndexWithinGuide = -1);
+
 	void RequestNotifyUpdate() {
 		isGpuUpdateRequested_ = true;
 	}
@@ -49,20 +53,14 @@ public:
 	uint32_t GetCPUGuideCount() const {
 		return uploadGuideBuffer->GetNumElements();
 	}
-	uint32_t GetCPUActiveGuideCount() const {
-		uint32_t count = 0;
-		if (guideInfoBuffer_) {
-			for (uint32_t i = 0; i < guideInfoBuffer_->GetNumElements(); ++i) {
-				if (guideInfoBuffer_->GetMappedData()[i].vertexCount > 0) {
-					count += guideInfoBuffer_->GetMappedData()[i].vertexCount;
-				}
-				else {
-					break;
-				}
-			}
-		}
-		return count;
-	}
+	// CPU上のアクティブ頂点合計数を取得
+	uint32_t GetCPUActiveGuideCount();
+
+	// ガイドの構造（追加・削除・頂点数変更）が変わった時に呼ぶ
+	void MarkGuideTopologyDirty() { isGuideTopologyDirty_ = true; }
+
+	// 頂点数を再計算してキャッシュする内部メソッド
+	void RecalculateActiveVertexCount();// privateのほうがいいかも
 
 	GuideCurve::GuideInfo* GetCPUGuideInfoData() {
 		return guideInfoBuffer_ ? guideInfoBuffer_->GetMappedData() : nullptr;
@@ -91,6 +89,13 @@ public:
 	Strands::HairMakeConfig* GetCPUMakeConfig() {
 		return gpuMakeConfigBuffer_ ? gpuMakeConfigBuffer_->GetMappedData() : nullptr;
 	}
+	// 追従先の移動量を設定する
+	void SetMoveDirection(const Vector3& moveDir) {
+		if (gpuFrameConfigBuffer_) {
+			gpuFrameConfigBuffer_->GetMappedData()->moveDirection = moveDir;
+		}
+	}
+
 private:
 	Microsoft::WRL::ComPtr<ID3D12StateObject> CreateHairRaytracingPSO(
 		ID3D12Device5* device, // DXR対応のDevice5が必要
@@ -110,6 +115,10 @@ private:
 private:
 	GuideCurve::GuideHear guide_;
 	bool isGpuUpdateRequested_ = false; // フラグ
+	uint32_t cachedActiveVertexCount_ = 0;
+	bool isGuideTopologyDirty_ = true; // 初回は計算させるため true
+	Vector3 prevPosition_{ 0.0f, 0.0f, 0.0f };
+	bool isFirstFrame_ = true;
 
 	GuideCurve::Main hairData_;
 	//【定数バッファ】

@@ -21,9 +21,14 @@ void DrawManager::Initialize(Fngine* engine) {
 
 	bone_ = std::make_unique<BoneDrawer>();
 	bone_->Initialize(engine, 100);
+
+	character_ = std::make_unique<PrimitiveCharacter>();
+	character_->Initialize(engine, 10);
 }
 
 void DrawManager::Draw() {
+	character_->DrawInstanced();
+
 	grass_->DrawInstanced();
 
 	column_->DrawInstanced();
